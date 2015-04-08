@@ -1,0 +1,7 @@
+<template name="errorHandler">
+    {{#each object}} {{> error}} {{/each}}
+</template>
+
+<template name="error">
+    <paper-toast opened text="{{text}}">{{html}}</paper-toast>
+</template>
