@@ -10,11 +10,6 @@
         overflow: hidden;
         padding: 0;
     }
-    
-    * /deep/ * {
-        -webkit-touch-callout: none;
-        -webkit-user-select: none;
-    }
     /* menu-l */
     
     html /deep/ .menu-l {
@@ -81,10 +76,10 @@
         <core-header-panel drawer>
             <div class="menu-l-divider"></div>
 
-            <!-- {{#if currentUser}} -->
+            {{#if currentUser}}
             <user-menu core-drawer-toggle></user-menu>
             <div class="menu-l-divider"></div>
-            <!-- {{/if}} -->
+            {{/if}}
 
             <torrentz-menu core-drawer-toggle></torrentz-menu>
             <div class="menu-l-divider"></div>
@@ -98,6 +93,7 @@
             </core-toolbar>
 
             <core-animated-pages fit id="main-body" notap selected="{{initial_page}}" transitions="slide-from-right">
+
                 <section class="page" tag="zero">
                     <div center-justified fit horizontal layout>
                         <div class="disabled-text" self-center>
@@ -105,6 +101,7 @@
                         </div>
                     </div>
                 </section>
+
             </core-animated-pages>
         </core-header-panel>
     </core-drawer-panel>
