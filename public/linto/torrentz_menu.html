@@ -1,7 +1,7 @@
 <polymer-element attributes="inspect,list" name="torrentz-menu">
     <template>
         <template repeat="{{list}}">
-            <div class="menu-l" horizontal layout on-tap="{{menuItemTap}}" tag="{{_id}}">
+            <div class="menu-l" horizontal layout on-release="{{menuItemRelease}}" on-tap="{{menuItemTap}}" tag="{{_id}}">
                 <div self-center>
                     <div class="{{iconClass}} menu-l-icon-text">{{iconText}}</div>
                 </div>

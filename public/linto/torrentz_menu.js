@@ -19,6 +19,11 @@ Polymer("torrentz-menu", {
             $("#torrent_in_db").val(JSON.stringify(this.list));
     },
 
+    menuItemRelease: function(event, detail, sender) {
+        $("confirm-delete /deep/ #ok").attr("tag", $(sender).attr("tag"));
+        document.querySelector("confirm-delete /deep/ paper-action-dialog").toggle();
+    },
+
     menuItemTap: function(event, detail, sender) {
         var _id = $(sender).attr("tag");
 
