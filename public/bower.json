@@ -6,7 +6,6 @@
     "core-icons": "polymer/core-icons#~0.5.5",
     "core-list": "polymer/core-list#~0.5.5",
     "core-localstorage": "polymer/core-localstorage#~0.5.5",
-    "core-scroll-header-panel": "polymer/core-scroll-header-panel#~0.5.5",
     "core-toolbar": "polymer/core-toolbar#~0.5.5",
     "jquery": "~2.1.3",
     "paper-button": "polymer/paper-button#~0.5.5",

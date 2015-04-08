@@ -1,0 +1,112 @@
+<template name="layout_linto">
+
+    <style>
+    html,
+    body {
+        background: #EEE;
+        font-family: 'RobotoDraft', sans-serif;
+        margin: 0;
+        outline: 0;
+        overflow: hidden;
+        padding: 0;
+    }
+    
+    * /deep/ * {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+    }
+    /* menu-l */
+    
+    html /deep/ .menu-l {
+        cursor: pointer;
+        padding: 4px;
+    }
+    
+    html /deep/ .menu-l-divider {
+        padding: 8px;
+    }
+    
+    html /deep/ .menu-l-icon-img {
+        background: white;
+        border-radius: 20px;
+        height: 32px;
+        margin: 4px;
+        padding: 4px;
+        width: 32px;
+    }
+    
+    html /deep/ .menu-l-icon-text {
+        border-radius: 20px;
+        font-size: 1.5em;
+        line-height: 32px;
+        margin: 4px;
+        padding: 4px;
+        text-align: center;
+        width: 32px;
+    }
+    
+    html /deep/ .menu-l-description {
+        padding: 4px;
+    }
+    
+    html /deep/ .menu-l-description-capitalize {
+        text-transform: capitalize;
+    }
+    
+    html /deep/ .menu-l-description-small {
+        font-size: .8em;
+    }
+    
+    html /deep/ .menu-l-description-badge {
+        background: white;
+        border-radius: 8px;
+        font-size: 10px;
+        font-weight: bold;
+        padding: 2px;
+    }
+    
+    html /deep/ .disabled-text {
+        color: #888;
+    }
+    </style>
+
+    <core-drawer-panel forceNarrow id="drawer-panel">
+        <style>
+        core-header-panel[drawer] {
+            background-color: #EEE;
+            color: black;
+        }
+        </style>
+
+        <core-header-panel drawer>
+            <div class="menu-l-divider"></div>
+
+            {{#if currentUser}}
+            <user-menu></user-menu>
+            <div class="menu-l-divider"></div>
+            {{/if}}
+
+            <torrentz-menu></torrentz-menu>
+            <div class="menu-l-divider"></div>
+        </core-header-panel>
+
+        <core-header-panel condenses main>
+            <core-toolbar class="_teal" id="main-toolbar">
+                <paper-icon-button core-drawer-toggle icon="menu"></paper-icon-button>
+                <div flex>Torrent Alert</div>
+                <paper-icon-button icon="add" id="add-keyword"></paper-icon-button>
+            </core-toolbar>
+
+            <core-animated-pages fit id="main-body" notap selected="{{initial_page}}" transitions="slide-from-right">
+                <section class="page" tag="zero">
+                    <div center-justified fit horizontal layout>
+                        <div class="disabled-text" self-center>
+                            <paper-spinner active></paper-spinner>
+                        </div>
+                    </div>
+                </section>
+            </core-animated-pages>
+        </core-header-panel>
+    </core-drawer-panel>
+
+</template>

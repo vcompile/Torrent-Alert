@@ -17,6 +17,5 @@
   },
   "_source": "git://github.com/polymer/paper-slider.git",
   "_target": "~0.5.5",
-  "_originalSource": "polymer/paper-slider",
-  "_direct": true
+  "_originalSource": "polymer/paper-slider"
 }
