@@ -1,0 +1,13 @@
+<polymer-element name="user-menu">
+    <template>
+        <div class="menu-l" horizontal layout on-tap="{{userPanelTap}}">
+            <div self-center>
+                <img class="menu-l-icon-img" src="{{user_img}}">
+            </div>
+            <div class="menu-l-description" flex layout self-center vertical>
+                <div auto-vertical class="menu-l-description-capitalize">{{user_name}}</div>
+                <div auto-vertical class="menu-l-description-small">{{user_email}}</div>
+            </div>
+        </div>
+    </template>
+</polymer-element>
