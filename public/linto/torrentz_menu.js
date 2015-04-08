@@ -35,7 +35,7 @@ Polymer("torrentz-menu", {
 
         if (typeof(item) != "undefined" || item != null) {
             if (list[index] && list[index].length) {
-                $("torrentz-list-item").attr("head", JSON.stringify([A]));
+                $("torrentz-list-item").attr("head", JSON.stringify([item]));
                 $("torrentz-list-item").attr("list", JSON.stringify([list[index]]));
 
                 document.querySelector("core-animated-pages").selected = 2;
