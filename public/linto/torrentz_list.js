@@ -1,8 +1,8 @@
 Polymer("torrentz-list", {
     list: [],
     margin: {
-        left: 4,
-        right: 4
+        left: 8,
+        right: 8
     },
     swipe: 0,
     width: 512,
