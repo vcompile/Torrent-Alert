@@ -1,6 +1,6 @@
-throwError = function(text, html) {
+throwError = function(text, callback) {
     db_error.insert({
-        html: html,
+        callback: callback,
         text: text,
         time: moment().format("X")
     });

@@ -29,7 +29,7 @@ Polymer("torrentz-list", {
     },
 
     downloadItemUp: function(event, detail, sender) {
-        this.swipe = (Math.abs(this.swipe - event.clientX) < (this.width * .25)) ? 0 : 1;
+        this.swipe = (Math.abs(this.swipe - event.clientX) < 80) ? 0 : 1;
 
         $(sender).css({
             "margin-left": 0,
@@ -38,6 +38,8 @@ Polymer("torrentz-list", {
     },
 
     downloadItemTap: function(event, detail, sender) {
+        var _id = $(sender).attr("tag");
+
         if (this.swipe) {
             for (var A = 0; A < torrentz_db.length; A++) {
                 var index = -1;
@@ -45,11 +47,13 @@ Polymer("torrentz-list", {
                 var item = _.find(torrentz_db[A].torrent_out, function(item) {
                     index++;
 
-                    return (item["_id"] == $(sender).attr("tag"));
+                    return (item["_id"] == _id);
                 });
 
                 if (typeof(item) != "undefined" && item != null) {
                     torrentz_db[A].torrent_out[index].listClass = "hidden";
+
+                    throwError("1 item removed", "undo_hidden('" + _id + "')");
 
                     var count = _.filter(torrentz_db[A].torrent_out, function(item) {
                         return item.listClass == "item";
@@ -69,13 +73,13 @@ Polymer("torrentz-list", {
 
             document.querySelector("download-linkz /deep/ paper-action-dialog").toggle();
 
-            Meteor.call("downloadLinkz", $(sender).attr("tag"), function(error, linkz) {
+            Meteor.call("downloadLinkz", _id, function(error, linkz) {
                 if (error) throwError(error.reason, "");
                 else {
                     var body = "";
 
                     linkz.forEach(function(item) {
-                        body += '<div class="download-link menu-l" horizontal layout onclick="window.open(\'' + item.url + '\');"><div self-center><div class="' + polymer_color(item.text) + ' menu-l-icon-text">' + (isNaN(item.text.charAt(0)) ? item.text.charAt(0).toUpperCase() : "#") + '</div></div><div class="menu-l-description" flex layout self-center vertical><div auto-vertical horizontal justified layout>' + item.text + '</div><div auto-vertical class="menu-l-description-small">' + item.fromNow + '</div></div></div>';
+                        body += '<div class="download-link menu-l" horizontal layout onclick="window.open(\'' + item.url + '\');"><div self-center><div class="' + polymer_color(item.text) + ' menu-l-icon-text">' + (isNaN(item.text.charAt(0)) ? item.text.charAt(0).toUpperCase() : "#") + '</div></div><div class="menu-l-description" flex layout self-center vertical><div auto-vertical horizontal layout>' + item.text + '</div><div auto-vertical class="menu-l-description-small">' + item.fromNow + '</div></div></div>';
                     });
 
                     $("download-linkz").attr("body", body);

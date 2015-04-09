@@ -3,5 +3,9 @@
 </template>
 
 <template name="error">
-    <paper-toast opened text="{{text}}">{{html}}</paper-toast>
+    <paper-toast opened text="{{text}}">
+        {{#if callback}}
+        <div style="color: #FFEB3B;" onclick="{{callback}}">undo</div>
+        {{/if}}
+    </paper-toast>
 </template>
