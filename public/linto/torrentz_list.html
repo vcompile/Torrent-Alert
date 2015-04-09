@@ -1,4 +1,4 @@
-<polymer-element attributes="inspect,list" name="torrentz-list">
+<polymer-element attributes="list" name="torrentz-list">
     <template>
         <style>
         .li {
@@ -35,7 +35,7 @@
                     </div>
                 </div>
             </div>
-            <template repeat="{{data}}">
+            <template repeat="{{torrent_out}}">
                 <div center-justified horizontal layout>
                     <div class="{{listClass}} li" layout on-down="{{downloadItemDown}}" on-tap="{{downloadItemTap}}" on-track="{{downloadItemTrack}}" on-up="{{downloadItemUp}}" tag="{{_id}}" touch-action="pan-y" vertical>
                         <div horizontal justified layout>

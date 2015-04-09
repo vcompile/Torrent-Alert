@@ -7,51 +7,14 @@ Polymer("torrentz-list", {
     swipe: 0,
     width: 512,
 
-    domReady: function() {
-        if (512 < window.innerWidth) this.width = 512;
-        else this.width = window.innerWidth - this.margin.left - this.margin.right;
-
-        this.list = [{
-            _id: "12345",
-            data: [{
-                _id: "123",
-                category: "category",
-                categoryClass: "_red",
-                listClass: "item",
-                peers: 100,
-                seeds: 10,
-                size: "100 MB",
-                title: "item A"
-            }, {
-                _id: "123",
-                category: "category",
-                categoryClass: "_red",
-                listClass: "hidden",
-                peers: 100,
-                seeds: 10,
-                size: "100 MB",
-                title: "item B"
-            }],
-            keyword: "test B hidden group"
-        }, {
-            _id: "12345",
-            data: [{
-                _id: "123",
-                category: "category",
-                categoryClass: "_red",
-                listClass: "item",
-                peers: 100,
-                seeds: 10,
-                size: "100 MB",
-                title: "<paper-spinner active></paper-spinner>"
-            }],
-            keyword: "html entry test"
-        }];
-    },
-
     deleteButtonTap: function(event, detail, sender) {
         $("confirm-delete /deep/ #ok").attr("tag", $(sender).attr("tag"));
         document.querySelector("confirm-delete /deep/ paper-action-dialog").toggle();
+    },
+
+    domReady: function() {
+        if (512 < window.innerWidth) this.width = 512;
+        else this.width = window.innerWidth - this.margin.left - this.margin.right;
     },
 
     downloadItemDown: function(event, detail, sender) {
@@ -66,7 +29,7 @@ Polymer("torrentz-list", {
     },
 
     downloadItemUp: function(event, detail, sender) {
-        this.swipe = (Math.abs(this.swipe - event.clientX) < (this.width * .5) ? 0 : 1);
+        this.swipe = (Math.abs(this.swipe - event.clientX) < (this.width * .5)) ? 0 : 1;
 
         $(sender).css({
             "margin-left": 0,
@@ -75,16 +38,7 @@ Polymer("torrentz-list", {
     },
 
     downloadItemTap: function(event, detail, sender) {
-        if (this.swipe) console.log("swipe", $(sender).attr("tag"));
-        else console.log("tap", $(sender).attr("tag"));
-
-    },
-
-    listChanged: function() {
-        if (this.list instanceof Array) $("#torrent_out_db").val(JSON.stringify(this.list));
-        else {
-            this.list = JSON.parse(this.list);
-            $("#torrent_out_db").val(JSON.stringify(this.list));
-        }
+        if (this.swipe) alert("swipe", $(sender).attr("tag"));
+        else alert("tap", $(sender).attr("tag"));
     }
 });

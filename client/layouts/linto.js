@@ -1,65 +1,133 @@
+Template.layout_linto.helpers({
+    initial_page: 1
+});
+
 Template.layout_linto.rendered = function() {
 
-    // $("#main-body").height(window.innerHeight - $("#main-toolbar").height());
-    // $("#main-body").width(window.innerWidth);
+    var torrentz_localstorage = $("#torrentz_db").val();
 
-    // $(window).resize(function() {
-    //     $("#main-body").height(window.innerHeight - $("#main-toolbar").height());
-    //     $("#main-body").width(window.innerWidth);
-    // });
+    $("torrentz-menu").attr("list", torrentz_localstorage);
+    $("torrentz-list").attr("list", torrentz_localstorage);
 
-    var torrent_in_localstorage = $("#torrent_in_db").val();
-    $("torrentz-menu").attr("list", torrent_in_localstorage);
-
-    var torrent_in_db = JSON.parse(torrent_in_localstorage);
+    torrentz_db = JSON.parse(torrentz_localstorage);
 
     torrent_in.find().observeChanges({
         added: function(_id, row) {
-            var item = _.find(torrent_in_db, function(item) {
+            var item = _.find(torrentz_db, function(item) {
                 return (item["_id"] == _id);
             });
 
             if (typeof(item) == "undefined" || item == null) {
-                torrent_in_db.push($.extend(true, row, {
+                torrentz_db.push($.extend(true, row, {
                     _id: _id,
                     count: "*",
                     iconClass: polymer_color(row.keyword),
-                    iconText: (isNaN(row.keyword.charAt(0)) ? row.keyword.charAt(0).toUpperCase() : "#")
+                    iconText: (isNaN(row.keyword.charAt(0)) ? row.keyword.charAt(0).toUpperCase() : "#"),
+                    torrent_out: []
                 }));
 
-                $("torrentz-menu").attr("list", JSON.stringify(torrent_in_db));
-            }
-        },
+                $("#torrentz_db").val(JSON.stringify(torrentz_db));
 
-        changed: function(_id, row) {
-            var index = -1;
-
-            var item = _.find(torrent_in_db, function(item) {
-                index++;
-
-                return (item["_id"] == _id);
-            });
-
-            if (typeof(item) != "undefined" && item != null) {
-                $.extend(true, torrent_in_db[index], row);
-
-                $("torrentz-menu").attr("list", JSON.stringify(torrent_in_db));
+                $("torrentz-menu").attr("list", JSON.stringify(torrentz_db));
+                $("torrentz-list").attr("list", JSON.stringify(torrentz_db));
             }
         },
 
         removed: function(_id) {
             var index = -1;
 
-            var item = _.find(torrent_in_db, function(item) {
+            var item = _.find(torrentz_db, function(item) {
                 index++;
 
                 return (item["_id"] == _id);
             });
 
             if (typeof(item) != "undefined" && item != null) {
-                torrent_in_db.splice(index, 1);
+                torrentz_db.splice(index, 1);
 
-                $("torrentz-menu").attr("list", JSON.stringify(torrent_in_db));
+                $("#torrentz_db").val(JSON.stringify(torrentz_db));
+
+                $("torrentz-menu").attr("list", JSON.stringify(torrentz_db));
+                $("torrentz-list").attr("list", JSON.stringify(torrentz_db));
+            }
+        }
+    });
+
+    torrent_out.find().observeChanges({
+        added: function(_id, row) {
+            for (var A = 0; A < torrentz_db.length; A++) {
+                if (-1 < row.torrent_in.indexOf(torrentz_db[A]._id)) {
+                    var index = -1;
+
+                    var item = _.find(torrentz_db[A].torrent_out, function(item) {
+                        index++;
+
+                        return (item["_id"] == _id);
+                    });
+
+                    if (typeof(item) == "undefined" || item == null) {
+                        if (torrentz_db[A].peers < row.peers && torrentz_db[A].seeds < row.seeds) {
+                            torrentz_db[A].torrent_out.push($.extend(true, row, {
+                                _id: _id,
+                                categoryClass: polymer_color(row.category),
+                                listClass: "item"
+                            }));
+
+                            var count = _.filter(torrentz_db[A].torrent_out, function(item) {
+                                return item.listClass == "item";
+                            }).length;
+
+                            torrentz_db[A].count = (0 < count) ? count : "*";
+
+                            $("#torrentz_db").val(JSON.stringify(torrentz_db));
+
+                            $("torrentz-menu").attr("list", JSON.stringify(torrentz_db));
+                            $("torrentz-list").attr("list", JSON.stringify(torrentz_db));
+                        }
+                    } else {
+                        if (row.peers < torrentz_db[A].peers && row.seeds < torrentz_db[A].seeds) {
+                            torrentz_db[A].torrent_out.splice(index, 1);
+
+                            var count = _.filter(torrentz_db[A].torrent_out, function(item) {
+                                return item.listClass == "item";
+                            }).length;
+
+                            torrentz_db[A].count = (0 < count) ? count : "*";
+
+                            $("#torrentz_db").val(JSON.stringify(torrentz_db));
+
+                            $("torrentz-menu").attr("list", JSON.stringify(torrentz_db));
+                            $("torrentz-list").attr("list", JSON.stringify(torrentz_db));
+                        }
+                    }
+                }
+            }
+        },
+
+        removed: function(_id) {
+            for (var A = 0; A < torrentz_db.length; A++) {
+                var index = -1;
+
+                var item = _.find(torrentz_db[A].torrent_out, function(item) {
+                    index++;
+
+                    return (item["_id"] == _id);
+                });
+
+                if (typeof(item) != "undefined" && item != null) {
+                    torrentz_db[A].torrent_out.splice(index, 1);
+
+                    var count = _.filter(torrentz_db[A].torrent_out, function(item) {
+                        return item.listClass == "item";
+                    }).length;
+
+                    torrentz_db[A].count = (0 < count) ? count : "*";
+
+                    $("#torrentz_db").val(JSON.stringify(torrentz_db));
+
+                    $("torrentz-menu").attr("list", JSON.stringify(torrentz_db));
+                    $("torrentz-list").attr("list", JSON.stringify(torrentz_db));
+                }
             }
         }
     });
