@@ -53,7 +53,7 @@ Polymer("torrentz-list", {
                 if (typeof(item) != "undefined" && item != null) {
                     torrentz_db[A].torrent_out[index].listClass = "hidden";
 
-                    throwError("1 item removed", "undo_hidden('" + _id + "')");
+                    throwError("1 item removed", "undo_hidden('" + _id + "');");
 
                     var count = _.filter(torrentz_db[A].torrent_out, function(item) {
                         return item.listClass == "item";
