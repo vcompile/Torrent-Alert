@@ -15,15 +15,6 @@
             border-bottom: 4px solid #EEE;
             cursor: pointer;
         }
-        
-        .li.item .text {
-            padding-top: 8px;
-        }
-        
-        .li.item .text .category {
-            margin-left: 8px;
-            padding: 0 4px;
-        }
         </style>
 
         <template repeat="{{list}}">
@@ -42,7 +33,7 @@
                             <div class="menu-l-description-small" flex>S {{seeds}} / P {{peers}}</div>
                             <div class="menu-l-description-small">{{size}}</div>
                         </div>
-                        <div class="text">{{title}}<span class="{{categoryClass}} category menu-l-description-small">{{category}}</span></div>
+                        <div style="padding-top: 8px;">{{title}}&nbsp;<span class="{{categoryClass}} menu-l-description-small">&nbsp;{{category}}&nbsp;</span></div>
                     </div>
                 </div>
             </template>

@@ -1,5 +1,9 @@
 torrentz_db = [];
 
+throwError = function(text, callback) {
+    $("body").append('<paper-toast duration="4000" opened text="' + text + '">' + (callback ? '<div style="color: #FFEB3B;" onclick="' + callback + '">undo</div>' : '') + '</paper-toast>');
+};
+
 undo_hidden = function(_id) {
     for (var A = 0; A < torrentz_db.length; A++) {
         var index = -1;
