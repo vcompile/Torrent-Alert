@@ -1,0 +1,51 @@
+<polymer-element attributes="inspect,list" name="torrentz-list">
+    <template>
+        <style>
+        .li {
+            padding: 8px;
+            width: {{width}}px;
+        }
+        
+        .li.hidden {
+            display: none!important;
+        }
+        
+        .li.item {
+            background: white;
+            border-bottom: 4px solid #EEE;
+            cursor: pointer;
+        }
+        
+        .li.item .text {
+            padding-top: 8px;
+        }
+        
+        .li.item .text .category {
+            margin-left: 8px;
+            padding: 0 4px;
+        }
+        </style>
+
+        <template repeat="{{list}}">
+            <div center-justified horizontal layout>
+                <div class="divider li" horizontal justified layout>
+                    <div class="disabled-text" flex self-center>{{keyword}}</div>
+                    <div self-center>
+                        <paper-icon-button icon="close" on-tap="{{deleteButtonTap}}" tag="{{_id}}"></paper-icon-button>
+                    </div>
+                </div>
+            </div>
+            <template repeat="{{data}}">
+                <div center-justified horizontal layout>
+                    <div class="{{listClass}} li" layout on-down="{{downloadItemDown}}" on-tap="{{downloadItemTap}}" on-track="{{downloadItemTrack}}" on-up="{{downloadItemUp}}" tag="{{_id}}" touch-action="pan-y" vertical>
+                        <div horizontal justified layout>
+                            <div class="menu-l-description-small" flex>S {{seeds}} / P {{peers}}</div>
+                            <div class="menu-l-description-small">{{size}}</div>
+                        </div>
+                        <div class="text">{{title}}<span class="{{categoryClass}} category menu-l-description-small">{{category}}</span></div>
+                    </div>
+                </div>
+            </template>
+        </template>
+    </template>
+</polymer-element>
