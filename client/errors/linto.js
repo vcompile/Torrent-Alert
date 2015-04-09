@@ -19,5 +19,5 @@ Template.errorHandler.helpers({
 Template.error.rendered = function() {
     setInterval(function() {
         db_error.remove({});
-    }, 3000);
+    }, 4000);
 };

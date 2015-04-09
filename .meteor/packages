@@ -9,7 +9,7 @@ meteor-platform
 accounts-base
 accounts-google
 accounts-password
-appcache
+# appcache
 http
 
 meteorhacks:npm
