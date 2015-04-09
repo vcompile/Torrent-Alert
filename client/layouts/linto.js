@@ -11,6 +11,9 @@ Template.layout_linto.rendered = function() {
 
     torrentz_db = JSON.parse(torrentz_localstorage);
 
+    if (torrentz_db.length == 0)
+        document.querySelector("core-animated-pages").selected = 0;
+
     torrent_in.find().observeChanges({
         added: function(_id, row) {
             var item = _.find(torrentz_db, function(item) {
@@ -26,10 +29,14 @@ Template.layout_linto.rendered = function() {
                     torrent_out: []
                 }));
 
-                $("#torrentz_db").val(JSON.stringify(torrentz_db));
-
                 $("torrentz-menu").attr("list", JSON.stringify(torrentz_db));
                 $("torrentz-list").attr("list", JSON.stringify(torrentz_db));
+
+                if (document.querySelector("core-animated-pages").selected == 0)
+                    document.querySelector("core-animated-pages").selected = 1;
+
+                $("#torrentz_db").val(JSON.stringify(torrentz_db));
+
             }
         },
 
@@ -45,10 +52,13 @@ Template.layout_linto.rendered = function() {
             if (typeof(item) != "undefined" && item != null) {
                 torrentz_db.splice(index, 1);
 
-                $("#torrentz_db").val(JSON.stringify(torrentz_db));
-
                 $("torrentz-menu").attr("list", JSON.stringify(torrentz_db));
                 $("torrentz-list").attr("list", JSON.stringify(torrentz_db));
+
+                if (torrentz_db.length == 0)
+                    document.querySelector("core-animated-pages").selected = 0;
+
+                $("#torrentz_db").val(JSON.stringify(torrentz_db));
             }
         }
     });
@@ -79,10 +89,10 @@ Template.layout_linto.rendered = function() {
 
                             torrentz_db[A].count = (0 < count) ? count : "*";
 
-                            $("#torrentz_db").val(JSON.stringify(torrentz_db));
-
                             $("torrentz-menu").attr("list", JSON.stringify(torrentz_db));
                             $("torrentz-list").attr("list", JSON.stringify(torrentz_db));
+
+                            $("#torrentz_db").val(JSON.stringify(torrentz_db));
                         }
                     } else {
                         if (row.peers < torrentz_db[A].peers && row.seeds < torrentz_db[A].seeds) {
@@ -94,10 +104,10 @@ Template.layout_linto.rendered = function() {
 
                             torrentz_db[A].count = (0 < count) ? count : "*";
 
-                            $("#torrentz_db").val(JSON.stringify(torrentz_db));
-
                             $("torrentz-menu").attr("list", JSON.stringify(torrentz_db));
                             $("torrentz-list").attr("list", JSON.stringify(torrentz_db));
+
+                            $("#torrentz_db").val(JSON.stringify(torrentz_db));
                         }
                     }
                 }
@@ -123,10 +133,10 @@ Template.layout_linto.rendered = function() {
 
                     torrentz_db[A].count = (0 < count) ? count : "*";
 
-                    $("#torrentz_db").val(JSON.stringify(torrentz_db));
-
                     $("torrentz-menu").attr("list", JSON.stringify(torrentz_db));
                     $("torrentz-list").attr("list", JSON.stringify(torrentz_db));
+
+                    $("#torrentz_db").val(JSON.stringify(torrentz_db));
                 }
             }
         }

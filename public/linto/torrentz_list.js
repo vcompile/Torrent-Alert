@@ -40,5 +40,10 @@ Polymer("torrentz-list", {
     downloadItemTap: function(event, detail, sender) {
         if (this.swipe) alert("swipe", $(sender).attr("tag"));
         else alert("tap", $(sender).attr("tag"));
+    },
+
+    listChanged: function() {
+        if (!(this.list instanceof Array))
+            this.list = JSON.parse(this.list);
     }
 });
