@@ -37,6 +37,11 @@ Template.layout_linto.rendered = function() {
 
                 $("#torrentz_db").val(JSON.stringify(torrentz_db));
 
+                Meteor.subscribe("torrent_out", {
+                    torrent_in: _.map(torrentz_db, function(item) {
+                        return item._id
+                    })
+                });
             }
         },
 
