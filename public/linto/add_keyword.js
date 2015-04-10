@@ -18,10 +18,18 @@ Polymer("add-keyword", {
                 urlPart: (1 < keywordArray.length) ? keywordArray[0] : "search"
             };
 
+            this.keyword = "";
+
+            this.seeds = 10;
+            this.peers = 100;
+
             Meteor.call("insert_torrent_in", row, function(error, status) {
-                if (error) throwError(error.reason, "");
-                else console.log(status);
+                if (error) toast(error.reason);
+                else {
+                    if (status) toast("1 keyword added");
+                    else toast("Quota limit (10) reached");
+                }
             });
-        } else throwError("empty keyword", "");
+        } else toast("Empty keyword", "");
     }
 });

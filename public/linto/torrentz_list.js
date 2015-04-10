@@ -21,24 +21,17 @@ Polymer("torrentz-list", {
         this.swipe = event.clientX;
     },
 
-    downloadItemTrack: function(event, detail, sender) {
-        var A = this.swipe - event.clientX;
-
-        if (0 < A) $(sender).css("margin-left", (-A) + "px");
-        else $(sender).css("margin-right", A + "px");
-    },
-
-    downloadItemUp: function(event, detail, sender) {
-        this.swipe = (Math.abs(this.swipe - event.clientX) < 80) ? 0 : 1;
-
-        $(sender).css({
-            "margin-left": 0,
-            "margin-right": 0
-        });
-    },
-
     downloadItemTap: function(event, detail, sender) {
         var _id = $(sender).attr("tag");
+
+        if (1 < this.swipe) {
+            this.swipe = (Math.abs(this.swipe - event.clientX) < 80) ? 0 : 1;
+
+            $(sender).css({
+                "margin-left": 0,
+                "margin-right": 0
+            });
+        }
 
         if (this.swipe) {
             for (var A = 0; A < torrentz_db.length; A++) {
@@ -47,13 +40,11 @@ Polymer("torrentz-list", {
                 var item = _.find(torrentz_db[A].torrent_out, function(item) {
                     index++;
 
-                    return (item["_id"] == _id);
+                    return (_id == item._id);
                 });
 
-                if (typeof(item) != "undefined" && item != null) {
+                if (item) {
                     torrentz_db[A].torrent_out[index].listClass = "hidden";
-
-                    throwError("1 item removed", "undo_hidden('" + _id + "');");
 
                     var count = _.filter(torrentz_db[A].torrent_out, function(item) {
                         return item.listClass == "item";
@@ -61,10 +52,11 @@ Polymer("torrentz-list", {
 
                     torrentz_db[A].count = (0 < count) ? count : "*";
 
-                    $("torrentz-menu").attr("list", JSON.stringify(torrentz_db));
-                    $("torrentz-list").attr("list", JSON.stringify(torrentz_db));
+                    re_render();
 
-                    $("#torrentz_db").val(JSON.stringify(torrentz_db));
+                    toast("1 item removed", '<div style="color: #FFEB3B;" onclick="undo_hidden_callback(\'' + _id + '\');">undo</div>');
+
+                    break;
                 }
             }
         } else {
@@ -74,7 +66,7 @@ Polymer("torrentz-list", {
             document.querySelector("download-linkz /deep/ paper-action-dialog").toggle();
 
             Meteor.call("downloadLinkz", _id, function(error, linkz) {
-                if (error) throwError(error.reason, "");
+                if (error) toast(error.reason);
                 else {
                     var body = "";
 
@@ -84,6 +76,41 @@ Polymer("torrentz-list", {
 
                     $("download-linkz").attr("body", body);
                 }
+            });
+        }
+    },
+
+    downloadItemTrack: function(event, detail, sender) {
+        var A = this.swipe - event.clientX;
+
+        if (A < 5) {
+            if (0 < A) $(sender).css("margin-left", (-A) + "px");
+            else $(sender).css("margin-right", A + "px");
+        }
+    },
+
+    downloadItemTrackend: function(event, detail, sender) {
+        if (1 < this.swipe) {
+            this.swipe = (Math.abs(this.swipe - event.clientX) < 80) ? 0 : 1;
+
+            $(sender).css({
+                "margin-left": 0,
+                "margin-right": 0
+            });
+        }
+    },
+
+    downloadItemTrackstart: function(event, detail, sender) {
+        this.swipe = event.clientX;
+    },
+
+    downloadItemUp: function(event, detail, sender) {
+        if (1 < this.swipe) {
+            this.swipe = (Math.abs(this.swipe - event.clientX) < 80) ? 0 : 1;
+
+            $(sender).css({
+                "margin-left": 0,
+                "margin-right": 0
             });
         }
     },

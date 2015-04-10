@@ -17,10 +17,10 @@ Template.layout_linto.rendered = function() {
     torrent_in.find().observeChanges({
         added: function(_id, row) {
             var item = _.find(torrentz_db, function(item) {
-                return (item["_id"] == _id);
+                return (_id == item._id);
             });
 
-            if (typeof(item) == "undefined" || item == null) {
+            if (typeof(item) == "undefined") {
                 torrentz_db.push($.extend(true, row, {
                     _id: _id,
                     count: "*",
@@ -29,13 +29,10 @@ Template.layout_linto.rendered = function() {
                     torrent_out: []
                 }));
 
-                $("torrentz-menu").attr("list", JSON.stringify(torrentz_db));
-                $("torrentz-list").attr("list", JSON.stringify(torrentz_db));
-
                 if (document.querySelector("core-animated-pages").selected == 0)
                     document.querySelector("core-animated-pages").selected = 1;
 
-                $("#torrentz_db").val(JSON.stringify(torrentz_db));
+                re_render();
 
                 Meteor.subscribe("torrent_out", {
                     torrent_in: _.map(torrentz_db, function(item) {
@@ -51,69 +48,66 @@ Template.layout_linto.rendered = function() {
             var item = _.find(torrentz_db, function(item) {
                 index++;
 
-                return (item["_id"] == _id);
+                return (_id == item._id);
             });
 
-            if (typeof(item) != "undefined" && item != null) {
+            if (item) {
                 torrentz_db.splice(index, 1);
-
-                $("torrentz-menu").attr("list", JSON.stringify(torrentz_db));
-                $("torrentz-list").attr("list", JSON.stringify(torrentz_db));
 
                 if (torrentz_db.length == 0)
                     document.querySelector("core-animated-pages").selected = 0;
 
-                $("#torrentz_db").val(JSON.stringify(torrentz_db));
+                re_render()
             }
         }
     });
 
     torrent_out.find().observeChanges({
         added: function(_id, row) {
-            for (var A = 0; A < torrentz_db.length; A++) {
-                if (-1 < row.torrent_in.indexOf(torrentz_db[A]._id)) {
-                    var index = -1;
+            var group_index = -1;
 
-                    var item = _.find(torrentz_db[A].torrent_out, function(item) {
-                        index++;
+            var group = _.find(torrentz_db, function(item) {
+                group_index++;
 
-                        return (item["_id"] == _id);
-                    });
+                return (-1 < row.torrent_in.indexOf(item._id));
+            });
 
-                    if (typeof(item) == "undefined" || item == null) {
-                        if (torrentz_db[A].peers < row.peers && torrentz_db[A].seeds < row.seeds) {
-                            torrentz_db[A].torrent_out.push($.extend(true, row, {
-                                _id: _id,
-                                categoryClass: polymer_color(row.category),
-                                listClass: "item"
-                            }));
+            if (group) {
+                var index = -1;
 
-                            var count = _.filter(torrentz_db[A].torrent_out, function(item) {
-                                return item.listClass == "item";
-                            }).length;
+                var item = _.find(torrentz_db[group_index].torrent_out, function(item) {
+                    index++;
 
-                            torrentz_db[A].count = (0 < count) ? count : "*";
+                    return (_id == item._id);
+                });
 
-                            $("torrentz-menu").attr("list", JSON.stringify(torrentz_db));
-                            $("torrentz-list").attr("list", JSON.stringify(torrentz_db));
+                if (typeof(item) == "undefined") {
+                    if (torrentz_db[group_index].peers < row.peers && torrentz_db[group_index].seeds < row.seeds) {
+                        torrentz_db[group_index].torrent_out.push($.extend(true, row, {
+                            _id: _id,
+                            categoryClass: polymer_color(row.category),
+                            listClass: "item"
+                        }));
 
-                            $("#torrentz_db").val(JSON.stringify(torrentz_db));
-                        }
-                    } else {
-                        if (row.peers < torrentz_db[A].peers && row.seeds < torrentz_db[A].seeds) {
-                            torrentz_db[A].torrent_out.splice(index, 1);
+                        var count = _.filter(torrentz_db[group_index].torrent_out, function(item) {
+                            return item.listClass == "item";
+                        }).length;
 
-                            var count = _.filter(torrentz_db[A].torrent_out, function(item) {
-                                return item.listClass == "item";
-                            }).length;
+                        torrentz_db[group_index].count = (0 < count) ? count : "*";
 
-                            torrentz_db[A].count = (0 < count) ? count : "*";
+                        re_render();
+                    }
+                } else {
+                    if (row.peers < torrentz_db[group_index].peers && row.seeds < torrentz_db[group_index].seeds) {
+                        torrentz_db[group_index].torrent_out.splice(index, 1);
 
-                            $("torrentz-menu").attr("list", JSON.stringify(torrentz_db));
-                            $("torrentz-list").attr("list", JSON.stringify(torrentz_db));
+                        var count = _.filter(torrentz_db[group_index].torrent_out, function(item) {
+                            return item.listClass == "item";
+                        }).length;
 
-                            $("#torrentz_db").val(JSON.stringify(torrentz_db));
-                        }
+                        torrentz_db[group_index].count = (0 < count) ? count : "*";
+
+                        re_render();
                     }
                 }
             }
@@ -126,10 +120,10 @@ Template.layout_linto.rendered = function() {
                 var item = _.find(torrentz_db[A].torrent_out, function(item) {
                     index++;
 
-                    return (item["_id"] == _id);
+                    return (_id == item._id);
                 });
 
-                if (typeof(item) != "undefined" && item != null) {
+                if (item) {
                     torrentz_db[A].torrent_out.splice(index, 1);
 
                     var count = _.filter(torrentz_db[A].torrent_out, function(item) {
@@ -138,10 +132,9 @@ Template.layout_linto.rendered = function() {
 
                     torrentz_db[A].count = (0 < count) ? count : "*";
 
-                    $("torrentz-menu").attr("list", JSON.stringify(torrentz_db));
-                    $("torrentz-list").attr("list", JSON.stringify(torrentz_db));
+                    re_render();
 
-                    $("#torrentz_db").val(JSON.stringify(torrentz_db));
+                    break;
                 }
             }
         }
@@ -160,7 +153,7 @@ Template.layout_linto.events({
                     requestOfflineToken: true,
                     requestPermissions: ["email", "profile"]
                 }, function(error) {
-                    if (error) throwError(Accounts.LoginCancelledError.numericError, "");
+                    if (error) toast(Accounts.LoginCancelledError.numericError);
                     else location.reload();
                 });
             }

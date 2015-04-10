@@ -7,23 +7,20 @@ Polymer("confirm-delete", {
         var item = _.find(torrentz_db, function(item) {
             index++;
 
-            return (item["_id"] == _id);
+            return (_id == item._id);
         });
 
-        if (typeof(item) != "undefined" || item != null) {
+        if (item) {
             torrentz_db.splice(index, 1);
-
-            $("torrentz-menu").attr("list", JSON.stringify(torrentz_db));
-            $("torrentz-list").attr("list", JSON.stringify(torrentz_db));
 
             if (torrentz_db.length == 0)
                 document.querySelector("core-animated-pages").selected = 0;
 
-            $("#torrentz_db").val(JSON.stringify(torrentz_db));
+            re_render();
 
             Meteor.call("remove_torrent_in", _id, function(error, status) {
-                if (error) throwError(error.reason, "");
-                else console.log(status);
+                if (error) toast(error.reason);
+                else toast("1 keyword deleted");
             });
         }
     }

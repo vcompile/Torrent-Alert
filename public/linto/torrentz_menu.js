@@ -1,14 +1,16 @@
 Polymer("torrentz-menu", {
     list: [],
 
-    menuItemRelease: function(event, detail, sender) {
-        $("confirm-delete /deep/ #ok").attr("tag", $(sender).attr("tag"));
-        document.querySelector("confirm-delete /deep/ paper-action-dialog").toggle();
-    },
-
     listChanged: function() {
         if (!(this.list instanceof Array))
             this.list = JSON.parse(this.list);
+    },
+
+    menuItemRelease: function(event, detail, sender) {
+        document.querySelector("#drawer-panel").togglePanel();
+
+        $("confirm-delete /deep/ #ok").attr("tag", $(sender).attr("tag"));
+        document.querySelector("confirm-delete /deep/ paper-action-dialog").toggle();
     },
 
     menuItemTap: function(event, detail, sender) {
@@ -20,7 +22,7 @@ Polymer("torrentz-menu", {
             return (item["_id"] == $(sender).attr("tag"));
         });
 
-        if (typeof(item) != "undefined" || item != null)
+        if (item)
             $("torrentz-list").attr("list", JSON.stringify([item]));
     }
 });
