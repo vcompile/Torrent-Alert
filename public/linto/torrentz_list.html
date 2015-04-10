@@ -28,7 +28,7 @@
             </div>
             <template repeat="{{torrent_out}}">
                 <div center-justified horizontal layout>
-                    <div class="{{listClass}} li" layout on-down="{{downloadItemDown}}" on-tap="{{downloadItemTap}}" on-track="{{downloadItemTrack}}" on-trackend="{{downloadItemTrackend}}" on-trackstart="{{downloadItemTrackstart}}" on-up="{{downloadItemUp}}" tag="{{_id}}" touch-action="pan-y" vertical>
+                    <div class="{{listClass}} li" layout on-tap="{{downloadItemTap}}" on-track="{{downloadItemTrack}}" on-trackend="{{downloadItemTrackend}}" on-trackstart="{{downloadItemTrackstart}}" tag="{{_id}}" touch-action="pan-y" vertical>
                         <div horizontal justified layout>
                             <div class="menu-l-description-small" flex>S {{seeds}} / P {{peers}}</div>
                             <div class="menu-l-description-small">{{size}}</div>
