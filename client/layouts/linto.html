@@ -117,4 +117,8 @@
 
     <confirm-delete></confirm-delete>
 
+    {{#unless meteorStatus}}
+    <paper-toast duration="8000" opened text="No internet connection"></paper-toast>
+    {{/unless}}
+
 </template>

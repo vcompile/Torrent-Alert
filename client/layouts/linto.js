@@ -1,5 +1,8 @@
 Template.layout_linto.helpers({
-    initial_page: 1
+    initial_page: 1,
+    meteorStatus: function() {
+        return Meteor.status().connected;
+    }
 });
 
 Template.layout_linto.rendered = function() {
