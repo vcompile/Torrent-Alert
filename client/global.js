@@ -30,11 +30,13 @@ undo_hidden_callback = function(_id) {
     }
 };
 
-re_render = function() {
+re_render = function(opt) {
+    opt = opt ? opt : "";
+
     var json = JSON.stringify(torrentz_db);
 
     $("torrentz-menu").attr("list", json);
-    $("torrentz-list").attr("list", json);
+    if (opt == "") $("torrentz-list").attr("list", json);
 
     $("#torrentz_db").val(json);
 };

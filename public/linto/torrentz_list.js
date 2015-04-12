@@ -31,7 +31,7 @@ Polymer("torrentz-list", {
                 var body = "";
 
                 linkz.forEach(function(item) {
-                    body += '<div class="download-link menu-l" horizontal layout onclick="window.open(\'' + item.url + '\');"><div self-center><div class="' + polymer_color(item.text) + ' menu-l-icon-text">' + (isNaN(item.text.charAt(0)) ? item.text.charAt(0).toUpperCase() : "#") + '</div></div><div class="menu-l-description" flex layout self-center vertical><div auto-vertical horizontal layout>' + item.text + '</div><div auto-vertical class="menu-l-description-small">' + item.fromNow + '</div></div></div>';
+                    body += '<div class="download-link menu-l" horizontal layout onclick="window.open(\'' + item.url + '\', \'_system\');"><div self-center><div class="' + polymer_color(item.text) + ' menu-l-icon-text">' + (isNaN(item.text.charAt(0)) ? item.text.charAt(0).toUpperCase() : "#") + '</div></div><div class="menu-l-description" flex layout self-center vertical><div auto-vertical horizontal layout>' + item.text + '</div><div auto-vertical class="menu-l-description-small">' + item.fromNow + '</div></div></div>';
                 });
 
                 $("download-linkz").attr("body", body);

@@ -34,10 +34,11 @@ Template.layout_linto.rendered = function() {
 
                 torrentz_db = _.sortBy(torrentz_db, "keyword");
 
-                if (document.querySelector("core-animated-pages").selected == 0)
-                    document.querySelector("core-animated-pages").selected = 1;
-
-                re_render();
+                if (document.querySelector("core-animated-pages").selected == 0) document.querySelector("core-animated-pages").selected = 1;
+                else {
+                    if ($("torrentz-list").attr("tag") == "") re_render();
+                    else re_render("torrentz_menu");
+                }
 
                 Meteor.subscribe("torrent_out", {
                     torrent_in: _.map(torrentz_db, function(item) {
@@ -59,15 +60,16 @@ Template.layout_linto.rendered = function() {
             if (item) {
                 torrentz_db.splice(index, 1);
 
-                if (torrentz_db.length == 0)
-                    document.querySelector("core-animated-pages").selected = 0;
-
-                re_render()
+                if (torrentz_db.length == 0) document.querySelector("core-animated-pages").selected = 0;
+                else {
+                    if ($("torrentz-list").attr("tag") == "") re_render();
+                    else re_render("torrentz_menu");
+                }
             }
         }
     });
 
-    var torrentz_db_loop_torrent_out = function(index) {
+    function torrentz_db_loop_torrent_out(index) {
         var count = 0;
 
         var data = {},
@@ -117,6 +119,23 @@ Template.layout_linto.rendered = function() {
         });
     };
 
+    var torrentz_db_queue_torrent_out = [];
+
+    Meteor.setInterval(function() {
+        if (torrentz_db_queue_torrent_out.length) {
+            torrentz_db_queue_torrent_out = _.uniq(torrentz_db_queue_torrent_out);
+
+            torrentz_db_queue_torrent_out.forEach(function(index) {
+                torrentz_db_loop_torrent_out(index);
+            });
+
+            torrentz_db_queue_torrent_out = [];
+
+            if ($("torrentz-list").attr("tag") == "") re_render();
+            else re_render("torrentz_menu");
+        }
+    }, 1000 * 60);
+
     torrent_out.find().observeChanges({
         added: function(_id, row) {
             var group_index = -1;
@@ -143,18 +162,13 @@ Template.layout_linto.rendered = function() {
                             categoryClass: polymer_color(row.category),
                             listClass: "item"
                         }));
-
                         torrentz_db[group_index].torrent_out = _.sortBy(torrentz_db[group_index].torrent_out, "title");
-
-                        torrentz_db_loop_torrent_out(group_index);
-                        re_render();
+                        torrentz_db_queue_torrent_out.push(group_index);
                     }
                 } else {
                     if (row.peers < torrentz_db[group_index].peers && row.seeds < torrentz_db[group_index].seeds) {
                         torrentz_db[group_index].torrent_out.splice(index, 1);
-
-                        torrentz_db_loop_torrent_out(group_index);
-                        re_render();
+                        torrentz_db_queue_torrent_out.push(group_index);
                     }
                 }
             }
@@ -172,9 +186,7 @@ Template.layout_linto.rendered = function() {
 
                 if (item) {
                     torrentz_db[A].torrent_out.splice(index, 1);
-
-                    torrentz_db_loop_torrent_out(group_index);
-                    re_render();
+                    torrentz_db_queue_torrent_out.push(A);
 
                     break;
                 }
