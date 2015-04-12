@@ -24,7 +24,6 @@ Polymer("torrentz-menu", {
 
         if (item) {
             $("torrentz-list").attr("list", JSON.stringify([item]));
-
             $("torrentz-list").attr("tag", index);
 
             $("html /deep/ .menu-l").css("background", "#EEE");
