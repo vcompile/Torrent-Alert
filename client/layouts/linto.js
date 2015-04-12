@@ -32,6 +32,8 @@ Template.layout_linto.rendered = function() {
                     torrent_out: []
                 }));
 
+                torrentz_db = _.sortBy(torrentz_db, "keyword");
+
                 if (document.querySelector("core-animated-pages").selected == 0)
                     document.querySelector("core-animated-pages").selected = 1;
 
@@ -65,6 +67,56 @@ Template.layout_linto.rendered = function() {
         }
     });
 
+    var torrentz_db_loop_torrent_out = function(index) {
+        var count = 0;
+
+        var data = {},
+            keyword = torrentz_db[index].keyword.trim().replace(/\s+/g, " ").toLowerCase();
+
+        for (var A = 0; A < torrentz_db[index].torrent_out.length; A++) {
+            if (torrentz_db[index].torrent_out[A].listClass == "item") {
+                count++;
+
+                var key = torrentz_db[index].torrent_out[A].title.toLowerCase().split(keyword, 1)[0].replace(/20[0-5]{2}/g, "").trim().replace(/\s+/g, " ");
+
+                if (data[key]) {
+                    data[key].count += 1;
+
+                    data[key].group.push({
+                        index: A,
+                        ratio: torrentz_db[index].torrent_out[A].seeds / torrentz_db[index].torrent_out[A].peers,
+                        size: torrentz_db[index].torrent_out[A].size
+                    });
+                } else {
+                    data[key] = {
+                        count: 1,
+                        group: [{
+                            index: A,
+                            ratio: torrentz_db[index].torrent_out[A].seeds / torrentz_db[index].torrent_out[A].peers,
+                            size: torrentz_db[index].torrent_out[A].size
+                        }]
+                    };
+                }
+            }
+        }
+
+        torrentz_db[index].count = (0 < count) ? count : "*";
+
+        _.filter(data, function(item) {
+            return (1 < item.count);
+        }).forEach(function(item) {
+            var ratio = _.sortBy(item.group, "ratio");
+
+            for (var A = 0; A < ratio.length; A++)
+                torrentz_db[index].torrent_out[ratio[A].index].ratio_index = A;
+
+            var size = _.sortBy(item.group, "size");
+
+            for (var A = 0; A < size.length; A++)
+                torrentz_db[index].torrent_out[size[A].index].size_index = A;
+        });
+    };
+
     torrent_out.find().observeChanges({
         added: function(_id, row) {
             var group_index = -1;
@@ -92,24 +144,16 @@ Template.layout_linto.rendered = function() {
                             listClass: "item"
                         }));
 
-                        var count = _.filter(torrentz_db[group_index].torrent_out, function(item) {
-                            return item.listClass == "item";
-                        }).length;
+                        torrentz_db[group_index].torrent_out = _.sortBy(torrentz_db[group_index].torrent_out, "title");
 
-                        torrentz_db[group_index].count = (0 < count) ? count : "*";
-
+                        torrentz_db_loop_torrent_out(group_index);
                         re_render();
                     }
                 } else {
                     if (row.peers < torrentz_db[group_index].peers && row.seeds < torrentz_db[group_index].seeds) {
                         torrentz_db[group_index].torrent_out.splice(index, 1);
 
-                        var count = _.filter(torrentz_db[group_index].torrent_out, function(item) {
-                            return item.listClass == "item";
-                        }).length;
-
-                        torrentz_db[group_index].count = (0 < count) ? count : "*";
-
+                        torrentz_db_loop_torrent_out(group_index);
                         re_render();
                     }
                 }
@@ -129,12 +173,7 @@ Template.layout_linto.rendered = function() {
                 if (item) {
                     torrentz_db[A].torrent_out.splice(index, 1);
 
-                    var count = _.filter(torrentz_db[A].torrent_out, function(item) {
-                        return item.listClass == "item";
-                    }).length;
-
-                    torrentz_db[A].count = (0 < count) ? count : "*";
-
+                    torrentz_db_loop_torrent_out(group_index);
                     re_render();
 
                     break;

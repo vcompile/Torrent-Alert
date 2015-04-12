@@ -22,7 +22,11 @@ Polymer("torrentz-menu", {
             return (item["_id"] == $(sender).attr("tag"));
         });
 
-        if (item)
+        if (item) {
             $("torrentz-list").attr("list", JSON.stringify([item]));
+
+            $("html /deep/ .menu-l").css("background", "#EEE");
+            $(sender).css("background", "#FAFAFA");
+        }
     }
 });
