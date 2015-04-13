@@ -1,4 +1,4 @@
-<polymer-element name="confirm-delete">
+<polymer-element attributes="store" name="confirm-delete">
     <template>
         <paper-action-dialog autoCloseDisabled backdrop transition="core-transition-bottom">
             <div horizontal layout>Are you sure to delete this item ?</div>
@@ -7,7 +7,7 @@
                 <core-icon icon="clear"></core-icon>&nbsp;&nbsp;Cancel
             </paper-button>
 
-            <paper-button affirmative id="ok" on-tap="{{okButtonTap}}">
+            <paper-button affirmative on-tap="{{okButtonTap}}">
                 <core-icon icon="check"></core-icon>&nbsp;&nbsp;Ok
             </paper-button>
         </paper-action-dialog>

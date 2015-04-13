@@ -27,7 +27,7 @@ Polymer("add-keyword", {
                 if (error) toast(error.reason);
                 else {
                     if (status) toast("1 keyword added");
-                    else toast("Quota limit (10) reached");
+                    else toast("Quota limit reached");
                 }
             });
         } else toast("Empty keyword", "");

@@ -8,7 +8,7 @@ Polymer("torrentz-list", {
     width: 512,
 
     deleteButtonTap: function(event, detail, sender) {
-        $("confirm-delete /deep/ #ok").attr("tag", $(sender).attr("tag"));
+        $("confirm-delete").attr("store", JSON.stringify([$(sender).attr("tag")]));
         document.querySelector("confirm-delete /deep/ paper-action-dialog").toggle();
     },
 
@@ -44,8 +44,14 @@ Polymer("torrentz-list", {
 
         if (0 < A) $(sender).css("margin-left", (-A) + "px");
         else $(sender).css("margin-right", A + "px");
+    },
 
-        if ((this.width * .25) < A) {
+    downloadItemTrackend: function(event, detail, sender) {
+        $(sender).css("margin", 0);
+
+        if ((this.width * .25) < this.swipe - event.clientX) {
+            $(sender).addClass("hidden");
+
             var _id = $(sender).attr("tag");
 
             for (var A = 0; A < torrentz_db.length; A++) {
@@ -66,21 +72,12 @@ Polymer("torrentz-list", {
 
                     torrentz_db[A].count = (0 < count) ? count : "*";
 
-                    re_render();
-
-                    toast("1 item removed", '<div style="color: #FFEB3B;" onclick="undo_hidden_callback(\'' + _id + '\');">undo</div>');
+                    toast("1 item removed", 2000, '<div onclick="undo_hidden_callback([\'' + _id + '\'])" style="color: #FFEB3B;">undo</div>');
 
                     break;
                 }
             }
         }
-    },
-
-    downloadItemTrackend: function(event, detail, sender) {
-        $(sender).css({
-            "margin-left": 0,
-            "margin-right": 0
-        });
     },
 
     downloadItemTrackstart: function(event, detail, sender) {

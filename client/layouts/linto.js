@@ -34,11 +34,11 @@ Template.layout_linto.rendered = function() {
 
                 torrentz_db = _.sortBy(torrentz_db, "keyword");
 
-                if (document.querySelector("core-animated-pages").selected == 0) document.querySelector("core-animated-pages").selected = 1;
-                else {
-                    if ($("torrentz-list").attr("tag") == "") re_render();
-                    else re_render("torrentz_menu");
-                }
+                if (document.querySelector("core-animated-pages").selected == 0) {
+                    document.querySelector("core-animated-pages").selected = 1;
+
+                    render();
+                } else render("update");
 
                 Meteor.subscribe("torrent_out", {
                     torrent_in: _.map(torrentz_db, function(item) {
@@ -61,10 +61,7 @@ Template.layout_linto.rendered = function() {
                 torrentz_db.splice(index, 1);
 
                 if (torrentz_db.length == 0) document.querySelector("core-animated-pages").selected = 0;
-                else {
-                    if ($("torrentz-list").attr("tag") == "") re_render();
-                    else re_render("torrentz_menu");
-                }
+                else render("update");
             }
         }
     });
@@ -131,8 +128,7 @@ Template.layout_linto.rendered = function() {
 
             torrentz_db_queue_torrent_out = [];
 
-            if ($("torrentz-list").attr("tag") == "") re_render();
-            else re_render("torrentz_menu");
+            render("update");
         }
     }, 1000 * 60);
 

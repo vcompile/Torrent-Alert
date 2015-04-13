@@ -7,24 +7,24 @@ Polymer("torrentz-menu", {
     },
 
     menuItemRelease: function(event, detail, sender) {
-        document.querySelector("#drawer-panel").togglePanel();
-
-        $("confirm-delete /deep/ #ok").attr("tag", $(sender).attr("tag"));
+        $("confirm-delete").attr("store", JSON.stringify([$(sender).attr("tag")]));
         document.querySelector("confirm-delete /deep/ paper-action-dialog").toggle();
     },
 
     menuItemTap: function(event, detail, sender) {
+        var _id = $(sender).attr("tag");
+
         var index = -1;
 
         var item = _.find(torrentz_db, function(item) {
             index++;
 
-            return (item["_id"] == $(sender).attr("tag"));
+            return (_id == item._id);
         });
 
         if (item) {
             $("torrentz-list").attr("list", JSON.stringify([item]));
-            $("torrentz-list").attr("tag", index);
+            $("torrentz-list").attr("tag", JSON.stringify([_id]));
 
             $("html /deep/ .menu-l").css("background", "#EEE");
             $(sender).css("background", "#FAFAFA");

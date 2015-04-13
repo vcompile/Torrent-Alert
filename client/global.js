@@ -1,42 +1,81 @@
 torrentz_db = [];
 
-toast = function(text, html) {
-    $("body").append('<paper-toast duration="2000" opened text="' + text + '">' + (html ? html : '') + '</paper-toast>');
-};
-
-undo_hidden_callback = function(_id) {
-    for (var A = 0; A < torrentz_db.length; A++) {
-        var index = -1;
-
-        var item = _.find(torrentz_db[A].torrent_out, function(item) {
-            index++;
-
-            return (_id == item._id);
-        });
-
-        if (item) {
-            torrentz_db[A].torrent_out[index].listClass = "item";
-
-            var count = _.filter(torrentz_db[A].torrent_out, function(item) {
-                return item.listClass == "item";
-            }).length;
-
-            torrentz_db[A].count = (0 < count) ? count : "*";
-
-            re_render();
-
-            break;
-        }
-    }
-};
-
-re_render = function(opt) {
+render = function(opt) {
     opt = opt ? opt : "";
 
     var json = JSON.stringify(torrentz_db);
 
-    $("torrentz-menu").attr("list", json);
-    if (opt == "") $("torrentz-list").attr("list", json);
+    switch (opt) {
+
+        case "update":
+            $("torrentz-menu").attr("list", json);
+
+            var group = [],
+                group_index = JSON.parse($("torrentz-list").attr("tag"));
+
+            group_index.forEach(function(_id) {
+                var index = -1;
+
+                var item = _.find(torrentz_db, function(item) {
+                    index++;
+
+                    return (_id == item._id);
+                });
+
+                if (item)
+                    group.push(item)
+            });
+
+            $("torrentz-list").attr("list", (group.length ? JSON.stringify(group) : json));
+            break;
+
+        default:
+            $("torrentz-menu").attr("list", json);
+            $("torrentz-list").attr("list", json);
+            break;
+
+    }
 
     $("#torrentz_db").val(json);
+};
+
+var A, B, C;
+
+toast = function(text, duration, html) {
+
+    if (A != duration || B != html || C != text)
+        $("body").append('<paper-toast duration="' + duration + '" opened text="' + text + '">' + (html ? html : '') + '</paper-toast>');
+
+    A = duration ? duration : null;
+    B = html ? html : null;
+    C = text ? text : null;
+
+};
+
+undo_hidden_callback = function(_id_torrent_out) {
+    _id_torrent_out.forEach(function(_id) {
+        for (var A = 0; A < torrentz_db.length; A++) {
+            var index = -1;
+
+            var item = _.find(torrentz_db[A].torrent_out, function(item) {
+                index++;
+
+                return (_id == item._id);
+            });
+
+            if (item) {
+                torrentz_db[A].torrent_out[index].listClass = "item";
+
+                var count = _.filter(torrentz_db[A].torrent_out, function(item) {
+                    return item.listClass == "item";
+                }).length;
+
+                torrentz_db[A].count = (0 < count) ? count : "*";
+
+                render("update");
+
+                break;
+            }
+        }
+    });
 };
