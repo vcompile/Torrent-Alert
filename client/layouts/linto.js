@@ -158,7 +158,7 @@ Template.layout_linto.rendered = function() {
                             categoryClass: polymer_color(row.category),
                             listClass: "item"
                         }));
-                        torrentz_db[group_index].torrent_out = _.sortBy(torrentz_db[group_index].torrent_out, "title");
+                        torrentz_db[group_index].torrent_out = _.sortBy(torrentz_db[group_index].torrent_out, "time");
                         torrentz_db_queue_torrent_out.push(group_index);
                     }
                 } else {
