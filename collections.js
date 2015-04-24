@@ -7,7 +7,7 @@ grantAllAccess = function(userId, doc) {
 };
 
 specialAccess = function(userId, doc) {
-    return userId == "linto";
+    return userId == "HedCET";
 };
 
 torrent_in = new Meteor.Collection("torrent_in");

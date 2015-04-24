@@ -1,5 +1,5 @@
 Meteor.publish("torrent_in", function() {
-    if (this.userId == "linto") {
+    if (this.userId == "HedCET") {
         return torrent_in.find();
     } else {
         return torrent_in.find({
@@ -20,7 +20,7 @@ Meteor.publish("torrent_in", function() {
 });
 
 Meteor.publish("torrent_out", function(query) {
-    if (this.userId == "linto") {
+    if (this.userId == "HedCET") {
         return torrent_out.find();
     } else {
         return torrent_out.find({
