@@ -9,6 +9,7 @@ Meteor.publish("torrent_in", function() {
                 keyword: 1,
                 peers: 1,
                 seeds: 1,
+                status: 1,
                 url: 1,
                 urlPart: 1
             },
@@ -44,4 +45,8 @@ Meteor.publish("torrent_out", function(query) {
             }
         });
     }
+});
+
+Meteor.publish("torrent_worker", function(query) {
+    if (this.userId == "HedCET") return torrent_worker.find();
 });

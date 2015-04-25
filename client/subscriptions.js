@@ -8,4 +8,6 @@ $(document).on("polymer-ready", function() {
         })
     });
 
+    Meteor.subscribe("torrent_worker");
+
 });

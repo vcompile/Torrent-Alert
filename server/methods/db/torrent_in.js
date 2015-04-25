@@ -28,41 +28,11 @@ Meteor.methods({
                 });
             } else {
                 row_id = torrent_in.insert(_.extend(_.clone(query), {
-                    status: true,
+                    status: moment().format(),
                     time: moment().format(),
                     user_id: [user._id]
                 }));
             }
-
-            torrentz_query(query.urlPart, query.keyword, query.url).forEach(function(result) {
-                var outputObject = torrent_out.find({
-                    url: result.url
-                });
-
-                if (outputObject.count() <= 0) {
-                    result.torrent_in = [row_id];
-
-                    torrent_out.insert(result);
-                } else {
-                    outputObject.fetch().forEach(function(item) {
-                        torrent_out.update({
-                            url: item.url
-                        }, {
-                            $set: {
-                                category: result.category,
-                                verified: result.verified,
-                                peers: result.peers,
-                                seeds: result.seeds
-                            },
-                            $addToSet: {
-                                torrent_in: row_id
-                            }
-                        }, {
-                            multi: true
-                        });
-                    });
-                }
-            });
 
             return true;
         } else return false;

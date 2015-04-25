@@ -6,13 +6,14 @@
 //     return true;
 // };
 
-// specialAccess = function(userId, doc) {
-//     return userId == "HedCET";
-// };
+specialAccess = function(userId, doc) {
+    return userId == "HedCET";
+};
 
 torrent_in = new Meteor.Collection("torrent_in");
 torrent_out = new Meteor.Collection("torrent_out");
 torrent_push = new Meteor.Collection("torrent_push");
+torrent_worker = new Meteor.Collection("torrent_worker");
 
 // torrent_in.allow({
 //     insert: specialAccess,
@@ -31,3 +32,9 @@ torrent_push = new Meteor.Collection("torrent_push");
 //     remove: specialAccess,
 //     update: specialAccess
 // });
+
+torrent_worker.allow({
+    insert: specialAccess,
+    remove: specialAccess,
+    update: specialAccess
+});
