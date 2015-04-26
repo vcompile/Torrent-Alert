@@ -1,6 +1,6 @@
 Meteor.methods({
 
-    worker: function(data) {
+    worker: function(query) {
         this.unblock();
 
         var user = Meteor.user();
@@ -9,23 +9,22 @@ Meteor.methods({
         if (user._id != "HedCET")
             throw new Meteor.Error(422, "restrictedAccess");
 
-        var query = _.pick(data, "_id", "db", "std_out", "url");
-
-        switch (data.db) {
+        switch (query.db) {
             case "torrent_in":
                 var row = torrent_in.findOne({
-                    _id: data._id
+                    _id: query._id
                 });
 
                 if (row) {
                     var cheerio = Meteor.npmRequire("cheerio");
-                    $ = cheerio.load(data.std_out);
+                    $ = cheerio.load(query.std_out);
 
-                    $(".torrents dl").each(function(index, element) {
+                    $(".results dl").each(function(index, element) {
+
                         if ($(this).find("dt a").attr("href")) {
                             var torrent = {};
 
-                            torrent["url"] = url + $(this).find("dt a").attr("href");
+                            torrent["url"] = "http://torrentz.in" + $(this).find("dt a").attr("href");
                             torrent["title"] = $(this).find("dt a").text().trim().replace(/\s+/g, " ");
                             torrent["category"] = $(this).find("dt").children().remove().end().text().replace(/[^0-9a-zA-Z]/g, " ").trim().replace(/\s+/g, " ");
                             torrent["verified"] = $(this).find("dd .v").text().replace(/[^0-9]/g, "");
@@ -38,7 +37,7 @@ Meteor.methods({
 
                             torrent["linkz"] = [];
                             torrent["status"] = moment().format();
-                            torrent["torrent_worker"] = (_torrent_worker.length ? _torrent_worker[Math.floor(Math.random() * _torrent_worker.length)] : "MAC");
+                            torrent["torrent_worker"] = (_torrent_worker.length ? _torrent_worker[Math.floor(Math.random() * _torrent_worker.length)]._id : "MAC");
 
                             // db
 
@@ -114,19 +113,27 @@ Meteor.methods({
                             }
                         }
                     });
-                } else console.log("notFound", data);
+
+                    torrent_in.update({
+                        _id: row._id
+                    }, {
+                        $set: {
+                            status: "OK"
+                        }
+                    });
+                } else console.log("notFound", query);
                 break;
 
             case "torrent_out":
                 var row = torrent_out.findOne({
-                    _id: data._id
+                    _id: query._id
                 });
 
                 if (row) {
                     var linkz = [];
 
                     var cheerio = Meteor.npmRequire("cheerio");
-                    $ = cheerio.load(data.std_out);
+                    $ = cheerio.load(query.std_out);
 
                     $(".download dl").each(function(index, element) {
                         if ($(this).find("dt a").attr("href")) {
@@ -152,9 +159,10 @@ Meteor.methods({
                     }, {
                         $set: {
                             linkz: linkz,
+                            status: "OK"
                         }
                     });
-                } else console.log("notFound", data);
+                } else console.log("notFound", query);
                 break;
         }
 

@@ -7,7 +7,7 @@ Polymer("add-keyword", {
     okButtonTap: function(event, detail, sender) {
         this.keyword = unescape(this.keyword).trim();
 
-        var keywordArray = this.keyword.replace("/", "").split("?f=");
+        var keywordArray = this.keyword.replace("/", "").split(/\?[a-z]=/g);
 
         if (this.keyword.length) {
             var row = {

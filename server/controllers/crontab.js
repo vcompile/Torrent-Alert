@@ -1,82 +1,82 @@
-torrentz_query = function(urlPart, keyword, url) {
-    var urlPart = (urlPart ? urlPart : "_"),
-        keyword = (keyword ? keyword : "_"),
-        url = (url ? url : "http://torrentz.in");
+// torrentz_query = function(urlPart, keyword, url) {
+//     var urlPart = (urlPart ? urlPart : "_"),
+//         keyword = (keyword ? keyword : "_"),
+//         url = (url ? url : "http://torrentz.in");
 
-    var torrentzHttpResponse = HTTP.get(url + "/" + urlPart, {
-        headers: {
-            "User-Agent": useragents[Math.floor(Math.random() * useragents.length)]
-        },
-        params: {
-            f: keyword
-        },
-        timeout: 1000 * 60 * 5
-    });
+//     var torrentzHttpResponse = HTTP.get(url + "/" + urlPart, {
+//         headers: {
+//             "User-Agent": useragents[Math.floor(Math.random() * useragents.length)]
+//         },
+//         params: {
+//             f: keyword
+//         },
+//         timeout: 1000 * 60 * 5
+//     });
 
-    if (torrentzHttpResponse.statusCode === 200) {
-        var torrentz = [];
+//     if (torrentzHttpResponse.statusCode === 200) {
+//         var torrentz = [];
 
-        var cheerio = Meteor.npmRequire("cheerio");
-        $ = cheerio.load(torrentzHttpResponse.content);
+//         var cheerio = Meteor.npmRequire("cheerio");
+//         $ = cheerio.load(torrentzHttpResponse.content);
 
-        $(".results dl").each(function(index, element) {
-            if ($(this).find("dt a").attr("href")) {
-                var torrent = {};
+//         $(".results dl").each(function(index, element) {
+//             if ($(this).find("dt a").attr("href")) {
+//                 var torrent = {};
 
-var _url = url + $(this).find("dt a").attr("href");
+// var _url = url + $(this).find("dt a").attr("href");
 
-                torrent["url"] = url + $(this).find("dt a").attr("href");
-                torrent["title"] = $(this).find("dt a").text().trim().replace(/\s+/g, " ");
-                torrent["category"] = $(this).find("dt").children().remove().end().text().replace(/[^0-9a-zA-Z]/g, " ").trim().replace(/\s+/g, " ");
-                torrent["verified"] = $(this).find("dd .v").text().replace(/[^0-9]/g, "");
-                torrent["time"] = $(this).find("dd .a span").attr("title") ? moment($(this).find("dd .a span").attr("title").trim().replace(/\s+/g, " "), "ddd, DD MMM YYYY HH:mm:ss").format("X") : moment().format("X");
-                torrent["size"] = $(this).find("dd .s").text().replace(/[^0-9a-zA-Z]/g, " ").trim().replace(/\s+/g, " ");
-                torrent["peers"] = $(this).find("dd .u").text().replace(/[^0-9]/g, "");
-                torrent["seeds"] = $(this).find("dd .d").text().replace(/[^0-9]/g, "");
+//                 torrent["url"] = url + $(this).find("dt a").attr("href");
+//                 torrent["title"] = $(this).find("dt a").text().trim().replace(/\s+/g, " ");
+//                 torrent["category"] = $(this).find("dt").children().remove().end().text().replace(/[^0-9a-zA-Z]/g, " ").trim().replace(/\s+/g, " ");
+//                 torrent["verified"] = $(this).find("dd .v").text().replace(/[^0-9]/g, "");
+//                 torrent["time"] = $(this).find("dd .a span").attr("title") ? moment($(this).find("dd .a span").attr("title").trim().replace(/\s+/g, " "), "ddd, DD MMM YYYY HH:mm:ss").format("X") : moment().format("X");
+//                 torrent["size"] = $(this).find("dd .s").text().replace(/[^0-9a-zA-Z]/g, " ").trim().replace(/\s+/g, " ");
+//                 torrent["peers"] = $(this).find("dd .u").text().replace(/[^0-9]/g, "");
+//                 torrent["seeds"] = $(this).find("dd .d").text().replace(/[^0-9]/g, "");
 
-                torrent["status"] = "OK";
-                torrent["download_linkz"] = [];
+//                 torrent["status"] = "OK";
+//                 torrent["download_linkz"] = [];
 
-                var torrentzHttpResponse = HTTP.get(_url, {
-                    headers: {
-                        "User-Agent": useragents[Math.floor(Math.random() * useragents.length)]
-                    },
-                    timeout: 1000 * 60 * 5
-                });
+//                 var torrentzHttpResponse = HTTP.get(_url, {
+//                     headers: {
+//                         "User-Agent": useragents[Math.floor(Math.random() * useragents.length)]
+//                     },
+//                     timeout: 1000 * 60 * 5
+//                 });
 
-                if (torrentzHttpResponse.statusCode === 200) {
-                    var linkz = [];
+//                 if (torrentzHttpResponse.statusCode === 200) {
+//                     var linkz = [];
 
-                    // var cheerio = Meteor.npmRequire("cheerio");
-                    $ = cheerio.load(torrentzHttpResponse.content);
+//                     // var cheerio = Meteor.npmRequire("cheerio");
+//                     $ = cheerio.load(torrentzHttpResponse.content);
 
-                    $(".download dl").each(function(index, element) {
-                        if ($(this).find("dt a").attr("href")) {
-                            var link = $(this).find("dt a").attr("href");
+//                     $(".download dl").each(function(index, element) {
+//                         if ($(this).find("dt a").attr("href")) {
+//                             var link = $(this).find("dt a").attr("href");
 
-                            if (link.substr(0, 4) == "http") {
-                                link = link.split("//", 2)[1];
+//                             if (link.substr(0, 4) == "http") {
+//                                 link = link.split("//", 2)[1];
 
-                                if (link.substr(0, 4) == "www.")
-                                    link = link.substr(4);
+//                                 if (link.substr(0, 4) == "www.")
+//                                     link = link.substr(4);
 
-                                torrent["download_linkz"].push({
-                                    text: link.split("/", 1).toString("utf-8"),
-                                    time: ($(this).find("dd span").attr("title") ? moment($(this).find("dd span").attr("title").trim().replace(/\s+/g, " "), "ddd, DD MMM YYYY HH:mm:ss").format("X") : moment().format("X")),
-                                    url: "//" + link
-                                });
-                            }
-                        }
-                    });
-                }
+//                                 torrent["download_linkz"].push({
+//                                     text: link.split("/", 1).toString("utf-8"),
+//                                     time: ($(this).find("dd span").attr("title") ? moment($(this).find("dd span").attr("title").trim().replace(/\s+/g, " "), "ddd, DD MMM YYYY HH:mm:ss").format("X") : moment().format("X")),
+//                                     url: "//" + link
+//                                 });
+//                             }
+//                         }
+//                     });
+//                 }
 
-                torrentz.push(torrent);
-            }
-        });
+//                 torrentz.push(torrent);
+//             }
+//         });
 
-        return torrentz;
-    } else return "error";
-}
+//         return torrentz;
+//     } else return "error";
+// }
 
 // Meteor.setInterval(function() {
 //     new fibers(function() {

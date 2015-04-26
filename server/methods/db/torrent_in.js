@@ -32,7 +32,7 @@ Meteor.methods({
                 row_id = torrent_in.insert(_.extend(_.clone(query), {
                     status: moment().format(),
                     time: moment().format(),
-                    torrent_worker: (_torrent_worker.length ? _torrent_worker[Math.floor(Math.random() * _torrent_worker.length)] : "MAC"),
+                    torrent_worker: (_torrent_worker.length ? _torrent_worker[Math.floor(Math.random() * _torrent_worker.length)]._id : "MAC"),
                     user_id: [user._id]
                 }));
             }
