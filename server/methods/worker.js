@@ -33,7 +33,9 @@ Meteor.methods({
                             torrent["peers"] = $(this).find("dd .u").text().replace(/[^0-9]/g, "");
                             torrent["seeds"] = $(this).find("dd .d").text().replace(/[^0-9]/g, "");
 
-                            var _torrent_worker = torrent_worker.find().fetch();
+                            var _torrent_worker = torrent_worker.find({
+                                status: "UP"
+                            }).fetch();
 
                             torrent["linkz"] = [];
                             torrent["status"] = moment().format();

@@ -27,7 +27,9 @@ Meteor.methods({
                     multi: true
                 });
             } else {
-                var _torrent_worker = torrent_worker.find().fetch();
+                var _torrent_worker = torrent_worker.find({
+                    status: "UP"
+                }).fetch();
 
                 row_id = torrent_in.insert(_.extend(_.clone(query), {
                     status: moment().format(),
