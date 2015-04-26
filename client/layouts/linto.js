@@ -170,6 +170,37 @@ Template.layout_linto.rendered = function() {
             }
         },
 
+        changed: function(_id, row) {
+            var row = torrent_out.findOne({
+                _id: _id
+            });
+
+            var group_index = -1;
+
+            var group = _.find(torrentz_db, function(item) {
+                group_index++;
+
+                return (-1 < row.torrent_in.indexOf(item._id));
+            });
+
+            if (group) {
+                var index = -1;
+
+                var item = _.find(torrentz_db[group_index].torrent_out, function(item) {
+                    index++;
+
+                    return (_id == item._id);
+                });
+
+                if (item) {
+                    if (row.peers < torrentz_db[group_index].peers && row.seeds < torrentz_db[group_index].seeds) torrentz_db[group_index].torrent_out.splice(index, 1);
+                    else torrentz_db[group_index].torrent_out[index] = _.extend(torrentz_db[group_index].torrent_out[index], row);
+
+                    torrentz_db_queue_torrent_out.push(group_index);
+                }
+            }
+        },
+
         removed: function(_id) {
             for (var A = 0; A < torrentz_db.length; A++) {
                 var index = -1;

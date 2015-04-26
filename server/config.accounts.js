@@ -1,6 +1,6 @@
 var google = {
-    clientId: "81242494817-38ohse21enq5ibpe65155qp82lr6h7e7.apps.googleusercontent.com",
-    clientSecret: "SXV_5gjOLtwhoCnYE_2oh9Et"
+    clientId: "1035713157090-frci49e652m1ep8n9qerin4r8u9vpb9f.apps.googleusercontent.com",
+    clientSecret: "9IZvL7GcscaLyOGpzvUz7uA4"
 };
 
 Meteor.startup(function() {

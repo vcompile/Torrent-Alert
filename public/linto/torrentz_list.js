@@ -25,18 +25,20 @@ Polymer("torrentz-list", {
 
         document.querySelector("download-linkz /deep/ paper-action-dialog").toggle();
 
-        Meteor.call("downloadLinkz", _id, function(error, linkz) {
-            if (error) toast(error.reason);
-            else {
-                var body = "";
+        var body = "";
 
-                linkz.forEach(function(item) {
-                    body += '<div class="download-link menu-l" horizontal layout onclick="window.open(\'' + item.url + '\', \'_system\');"><div self-center><div class="' + polymer_color(item.text) + ' menu-l-icon-text">' + (isNaN(item.text.charAt(0)) ? item.text.charAt(0).toUpperCase() : "#") + '</div></div><div class="menu-l-description" flex layout self-center vertical><div auto-vertical horizontal layout>' + item.text + '</div><div auto-vertical class="menu-l-description-small">' + item.fromNow + '</div></div></div>';
-                });
-
-                $("download-linkz").attr("body", body);
-            }
+        torrentz_db.forEach(function(A) {
+            A.torrent_out.forEach(function(B) {
+                if (_id == B._id && B.linkz.length) {
+                    B.linkz.forEach(function(C) {
+                        body += '<div class="download-link menu-l" horizontal layout onclick="window.open(\'' + C.url + '\', \'_system\');"><div self-center><div class="' + polymer_color(C.text) + ' menu-l-icon-text">' + (isNaN(C.text.charAt(0)) ? C.text.charAt(0).toUpperCase() : "#") + '</div></div><div class="menu-l-description" flex layout self-center vertical><div auto-vertical horizontal layout>' + C.text + '</div><div auto-vertical class="menu-l-description-small">' + moment(C.time, "X").fromNow() + '</div></div></div>';
+                    });
+                }
+            });
         });
+
+        if (body != "")
+            $("download-linkz").attr("body", body);
     },
 
     downloadItemTrack: function(event, detail, sender) {
