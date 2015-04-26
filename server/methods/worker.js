@@ -80,9 +80,11 @@ Meteor.methods({
                                         },
                                         $set: {
                                             category: torrent.category,
-                                            verified: torrent.verified,
                                             peers: torrent.peers,
-                                            seeds: torrent.seeds
+                                            seeds: torrent.seeds,
+                                            status: torrent_status,
+                                            torrent_worker: torrent.torrent_worker,
+                                            verified: torrent.verified
                                         }
                                     });
 
