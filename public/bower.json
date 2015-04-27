@@ -1,21 +1,22 @@
 {
-    "dependencies": {
-        "core-animated-pages": "polymer/core-animated-pages#~0.5.5",
-        "core-drawer-panel": "polymer/core-drawer-panel#~0.5.5",
-        "core-header-panel": "polymer/core-header-panel#~0.5.5",
-        "core-icons": "polymer/core-icons#~0.5.5",
-        "core-list": "polymer/core-list#~0.5.5",
-        "core-localstorage": "polymer/core-localstorage#~0.5.5",
-        "core-toolbar": "polymer/core-toolbar#~0.5.5",
-        "paper-button": "polymer/paper-button#~0.5.5",
-        "paper-dialog": "polymer/paper-dialog#~0.5.5",
-        "paper-icon-button": "polymer/paper-icon-button#~0.5.5",
-        "paper-input": "polymer/paper-input#~0.5.5",
-        "paper-slider": "polymer/paper-slider#~0.5.5",
-        "paper-spinner": "polymer/paper-spinner#~0.5.5",
-        "paper-toast": "polymer/paper-toast#~0.5.5",
-        "polymer": "Polymer/polymer#~0.5.5"
-    },
-    "name": "HedCET",
-    "version": "15.4.6"
+  "dependencies": {
+    "core-animated-pages": "polymer/core-animated-pages#~0.5.5",
+    "core-drawer-panel": "polymer/core-drawer-panel#~0.5.5",
+    "core-header-panel": "polymer/core-header-panel#~0.5.5",
+    "core-icons": "polymer/core-icons#~0.5.5",
+    "core-list": "polymer/core-list#~0.5.5",
+    "core-localstorage": "polymer/core-localstorage#~0.5.5",
+    "core-toolbar": "polymer/core-toolbar#~0.5.5",
+    "paper-button": "polymer/paper-button#~0.5.5",
+    "paper-dialog": "polymer/paper-dialog#~0.5.5",
+    "paper-dropdown": "polymer/paper-dropdown#~0.5.5",
+    "paper-icon-button": "polymer/paper-icon-button#~0.5.5",
+    "paper-input": "polymer/paper-input#~0.5.5",
+    "paper-slider": "polymer/paper-slider#~0.5.5",
+    "paper-spinner": "polymer/paper-spinner#~0.5.5",
+    "paper-toast": "polymer/paper-toast#~0.5.5",
+    "polymer": "Polymer/polymer#~0.5.5"
+  },
+  "name": "HedCET",
+  "version": "15.4.6"
 }
