@@ -25,6 +25,5 @@
   },
   "_source": "git://github.com/polymer/paper-dropdown.git",
   "_target": "~0.5.5",
-  "_originalSource": "polymer/paper-dropdown",
-  "_direct": true
+  "_originalSource": "polymer/paper-dropdown"
 }
