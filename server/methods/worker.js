@@ -82,7 +82,7 @@ Meteor.methods({
                                             category: torrent.category,
                                             peers: torrent.peers,
                                             seeds: torrent.seeds,
-                                            status: torrent_status,
+                                            status: torrent.status,
                                             torrent_worker: torrent.torrent_worker,
                                             verified: torrent.verified
                                         }
