@@ -7,6 +7,7 @@ Polymer("torrentz-list", {
     selected: {},
     // swipe: 0,
     width: 512,
+    year: moment().format("YYYY"),
 
     deleteButtonTap: function(event, detail, sender) {
         $("confirm-delete").attr("store", JSON.stringify([$(sender).attr("tag")]));
