@@ -1,5 +1,4 @@
 Polymer("more-dropdown", {
-
     store: {},
 
     display_add: null,
@@ -25,7 +24,6 @@ Polymer("more-dropdown", {
     },
 
     deleteButtonTap: function() {
-
         this.store.delete.forEach(function(_id) {
             for (var A = 0; A < torrentz_db.length; A++) {
                 var index = -1;
@@ -55,7 +53,6 @@ Polymer("more-dropdown", {
         render("update");
 
         toast(this.store.delete.length + " item removed", 4000, '<div onclick="undo_hidden_callback([\'' + this.store.delete.join("', '") + '\'])" style="color: #FFEB3B;">undo</div>');
-
     },
 
     moreIconTap: function() {
@@ -67,19 +64,14 @@ Polymer("more-dropdown", {
             this.store = JSON.parse(this.store);
 
         if (this.store.delete) {
-
             this.total_keyword = torrentz_db.length;
             this.selected_torrentz = this.store.delete.length;
 
             this.display_add = "none";
             this.display_more = null;
-
         } else {
-
             this.display_add = null;
             this.display_more = "none";
-
         }
     }
-
 });

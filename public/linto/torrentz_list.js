@@ -27,7 +27,7 @@ Polymer("torrentz-list", {
 
         if (++this.selected[_id] == 1) {
             if ($(sender).hasClass("selected")) {
-                this.selected[_id] = -100;
+                this.selected[_id] = -10;
 
                 window.setTimeout(function() {
                     $(sender).removeClass("selected");
