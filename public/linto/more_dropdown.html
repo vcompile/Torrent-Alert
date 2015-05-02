@@ -1,8 +1,8 @@
-<polymer-element name="more-dropdown" relative>
+<polymer-element attributes="store" name="more-dropdown" relative>
 
     <template>
-        <paper-icon-button icon="add" id="add-keyword"></paper-icon-button>
-        <paper-icon-button icon="more-vert" on-tap="{{moreIconTap}}"></paper-icon-button>
+        <paper-icon-button icon="add" on-tap="{{addIconTap}}" style="display: {{display_add}}!important"></paper-icon-button>
+        <paper-icon-button icon="more-vert" on-tap="{{moreIconTap}}" style="display: {{display_more}}!important"></paper-icon-button>
 
         <style>
         paper-dropdown {
@@ -29,7 +29,7 @@
 
         <paper-dropdown closeSelector="*" halign="right" transition="core-transition-top">
 
-            <div class="menu-l" horizontal layout>
+            <div class="menu-l" horizontal layout on-tap="{{addIconTap}}">
                 <div self-center>
                     <div class="_green menu-l-icon-text">
                         <core-icon icon="add"></core-icon>
@@ -38,11 +38,11 @@
 
                 <div class="menu-l-description" flex layout self-center vertical>
                     <div auto-vertical class="menu-l-description-capitalize">Add</div>
-                    <div auto-vertical class="menu-l-description-small">Total 10 Keyword(s)</div>
+                    <div auto-vertical class="menu-l-description-small">Total {{total_keyword}} Keyword(s)</div>
                 </div>
             </div>
 
-            <div class="menu-l" horizontal layout>
+            <div class="menu-l" horizontal layout on-tap={{deleteButtonTap}}>
                 <div self-center>
                     <div class="_red menu-l-icon-text">
                         <core-icon icon="delete"></core-icon>
@@ -51,7 +51,7 @@
 
                 <div class="menu-l-description" flex layout self-center vertical>
                     <div auto-vertical class="menu-l-description-capitalize">Remove</div>
-                    <div auto-vertical class="menu-l-description-small">1 Torrent(s) Selected</div>
+                    <div auto-vertical class="menu-l-description-small">{{selected_torrentz}} Torrent(s) Selected</div>
                 </div>
             </div>
 

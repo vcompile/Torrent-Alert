@@ -223,22 +223,22 @@ Template.layout_linto.rendered = function() {
 
 };
 
-Template.layout_linto.events({
+// Template.layout_linto.events({
 
-    "click #add-keyword": function(event, target) {
-        if (Meteor.user()) {
-            document.querySelector("add-keyword /deep/ paper-action-dialog").toggle();
-        } else {
-            if (Accounts.loginServicesConfigured()) {
-                Meteor.loginWithGoogle({
-                    requestOfflineToken: true,
-                    requestPermissions: ["email", "profile"]
-                }, function(error) {
-                    if (error) toast(Accounts.LoginCancelledError.numericError);
-                    else location.reload();
-                });
-            }
-        }
-    }
+// "click #add-keyword": function(event, target) {
+//     if (Meteor.user()) {
+//         document.querySelector("add-keyword /deep/ paper-action-dialog").toggle();
+//     } else {
+//         if (Accounts.loginServicesConfigured()) {
+//             Meteor.loginWithGoogle({
+//                 requestOfflineToken: true,
+//                 requestPermissions: ["email", "profile"]
+//             }, function(error) {
+//                 if (error) toast(Accounts.LoginCancelledError.numericError);
+//                 else location.reload();
+//             });
+//         }
+//     }
+// }
 
-});
+// });
