@@ -32,7 +32,7 @@
             </div>
             <template repeat="{{torrent_out}}">
                 <div center-justified horizontal layout>
-                    <div class="{{listClass}} li" layout on-hold="{{downloadItemHold}}" on-holdpulse="{{downloadItemHoldPulse}}" on-tap="{{downloadItemTap}}" style="background: -webkit-linear-gradient(left, #CCC, #CCC {{ratio_index ? ratio_index * 2 : 0}}%, white {{ratio_index ? ratio_index * 2 : 0}}%, white {{size_index ? (100 - (size_index * 2)) : 100}}%, #CCC {{size_index ? (100 - (size_index * 2)) : 100}}%, #CCC);" tag="{{_id}}" vertical>
+                    <div class="{{listClass}} li" layout on-hold="{{downloadItemHold}}" on-holdpulse="{{downloadItemHoldPulse}}" on-tap="{{downloadItemTap}}" style="background: -webkit-linear-gradient(left, #CCC, #CCC {{ratio_index ? ratio_index : 0}}%, white {{ratio_index ? ratio_index : 0}}%, white {{size_index ? (100 - size_index) : 100}}%, #CCC {{size_index ? (100 - size_index) : 100}}%, #CCC);" tag="{{_id}}" vertical>
                         <div horizontal justified layout>
                             <div class="menu-l-description-small" flex>S {{seeds}} / P {{peers}}</div>
                             <div class="menu-l-description-small">{{size}}</div>
