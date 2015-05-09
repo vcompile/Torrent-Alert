@@ -56,7 +56,7 @@ To add custom styling to only some elements, use these selectors:
         background-color: green;
     }
 
-    paper-input-decorator[focused] /deep/ .floating-label .label-text {
+    paper-input-decorator[focused] /deep/ .floated-label .label-text {
         /* floating label color when the input is focused */
         color: orange;
     }
@@ -401,6 +401,10 @@ conflict with this element.
        * @return {boolean} True if the input is valid.
        */
       validate: function() {
+        if (!this.input) {
+          return true;
+        }
+
         this.isInvalid = !this.input.validity.valid;
         return this.input.validity.valid;
       },

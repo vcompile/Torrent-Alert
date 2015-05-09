@@ -124,5 +124,7 @@ Polymer("torrentz-list", {
     listChanged: function() {
         if (!(this.list instanceof Array))
             this.list = JSON.parse(this.list);
+
+        $("more-dropdown").attr("store", "{}");
     }
 });

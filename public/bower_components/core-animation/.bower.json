@@ -3,15 +3,15 @@
   "private": true,
   "dependencies": {
     "polymer": "Polymer/polymer#^0.5",
-    "web-animations-js": "web-animations/web-animations-js#1.0.5"
+    "web-animations-js": "web-animations/web-animations-js#1.0.6"
   },
-  "version": "0.5.5",
+  "version": "0.5.6",
   "homepage": "https://github.com/Polymer/core-animation",
-  "_release": "0.5.5",
+  "_release": "0.5.6",
   "_resolution": {
     "type": "version",
-    "tag": "0.5.5",
-    "commit": "39eeab9ce8ded658ea5b1a6f393894c3c4b0acec"
+    "tag": "0.5.6",
+    "commit": "381b4c263ea1119f190112ed742971969da31d7c"
   },
   "_source": "git://github.com/Polymer/core-animation.git",
   "_target": "^0.5",

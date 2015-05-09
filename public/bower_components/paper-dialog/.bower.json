@@ -8,13 +8,13 @@
     "paper-button": "Polymer/paper-button#^0.5",
     "paper-shadow": "Polymer/paper-shadow#^0.5"
   },
-  "version": "0.5.5",
+  "version": "0.5.6",
   "homepage": "https://github.com/polymer/paper-dialog",
-  "_release": "0.5.5",
+  "_release": "0.5.6",
   "_resolution": {
     "type": "version",
-    "tag": "0.5.5",
-    "commit": "18a591bcb9561a0d2240f584763277ced18277a2"
+    "tag": "0.5.6",
+    "commit": "30e6b3723ded85609d7da5105592d4fdddddc454"
   },
   "_source": "git://github.com/polymer/paper-dialog.git",
   "_target": "~0.5.5",

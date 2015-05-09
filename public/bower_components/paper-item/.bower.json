@@ -11,13 +11,13 @@
     "paper-ripple": "Polymer/paper-ripple#^0.5",
     "paper-shadow": "Polymer/paper-shadow#^0.5"
   },
-  "version": "0.5.5",
+  "version": "0.5.6",
   "homepage": "https://github.com/Polymer/paper-item",
-  "_release": "0.5.5",
+  "_release": "0.5.6",
   "_resolution": {
     "type": "version",
-    "tag": "0.5.5",
-    "commit": "5d8c1a6e759a0593c6a16ce011bc0af7d924ca4a"
+    "tag": "0.5.6",
+    "commit": "ce31889c8531b12716e182aa9d0f6dd5b93e2250"
   },
   "_source": "git://github.com/Polymer/paper-item.git",
   "_target": "^0.5",

@@ -34,6 +34,8 @@ license that can be found in the LICENSE file.
 
       paper-icon-button {
         vertical-align: middle;
+        /* This border-radius is neccessary for any button which may later gain the .hover class to prevent visual glitching */
+        border-radius: 50%;
       }
 
       paper-icon-button.hover:hover {

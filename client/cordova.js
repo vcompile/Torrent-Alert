@@ -9,13 +9,8 @@ if (Meteor.isCordova) {
 
     }, false);
 
-    var lastBackButtonPress = moment().format("x");
-
     function backbutton() {
-        if (moment().format("x") - lastBackButtonPress < 4000)
-            $("body").append('<paper-toast duration="4000" opened text="Are you sure you want to exit ?"><div style="color: #FFEB3B;" onclick="navigator.app.exitApp();">exit</div></paper-toast>');
-
-        lastBackButtonPress = moment().format("x");
+        $("confirm-exit").attr("time", moment().format("x"));
     }
 
     function menubutton() {

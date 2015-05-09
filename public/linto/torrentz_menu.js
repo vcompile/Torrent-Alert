@@ -6,11 +6,6 @@ Polymer("torrentz-menu", {
             this.list = JSON.parse(this.list);
     },
 
-    menuItemRelease: function(event, detail, sender) {
-        $("confirm-delete").attr("store", JSON.stringify([$(sender).attr("tag")]));
-        document.querySelector("confirm-delete /deep/ paper-action-dialog").toggle();
-    },
-
     menuItemTap: function(event, detail, sender) {
         var _id = $(sender).attr("tag");
 
