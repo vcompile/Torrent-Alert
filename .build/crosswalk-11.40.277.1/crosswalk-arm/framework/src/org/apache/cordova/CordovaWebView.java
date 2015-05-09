@@ -76,11 +76,12 @@ public class CordovaWebView extends XWalkView {
 
     private BroadcastReceiver receiver;
 
-
-    /** Activities and other important classes **/
     public boolean canGoBack() {
         return super.getNavigationHistory().canGoBack();
     }
+
+    /** Activities and other important classes **/
+
     private CordovaInterface cordova;
     CordovaWebViewClient viewClient;
     private CordovaChromeClient chromeClient;
