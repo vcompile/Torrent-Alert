@@ -1,13 +1,11 @@
 {
     "dependencies": {
-        "amaranjs": "~0.5.4",
         "core-animated-pages": "polymer/core-animated-pages#~0.5.5",
         "core-drawer-panel": "polymer/core-drawer-panel#~0.5.5",
         "core-header-panel": "polymer/core-header-panel#~0.5.5",
         "core-icons": "polymer/core-icons#~0.5.5",
         "core-localstorage": "polymer/core-localstorage#~0.5.5",
         "core-toolbar": "polymer/core-toolbar#~0.5.5",
-        "fontawesome": "~4.3.0",
         "paper-button": "polymer/paper-button#~0.5.5",
         "paper-dialog": "polymer/paper-dialog#~0.5.5",
         "paper-dropdown": "polymer/paper-dropdown#~0.5.5",
