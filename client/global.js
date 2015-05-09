@@ -39,19 +39,6 @@ render = function(opt) {
     $("#torrentz_db").val(json);
 };
 
-var A, B, C;
-
-toast = function(text, duration, html) {
-
-    if (A != duration || B != html || C != text)
-        $("body").append('<paper-toast duration="' + duration + '" opened text="' + text + '">' + (html ? html : '') + '</paper-toast>');
-
-    A = duration ? duration : null;
-    B = html ? html : null;
-    C = text ? text : null;
-
-};
-
 undo_hidden_callback = function(_id_torrent_out) {
     _id_torrent_out.forEach(function(_id) {
         for (var A = 0; A < torrentz_db.length; A++) {

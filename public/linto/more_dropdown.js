@@ -16,8 +16,10 @@ Polymer("more-dropdown", {
                     requestOfflineToken: true,
                     requestPermissions: ["email", "profile"]
                 }, function(error) {
-                    if (error) toast(Accounts.LoginCancelledError.numericError);
-                    else location.reload();
+                    if (error) {
+                        $("toast-handler").attr("text", Accounts.LoginCancelledError.numericError);
+                        $("toast-handler").attr("undo_hidden_callback_opt", "");
+                    } else location.reload();
                 });
             }
         }
@@ -52,7 +54,8 @@ Polymer("more-dropdown", {
 
         render("update");
 
-        toast(this.store.delete.length + " item removed", 4000, '<div onclick="undo_hidden_callback([\'' + this.store.delete.join("', '") + '\'])" style="color: #FFEB3B;">undo</div>');
+        $("toast-handler").attr("text", this.store.delete.length + " item(s) removed");
+        $("toast-handler").attr("undo_hidden_callback_opt", "['" + this.store.delete.join("', '") + "']");
     },
 
     moreIconTap: function() {

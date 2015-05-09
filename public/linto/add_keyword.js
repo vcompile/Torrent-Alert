@@ -24,12 +24,22 @@ Polymer("add-keyword", {
             this.peers = 100;
 
             Meteor.call("insert_torrent_in", row, function(error, status) {
-                if (error) toast(error.reason);
-                else {
-                    if (status) toast("1 keyword added");
-                    else toast("Quota limit reached");
+                if (error) {
+                    $("toast-handler").attr("text", error.reason);
+                    $("toast-handler").attr("undo_hidden_callback_opt", "");
+                } else {
+                    if (status) {
+                        $("toast-handler").attr("text", "1 keyword added");
+                        $("toast-handler").attr("undo_hidden_callback_opt", "");
+                    } else {
+                        $("toast-handler").attr("text", "Quota limit reached");
+                        $("toast-handler").attr("undo_hidden_callback_opt", "");
+                    }
                 }
             });
-        } else toast("Empty keyword", "");
+        } else {
+            $("toast-handler").attr("text", "Empty keyword");
+            $("toast-handler").attr("undo_hidden_callback_opt", "");
+        }
     }
 });

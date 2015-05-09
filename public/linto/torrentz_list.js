@@ -76,51 +76,6 @@ Polymer("torrentz-list", {
         }) : "{}");
     },
 
-    // downloadItemTrack: function(event, detail, sender) {
-    //     var A = this.swipe - event.clientX;
-
-    //     if (0 < A) $(sender).css("margin-left", (-A) + "px");
-    //     else $(sender).css("margin-right", A + "px");
-    // },
-
-    // downloadItemTrackend: function(event, detail, sender) {
-    //     $(sender).css("margin", 0);
-
-    //     if ((this.width * .25) < this.swipe - event.clientX) {
-    //         $(sender).addClass("hidden");
-
-    //         var _id = $(sender).attr("tag");
-
-    //         for (var A = 0; A < torrentz_db.length; A++) {
-    //             var index = -1;
-
-    //             var item = _.find(torrentz_db[A].torrent_out, function(item) {
-    //                 index++;
-
-    //                 return (_id == item._id);
-    //             });
-
-    //             if (item) {
-    //                 torrentz_db[A].torrent_out[index].listClass = "hidden";
-
-    //                 var count = _.filter(torrentz_db[A].torrent_out, function(item) {
-    //                     return item.listClass == "item";
-    //                 }).length;
-
-    //                 torrentz_db[A].count = (0 < count) ? count : "*";
-
-    //                 toast("1 item removed", 2000, '<div onclick="undo_hidden_callback([\'' + _id + '\'])" style="color: #FFEB3B;">undo</div>');
-
-    //                 break;
-    //             }
-    //         }
-    //     }
-    // },
-
-    // downloadItemTrackstart: function(event, detail, sender) {
-    //     this.swipe = event.clientX;
-    // },
-
     listChanged: function() {
         if (!(this.list instanceof Array))
             this.list = JSON.parse(this.list);
