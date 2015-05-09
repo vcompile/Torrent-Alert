@@ -1,8 +1,5 @@
 Template.layout_linto.helpers({
-    initial_page: 1,
-    meteorStatus: function() {
-        return Meteor.status().connected;
-    }
+    initial_page: 1
 });
 
 Template.layout_linto.rendered = function() {
@@ -217,6 +214,27 @@ Template.layout_linto.rendered = function() {
 
                     break;
                 }
+            }
+        }
+    });
+
+    Meteor.autorun(function() {
+        if (Meteor.status().connected) {
+            $("toast-handler").attr("text", "Server connected");
+            $("toast-handler").attr("undo_hidden_callback_opt", "");
+        } else {
+            switch (Meteor.status().status) {
+
+                case "offline":
+                    $("toast-handler").attr("text", "Server offline");
+                    $("toast-handler").attr("undo_hidden_callback_opt", "");
+                    break;
+
+                case "waiting":
+                    $("toast-handler").attr("text", "Server waiting");
+                    $("toast-handler").attr("undo_hidden_callback_opt", "");
+                    break;
+
             }
         }
     });
