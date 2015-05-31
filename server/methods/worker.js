@@ -47,7 +47,7 @@ Meteor.methods({
                                 url: torrent.url
                             });
 
-                            if (_torrent_out.count() <= 0) {
+                            if (_torrent_out.count() == 0) {
                                 torrent.torrent_in = [row._id];
 
                                 var torrent_out_id = torrent_out.insert(torrent);
