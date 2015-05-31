@@ -11,7 +11,7 @@ Polymer("torrentz-list", {
 
     deleteButtonTap: function(event, detail, sender) {
         $("confirm-delete").attr("store", JSON.stringify([$(sender).attr("tag")]));
-        document.querySelector("confirm-delete /deep/ paper-action-dialog").toggle();
+        document.querySelector("confirm-delete /deep/ paper-action-dialog").open();
     },
 
     domReady: function() {
@@ -53,7 +53,7 @@ Polymer("torrentz-list", {
             $("download-linkz").attr("body", "<div center-justified horizontal layout><paper-spinner active></paper-spinner></div>");
             $("download-linkz").attr("header", $(sender).html());
 
-            document.querySelector("download-linkz /deep/ paper-action-dialog").toggle();
+            document.querySelector("download-linkz /deep/ paper-action-dialog").open();
 
             var body = "";
 

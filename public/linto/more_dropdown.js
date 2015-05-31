@@ -9,7 +9,7 @@ Polymer("more-dropdown", {
 
     addIconTap: function() {
         if (Meteor.user()) {
-            document.querySelector("add-keyword /deep/ paper-action-dialog").toggle();
+            document.querySelector("add-keyword /deep/ paper-action-dialog").open();
         } else {
             if (Accounts.loginServicesConfigured()) {
                 Meteor.loginWithGoogle({
@@ -59,7 +59,7 @@ Polymer("more-dropdown", {
     },
 
     moreIconTap: function() {
-        document.querySelector("more-dropdown /deep/ paper-dropdown").toggle();
+        document.querySelector("more-dropdown /deep/ paper-dropdown").open();
     },
 
     storeChanged: function() {
