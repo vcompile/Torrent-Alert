@@ -15,24 +15,6 @@ torrent_out = new Meteor.Collection("torrent_out");
 torrent_push = new Meteor.Collection("torrent_push");
 torrent_worker = new Meteor.Collection("torrent_worker");
 
-// torrent_in.allow({
-//     insert: specialAccess,
-//     remove: specialAccess,
-//     update: specialAccess
-// });
-
-// torrent_out.allow({
-//     insert: specialAccess,
-//     remove: specialAccess,
-//     update: specialAccess
-// });
-
-// torrent_push.allow({
-//     insert: specialAccess,
-//     remove: specialAccess,
-//     update: specialAccess
-// });
-
 torrent_worker.allow({
     insert: specialAccess,
     remove: specialAccess,

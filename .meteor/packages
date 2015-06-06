@@ -13,6 +13,7 @@ accounts-password
 http
 
 meteorhacks:npm
-npm-container
-
+momentjs:moment
 raix:push
+
+npm-container

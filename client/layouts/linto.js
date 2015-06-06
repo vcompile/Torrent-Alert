@@ -64,53 +64,20 @@ Template.layout_linto.rendered = function() {
     });
 
     function torrentz_db_loop_torrent_out(index) {
-        var count = 0;
-
-        var data = {},
-            keyword = torrentz_db[index].keyword.trim().replace(/\s+/g, " ").toLowerCase();
+        var count = 0,
+            lastEntry = 0;
 
         for (var A = 0; A < torrentz_db[index].torrent_out.length; A++) {
             if (torrentz_db[index].torrent_out[A].listClass == "item") {
-                count++;
+                count += 1;
 
-                var key = torrentz_db[index].torrent_out[A].title.toLowerCase().split(keyword, 1)[0].replace(/20[0-5]{2}/g, "").trim().replace(/\s+/g, " ");
-
-                if (data[key]) {
-                    data[key].count += 1;
-
-                    data[key].group.push({
-                        index: A,
-                        ratio: torrentz_db[index].torrent_out[A].seeds / torrentz_db[index].torrent_out[A].peers,
-                        size: torrentz_db[index].torrent_out[A].size
-                    });
-                } else {
-                    data[key] = {
-                        count: 1,
-                        group: [{
-                            index: A,
-                            ratio: torrentz_db[index].torrent_out[A].seeds / torrentz_db[index].torrent_out[A].peers,
-                            size: torrentz_db[index].torrent_out[A].size
-                        }]
-                    };
-                }
+                var time = parseInt(torrentz_db[index].torrent_out[A].time);
+                if (lastEntry < time) lastEntry = time;
             }
         }
 
         torrentz_db[index].count = (0 < count) ? count : "*";
-
-        _.filter(data, function(item) {
-            return (1 < item.count);
-        }).forEach(function(item) {
-            var ratio = _.sortBy(item.group, "ratio");
-
-            for (var A = 0; A < ratio.length; A++)
-                torrentz_db[index].torrent_out[ratio[A].index].ratio_index = A;
-
-            var size = _.sortBy(item.group, "size");
-
-            for (var A = 0; A < size.length; A++)
-                torrentz_db[index].torrent_out[size[A].index].size_index = A;
-        });
+        if (0 < lastEntry) torrentz_db[index].lastEntry = moment(lastEntry, "X").format("Do MMM YY")
     };
 
     var torrentz_db_queue_torrent_out = [];
@@ -119,11 +86,9 @@ Template.layout_linto.rendered = function() {
         if (torrentz_db_queue_torrent_out.length) {
             torrentz_db_queue_torrent_out = _.uniq(torrentz_db_queue_torrent_out);
 
-            torrentz_db_queue_torrent_out.forEach(function(index) {
-                torrentz_db_loop_torrent_out(index);
-            });
-
-            torrentz_db_queue_torrent_out = [];
+            while (torrentz_db_queue_torrent_out.length) {
+                torrentz_db_loop_torrent_out(torrentz_db_queue_torrent_out.pop());
+            }
 
             render("update");
         }
@@ -211,7 +176,6 @@ Template.layout_linto.rendered = function() {
                 if (item) {
                     torrentz_db[A].torrent_out.splice(index, 1);
                     torrentz_db_queue_torrent_out.push(A);
-
                     break;
                 }
             }

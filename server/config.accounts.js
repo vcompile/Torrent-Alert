@@ -25,22 +25,8 @@ Accounts.config({
     //     var domain = emailId.slice(emailId.lastIndexOf("@") + 1);
     //     return _.contains(domainAllowed, domain);
     // },
-    sendVerificationEmail: true
+    // sendVerificationEmail: true
 });
-
-// Accounts.validateNewUser(function(user) {
-//     var regex = /^[a-zA-Z0-9]+$/;
-//     if (regex.test(user.username) && (user.username).length >= 6) return true;
-//     else throw new Meteor.Error(422, "validateNewUser username");
-// });
-
-// Accounts.validateNewUser(function(user) {
-//     var regex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-//     user.emails.forEach(function(email) {
-//         if (!regex.test(email.address)) throw new Meteor.Error(422, "validateNewUser email");
-//     });
-//     return true;
-// });
 
 Accounts.onCreateUser(function(opts, user) {
     var result = Meteor.http.get("https://www.googleapis.com/oauth2/v3/userinfo", {

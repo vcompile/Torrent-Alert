@@ -25,7 +25,7 @@
     }
     
     html /deep/ .menu-l:hover {
-        background: #FAFAFA;
+        background: #EEE;
     }
     
     html /deep/ .menu-l-divider {
@@ -34,21 +34,29 @@
     
     html /deep/ .menu-l-icon-img {
         background: white;
-        border-radius: 20px;
+        border-radius: 24px;
         height: 32px;
         margin: 4px;
         padding: 4px;
         width: 32px;
     }
     
+    html /deep/ .menu-l-icon-img-square {
+        background: white;
+        height: 32px;
+        margin: 2px;
+        padding: 2px;
+        width: 32px;
+    }
+    
     html /deep/ .menu-l-icon-text {
         border-radius: 20px;
-        font-size: 1.25em;
-        line-height: 32px;
+        font-size: 1.15em;
+        line-height: 28px;
         margin: 4px;
         padding: 4px;
         text-align: center;
-        width: 32px;
+        width: 28px;
     }
     
     html /deep/ .menu-l-description {
@@ -60,7 +68,15 @@
     }
     
     html /deep/ .menu-l-description-small {
-        font-size: .8em;
+        font-size: .75em;
+        margin-bottom: .1em;
+        margin-top: .1em;
+    }
+    
+    html /deep/ .menu-l-title {
+        font-size: 1em;
+        margin-bottom: .1em;
+        margin-top: .1em;
     }
     
     html /deep/ .menu-l-description-badge {
@@ -76,15 +92,8 @@
     }
     </style>
 
-    <core-drawer-panel forceNarrow id="drawer-panel">
-        <style>
-        core-header-panel[drawer] {
-            background-color: #EEE;
-            color: black;
-        }
-        </style>
-
-        <core-header-panel drawer>
+    <core-scaffold>
+        <core-header-panel flex mode="seamed" navigation>
             <div class="menu-l-divider"></div>
 
             {{#if currentUser}}
@@ -96,11 +105,17 @@
             <div class="menu-l-divider"></div>
         </core-header-panel>
 
-        <core-header-panel condenses main>
+        <style>
+        html /deep/ core-header-panel[id="headerPanel"] core-toolbar {
+            display: none;
+        }
+        </style>
+
+        <core-header-panel fit>
             <core-toolbar class="_teal" id="main-toolbar">
-                <paper-icon-button core-drawer-toggle icon="menu"></paper-icon-button>
+                <paper-icon-button icon="arrow-back"></paper-icon-button>
                 <div flex>Torrent Alert</div>
-                <more-dropdown></more-dropdown>
+                <paper-icon-button icon="settings"></paper-icon-button>
             </core-toolbar>
 
             <core-animated-pages fit id="main-body" notap selected="{{initial_page}}" transitions="slide-from-right">
@@ -114,7 +129,7 @@
                 </section>
             </core-animated-pages>
         </core-header-panel>
-    </core-drawer-panel>
+    </core-scaffold>
 
     <add-keyword></add-keyword>
     <download-linkz></download-linkz>

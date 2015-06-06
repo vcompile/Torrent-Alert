@@ -8,10 +8,11 @@
 
                 <div class="menu-l-description" flex layout self-center vertical>
                     <div auto-vertical horizontal justified layout>
-                        <div flex>{{keyword}}</div>
+                        <div class="menu-l-title" flex>{{keyword}}</div>
                         <div class="menu-l-description-badge" self-start>{{count}}</div>
                     </div>
                     <div auto-vertical class="menu-l-description-small">S {{seeds}} / P {{peers}}</div>
+                    <div auto-vertical class="disabled-text menu-l-description-small">lastEntry @ {{lastEntry ? lastEntry : "notFound"}}</div>
                 </div>
             </div>
         </template>

@@ -8,7 +8,7 @@ Meteor.methods({
 
         if (torrent_in.find({
                 user_id: user._id
-            }).count() < 10) {
+            }).count() < 4) {
             var query = _.pick(row, "keyword", "peers", "seeds", "url", "urlPart");
 
             var row = torrent_in.findOne(_.extend(_.clone(query), {
