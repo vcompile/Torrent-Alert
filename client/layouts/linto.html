@@ -92,30 +92,24 @@
     }
     </style>
 
-    <core-scaffold>
-        <core-header-panel flex mode="seamed" navigation>
+    <core-drawer-panel id="drawer-panel" responsiveWidth="768px">
+        <core-header-panel drawer style="background: white;">
             <div class="menu-l-divider"></div>
 
             {{#if currentUser}}
-            <user-menu core-drawer-toggle></user-menu>
+            <user-menu></user-menu>
             <div class="menu-l-divider"></div>
             {{/if}}
 
-            <torrentz-menu core-drawer-toggle></torrentz-menu>
+            <torrentz-menu></torrentz-menu>
             <div class="menu-l-divider"></div>
         </core-header-panel>
 
-        <style>
-        html /deep/ core-header-panel[id="headerPanel"] core-toolbar {
-            display: none;
-        }
-        </style>
-
-        <core-header-panel fit>
+        <core-header-panel main>
             <core-toolbar class="_teal" id="main-toolbar">
-                <paper-icon-button icon="arrow-back"></paper-icon-button>
+                <paper-icon-button icon="menu" id="menu-l-toggle"></paper-icon-button>
                 <div flex>Torrent Alert</div>
-                <paper-icon-button icon="settings"></paper-icon-button>
+                <paper-icon-button icon="settings" id="c-panel-open"></paper-icon-button>
             </core-toolbar>
 
             <core-animated-pages fit id="main-body" notap selected="{{initial_page}}" transitions="slide-from-right">
@@ -129,7 +123,7 @@
                 </section>
             </core-animated-pages>
         </core-header-panel>
-    </core-scaffold>
+    </core-drawer-panel>
 
     <add-keyword></add-keyword>
     <download-linkz></download-linkz>

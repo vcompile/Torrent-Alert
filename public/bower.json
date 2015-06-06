@@ -1,10 +1,10 @@
 {
     "dependencies": {
         "core-animated-pages": "polymer/core-animated-pages#~0.5.5",
+        "core-drawer-panel": "polymer/core-drawer-panel#~0.5.5",
         "core-header-panel": "polymer/core-header-panel#~0.5.5",
         "core-icons": "polymer/core-icons#~0.5.5",
         "core-localstorage": "polymer/core-localstorage#~0.5.5",
-        "core-scaffold": "polymer/core-scaffold#~0.5.5",
         "core-splitter": "polymer/core-splitter#~0.5.5",
         "core-toolbar": "polymer/core-toolbar#~0.5.5",
         "paper-button": "polymer/paper-button#~0.5.5",

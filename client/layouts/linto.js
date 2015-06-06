@@ -204,3 +204,28 @@ Template.layout_linto.rendered = function() {
     });
 
 };
+
+Template.layout_linto.events({
+
+    "click #menu-l-toggle": function(event, target) {
+        if (768 < $("html /deep/ #drawer-panel").width()) document.querySelector("html /deep/ #drawer-panel").forceNarrow = !document.querySelector("html /deep/ #drawer-panel").forceNarrow;
+        else document.querySelector("html /deep/ #drawer-panel").togglePanel();
+    },
+
+    "click #c-panel-open": function(event, target) {
+        if (Meteor.user()) {
+
+        } else {
+            if (Accounts.loginServicesConfigured()) {
+                Meteor.loginWithGoogle({
+                    requestOfflineToken: true,
+                    requestPermissions: ["email", "profile"]
+                }, function(error) {
+                    if (error) toast(Accounts.LoginCancelledError.numericError);
+                    else location.reload();
+                });
+            }
+        }
+    }
+
+});

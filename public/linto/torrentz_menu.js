@@ -23,6 +23,8 @@ Polymer("torrentz-menu", {
 
             $("html /deep/ .menu-l").css("background", "white");
             $(sender).css("background", "#EEE");
+
+            $("html /deep/ #main-toolbar").removeClass().addClass(item.iconClass);
         }
     }
 });
