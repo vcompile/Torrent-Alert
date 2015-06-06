@@ -10,6 +10,7 @@
         "paper-button": "polymer/paper-button#~0.5.5",
         "paper-dialog": "polymer/paper-dialog#~0.5.5",
         "paper-dropdown": "polymer/paper-dropdown#~0.5.5",
+        "paper-fab": "polymer/paper-fab#~0.5.5",
         "paper-icon-button": "polymer/paper-icon-button#~0.5.5",
         "paper-input": "polymer/paper-input#~0.5.5",
         "paper-slider": "polymer/paper-slider#~0.5.5",
