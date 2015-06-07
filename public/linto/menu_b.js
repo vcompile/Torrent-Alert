@@ -1,11 +1,8 @@
-Polymer("more-dropdown", {
+Polymer("menu-b", {
     store: {},
 
     display_add: null,
-    display_more: "none",
-
-    total_keyword: null,
-    selected_torrentz: null,
+    display_delete: "none",
 
     addIconTap: function() {
         if (Meteor.user()) {
@@ -25,7 +22,7 @@ Polymer("more-dropdown", {
         }
     },
 
-    deleteButtonTap: function() {
+    deleteIconTap: function() {
         this.store.delete.forEach(function(_id) {
             for (var A = 0; A < torrentz_db.length; A++) {
                 var index = -1;
@@ -50,7 +47,7 @@ Polymer("more-dropdown", {
         });
 
         this.display_add = null;
-        this.display_more = "none";
+        this.display_delete = "none";
 
         render("update");
 
@@ -58,23 +55,16 @@ Polymer("more-dropdown", {
         $("toast-handler").attr("undo_hidden_callback_opt", "['" + this.store.delete.join("', '") + "']");
     },
 
-    moreIconTap: function() {
-        document.querySelector("more-dropdown /deep/ paper-dropdown").open();
-    },
-
     storeChanged: function() {
         if (!(this.store instanceof Object))
             this.store = JSON.parse(this.store);
 
         if (this.store.delete) {
-            this.total_keyword = torrentz_db.length;
-            this.selected_torrentz = this.store.delete.length;
-
             this.display_add = "none";
-            this.display_more = null;
+            this.display_delete = null;
         } else {
             this.display_add = null;
-            this.display_more = "none";
+            this.display_delete = "none";
         }
     }
 });

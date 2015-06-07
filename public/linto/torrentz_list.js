@@ -71,7 +71,7 @@ Polymer("torrentz-list", {
                 $("download-linkz").attr("body", body);
         }
 
-        $("more-dropdown").attr("store", delete_opt.length ? JSON.stringify({
+        $("menu-b").attr("store", delete_opt.length ? JSON.stringify({
             delete: delete_opt
         }) : "{}");
     },
@@ -80,6 +80,6 @@ Polymer("torrentz-list", {
         if (!(this.list instanceof Array))
             this.list = JSON.parse(this.list);
 
-        $("more-dropdown").attr("store", "{}");
+        $("menu-b").attr("store", "{}");
     }
 });
