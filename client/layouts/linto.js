@@ -214,7 +214,7 @@ Template.layout_linto.events({
 
     "click #c-panel-open": function(event, target) {
         if (Meteor.user()) {
-
+            document.querySelector("c-panel /deep/ paper-action-dialog").open();
         } else {
             if (Accounts.loginServicesConfigured()) {
                 Meteor.loginWithGoogle({
