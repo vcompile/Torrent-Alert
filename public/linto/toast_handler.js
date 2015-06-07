@@ -24,7 +24,7 @@ Polymer("toast-handler", {
         else {
             window.setTimeout(function() {
                 $("html /deep/ menu-b").css("bottom", "14px");
-            }, 2000);
+            }, 400);
         }
     }
 
