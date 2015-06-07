@@ -21,10 +21,14 @@ Polymer("torrentz-menu", {
             $("torrentz-list").attr("list", JSON.stringify([item]));
             $("torrentz-list").attr("tag", JSON.stringify([_id]));
 
-            $("html /deep/ .menu-l").css("background", "white");
-            $(sender).css("background", "#EEE");
+            if ($("html /deep/ #drawer-panel").width() < 768) {
+                document.querySelector("html /deep/ #drawer-panel").togglePanel();
+            }
 
             $("html /deep/ #main-toolbar").removeClass().addClass(item.iconClass);
+
+            $("html /deep/ .menu-l").css("background", "white");
+            $(sender).css("background", "#EEE");
         }
     }
 });

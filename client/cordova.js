@@ -12,6 +12,14 @@ if (Meteor.isCordova) {
     }, false);
 
     function backbutton() {
+        if ($("html /deep/ #drawer-panel").width() < 768) {
+            document.querySelector("html /deep/ #drawer-panel").togglePanel();
+        }
+
+        document.querySelector("add-keyword /deep/ paper-action-dialog").close();
+        document.querySelector("confirm-delete /deep/ paper-action-dialog").close();
+        document.querySelector("download-linkz /deep/ paper-action-dialog").close();
+
         $("confirm-exit").attr("time", moment().format("x"));
     }
 
