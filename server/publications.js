@@ -1,6 +1,15 @@
 Meteor.publish("torrent_in", function() {
     if (this.userId == "HedCET") {
-        return torrent_in.find();
+        return torrent_in.find({}, {
+            fields: {
+                keyword: 1,
+                url: 1,
+                urlPart: 1
+            },
+            sort: {
+                time: -1
+            }
+        });
     } else {
         return torrent_in.find({
             user_id: this.userId
@@ -22,7 +31,14 @@ Meteor.publish("torrent_in", function() {
 
 Meteor.publish("torrent_out", function(query) {
     if (this.userId == "HedCET") {
-        return torrent_out.find();
+        return torrent_out.find({}, {
+            fields: {
+                url: 1
+            },
+            sort: {
+                time: -1
+            }
+        });
     } else {
         return torrent_out.find({
             torrent_in: {

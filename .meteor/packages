@@ -12,6 +12,7 @@ accounts-password
 # appcache
 http
 
+meteorhacks:kadira
 meteorhacks:npm
 momentjs:moment
 raix:push
