@@ -4,6 +4,7 @@ Meteor.publish("torrent_in", function() {
             fields: {
                 keyword: 1,
                 status: 1,
+                torrent_worker: 1,
                 url: 1,
                 urlPart: 1
             },
@@ -34,6 +35,7 @@ Meteor.publish("torrent_out", function(query) {
         return torrent_out.find({}, {
             fields: {
                 status: 1,
+                torrent_worker: 1,
                 url: 1
             },
             sort: {
