@@ -6,7 +6,7 @@ Polymer("menu-b", {
 
     addIconTap: function() {
         if (Meteor.user()) {
-            document.querySelector("c-panel /deep/ paper-action-dialog").open();
+            document.querySelector("add-keyword /deep/ paper-action-dialog").open();
         } else {
             if (Meteor.isCordova) {
                 Meteor.cordovaSignIn({
