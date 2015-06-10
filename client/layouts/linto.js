@@ -216,14 +216,20 @@ Template.layout_linto.events({
         if (Meteor.user()) {
             document.querySelector("c-panel /deep/ paper-action-dialog").open();
         } else {
-            if (Accounts.loginServicesConfigured()) {
-                Meteor.loginWithGoogle({
-                    requestOfflineToken: true,
-                    requestPermissions: ["email", "profile"]
-                }, function(error) {
-                    if (error) toast(Accounts.LoginCancelledError.numericError);
-                    else location.reload();
+            if (Meteor.isCordova) {
+                Meteor.cordova_g_plus({
+                    cordova_g_plus: true
                 });
+            } else {
+                if (Accounts.loginServicesConfigured()) {
+                    Meteor.loginWithGoogle({
+                        requestOfflineToken: true,
+                        requestPermissions: ["email", "profile"]
+                    }, function(error) {
+                        if (error) toast(Accounts.LoginCancelledError.numericError);
+                        else location.reload();
+                    });
+                }
             }
         }
     }
