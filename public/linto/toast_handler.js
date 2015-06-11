@@ -20,12 +20,8 @@ Polymer("toast-handler", {
     },
 
     on_core_overlay_open: function(event, opened, sender) {
-        if (opened) $("html /deep/ menu-b").css("bottom", "62px");
-        else {
-            window.setTimeout(function() {
-                $("html /deep/ menu-b").css("bottom", "14px");
-            }, 400);
-        }
+        if (opened) $("html /deep/ #menu_bottom").addClass("move-up");
+        else $("html /deep/ #menu_bottom").removeClass("move-up");
     }
 
 });

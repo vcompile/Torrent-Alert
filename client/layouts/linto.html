@@ -138,7 +138,24 @@
 
     <c-panel></c-panel>
 
-    <menu-b style="bottom: 14px; position: fixed; right: 14px;"></menu-b>
+    <style>
+    html /deep/ #menu_bottom {
+        bottom: 14px;
+        position: fixed;
+        right: 14px;
+        will-change: transform;
+        /* menu-b transform */
+        
+        -webkit-transition: -webkit-transform 0.2s ease-in-out;
+        transition: transform 0.2s ease-in-out;
+    }
+    
+    html /deep/ #menu_bottom.move-up {
+        transform: translate3d(0, -62px, 0);
+    }
+    </style>>
+
+    <menu-b id="menu_bottom"></menu-b>
 
     <add-keyword></add-keyword>
     <download-linkz></download-linkz>

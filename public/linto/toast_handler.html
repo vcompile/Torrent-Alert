@@ -1,6 +1,6 @@
 <polymer-element attributes="text,undo_hidden_callback_opt" name="toast-handler">
     <template>
-        <paper-toast duration="8000" id="toast" on-core-overlay-open="{{on_core_overlay_open}}" text="{{text}}">
+        <paper-toast duration="8000" id="toast" on-core-overlay-open="{{on_core_overlay_open}}" swipeDisabled text="{{text}}">
             <div onclick="undo_hidden_callback({{undo_hidden_callback_opt}})" style="color: #FFEB3B; display: {{undo_hidden_display}};">undo</div>
         </paper-toast>
     </template>
