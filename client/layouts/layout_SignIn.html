@@ -1,7 +1,5 @@
 <template name="layout_signIn">
 
-    <link href='http://fonts.googleapis.com/css?family=Exo:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
-
     <style>
     html,
     body {
@@ -21,24 +19,16 @@
     }
     </style>
 
-    <div class="_teal" fit layout style="font-family: Exo;" vertical>
-        <div center-justified flex horizontal layout>
-            <div flex layout style="max-width: 512px;" vertical>
-                <div flex></div>
-                <div center-justified horizontal layout>
-                    <div style="border-bottom: 2px solid white; font-size: 28px; padding: 16px; text-align: center;">TORRENTZ ALERT</div>
+    <div center-justified fit horizontal layout>
+        <div flex layout style="max-width: 512px;" vertical>
+            <div flex></div>
+            <div center-justified horizontal layout>
+                <div self-center style="color: #888;">SignIn&nbsp;with&nbsp;&nbsp;</div>
+                <div id="google-plus" self-center>
+                    <img src="/img/googlePlus.png" style="cursor: pointer;">
                 </div>
-                <div center-justified horizontal layout>
-                    <div style="padding: 16px; text-align: center;">Torrentz Keyword Watcher &amp; Alerter</div>
-                </div>
-                <div flex></div>
             </div>
-        </div>
-        <div end-justified horizontal layout style="padding: 16px;">
-            <div self-center>SignIn&nbsp;with&nbsp;&nbsp;</div>
-            <div id="google-plus" self-center>
-                <img src="/img/googlePlus.png" style="cursor: pointer;">
-            </div>
+            <div flex></div>
         </div>
     </div>
 
