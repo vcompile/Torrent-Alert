@@ -12,7 +12,7 @@ Template.layout_signIn.events({
                     requestPermissions: ["email", "profile"]
                 }, function(error) {
                     if (error) toast(Accounts.LoginCancelledError.numericError);
-                    else location.reload();
+                    // else location.reload();
                 });
             }
         }

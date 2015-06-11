@@ -19,7 +19,7 @@ Polymer("menu-b", {
                         requestPermissions: ["email", "profile"]
                     }, function(error) {
                         if (error) toast(Accounts.LoginCancelledError.numericError);
-                        else location.reload();
+                        // else location.reload();
                     });
                 }
             }
