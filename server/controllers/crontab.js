@@ -20,5 +20,17 @@ Meteor.setInterval(function() {
             });
         });
 
+        torrent_out.find({
+            status: {
+                $eq: "OK"
+            },
+        }).forEach(function(row) {
+            if (Math.floor(moment.duration(moment().diff(moment(row.time, "X"))).asMonths()) > 4) {
+                torrent_out.remove({
+                    _id: row._id
+                });
+            }
+        });
+
     }).run();
 }, 1000 * 60 * 60 * 6);

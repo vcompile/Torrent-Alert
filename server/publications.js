@@ -68,5 +68,7 @@ Meteor.publish("torrent_out", function(query) {
 });
 
 Meteor.publish("torrent_worker", function(query) {
-    if (this.userId == "HedCET") return torrent_worker.find();
+    if (this.userId == "HedCET") {
+        return torrent_worker.find();
+    }
 });

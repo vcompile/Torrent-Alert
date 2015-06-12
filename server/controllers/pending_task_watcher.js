@@ -10,7 +10,7 @@ Meteor.setInterval(function() {
                 $ne: "OK"
             }
         }).forEach(function(row) {
-            if (Math.floor(moment.duration(moment().diff(moment(row.status))).asMinutes()) > 5) {
+            if (Math.floor(moment.duration(moment().diff(moment(row.status))).asMinutes()) > 4) {
                 torrent_worker.update({
                     _id: row.torrent_worker
                 }, {
@@ -35,7 +35,7 @@ Meteor.setInterval(function() {
                 $ne: "OK"
             }
         }).forEach(function(row) {
-            if (Math.floor(moment.duration(moment().diff(moment(row.status))).asMinutes()) > 5) {
+            if (Math.floor(moment.duration(moment().diff(moment(row.status))).asMinutes()) > 4) {
                 torrent_worker.update({
                     _id: row.torrent_worker
                 }, {
