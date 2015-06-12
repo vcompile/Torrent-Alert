@@ -29,7 +29,7 @@
           "version": "1.1.1"
         },
         "htmlparser2": {
-          "version": "3.8.2",
+          "version": "3.8.3",
           "dependencies": {
             "domhandler": {
               "version": "2.3.0"
@@ -71,7 +71,7 @@
           }
         },
         "lodash": {
-          "version": "3.6.0"
+          "version": "3.9.3"
         }
       }
     }
