@@ -87,7 +87,7 @@ Accounts.registerLoginHandler(function(req) {
                         })
                     }
                 });
-            } else throw "AccessToken MISMATCH";
+            } else throw new Meteor.Error(422, "AccessToken MISMATCH");
         }
     } else userId = user._id;
 

@@ -5,3 +5,5 @@ fibers = Npm.require("fibers");
 //         return true;
 //     }
 // });
+
+crontab_time = ["03:15", "15:15"];
