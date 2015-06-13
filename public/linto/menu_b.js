@@ -50,8 +50,6 @@ Polymer("menu-b", {
             }
         });
 
-        this.store = {};
-
         this.display_add = null;
         this.display_delete = "none";
 
@@ -59,6 +57,8 @@ Polymer("menu-b", {
 
         $("toast-handler").attr("text", this.store.delete.length + " item(s) removed");
         $("toast-handler").attr("undo_hidden_callback_opt", "['" + this.store.delete.join("', '") + "']");
+
+        this.store = {};
     },
 
     storeChanged: function() {
