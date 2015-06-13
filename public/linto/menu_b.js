@@ -50,6 +50,8 @@ Polymer("menu-b", {
             }
         });
 
+        this.store = {};
+
         this.display_add = null;
         this.display_delete = "none";
 
