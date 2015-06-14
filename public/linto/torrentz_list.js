@@ -5,7 +5,7 @@ Polymer("torrentz-list", {
         right: 8
     },
     selected: {},
-    // swipe: 0,
+    selected_delete: null,
     width: 512,
     year: moment().format("YYYY"),
 
@@ -81,5 +81,9 @@ Polymer("torrentz-list", {
             this.list = JSON.parse(this.list);
 
         $("menu-b").attr("store", "{}");
+    },
+
+    selected_returnChanged: function() {
+        this.selected = {};
     }
 });

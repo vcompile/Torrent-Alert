@@ -58,7 +58,7 @@ Polymer("menu-b", {
         $("toast-handler").attr("text", this.store.delete.length + " item(s) removed");
         $("toast-handler").attr("undo_hidden_callback_opt", "['" + this.store.delete.join("', '") + "']");
 
-        this.store = {};
+        $("torrentz-list").attr("selected_return", moment().format());
     },
 
     storeChanged: function() {
