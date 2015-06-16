@@ -10,8 +10,9 @@ Polymer("confirm-exit", {
     },
 
     timeChanged: function() {
-        if (this.time - this.time_store < 2000)
+        if ((parseInt(this.time) - parseInt(this.time_store)) < 2000) {
             document.querySelector("confirm-exit /deep/ paper-action-dialog").open();
+        }
 
         this.time_store = moment().format("x");
     }

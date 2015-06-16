@@ -18,8 +18,10 @@ Polymer("menu-b", {
                         requestOfflineToken: true,
                         requestPermissions: ["email", "profile"]
                     }, function(error) {
-                        if (error) toast(Accounts.LoginCancelledError.numericError);
-                        // else location.reload();
+                        if (error) {
+                            $("toast-handler").attr("text", Accounts.LoginCancelledError.numericError);
+                            $("toast-handler").attr("undo_hidden_callback_opt", "");
+                        } // else location.reload();
                     });
                 }
             }
