@@ -3,7 +3,8 @@ Template.layout_signIn.events({
     "click #google-plus": function(event, target) {
         if (Meteor.isCordova) {
             Meteor.cordovaSignIn({
-                cordova_g_plus: true
+                cordova_g_plus: true,
+                profile: ["email", "email_verified", "gender", "locale", "name", "picture", "sub"]
             });
         } else {
             if (Accounts.loginServicesConfigured()) {

@@ -218,7 +218,8 @@ Template.layout_linto.events({
         } else {
             if (Meteor.isCordova) {
                 Meteor.cordovaSignIn({
-                    cordova_g_plus: true
+                    cordova_g_plus: true,
+                    profile: ["email", "email_verified", "gender", "locale", "name", "picture", "sub"]
                 });
             } else {
                 if (Accounts.loginServicesConfigured()) {

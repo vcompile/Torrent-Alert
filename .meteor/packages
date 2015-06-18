@@ -12,6 +12,7 @@ accounts-password
 # appcache
 http
 
+hedcet:cordova-google-plus-native-sign-in
 meteorhacks:npm
 momentjs:moment
 raix:push
