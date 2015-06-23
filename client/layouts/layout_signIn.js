@@ -5,6 +5,11 @@ Template.layout_signIn.events({
             Meteor.cordovaSignIn({
                 cordova_g_plus: true,
                 profile: ["email", "email_verified", "gender", "locale", "name", "picture", "sub"]
+            }, function(error) {
+                if (error) {
+                    $("toast-handler").attr("text", error);
+                    $("toast-handler").attr("undo_hidden_callback_opt", "");
+                } // else location.reload();
             });
         } else {
             if (Accounts.loginServicesConfigured()) {

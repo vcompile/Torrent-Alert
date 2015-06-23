@@ -15,6 +15,7 @@ Polymer("torrentz-list", {
     },
 
     domReady: function() {
+        this.list.push({keyword: "12345"});
         if (512 < window.innerWidth) this.width = 512;
         else this.width = window.innerWidth - this.margin.left - this.margin.right;
     },
