@@ -1,11 +1,12 @@
 {
     "dependencies": {
         "core-animated-pages": "polymer/core-animated-pages#~0.5.5",
+        "core-collapse": "polymer/core-collapse#~0.5.5",
         "core-drawer-panel": "polymer/core-drawer-panel#~0.5.5",
         "core-header-panel": "polymer/core-header-panel#~0.5.5",
         "core-icons": "polymer/core-icons#~0.5.5",
         "core-localstorage": "polymer/core-localstorage#~0.5.5",
-        "core-splitter": "polymer/core-splitter#~0.5.5",
+        "core-selector": "polymer/core-selector#~0.5.5",
         "core-toolbar": "polymer/core-toolbar#~0.5.5",
         "paper-button": "polymer/paper-button#~0.5.5",
         "paper-dialog": "polymer/paper-dialog#~0.5.5",
@@ -19,5 +20,5 @@
         "polymer": "Polymer/polymer#~0.5.5"
     },
     "name": "HedCET",
-    "version": "15.5.10"
+    "version": "15.7.5"
 }

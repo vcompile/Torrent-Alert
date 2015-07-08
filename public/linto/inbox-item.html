@@ -1,0 +1,125 @@
+<polymer-element attributes="item itemWidth selected undo" name="inbox-item">
+    <template>
+        <style>
+        .li {
+            padding: 8px;
+            width: {{itemWidth}}px;
+        }
+        
+        .li.hidden {
+            display: none !important;
+        }
+        
+        .li.item {
+            background: white;
+            border-bottom: 4px solid #EEE;
+            cursor: pointer;
+        }
+        
+        .padding-4 {
+            padding: 4px;
+        }
+        
+        .title {
+            font-size: 1em;
+            margin-bottom: .1em;
+            margin-top: .1em;
+        }
+        
+        .overflow-hidden {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .badge {
+            background: #EEE;
+            border-radius: 5px 0 0 5px;
+            font-size: 10px;
+            font-weight: bold;
+            margin-left: 5px;
+            margin-right: -12px;
+            padding: 3px 5px;
+        }
+
+        .description {
+            font-size: .75em;
+            margin-bottom: .1em;
+            margin-top: .1em;
+        }
+        </style>
+
+        <div center-justified horizontal layout on-holdpulse="{{inboxItemHold}}" on-tap="{{inboxItemTap}}" tag="{{_id}}">
+            <div class="li item" horizontal justified layout>
+                <div class="padding-4" self-start>
+                    <selectable-icon iconClass="{{item.icon.class}}" iconText="{{item.icon.text}}" id="selectableIcon" selected?="{{selected}}" tag="{{_id}}"></selectable-icon>
+                </div>
+                <div class="padding-4 uppercase" flex layout vertical>
+                    <div auto-vertical horizontal justified layout>
+                        <div class="title overflow-hidden" flex style="width: 32px !important;">{{item.p_no}}{{item.kc ? " / " + item.kc : ""}}</div>
+                        <div class="badge" self-start>{{item.priority}}</div>
+                    </div>
+                    <div auto-vertical class="description disabled-text">{{item.status}}</div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script>
+    Polymer("inbox-item", {
+
+        holding: false,
+        item: {},
+        itemWidth: 512,
+
+        inboxItemHold: function(event, detail, sender) {
+            if (this.holding || event.target == this.$.selectableIcon) {
+                return;
+            }
+
+            this.selected = !this.selected;
+            this.$.selectableIcon.fire("tap");
+
+            this.holding = true;
+
+            var _this = this;
+
+            window.setTimeout(function() {
+                _this.holding = false;
+            }, 800);
+        },
+
+        inboxItemTap: function(event, detail, sender) {
+            if (event.target != this.$.selectableIcon) {
+                event.stopPropagation();
+            }
+        },
+
+        itemChanged: function() {
+            if (!(this.item instanceof Object)) {
+                this.item = JSON.parse(this.item);
+            }
+
+            // console.log(this.item);
+        },
+
+        itemWidthChanged: function() {
+            this.itemWidth = parseInt(this.itemWidth);
+
+            // console.log(this.itemWidth);
+        },
+
+        publish: {
+            selected: {
+                reflect: true,
+                value: false
+            },
+            undo: {
+                reflect: true,
+                value: false
+            }
+        }
+
+    });
+    </script>
+</polymer-element>

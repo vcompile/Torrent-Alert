@@ -1,0 +1,376 @@
+<polymer-element attributes="list" name="inbox-list">
+    <template>
+        <style>
+        core-drawer-panel /deep/ #drawer,
+        core-drawer-panel /deep/ #main #scrim {
+            z-index: 1;
+        }
+        
+        core-toolbar > .selection-allow {
+            margin: 0;
+            padding: 0;
+            transform: rotateX(90deg);
+            transition: transform 400ms ease-in-out;
+            visibility: hidden;
+            width: 0;
+            will-change: transform;
+        }
+        
+        core-toolbar > .selection-deny {
+            margin: 0;
+        }
+        
+        core-toolbar > paper-icon-button[icon="arrow-back"] {
+            transform: translateX(-42px) rotateX(0);
+        }
+        
+        core-toolbar.selection > .selection-allow {
+            padding: 8px;
+            transform: rotateX(0);
+            visibility: visible;
+            width: auto;
+        }
+        
+        core-toolbar.selection > .selection-deny {
+            display: none;
+        }
+        
+        core-toolbar.selection > paper-icon-button[icon="arrow-back"] {
+            transform: translateX(0) rotateX(0);
+        }
+        
+        #refresh {
+            opacity: 0;
+            pointer-events: none;
+            position: absolute;
+            will-change: opacity, transform;
+            z-index: 1;
+        }
+        
+        #refresh > div {
+            background: white;
+            border-radius: 50%;
+            height: 22px;
+            padding: 8px;
+            width: 22px;
+        }
+        
+        #refresh paper-spinner {
+            height: 100%;
+            width: 100%;
+        }
+        
+        #refresh.reset {
+            opacity: 0 !important;
+            -webkit-transform: translate3d(0, 0, 0) !important;
+            transform: translate3d(0, 0, 0) !important;
+        }
+        
+        .divider {
+            padding: 8px;
+            /*width: {{width}}px;*/
+        }
+        
+        .input-text {
+            background: transparent;
+            border: none;
+            font-size: 16px;
+            outline: none;
+        }
+        
+        .menu-b {
+            bottom: 14px;
+            position: fixed;
+            right: 14px;
+            -webkit-transition: -webkit-transform 0.2s ease-in-out;
+            transition: transform 0.2s ease-in-out;
+            will-change: transform;
+        }
+        
+        .menu-b.move-up {
+            transform: translate3d(0, -48px, 0);
+        }
+        /* menu-l */
+        
+        .menu-l {
+            cursor: pointer;
+            padding: 8px;
+        }
+        
+        .menu-l:hover {
+            background: #EEE;
+        }
+        
+        .padding-4 {
+            padding: 4px;
+        }
+        
+        .title {
+            font-size: 1em;
+            margin-bottom: .1em;
+            margin-top: .1em;
+        }
+        
+        .overflow-hidden {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .badge {
+            background: #EEE;
+            border-radius: 50%;
+            font-size: 10px;
+            font-weight: bold;
+            margin: 0 0 0 5px;
+            padding: 3px 5px;
+        }
+        
+        .description {
+            font-size: .75em;
+            margin-bottom: .1em;
+            margin-top: .1em;
+        }
+        </style>
+
+        <core-drawer-panel forceNarrow?="{{forceNarrow}}" id="drawerPanel" responsiveWidth="768px">
+            <core-header-panel drawer style="background: white;">
+
+                <div class="divider"></div>
+
+                <div class="menu-l" horizontal justified layout>
+                    <div class="padding-4" self-start>
+                        <selectable-icon iconImgSrc="{{profile.picture ? profile.picture : '/img/user.png'}}"></selectable-icon>
+                    </div>
+                    <div class="padding-4" flex layout vertical>
+                        <div auto-vertical horizontal justified layout>
+                            <div class="title overflow-hidden capitalize" flex style="width: 32px !important;">{{profile.name}}</div>
+                            <div class="badge" self-start>1</div>
+                        </div>
+                        <div auto-vertical class="description disabled-text">{{profile.email}}</div>
+                    </div>
+                </div>
+
+                <div class="menu-l" horizontal justified layout>
+                    <div class="padding-4" self-start>
+                        <selectable-icon iconClass="_blue" iconText="B"></selectable-icon>
+                    </div>
+                    <div class="padding-4" flex layout vertical>
+                        <div auto-vertical horizontal justified layout>
+                            <div class="title overflow-hidden capitalize" flex style="width: 32px !important;">Budget</div>
+                            <div class="badge" self-start>2</div>
+                        </div>
+                        <div auto-vertical class="description disabled-text">lastEntry: Jul 1st Wed</div>
+                    </div>
+                </div>
+
+                <div class="menu-l" horizontal justified layout>
+                    <div class="padding-4" self-start>
+                        <selectable-icon iconClass="_orange" iconText="G"></selectable-icon>
+                    </div>
+                    <div class="padding-4" flex layout vertical>
+                        <div auto-vertical horizontal justified layout>
+                            <div class="title overflow-hidden capitalize" flex style="width: 32px !important;">Trend Graph</div>
+                            <div class="badge" self-start>4</div>
+                        </div>
+                        <div auto-vertical class="description disabled-text">lastEntry: Jul 1st Wed</div>
+                    </div>
+                </div>
+
+                <div class="menu-l" horizontal justified layout>
+                    <div class="padding-4" self-start>
+                        <selectable-icon iconClass="_cyan" iconText="W"></selectable-icon>
+                    </div>
+                    <div class="padding-4" flex layout vertical>
+                        <div auto-vertical horizontal justified layout>
+                            <div class="title overflow-hidden capitalize" flex style="width: 32px !important;">IFW Watcher</div>
+                            <div class="badge" self-start>8</div>
+                        </div>
+                        <div auto-vertical class="description disabled-text">lastEntry: Jul 1st Wed</div>
+                    </div>
+                </div>
+
+            </core-header-panel>
+
+            <core-header-panel id="main" main on-trackend="{{refresh_trackend}}" on-trackstart="{{refresh_trackstart}}" on-tracky="{{refresh_tracky}}">
+                <core-toolbar class="_teal {{ {'_grey': inboxListSelected.length, 'selection': inboxListSelected.length} | tokenList }}">
+                    <paper-icon-button class="selection-allow" icon="arrow-back" on-tap="{{deSelectAll}}"></paper-icon-button>
+                    <paper-icon-button class="selection-deny" icon="menu" on-tap="{{forceNarrowTap}}"></paper-icon-button>
+                    <div flex>{{inboxListSelected.length ? inboxListSelected.length : title}}</div>
+                    <paper-icon-button class="selection-allow" icon="delete"></paper-icon-button>
+                    <paper-icon-button class="selection-allow" icon="mail"></paper-icon-button>
+                    <paper-icon-button class="selection-allow" icon="more-vert"></paper-icon-button>
+                    <paper-icon-button class="selection-deny" icon="search" on-tap="{{searchBarToggle}}"></paper-icon-button>
+                    <div center-center class="bottom fit" horizontal id="refresh" layout>
+                        <div class="paper-shadow-bottom-z-1">
+                            <paper-spinner active id="refresh_spinner"></paper-spinner>
+                        </div>
+                    </div>
+                </core-toolbar>
+                <core-animated-pages fit notap selected="{{page}}" transitions="slide-from-right">
+                    <section>
+                        <div center-justified fit horizontal layout>
+                            <div class="disabled-text" self-center>Empty ..</div>
+                        </div>
+                    </section>
+                    <section touch-action="pan-x pan-y">
+                        <core-selector multi excludedLocalNames="div" selected="{{inboxListSelected}}" selectedAttribute="selected">
+                            <template repeat="{{list}}">
+                                <div center-justified horizontal layout tag="{{_id}}">
+                                    <div class="divider" horizontal justified layout>
+                                        <input class="input-text" flex tag="{{_id}}" type="text" value="{{text}}">
+                                        <div self-start>
+                                            <paper-icon-button icon="settings" on-tap="{{controlPanelTap}}" tag="{{_id}}"></paper-icon-button>
+                                            <paper-icon-button icon="close" on-tap="{{deleteAllTap}}" tag="{{_id}}"></paper-icon-button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <template repeat="{{item in list}}">
+                                    <inbox-item item="{{item}}" itemWidth="{{width}}"></inbox-item>
+                                </template>
+                            </template>
+                        </core-selector>
+                        <div horizontal layout style="padding: 42px;"></div>
+                    </section>
+                </core-animated-pages>
+            </core-header-panel>
+        </core-drawer-panel>
+
+        <file-input class="menu-b" extensions='["csv"]' hidden?="{{inboxListSelected.length && page == 1}}" id="csvInput" maxSize="8000000">
+            <paper-fab icon="add"></paper-fab>
+        </file-input>
+        <paper-toast duration="4000" id="toast" on-core-overlay-open="{{on_core_overlay_open}}" opened="{{toastOpened}}" swipeDisabled text="{{toastText}}">
+            <div hidden?="{{!inboxListSelected.length}}" on-tap="{{undoButtonTap}}" style="color: #FFEB3B;">undo</div>
+        </paper-toast>
+        <search-bar id="search"></search-bar>
+    </template>
+
+    <script>
+    Polymer("inbox-list", {
+
+        forceNarrow: false,
+        inboxListSelected: [],
+        list: [],
+        margin: {
+            left: 8,
+            right: 8
+        },
+        page: 1,
+        profile: {
+            email: "user@host",
+            name: "user",
+            picture: "/img/user.png"
+        },
+        refresh: false,
+        refresh_max_y: 80,
+        title: "USPTO Alert",
+        toastOpened: false,
+        toastText: "",
+        width: 512,
+
+        deSelectAll: function(event, detail, sender) {
+            this.inboxListSelected = [];
+        },
+
+        domReady: function() {
+            if (512 < window.innerWidth) {
+                this.width = 512;
+            } else {
+                this.width = window.innerWidth - this.margin.left - this.margin.right;
+            }
+
+            if (Meteor.user().profile) {
+                this.profile = Meteor.user().profile;
+            }
+
+            var _this = this;
+
+            Meteor.autorun(function() {
+                _this.toastOpened = false;
+
+                if (Meteor.status().connected) {
+                    window.setTimeout(function() {
+                        _this.toastText = "Server connected";
+                        _this.toastOpened = true;
+                    }, 400);
+                } else {
+                    window.setTimeout(function() {
+                        _this.toastText = "Lost server connection";
+                        _this.toastOpened = true;
+                    }, 400);
+                }
+            });
+
+            $("html /deep/ .input-text").change(function() {
+                console.log($(this).attr("tag"), $(this).val());
+            });
+
+            _this.$.csvInput.addEventListener("change", function(event) {
+                console.log(event.detail.valid, event.detail.invalid);
+            });
+        },
+
+        forceNarrowTap: function() {
+            if (768 < $(this.$.drawerPanel).width()) {
+                this.forceNarrow = !this.forceNarrow;
+            } else {
+                this.$.drawerPanel.togglePanel();
+            }
+        },
+
+        headerChange: function(event, detail, sender) {
+            console.log($(sender).val());
+        },
+
+        listChanged: function() {
+            if (!(this.list instanceof Array)) {
+                this.list = JSON.parse(this.list);
+            }
+
+            // console.log(this.list);
+        },
+
+        on_core_overlay_open: function(event, opened, sender) {
+            if (opened) {
+                $("html /deep/ .menu-b").addClass("move-up");
+            } else {
+                $("html /deep/ .menu-b").removeClass("move-up");
+            }
+        },
+
+        refresh_trackend: function(event, detail, sender) {
+            if (80 <= event.dy) {
+                this.refresh = true;
+
+                var _this = this;
+
+                window.setTimeout(function() {
+                    _this.refresh = false;
+                    _this.$.refresh.classList.add("reset");
+                }, 4000);
+            } else {
+                this.refresh = false;
+                this.$.refresh.classList.add("reset");
+            }
+        },
+
+        refresh_trackstart: function(event, detail, sender) {
+            // if (this.$.main.scroller.scrollTop == 0 && 0 < event.yDirection) {
+            this.$.refresh.classList.remove("reset");
+            // }
+        },
+
+        refresh_tracky: function(event, detail, sender) {
+            if (!this.refresh) {
+                this.$.refresh.style.opacity = Math.min(1, 1 - ((this.refresh_max_y - event.dy) / this.refresh_max_y));
+                this.$.refresh.style.transform = this.$.refresh.style.webkitTransform = "translate3d(0, " + Math.min(event.dy, this.refresh_max_y) + "px, 0)";
+            }
+        },
+
+        searchBarToggle: function() {
+            this.$.search.toggle();
+        }
+
+    });
+    </script>
+</polymer-element>
