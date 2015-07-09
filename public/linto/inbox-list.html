@@ -194,7 +194,7 @@
                                     <div class="divider" horizontal justified layout>
                                         <input class="input-text" disabled flex tag="{{_id}}" type="text" value="{{keyword}}">
                                         <div self-start>
-                                            <paper-icon-button icon="close" on-tap="{{deleteAllTap}}" tag="{{_id}}"></paper-icon-button>
+                                            <paper-icon-button icon="close" on-tap="{{deleteKeywordIconTap}}" tag="{{_id}}"></paper-icon-button>
                                         </div>
                                     </div>
                                 </div>
@@ -211,7 +211,7 @@
 
         <paper-fab class="menu-b" hidden?="{{inboxListSelected.length && (page == 0 || page == 1)}}" icon="add" on-tap="{{addKeywordFabTap}}"></paper-fab>
 
-        <paper-toast duration="4000" id="toast" on-core-overlay-open="{{on_core_overlay_open}}" opened="{{toastOpened}}" swipeDisabled text="{{toastText}}">
+        <paper-toast duration="4000" id="toast" on-core-overlay-open="{{on_core_overlay_open}}" opened="{{toastOpened}}" text="{{toastText}}">
             <div hidden?="{{!inboxListSelected.length}}" on-tap="{{undoButtonTap}}" style="color: #FFEB3B;">undo</div>
         </paper-toast>
 
@@ -219,6 +219,7 @@
             <div layout vertical>
                 <div layout style="padding: 24px;" vertical>
                     <div style="border-bottom: 2px solid #888; padding: 4px 0;">add new keyword</div>
+                    <div style="padding: 4px;"></div>
                     <paper-input autoFocus label="keyword" value="{{keyword}}"></paper-input>
                     <div center horizontal justified layout>
                         <div>min peer count</div>
@@ -241,6 +242,20 @@
             </div>
         </paper-dialog>
 
+        <paper-dialog autoCloseDisabled backdrop opened="{{deleteKeywordOpened}}" transition="core-transition-bottom">
+            <div layout vertical>
+                <div style="padding: 24px;">Are you sure to delete this item ?</div>
+                <div horizontal layout reverse style="background: #EEE; padding: 12px;">
+                    <paper-button core-overlay-toggle on-tap="{{deleteKeywordButtonTap}}">
+                        <core-icon icon="check"></core-icon>&nbsp;&nbsp;Ok
+                    </paper-button>
+                    <paper-button core-overlay-toggle>
+                        <core-icon icon="clear"></core-icon>&nbsp;&nbsp;Cancel
+                    </paper-button>
+                </div>
+            </div>
+        </paper-dialog>
+
         <search-bar id="search"></search-bar>
 
     </template>
@@ -249,6 +264,8 @@
     Polymer("inbox-list", {
 
         addKeywordOpened: false,
+        deleteKeywordID: "",
+        deleteKeywordOpened: false,
         forceNarrow: false,
         inboxListSelected: [],
         keyword: "",
@@ -269,14 +286,97 @@
         width: 512,
 
         addKeywordButtonTap: function() {
-            console.log(this.keyword);
+            this.keyword = decodeURIComponent(this.keyword).trim();
+
+            var _this = this,
+                keywordArray = _this.keyword.replace("/", "").split(/\?[fq]=/g);
+
+            _this.toastOpened = false;
+
+            if (_this.keyword.length) {
+                var row = {
+                    keyword: (1 < keywordArray.length) ? keywordArray[1] : keywordArray[0],
+                    peers: _this.peers,
+                    seeds: _this.seeds,
+                    url: "http://torrentz.in",
+                    urlPart: (1 < keywordArray.length) ? keywordArray[0] : "search"
+                };
+
+                _this.keyword = "";
+
+                _this.seeds = 10;
+                _this.peers = 100;
+
+                Meteor.call("insert_torrent_in", row, function(error, status) {
+                    if (error) {
+                        window.setTimeout(function() {
+                            _this.toastText = error.reason;
+                            _this.toastOpened = true;
+                        }, 400);
+                    } else {
+                        if (status) {
+                            window.setTimeout(function() {
+                                _this.toastText = "1 keyword added";
+                                _this.toastOpened = true;
+                            }, 400);
+                        } else {
+                            window.setTimeout(function() {
+                                _this.toastText = "quota limit reached";
+                                _this.toastOpened = true;
+                            }, 400);
+                        }
+                    }
+                });
+            } else {
+                window.setTimeout(function() {
+                    _this.toastText = "empty keyword";
+                    _this.toastOpened = true;
+                }, 400);
+            }
         },
 
         addKeywordFabTap: function() {
             this.addKeywordOpened = true;
         },
 
-        deSelectAll: function(event, detail, sender) {
+        deleteKeywordButtonTap: function() {
+            var _this = this;
+
+            _this.toastOpened = false;
+
+            var index = -1;
+
+            var item = _.find(_this.list, function(item) {
+                index++;
+
+                return (_this.deleteKeywordID == item._id);
+            });
+
+            if (item) {
+                _this.list.splice(index, 1);
+
+                Meteor.call("remove_torrent_in", _this.deleteKeywordID, function(error, status) {
+                    if (error) {
+                        window.setTimeout(function() {
+                            _this.toastText = error.reason;
+                            _this.toastOpened = true;
+                        }, 400);
+                    } else {
+                        window.setTimeout(function() {
+                            _this.toastText = "1 keyword deleted";
+                            _this.toastOpened = true;
+                        }, 400);
+                    }
+                });
+            }
+        },
+
+        deleteKeywordIconTap: function(event, detail, sender) {
+            this.deleteKeywordID = $(sender).attr("tag");
+            this.deleteKeywordOpened = true;
+        },
+
+        deSelectAll: function() {
             this.inboxListSelected = [];
         },
 
@@ -292,12 +392,12 @@
 
                 if (Meteor.status().connected) {
                     window.setTimeout(function() {
-                        _this.toastText = "Server connected";
+                        _this.toastText = "server connected";
                         _this.toastOpened = true;
                     }, 400);
                 } else {
                     window.setTimeout(function() {
-                        _this.toastText = "Lost server connection";
+                        _this.toastText = "lost server connection";
                         _this.toastOpened = true;
                     }, 400);
                 }
