@@ -164,32 +164,6 @@
                     </div>
                 </div>
 
-                <div class="menu-l" horizontal justified layout>
-                    <div class="padding-4" self-start>
-                        <selectable-icon iconClass="_orange" iconText="G"></selectable-icon>
-                    </div>
-                    <div class="padding-4" flex layout vertical>
-                        <div auto-vertical horizontal justified layout>
-                            <div class="title overflow-hidden capitalize" flex style="width: 32px !important;">Trend Graph</div>
-                            <div class="badge" self-start>4</div>
-                        </div>
-                        <div auto-vertical class="description disabled-text">lastEntry: Jul 1st Wed</div>
-                    </div>
-                </div>
-
-                <div class="menu-l" horizontal justified layout>
-                    <div class="padding-4" self-start>
-                        <selectable-icon iconClass="_cyan" iconText="W"></selectable-icon>
-                    </div>
-                    <div class="padding-4" flex layout vertical>
-                        <div auto-vertical horizontal justified layout>
-                            <div class="title overflow-hidden capitalize" flex style="width: 32px !important;">IFW Watcher</div>
-                            <div class="badge" self-start>8</div>
-                        </div>
-                        <div auto-vertical class="description disabled-text">lastEntry: Jul 1st Wed</div>
-                    </div>
-                </div>
-
             </core-header-panel>
 
             <core-header-panel id="main" main on-trackend="{{refresh_trackend}}" on-trackstart="{{refresh_trackstart}}" on-tracky="{{refresh_tracky}}">
@@ -218,15 +192,14 @@
                             <template repeat="{{list}}">
                                 <div center-justified horizontal layout tag="{{_id}}">
                                     <div class="divider" horizontal justified layout>
-                                        <input class="input-text" flex tag="{{_id}}" type="text" value="{{text}}">
+                                        <input class="input-text" disabled flex tag="{{_id}}" type="text" value="{{keyword}}">
                                         <div self-start>
-                                            <paper-icon-button icon="settings" on-tap="{{controlPanelTap}}" tag="{{_id}}"></paper-icon-button>
                                             <paper-icon-button icon="close" on-tap="{{deleteAllTap}}" tag="{{_id}}"></paper-icon-button>
                                         </div>
                                     </div>
                                 </div>
-                                <template repeat="{{item in list}}">
-                                    <inbox-item item="{{item}}" itemWidth="{{width}}"></inbox-item>
+                                <template repeat="{{item in torrent_out}}">
+                                    <inbox-item item="{{item}}"></inbox-item>
                                 </template>
                             </template>
                         </core-selector>
@@ -236,26 +209,52 @@
             </core-header-panel>
         </core-drawer-panel>
 
-        <file-input class="menu-b" extensions='["csv"]' hidden?="{{inboxListSelected.length && page == 1}}" id="csvInput" maxSize="8000000">
-            <paper-fab icon="add"></paper-fab>
-        </file-input>
+        <paper-fab class="menu-b" hidden?="{{inboxListSelected.length && (page == 0 || page == 1)}}" icon="add" on-tap="{{addKeywordFabTap}}"></paper-fab>
+
         <paper-toast duration="4000" id="toast" on-core-overlay-open="{{on_core_overlay_open}}" opened="{{toastOpened}}" swipeDisabled text="{{toastText}}">
             <div hidden?="{{!inboxListSelected.length}}" on-tap="{{undoButtonTap}}" style="color: #FFEB3B;">undo</div>
         </paper-toast>
+
+        <paper-dialog autoCloseDisabled backdrop opened="{{addKeywordOpened}}" transition="core-transition-bottom">
+            <div layout vertical>
+                <div layout style="padding: 24px;" vertical>
+                    <div style="border-bottom: 2px solid #888; padding: 4px 0;">add new keyword</div>
+                    <paper-input autoFocus label="keyword" value="{{keyword}}"></paper-input>
+                    <div center horizontal justified layout>
+                        <div>min peer count</div>
+                        <paper-slider editable flex id="peers" max="1000" min="1" value="{{peers}}"></paper-slider>
+                    </div>
+                    <div center horizontal justified layout>
+                        <div>min seed count</div>
+                        <paper-slider editable flex id="seeds" max="1000" min="1" value="{{seeds}}"></paper-slider>
+                    </div>
+                </div>
+
+                <div horizontal layout reverse style="background: #EEE; padding: 12px;">
+                    <paper-button core-overlay-toggle on-tap="{{addKeywordButtonTap}}">
+                        <core-icon icon="check"></core-icon>&nbsp;&nbsp;Ok
+                    </paper-button>
+                    <paper-button core-overlay-toggle>
+                        <core-icon icon="clear"></core-icon>&nbsp;&nbsp;Cancel
+                    </paper-button>
+                </div>
+            </div>
+        </paper-dialog>
+
         <search-bar id="search"></search-bar>
+
     </template>
 
     <script>
     Polymer("inbox-list", {
 
+        addKeywordOpened: false,
         forceNarrow: false,
         inboxListSelected: [],
+        keyword: "",
         list: [],
-        margin: {
-            left: 8,
-            right: 8
-        },
         page: 1,
+        peers: 100,
         profile: {
             email: "user@host",
             name: "user",
@@ -263,22 +262,25 @@
         },
         refresh: false,
         refresh_max_y: 80,
-        title: "USPTO Alert",
+        seeds: 10,
+        title: "Torrent Alert",
         toastOpened: false,
         toastText: "",
         width: 512,
+
+        addKeywordButtonTap: function() {
+            console.log(this.keyword);
+        },
+
+        addKeywordFabTap: function() {
+            this.addKeywordOpened = true;
+        },
 
         deSelectAll: function(event, detail, sender) {
             this.inboxListSelected = [];
         },
 
         domReady: function() {
-            if (512 < window.innerWidth) {
-                this.width = 512;
-            } else {
-                this.width = window.innerWidth - this.margin.left - this.margin.right;
-            }
-
             if (Meteor.user().profile) {
                 this.profile = Meteor.user().profile;
             }
@@ -301,12 +303,136 @@
                 }
             });
 
-            $("html /deep/ .input-text").change(function() {
-                console.log($(this).attr("tag"), $(this).val());
+            torrent_in.find().observeChanges({
+                added: function(_id, row) {
+                    var item = _.find(_this.list, function(item) {
+                        return (_id == item._id);
+                    });
+
+                    if (typeof(item) == "undefined") {
+                        _this.list.push($.extend(true, row, {
+                            _id: _id,
+                            count: "*",
+                            iconClass: polymer_color(row.keyword),
+                            iconText: (isNaN(row.keyword.charAt(0)) ? row.keyword.charAt(0) : "#"),
+                            torrent_out: []
+                        }));
+
+                        _this.list = _.sortBy(_this.list, "keyword");
+
+                        Meteor.subscribe("torrent_out", {
+                            torrent_in: _.map(_this.list, function(item) {
+                                return item._id
+                            })
+                        });
+                    }
+                },
+
+                removed: function(_id) {
+                    var index = -1;
+
+                    var item = _.find(_this.list, function(item) {
+                        index++;
+
+                        return (_id == item._id);
+                    });
+
+                    if (item) {
+                        _this.list.splice(index, 1);
+                    }
+                }
             });
 
-            _this.$.csvInput.addEventListener("change", function(event) {
-                console.log(event.detail.valid, event.detail.invalid);
+            torrent_out.find().observeChanges({
+                added: function(_id, row) {
+                    var group_index = -1;
+
+                    var group = _.find(_this.list, function(item) {
+                        group_index++;
+
+                        return (-1 < row.torrent_in.indexOf(item._id));
+                    });
+
+                    if (group) {
+                        var index = -1;
+
+                        var item = _.find(_this.list[group_index].torrent_out, function(item) {
+                            index++;
+
+                            return (_id == item._id);
+                        });
+
+                        if (typeof(item) == "undefined") {
+                            if (_this.list[group_index].peers <= row.peers && _this.list[group_index].seeds <= row.seeds) {
+                                _this.list[group_index].torrent_out.push($.extend(true, row, {
+                                    _id: _id,
+                                    categoryClass: polymer_color(row.category),
+                                    listClass: "item"
+                                }));
+
+                                _this.list[group_index].torrent_out = _.sortBy(_this.list[group_index].torrent_out, "time").reverse();
+                            }
+                        } else {
+                            if (row.peers < _this.list[group_index].peers && row.seeds < _this.list[group_index].seeds) {
+                                _this.list[group_index].torrent_out.splice(index, 1);
+                            }
+                        }
+                    }
+                },
+
+                changed: function(_id, row) {
+                    var row = torrent_out.findOne({
+                        _id: _id
+                    });
+
+                    var group_index = -1;
+
+                    var group = _.find(_this.list, function(item) {
+                        group_index++;
+
+                        return (-1 < row.torrent_in.indexOf(item._id));
+                    });
+
+                    if (group) {
+                        var index = -1;
+
+                        var item = _.find(_this.list[group_index].torrent_out, function(item) {
+                            index++;
+
+                            return (_id == item._id);
+                        });
+
+                        if (item) {
+                            if (row.peers < _this.list[group_index].peers && row.seeds < _this.list[group_index].seeds) {
+                                _this.list[group_index].torrent_out.splice(index, 1);
+                            } else {
+                                _this.list[group_index].torrent_out[index] = $.extend(true, _this.list[group_index].torrent_out[index], row);
+                            }
+                        }
+                    }
+                },
+
+                removed: function(_id) {
+                    for (var A = 0; A < _this.list.length; A++) {
+                        var index = -1;
+
+                        var item = _.find(_this.list[A].torrent_out, function(item) {
+                            index++;
+
+                            return (_id == item._id);
+                        });
+
+                        if (item) {
+                            _this.list[A].torrent_out.splice(index, 1);
+
+                            break;
+                        }
+                    }
+                }
+            });
+
+            $("html /deep/ .input-text").change(function() {
+                console.log($(this).attr("tag"), $(this).val());
             });
         },
 
@@ -318,13 +444,15 @@
             }
         },
 
-        headerChange: function(event, detail, sender) {
-            console.log($(sender).val());
-        },
-
         listChanged: function() {
             if (!(this.list instanceof Array)) {
                 this.list = JSON.parse(this.list);
+            }
+
+            if (this.list.length == 0) {
+                this.page = 0;
+            } else {
+                this.page = 1;
             }
 
             // console.log(this.list);
