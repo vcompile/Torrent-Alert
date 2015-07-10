@@ -18,7 +18,7 @@
         </style>
 
         <div center-justified horizontal layout on-holdpulse="{{inboxItemHold}}" on-tap="{{inboxItemTap}}" tag="{{_id}}">
-            <div class="li item" horizontal justified layout>
+            <div class="li {{item.listClass}}" horizontal justified layout>
                 <div class="padding-4" self-start>
                     <selectable-icon iconClass="{{item.categoryClass}}" iconText="{{item.linkz.length}}" id="selectableIcon" selected?="{{selected}}" tag="{{_id}}"></selectable-icon>
                 </div>

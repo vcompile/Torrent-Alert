@@ -68,7 +68,7 @@
         
         .divider {
             padding: 8px;
-            width: {{width}}px;
+            /*width: {{width}}px;*/
         }
         
         .input-text {
@@ -149,7 +149,7 @@
                     <paper-icon-button class="selection-allow" icon="arrow-back" on-tap="{{deSelectAll}}"></paper-icon-button>
                     <paper-icon-button class="selection-deny" icon="menu" on-tap="{{forceNarrowTap}}"></paper-icon-button>
                     <div flex>{{inboxListSelected.length ? inboxListSelected.length : title}}</div>
-                    <paper-icon-button class="selection-allow" icon="delete"></paper-icon-button>
+                    <paper-icon-button class="selection-allow" icon="delete" on-tap="{{deleteItemTap}}"></paper-icon-button>
                     <paper-icon-button class="selection-allow" icon="mail"></paper-icon-button>
                     <paper-icon-button class="selection-allow" icon="more-vert"></paper-icon-button>
                     <paper-icon-button class="selection-deny" icon="search" on-tap="{{searchBarToggle}}"></paper-icon-button>
@@ -166,18 +166,18 @@
                         </div>
                     </section>
                     <section touch-action="pan-x pan-y">
-                        <core-selector multi excludedLocalNames="div" selected="{{inboxListSelected}}" selectedAttribute="selected">
+                        <core-selector multi excludedLocalNames="div" selected="{{inboxListSelected}}" selectedAttribute="selected" valueattr="tag">
                             <template repeat="{{list}}">
-                                <div center-justified horizontal layout tag="{{_id}}">
+                                <div center-justified horizontal layout>
                                     <div class="divider" horizontal justified layout>
                                         <input class="input-text" disabled flex tag="{{_id}}" type="text" value="{{keyword}}">
                                         <div self-start>
-                                            <paper-icon-button icon="close" on-tap="{{deleteKeywordIconTap}}" tag="{{_id}}"></paper-icon-button>
+                                            <paper-icon-button icon="close" on-tap="{{deleteKeywordTap}}" tag="{{_id}}"></paper-icon-button>
                                         </div>
                                     </div>
                                 </div>
                                 <template repeat="{{item in torrent_out}}">
-                                    <inbox-item item="{{item}}"></inbox-item>
+                                    <inbox-item item="{{item}}" tag="{{item._id}}"></inbox-item>
                                 </template>
                             </template>
                         </core-selector>
@@ -190,7 +190,7 @@
         <paper-fab class="menu-b" hidden?="{{inboxListSelected.length && (page == 0 || page == 1)}}" icon="add" on-tap="{{addKeywordFabTap}}"></paper-fab>
 
         <paper-toast duration="4000" id="toast" on-core-overlay-open="{{on_core_overlay_open}}" opened="{{toastOpened}}" text="{{toastText}}">
-            <div hidden?="{{!inboxListSelected.length}}" on-tap="{{undoButtonTap}}" style="color: #FFEB3B;">undo</div>
+            <div hidden?="{{!undo.length}}" on-tap="{{undoButtonTap}}" style="color: #FFEB3B;">undo</div>
         </paper-toast>
 
         <paper-dialog autoCloseDisabled backdrop opened="{{addKeywordOpened}}" transition="core-transition-bottom">
@@ -223,7 +223,7 @@
             <div layout vertical>
                 <div class="padding-24">Are you sure to delete this item ?</div>
                 <div class="paper-dialog-title" horizontal layout reverse>
-                    <paper-button core-overlay-toggle on-tap="{{deleteKeywordButtonTap}}">
+                    <paper-button core-overlay-toggle on-tap="{{deleteKeywordOkButtonTap}}">
                         <core-icon icon="check"></core-icon>&nbsp;&nbsp;Ok
                     </paper-button>
                     <paper-button core-overlay-toggle>
@@ -259,6 +259,7 @@
         title: "Torrent Alert",
         toastOpened: false,
         toastText: "",
+        undo: [],
         width: 448,
 
         addKeywordButtonTap: function() {
@@ -315,7 +316,71 @@
             this.addKeywordOpened = true;
         },
 
-        deleteKeywordButtonTap: function() {
+        deleteItemTap: function() {
+            var _this = this;
+
+            _this.inboxListSelected.forEach(function(_id) {
+                for (var A = 0; A < _this.list.length; A++) {
+                    var index = -1;
+
+                    var item = _.find(_this.list[A].torrent_out, function(item) {
+                        index++;
+
+                        return (_id == item._id);
+                    });
+
+                    if (item) {
+                        _this.list[A].torrent_out[index].listClass = "hidden";
+
+                        break;
+                    }
+                }
+            });
+
+            _this.undo = _this.inboxListSelected;
+            _this.inboxListSelected = [];
+
+            _this.toastOpened = false;
+
+            window.setTimeout(function() {
+                _this.toastText = _this.undo.length + " item(s) removed";
+                _this.toastOpened = true;
+            }, 400);
+        },
+
+        deleteItemTap: function() {
+            var _this = this;
+
+            _this.inboxListSelected.forEach(function(_id) {
+                for (var A = 0; A < _this.list.length; A++) {
+                    var index = -1;
+
+                    var item = _.find(_this.list[A].torrent_out, function(item) {
+                        index++;
+
+                        return (_id == item._id);
+                    });
+
+                    if (item) {
+                        _this.list[A].torrent_out[index].listClass = "hidden";
+
+                        break;
+                    }
+                }
+            });
+
+            _this.undo = _this.inboxListSelected;
+            _this.inboxListSelected = [];
+
+            _this.toastOpened = false;
+
+            window.setTimeout(function() {
+                _this.toastText = _this.undo.length + " item(s) removed";
+                _this.toastOpened = true;
+            }, 400);
+        },
+
+        deleteKeywordOkButtonTap: function() {
             var _this = this;
 
             _this.toastOpened = false;
@@ -347,7 +412,7 @@
             }
         },
 
-        deleteKeywordIconTap: function(event, detail, sender) {
+        deleteKeywordTap: function(event, detail, sender) {
             this.deleteKeywordID = $(sender).attr("tag");
             this.deleteKeywordOpened = true;
         },
@@ -531,6 +596,14 @@
                 this.page = 1;
             }
 
+            for (var A = 0; A < this.list.length; A++) {
+                var count = _.filter(this.list[A].torrent_out, function(item) {
+                    return item.listClass == "item";
+                }).length;
+
+                this.list[A].count = count ? count : "*";
+            }
+
             // console.log(this.list);
         },
 
@@ -573,6 +646,30 @@
 
         searchBarToggle: function() {
             this.$.search.toggle();
+        },
+
+        undoButtonTap: function() {
+            var _this = this;
+
+            _this.undo.forEach(function(_id) {
+                for (var A = 0; A < _this.list.length; A++) {
+                    var index = -1;
+
+                    var item = _.find(_this.list[A].torrent_out, function(item) {
+                        index++;
+
+                        return (_id == item._id);
+                    });
+
+                    if (item) {
+                        _this.list[A].torrent_out[index].listClass = "item";
+
+                        break;
+                    }
+                }
+            });
+
+            _this.undo = [];
         }
 
     });
