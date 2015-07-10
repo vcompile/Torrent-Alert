@@ -68,7 +68,7 @@
         
         .divider {
             padding: 8px;
-            /*width: {{width}}px;*/
+            width: {{width}}px;
         }
         
         .input-text {
@@ -253,6 +253,7 @@
             name: "user",
             picture: "/img/user.png"
         },
+        loading: true,
         refresh: false,
         refresh_max_y: 80,
         seeds: 10,
@@ -572,6 +573,20 @@
                 }
             });
 
+            window.setTimeout(function() {
+                $("#torrentz_db").val(JSON.stringify(_this.list));
+
+                for (var A = 0; A < _this.list.length; A++) {
+                    var count = _.filter(_this.list[A].torrent_out, function(item) {
+                        return item.listClass == "item";
+                    }).length;
+
+                    _this.list[A].count = count ? count : "*";
+                }
+
+                _this.loading = false;
+            }, 1000 * 20);
+
             $("html /deep/ .input-text").change(function() {
                 console.log($(this).attr("tag"), $(this).val());
             });
@@ -596,12 +611,16 @@
                 this.page = 1;
             }
 
-            for (var A = 0; A < this.list.length; A++) {
-                var count = _.filter(this.list[A].torrent_out, function(item) {
-                    return item.listClass == "item";
-                }).length;
+            if (!this.loading) {
+                $("#torrentz_db").val(JSON.stringify(this.list));
 
-                this.list[A].count = count ? count : "*";
+                for (var A = 0; A < this.list.length; A++) {
+                    var count = _.filter(this.list[A].torrent_out, function(item) {
+                        return item.listClass == "item";
+                    }).length;
+
+                    this.list[A].count = count ? count : "*";
+                }
             }
 
             // console.log(this.list);

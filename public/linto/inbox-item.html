@@ -17,10 +17,10 @@
         }
         </style>
 
-        <div center-justified horizontal layout on-holdpulse="{{inboxItemHold}}" on-tap="{{inboxItemTap}}" tag="{{_id}}">
+        <div center-justified horizontal layout on-holdpulse="{{inboxItemHold}}" on-tap="{{inboxItemTap}}">
             <div class="li {{item.listClass}}" horizontal justified layout>
                 <div class="padding-4" self-start>
-                    <selectable-icon iconClass="{{item.categoryClass}}" iconText="{{item.linkz.length}}" id="selectableIcon" selected?="{{selected}}" tag="{{_id}}"></selectable-icon>
+                    <selectable-icon iconClass="{{item.categoryClass}}" iconText="{{item.linkz.length}}" id="selectableIcon" selected?="{{selected}}"></selectable-icon>
                 </div>
                 <div class="padding-4" flex layout vertical>
                     <div auto-vertical class="lowercase"><span class="title">{{item.title}}</span> &nbsp;<b class="description">{{item.category}}</b></div>
