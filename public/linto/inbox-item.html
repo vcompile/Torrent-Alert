@@ -15,23 +15,6 @@
             border-bottom: 4px solid #EEE;
             cursor: pointer;
         }
-        
-        .padding-4 {
-            padding: 4px;
-        }
-        
-        .title {
-            font-size: 1em;
-            line-height: 1.25em;
-            margin-bottom: .1em;
-            margin-top: .1em;
-        }
-        
-        .description {
-            font-size: .75em;
-            margin-bottom: .1em;
-            margin-top: .1em;
-        }
         </style>
 
         <div center-justified horizontal layout on-holdpulse="{{inboxItemHold}}" on-tap="{{inboxItemTap}}" tag="{{_id}}">
@@ -40,10 +23,10 @@
                     <selectable-icon iconClass="{{item.categoryClass}}" iconText="{{item.linkz.length}}" id="selectableIcon" selected?="{{selected}}" tag="{{_id}}"></selectable-icon>
                 </div>
                 <div class="padding-4" flex layout vertical>
-                    <div auto-vertical class="lowercase"><span class="title">{{item.title}}</span>&nbsp;&nbsp;<b class="description">{{item.category}}</b></div>
+                    <div auto-vertical class="lowercase"><span class="title">{{item.title}}</span> &nbsp;<b class="description">{{item.category}}</b></div>
                     <div auto-vertical class="description" horizontal justified layout>
-                        <div class="uppercase-start">{{item.size}} | <b>{{item.seeds}}</b> S / <b>{{item.peers}}</b> P</div>
-                        <div>{{item.time}}</div>
+                        <div class="overflow-hidden">{{item.size}} | <b>{{item.seeds}}</b> S / <b>{{item.peers}}</b> P</div>
+                        <div class="overflow-hidden">{{item.time}}</div>
                     </div>
                 </div>
             </div>
@@ -55,7 +38,7 @@
 
         holding: false,
         item: {},
-        width: 512,
+        width: 448,
 
         inboxItemHold: function(event, detail, sender) {
             if (this.holding || event.target == this.$.selectableIcon) {
@@ -77,6 +60,8 @@
         inboxItemTap: function(event, detail, sender) {
             if (event.target != this.$.selectableIcon) {
                 event.stopPropagation();
+
+                document.querySelector("download-linkz").open(this.item);
             }
         },
 

@@ -68,7 +68,7 @@
         
         .divider {
             padding: 8px;
-            /*width: {{width}}px;*/
+            width: {{width}}px;
         }
         
         .input-text {
@@ -101,22 +101,6 @@
             background: #EEE;
         }
         
-        .padding-4 {
-            padding: 4px;
-        }
-        
-        .title {
-            font-size: 1em;
-            margin-bottom: .1em;
-            margin-top: .1em;
-        }
-        
-        .overflow-hidden {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        
         .badge {
             background: #EEE;
             border-radius: 50%;
@@ -124,12 +108,6 @@
             font-weight: bold;
             margin: 0 0 0 5px;
             padding: 3px 5px;
-        }
-        
-        .description {
-            font-size: .75em;
-            margin-bottom: .1em;
-            margin-top: .1em;
         }
         </style>
 
@@ -217,9 +195,9 @@
 
         <paper-dialog autoCloseDisabled backdrop opened="{{addKeywordOpened}}" transition="core-transition-bottom">
             <div layout vertical>
-                <div layout style="padding: 24px;" vertical>
+                <div layout class="padding-24" vertical>
                     <div style="border-bottom: 2px solid #888; padding: 4px 0;">add new keyword</div>
-                    <div style="padding: 4px;"></div>
+                    <div class="padding-4"></div>
                     <paper-input autoFocus label="keyword" value="{{keyword}}"></paper-input>
                     <div center horizontal justified layout>
                         <div>min peer count</div>
@@ -230,8 +208,7 @@
                         <paper-slider editable flex id="seeds" max="1000" min="1" value="{{seeds}}"></paper-slider>
                     </div>
                 </div>
-
-                <div horizontal layout reverse style="background: #EEE; padding: 12px;">
+                <div class="paper-dialog-title" horizontal layout reverse>
                     <paper-button core-overlay-toggle on-tap="{{addKeywordButtonTap}}">
                         <core-icon icon="check"></core-icon>&nbsp;&nbsp;Ok
                     </paper-button>
@@ -244,8 +221,8 @@
 
         <paper-dialog autoCloseDisabled backdrop opened="{{deleteKeywordOpened}}" transition="core-transition-bottom">
             <div layout vertical>
-                <div style="padding: 24px;">Are you sure to delete this item ?</div>
-                <div horizontal layout reverse style="background: #EEE; padding: 12px;">
+                <div class="padding-24">Are you sure to delete this item ?</div>
+                <div class="paper-dialog-title" horizontal layout reverse>
                     <paper-button core-overlay-toggle on-tap="{{deleteKeywordButtonTap}}">
                         <core-icon icon="check"></core-icon>&nbsp;&nbsp;Ok
                     </paper-button>
@@ -257,7 +234,6 @@
         </paper-dialog>
 
         <search-bar id="search"></search-bar>
-
     </template>
 
     <script>
@@ -283,7 +259,7 @@
         title: "Torrent Alert",
         toastOpened: false,
         toastText: "",
-        width: 512,
+        width: 448,
 
         addKeywordButtonTap: function() {
             this.keyword = decodeURIComponent(this.keyword).trim();

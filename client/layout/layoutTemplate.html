@@ -15,7 +15,7 @@
         background-color: steelblue;
         box-shadow: 0 0 5px steelblue;
     }
-    /* globalUI */
+    /* normalize */
     
     html /deep/ * {
         -webkit-touch-callout: none;
@@ -23,25 +23,23 @@
         -webkit-user-select: none;
     }
     
-    html /deep/ paper-dialog {
-        top: 0;
+    html /deep/ *::-webkit-scrollbar {
+        display: none;
     }
-    
-    html /deep/ paper-dialog::shadow #scroller {
-        padding: 0;
-        width: 320px;
-    }
+    /* globalUI */
     
     html /deep/ .capitalize {
         text-transform: capitalize;
     }
     
-    html /deep/ .disabled-text {
-        color: #888;
-    }
-    
     html /deep/ .lowercase {
         text-transform: lowercase;
+    }
+    
+    html /deep/ .overflow-hidden {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
     
     html /deep/ .uppercase {

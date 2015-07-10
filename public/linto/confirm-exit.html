@@ -2,8 +2,8 @@
     <template>
         <paper-dialog autoCloseDisabled backdrop opened="{{opened}}" transition="core-transition-bottom">
             <div layout vertical>
-                <div style="padding: 24px;">Are you sure you want to exit ?</div>
-                <div horizontal layout reverse style="background: #EEE; padding: 12px;">
+                <div class="padding-24">Are you sure you want to exit ?</div>
+                <div class="paper-dialog-title" horizontal layout reverse>
                     <paper-button core-overlay-toggle on-tap="{{okButtonTap}}">
                         <core-icon icon="check"></core-icon>&nbsp;&nbsp;Ok
                     </paper-button>
@@ -17,12 +17,13 @@
 
     <script>
     Polymer("confirm-exit", {
+
         opened: false,
 
         time: null,
         time_store: moment().format("x"),
 
-        okButtonTap: function(event, detail, sender) {
+        okButtonTap: function() {
             if (Meteor.isCordova) {
                 navigator.app.exitApp();
             }
@@ -35,6 +36,7 @@
 
             this.time_store = moment().format("x");
         }
+
     });
     </script>
 </polymer-element>
