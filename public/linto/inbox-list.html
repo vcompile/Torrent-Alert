@@ -103,7 +103,7 @@
         
         .badge {
             background: #EEE;
-            border-radius: 50%;
+            border-radius: 25%;
             font-size: 10px;
             font-weight: bold;
             margin: 0 0 0 5px;
@@ -113,35 +113,36 @@
 
         <core-drawer-panel forceNarrow?="{{forceNarrow}}" id="drawerPanel" responsiveWidth="768px">
             <core-header-panel drawer style="background: white;">
-
-                <div class="divider"></div>
+                <div class="padding-4"></div>
 
                 <div class="menu-l" horizontal justified layout>
                     <div class="padding-4" self-start>
                         <selectable-icon iconImgSrc="{{profile.picture ? profile.picture : '/img/user.png'}}"></selectable-icon>
                     </div>
                     <div class="padding-4" flex layout vertical>
-                        <div auto-vertical horizontal justified layout>
-                            <div class="title overflow-hidden capitalize" flex style="width: 32px !important;">{{profile.name}}</div>
-                            <div class="badge" self-start>1</div>
-                        </div>
-                        <div auto-vertical class="description disabled-text">{{profile.email}}</div>
+                        <div auto-vertical class="title capitalize">{{profile.name}}</div>
+                        <div auto-vertical class="description">{{profile.email}}</div>
                     </div>
                 </div>
 
-                <div class="menu-l" horizontal justified layout>
-                    <div class="padding-4" self-start>
-                        <selectable-icon iconClass="_blue" iconText="B"></selectable-icon>
-                    </div>
-                    <div class="padding-4" flex layout vertical>
-                        <div auto-vertical horizontal justified layout>
-                            <div class="title overflow-hidden capitalize" flex style="width: 32px !important;">Budget</div>
-                            <div class="badge" self-start>2</div>
-                        </div>
-                        <div auto-vertical class="description disabled-text">lastEntry: Jul 1st Wed</div>
-                    </div>
-                </div>
+                <div class="padding-4"></div>
 
+                <template repeat="{{list}}">
+                    <div class="menu-l" horizontal justified layout on-tap="{{keywordMenuTap}}" tag="{{_id}}">
+                        <div class="padding-4" self-start>
+                            <selectable-icon iconClass="{{iconClass}}" iconText="{{iconText}}"></selectable-icon>
+                        </div>
+                        <div class="padding-4" flex layout vertical>
+                            <div auto-vertical horizontal justified layout>
+                                <div class="title overflow-hidden lowercase" flex style="width: 32px !important;">{{keyword}}</div>
+                                <div class="badge" self-start>{{torrent_out.length}}</div>
+                            </div>
+                            <div auto-vertical class="description"><b>{{seeds}}</b> S / <b>{{peers}}</b> P</div>
+                        </div>
+                    </div>
+                </template>
+
+                <div class="padding-4"></div>
             </core-header-panel>
 
             <core-header-panel id="main" main on-trackend="{{refresh_trackend}}" on-trackstart="{{refresh_trackstart}}" on-tracky="{{refresh_tracky}}">
@@ -168,16 +169,18 @@
                     <section touch-action="pan-x pan-y">
                         <core-selector multi excludedLocalNames="div" selected="{{inboxListSelected}}" selectedAttribute="selected" valueattr="tag">
                             <template repeat="{{list}}">
-                                <div center-justified horizontal layout>
-                                    <div class="divider" horizontal justified layout>
-                                        <input class="input-text" disabled flex tag="{{_id}}" type="text" value="{{keyword}}">
-                                        <div self-start>
-                                            <paper-icon-button icon="close" on-tap="{{deleteKeywordTap}}" tag="{{_id}}"></paper-icon-button>
+                                <div class="{{_id}} keyword-menu-selectable">
+                                    <div center-justified horizontal layout>
+                                        <div class="divider" horizontal justified layout>
+                                            <input class="input-text" disabled flex tag="{{_id}}" type="text" value="{{keyword}}">
+                                            <div self-start>
+                                                <paper-icon-button icon="close" on-tap="{{deleteKeywordTap}}" tag="{{_id}}"></paper-icon-button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                                 <template repeat="{{item in torrent_out}}">
-                                    <inbox-item item="{{item}}" tag="{{item._id}}"></inbox-item>
+                                    <inbox-item class="{{_id}} keyword-menu-selectable" item="{{item}}" tag="{{item._id}}"></inbox-item>
                                 </template>
                             </template>
                         </core-selector>
@@ -253,7 +256,6 @@
             name: "user",
             picture: "/img/user.png"
         },
-        loading: true,
         refresh: false,
         refresh_max_y: 80,
         seeds: 10,
@@ -338,37 +340,7 @@
                 }
             });
 
-            _this.undo = _this.inboxListSelected;
-            _this.inboxListSelected = [];
-
-            _this.toastOpened = false;
-
-            window.setTimeout(function() {
-                _this.toastText = _this.undo.length + " item(s) removed";
-                _this.toastOpened = true;
-            }, 400);
-        },
-
-        deleteItemTap: function() {
-            var _this = this;
-
-            _this.inboxListSelected.forEach(function(_id) {
-                for (var A = 0; A < _this.list.length; A++) {
-                    var index = -1;
-
-                    var item = _.find(_this.list[A].torrent_out, function(item) {
-                        index++;
-
-                        return (_id == item._id);
-                    });
-
-                    if (item) {
-                        _this.list[A].torrent_out[index].listClass = "hidden";
-
-                        break;
-                    }
-                }
-            });
+            _this.listChanged();
 
             _this.undo = _this.inboxListSelected;
             _this.inboxListSelected = [];
@@ -410,6 +382,8 @@
                         }, 400);
                     }
                 });
+
+                $("html /deep/ .keyword-menu-selectable").show();
             }
         },
 
@@ -454,7 +428,6 @@
                     if (typeof(item) == "undefined") {
                         _this.list.push($.extend(true, row, {
                             _id: _id,
-                            count: "*",
                             iconClass: polymer_color(row.keyword),
                             iconText: (isNaN(row.keyword.charAt(0)) ? row.keyword.charAt(0) : "#"),
                             torrent_out: []
@@ -573,22 +546,14 @@
                 }
             });
 
-            window.setTimeout(function() {
+            $(window).on("beforeunload", function() {
                 $("#torrentz_db").val(JSON.stringify(_this.list));
 
-                for (var A = 0; A < _this.list.length; A++) {
-                    var count = _.filter(_this.list[A].torrent_out, function(item) {
-                        return item.listClass == "item";
-                    }).length;
-
-                    _this.list[A].count = count ? count : "*";
-                }
-
-                _this.loading = false;
-            }, 1000 * 20);
+                // return "Are you sure you want to exit ?";
+            });
 
             $("html /deep/ .input-text").change(function() {
-                console.log($(this).attr("tag"), $(this).val());
+                console.log($(_this).attr("tag"), $(_this).val());
             });
         },
 
@@ -600,6 +565,11 @@
             }
         },
 
+        keywordMenuTap: function(event, opened, sender) {
+            $("html /deep/ .keyword-menu-selectable").hide();
+            $("html /deep/ ." + $(sender).attr("tag")).show();
+        },
+
         listChanged: function() {
             if (!(this.list instanceof Array)) {
                 this.list = JSON.parse(this.list);
@@ -609,18 +579,6 @@
                 this.page = 0;
             } else {
                 this.page = 1;
-            }
-
-            if (!this.loading) {
-                $("#torrentz_db").val(JSON.stringify(this.list));
-
-                for (var A = 0; A < this.list.length; A++) {
-                    var count = _.filter(this.list[A].torrent_out, function(item) {
-                        return item.listClass == "item";
-                    }).length;
-
-                    this.list[A].count = count ? count : "*";
-                }
             }
 
             // console.log(this.list);
