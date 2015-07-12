@@ -115,17 +115,19 @@
             <core-header-panel drawer style="background: white;">
                 <div class="padding-4"></div>
 
-                <div class="menu-l" horizontal justified layout>
-                    <div class="padding-4" self-start>
-                        <selectable-icon iconImgSrc="{{profile.picture ? profile.picture : '/img/user.png'}}"></selectable-icon>
+                <template if="{{user}}">
+                    <div class="menu-l" horizontal justified layout>
+                        <div class="padding-4" self-start>
+                            <selectable-icon iconImgSrc="{{profile.picture ? profile.picture : '/img/user.png'}}"></selectable-icon>
+                        </div>
+                        <div class="padding-4" flex layout vertical>
+                            <div auto-vertical class="title capitalize">{{profile.name}}</div>
+                            <div auto-vertical class="description">{{profile.email}}</div>
+                        </div>
                     </div>
-                    <div class="padding-4" flex layout vertical>
-                        <div auto-vertical class="title capitalize">{{profile.name}}</div>
-                        <div auto-vertical class="description">{{profile.email}}</div>
-                    </div>
-                </div>
 
-                <div class="padding-4"></div>
+                    <div class="padding-4"></div>
+                </template>
 
                 <template repeat="{{list}}">
                     <div class="menu-l" horizontal justified layout on-tap="{{keywordMenuTap}}" tag="{{_id}}">
@@ -141,6 +143,18 @@
                         </div>
                     </div>
                 </template>
+
+                <div class="padding-4"></div>
+
+                <div class="menu-l" horizontal justified layout onclick='window.open("http://github.com/HedCET/torrentzAlert", "_system");'>
+                    <div class="padding-4" self-start>
+                        <selectable-icon iconImgSrc="/img/github.png"></selectable-icon>
+                    </div>
+                    <div class="padding-4" flex layout vertical>
+                        <div auto-vertical class="title">github</div>
+                        <div auto-vertical class="description">build break develop</div>
+                    </div>
+                </div>
 
                 <div class="padding-4"></div>
             </core-header-panel>
@@ -263,6 +277,7 @@
         toastOpened: false,
         toastText: "",
         undo: [],
+        user: Meteor.user(),
         width: 448,
 
         addKeywordButtonTap: function() {
@@ -566,6 +581,10 @@
         },
 
         keywordMenuTap: function(event, opened, sender) {
+            if ($(this.$.drawerPanel).width() <= 768) {
+                this.$.drawerPanel.closeDrawer();
+            }
+
             $("html /deep/ .keyword-menu-selectable").hide();
             $("html /deep/ ." + $(sender).attr("tag")).show();
         },

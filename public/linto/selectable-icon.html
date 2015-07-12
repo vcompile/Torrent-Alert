@@ -48,7 +48,7 @@
         </style>
 
         <div class="icon">
-            <template if="{{iconImgSrc}}"><img src="{{iconImgSrc}}"></template>
+            <template if="{{iconImgSrc}}"><img class="{{iconClass}}" src="{{iconImgSrc}}"></template>
             <template if="{{!iconImgSrc}}">
                 <span center-center class="letter {{iconClass}}" horizontal layout>{{iconText}}</span>
             </template>
