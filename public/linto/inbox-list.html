@@ -115,7 +115,7 @@
             <core-header-panel drawer style="background: white;">
                 <div class="padding-4"></div>
 
-                <template if="{{user}}">
+                <template if="{{profile.email != 'user@host'}}">
                     <div class="menu-l" horizontal justified layout>
                         <div class="padding-4" self-start>
                             <selectable-icon iconImgSrc="{{profile.picture ? profile.picture : '/img/user.png'}}"></selectable-icon>
@@ -130,7 +130,7 @@
                 </template>
 
                 <template repeat="{{list}}">
-                    <div class="menu-l" horizontal justified layout on-tap="{{keywordMenuTap}}" tag="{{_id}}">
+                    <div class="menu-l" horizontal justified layout on-tap="{{keywordMenuTap}}" tag="{{_id}}|{{iconClass}}">
                         <div class="padding-4" self-start>
                             <selectable-icon iconClass="{{iconClass}}" iconText="{{iconText}}"></selectable-icon>
                         </div>
@@ -160,7 +160,7 @@
             </core-header-panel>
 
             <core-header-panel id="main" main on-trackend="{{refresh_trackend}}" on-trackstart="{{refresh_trackstart}}" on-tracky="{{refresh_tracky}}">
-                <core-toolbar class="_teal {{ {'_grey': inboxListSelected.length, 'selection': inboxListSelected.length} | tokenList }}">
+                <core-toolbar class="{{inboxListSelected.length ? '_grey' : toolBarClass}} {{ {'selection': inboxListSelected.length} | tokenList }}" id="mainToolBar">
                     <paper-icon-button class="selection-allow" icon="arrow-back" on-tap="{{deSelectAll}}"></paper-icon-button>
                     <paper-icon-button class="selection-deny" icon="menu" on-tap="{{forceNarrowTap}}"></paper-icon-button>
                     <div flex>{{inboxListSelected.length ? inboxListSelected.length : title}}</div>
@@ -276,8 +276,8 @@
         title: "Torrent Alert",
         toastOpened: false,
         toastText: "",
+        toolBarClass: "_teal",
         undo: [],
-        user: Meteor.user(),
         width: 448,
 
         addKeywordButtonTap: function() {
@@ -581,12 +581,16 @@
         },
 
         keywordMenuTap: function(event, opened, sender) {
+            $("html /deep/ .keyword-menu-selectable").hide();
+
+            var A = $(sender).attr("tag").split("|");
+
+            $("html /deep/ ." + A[0]).show();
+            this.toolBarClass = A[1];
+
             if ($(this.$.drawerPanel).width() <= 768) {
                 this.$.drawerPanel.closeDrawer();
             }
-
-            $("html /deep/ .keyword-menu-selectable").hide();
-            $("html /deep/ ." + $(sender).attr("tag")).show();
         },
 
         listChanged: function() {
