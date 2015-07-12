@@ -18,8 +18,8 @@ if (Meteor.isCordova) {
             document.querySelector("html /deep/ #drawerPanel").closeDrawer();
         }
 
-        for (var A = document.querySelectorAll("html /deep/ paper-dialog"), B = 0; B < A.length; B++) {
-            A[B].close();
+        for (var A = document.querySelectorAll("html /deep/ paper-dialog"), Z = 0; Z < A.length; Z++) {
+            A[Z].close();
         }
 
         $("html /deep/ confirm-exit").attr("time", moment().format("x"));
