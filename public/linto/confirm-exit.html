@@ -1,0 +1,42 @@
+<polymer-element attributes="time" name="confirm-exit">
+    <template>
+        <paper-dialog autoCloseDisabled backdrop opened="{{opened}}" transition="core-transition-bottom">
+            <div layout vertical>
+                <div class="padding-24">Are you sure you want to exit ?</div>
+                <div class="paper-dialog-title" horizontal layout reverse>
+                    <paper-button core-overlay-toggle on-tap="{{okButtonTap}}">
+                        <core-icon icon="check"></core-icon>&nbsp;&nbsp;Ok
+                    </paper-button>
+                    <paper-button core-overlay-toggle>
+                        <core-icon icon="clear"></core-icon>&nbsp;&nbsp;Cancel
+                    </paper-button>
+                </div>
+            </div>
+        </paper-dialog>
+    </template>
+
+    <script>
+    Polymer("confirm-exit", {
+
+        opened: false,
+
+        time: null,
+        time_store: moment().format("x"),
+
+        okButtonTap: function() {
+            if (Meteor.isCordova) {
+                navigator.app.exitApp();
+            }
+        },
+
+        timeChanged: function() {
+            if ((parseInt(this.time) - parseInt(this.time_store)) < 2000) {
+                this.opened = true;
+            }
+
+            this.time_store = moment().format("x");
+        }
+
+    });
+    </script>
+</polymer-element>

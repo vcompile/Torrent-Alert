@@ -1,11 +1,3 @@
-// currentUser = function(userId, doc) {
-//     return (!!userId) && doc.user_id === userId;
-// };
-
-// grantAllAccess = function(userId, doc) {
-//     return true;
-// };
-
 specialAccess = function(userId, doc) {
     return userId == "HedCET";
 };

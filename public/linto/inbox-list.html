@@ -1,0 +1,677 @@
+<polymer-element attributes="list" name="inbox-list">
+    <template>
+        <style>
+        core-drawer-panel /deep/ #drawer,
+        core-drawer-panel /deep/ #main #scrim {
+            z-index: 1;
+        }
+        
+        core-toolbar > .selection-allow {
+            margin: 0;
+            padding: 0;
+            transform: rotateX(90deg);
+            transition: transform 400ms ease-in-out;
+            visibility: hidden;
+            width: 0;
+            will-change: transform;
+        }
+        
+        core-toolbar > .selection-deny {
+            margin: 0;
+        }
+        
+        core-toolbar > paper-icon-button[icon="arrow-back"] {
+            transform: translateX(-42px) rotateX(0);
+        }
+        
+        core-toolbar.selection > .selection-allow {
+            padding: 8px;
+            transform: rotateX(0);
+            visibility: visible;
+            width: auto;
+        }
+        
+        core-toolbar.selection > .selection-deny {
+            display: none;
+        }
+        
+        core-toolbar.selection > paper-icon-button[icon="arrow-back"] {
+            transform: translateX(0) rotateX(0);
+        }
+        
+        #refresh {
+            opacity: 0;
+            pointer-events: none;
+            position: absolute;
+            will-change: opacity, transform;
+            z-index: 1;
+        }
+        
+        #refresh > div {
+            background: white;
+            border-radius: 50%;
+            height: 22px;
+            padding: 8px;
+            width: 22px;
+        }
+        
+        #refresh paper-spinner {
+            height: 100%;
+            width: 100%;
+        }
+        
+        #refresh.reset {
+            opacity: 0 !important;
+            -webkit-transform: translate3d(0, 0, 0) !important;
+            transform: translate3d(0, 0, 0) !important;
+        }
+        
+        .divider {
+            padding: 8px;
+            width: {{width}}px;
+        }
+        
+        .input-text {
+            background: transparent;
+            border: none;
+            font-size: 16px;
+            outline: none;
+        }
+        
+        .menu-b {
+            bottom: 14px;
+            position: fixed;
+            right: 14px;
+            -webkit-transition: -webkit-transform 0.2s ease-in-out;
+            transition: transform 0.2s ease-in-out;
+            will-change: transform;
+        }
+        
+        .menu-b.move-up {
+            transform: translate3d(0, -48px, 0);
+        }
+        /* menu-l */
+        
+        .menu-l {
+            cursor: pointer;
+            padding: 8px;
+        }
+        
+        .menu-l:hover {
+            background: #EEE;
+        }
+        
+        .badge {
+            background: #EEE;
+            border-radius: 25%;
+            font-size: 10px;
+            font-weight: bold;
+            margin: 0 0 0 5px;
+            padding: 3px 5px;
+        }
+        </style>
+
+        <core-drawer-panel forceNarrow?="{{forceNarrow}}" id="drawerPanel" responsiveWidth="768px">
+            <core-header-panel drawer style="background: white;">
+                <div class="padding-4"></div>
+
+                <template if="{{profile.email != 'user@host'}}">
+                    <div class="menu-l" horizontal justified layout>
+                        <div class="padding-4" self-start>
+                            <selectable-icon iconImgSrc="{{profile.picture ? profile.picture : '/img/user.png'}}"></selectable-icon>
+                        </div>
+                        <div class="padding-4" flex layout vertical>
+                            <div auto-vertical class="title capitalize">{{profile.name}}</div>
+                            <div auto-vertical class="description">{{profile.email}}</div>
+                        </div>
+                    </div>
+
+                    <div class="padding-4"></div>
+                </template>
+
+                <template repeat="{{list}}">
+                    <div class="menu-l" horizontal justified layout on-tap="{{keywordMenuTap}}" tag="{{_id}}|{{iconClass}}">
+                        <div class="padding-4" self-start>
+                            <selectable-icon iconClass="{{iconClass}}" iconText="{{iconText}}"></selectable-icon>
+                        </div>
+                        <div class="padding-4" flex layout vertical>
+                            <div auto-vertical horizontal justified layout>
+                                <div class="title overflow-hidden lowercase" flex style="width: 32px !important;">{{keyword}}</div>
+                                <div class="badge" self-start>{{torrent_out.length}}</div>
+                            </div>
+                            <div auto-vertical class="description"><b>{{seeds}}</b> S / <b>{{peers}}</b> P</div>
+                        </div>
+                    </div>
+                </template>
+
+                <div class="padding-4"></div>
+
+                <div class="menu-l" horizontal justified layout onclick='window.open("http://github.com/HedCET/torrentzAlert", "_system");'>
+                    <div class="padding-4" self-start>
+                        <selectable-icon iconImgSrc="/img/github.png"></selectable-icon>
+                    </div>
+                    <div class="padding-4" flex layout vertical>
+                        <div auto-vertical class="title">github</div>
+                        <div auto-vertical class="description">build break develop</div>
+                    </div>
+                </div>
+
+                <div class="padding-4"></div>
+            </core-header-panel>
+
+            <core-header-panel id="main" main on-trackend="{{refresh_trackend}}" on-trackstart="{{refresh_trackstart}}" on-tracky="{{refresh_tracky}}">
+                <core-toolbar class="{{inboxListSelected.length ? '_grey' : toolBarClass}} {{ {'selection': inboxListSelected.length} | tokenList }}" id="mainToolBar">
+                    <paper-icon-button class="selection-allow" icon="arrow-back" on-tap="{{deSelectAll}}"></paper-icon-button>
+                    <paper-icon-button class="selection-deny" icon="menu" on-tap="{{forceNarrowTap}}"></paper-icon-button>
+                    <div flex>{{inboxListSelected.length ? inboxListSelected.length : title}}</div>
+                    <paper-icon-button class="selection-allow" icon="delete" on-tap="{{deleteItemTap}}"></paper-icon-button>
+                    <paper-icon-button class="selection-allow" icon="mail"></paper-icon-button>
+                    <paper-icon-button class="selection-allow" icon="more-vert"></paper-icon-button>
+                    <paper-icon-button class="selection-deny" icon="search" on-tap="{{searchBarToggle}}"></paper-icon-button>
+                    <div center-center class="bottom fit" horizontal id="refresh" layout>
+                        <div class="paper-shadow-bottom-z-1">
+                            <paper-spinner active id="refresh_spinner"></paper-spinner>
+                        </div>
+                    </div>
+                </core-toolbar>
+                <core-animated-pages fit notap selected="{{page}}" transitions="slide-from-right">
+                    <section>
+                        <div center-justified fit horizontal layout>
+                            <div class="disabled-text" self-center>Empty ..</div>
+                        </div>
+                    </section>
+                    <section touch-action="pan-x pan-y">
+                        <core-selector multi excludedLocalNames="div" selected="{{inboxListSelected}}" selectedAttribute="selected" valueattr="tag">
+                            <template repeat="{{list}}">
+                                <div class="{{_id}} keyword-menu-selectable">
+                                    <div center-justified horizontal layout>
+                                        <div class="divider" horizontal justified layout>
+                                            <input class="input-text" disabled flex tag="{{_id}}" type="text" value="{{keyword}}">
+                                            <div self-start>
+                                                <paper-icon-button icon="close" on-tap="{{deleteKeywordTap}}" tag="{{_id}}"></paper-icon-button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <template repeat="{{item in torrent_out}}">
+                                    <inbox-item class="{{_id}} keyword-menu-selectable" item="{{item}}" tag="{{item._id}}"></inbox-item>
+                                </template>
+                            </template>
+                        </core-selector>
+                        <div horizontal layout style="padding: 42px;"></div>
+                    </section>
+                </core-animated-pages>
+            </core-header-panel>
+        </core-drawer-panel>
+
+        <paper-fab class="menu-b" hidden?="{{inboxListSelected.length && (page == 0 || page == 1)}}" icon="add" on-tap="{{addKeywordFabTap}}"></paper-fab>
+
+        <paper-toast duration="4000" id="toast" on-core-overlay-open="{{on_core_overlay_open}}" opened="{{toastOpened}}" text="{{toastText}}">
+            <div hidden?="{{!undo.length}}" on-tap="{{undoButtonTap}}" style="color: #FFEB3B;">undo</div>
+        </paper-toast>
+
+        <paper-dialog autoCloseDisabled backdrop opened="{{addKeywordOpened}}" transition="core-transition-bottom">
+            <div layout vertical>
+                <div layout class="padding-24" vertical>
+                    <div style="border-bottom: 2px solid #888; padding: 4px 0;">add new keyword</div>
+                    <div class="padding-4"></div>
+                    <paper-input autoFocus label="keyword" value="{{keyword}}"></paper-input>
+                    <div center horizontal justified layout>
+                        <div>min peer count</div>
+                        <paper-slider editable flex id="peers" max="1000" min="1" value="{{peers}}"></paper-slider>
+                    </div>
+                    <div center horizontal justified layout>
+                        <div>min seed count</div>
+                        <paper-slider editable flex id="seeds" max="1000" min="1" value="{{seeds}}"></paper-slider>
+                    </div>
+                </div>
+                <div class="paper-dialog-title" horizontal layout reverse>
+                    <paper-button core-overlay-toggle on-tap="{{addKeywordButtonTap}}">
+                        <core-icon icon="check"></core-icon>&nbsp;&nbsp;Ok
+                    </paper-button>
+                    <paper-button core-overlay-toggle>
+                        <core-icon icon="clear"></core-icon>&nbsp;&nbsp;Cancel
+                    </paper-button>
+                </div>
+            </div>
+        </paper-dialog>
+
+        <paper-dialog autoCloseDisabled backdrop opened="{{deleteKeywordOpened}}" transition="core-transition-bottom">
+            <div layout vertical>
+                <div class="padding-24">Are you sure to delete this item ?</div>
+                <div class="paper-dialog-title" horizontal layout reverse>
+                    <paper-button core-overlay-toggle on-tap="{{deleteKeywordOkButtonTap}}">
+                        <core-icon icon="check"></core-icon>&nbsp;&nbsp;Ok
+                    </paper-button>
+                    <paper-button core-overlay-toggle>
+                        <core-icon icon="clear"></core-icon>&nbsp;&nbsp;Cancel
+                    </paper-button>
+                </div>
+            </div>
+        </paper-dialog>
+
+        <search-bar id="search"></search-bar>
+    </template>
+
+    <script>
+    Polymer("inbox-list", {
+
+        addKeywordOpened: false,
+        deleteKeywordID: "",
+        deleteKeywordOpened: false,
+        forceNarrow: false,
+        inboxListSelected: [],
+        keyword: "",
+        list: [],
+        page: 1,
+        peers: 100,
+        profile: {
+            email: "user@host",
+            name: "user",
+            picture: "/img/user.png"
+        },
+        refresh: false,
+        refresh_max_y: 80,
+        seeds: 10,
+        title: "Torrent Alert",
+        toastOpened: false,
+        toastText: "",
+        toolBarClass: "_teal",
+        undo: [],
+        width: 448,
+
+        addKeywordButtonTap: function() {
+            this.keyword = decodeURIComponent(this.keyword).trim();
+
+            var _this = this,
+                keywordArray = _this.keyword.replace("/", "").split(/\?[fq]=/g);
+
+            _this.toastOpened = false;
+
+            if (_this.keyword.length) {
+                var row = {
+                    keyword: (1 < keywordArray.length) ? keywordArray[1] : keywordArray[0],
+                    peers: _this.peers,
+                    seeds: _this.seeds,
+                    url: "http://torrentz.in",
+                    urlPart: (1 < keywordArray.length) ? keywordArray[0] : "search"
+                };
+
+                _this.keyword = "";
+
+                _this.seeds = 10;
+                _this.peers = 100;
+
+                Meteor.call("insert_torrent_in", row, function(error, status) {
+                    if (error) {
+                        window.setTimeout(function() {
+                            _this.toastText = error.reason;
+                            _this.toastOpened = true;
+                        }, 400);
+                    } else {
+                        if (status) {
+                            window.setTimeout(function() {
+                                _this.toastText = "1 keyword added";
+                                _this.toastOpened = true;
+                            }, 400);
+                        } else {
+                            window.setTimeout(function() {
+                                _this.toastText = "quota limit reached";
+                                _this.toastOpened = true;
+                            }, 400);
+                        }
+                    }
+                });
+            } else {
+                window.setTimeout(function() {
+                    _this.toastText = "empty keyword";
+                    _this.toastOpened = true;
+                }, 400);
+            }
+        },
+
+        addKeywordFabTap: function() {
+            this.addKeywordOpened = true;
+        },
+
+        deleteItemTap: function() {
+            var _this = this;
+
+            _this.inboxListSelected.forEach(function(_id) {
+                for (var A = 0; A < _this.list.length; A++) {
+                    var index = -1;
+
+                    var item = _.find(_this.list[A].torrent_out, function(item) {
+                        index++;
+
+                        return (_id == item._id);
+                    });
+
+                    if (item) {
+                        _this.list[A].torrent_out[index].listClass = "hidden";
+
+                        break;
+                    }
+                }
+            });
+
+            _this.listChanged();
+
+            _this.undo = _this.inboxListSelected;
+            _this.inboxListSelected = [];
+
+            _this.toastOpened = false;
+
+            window.setTimeout(function() {
+                _this.toastText = _this.undo.length + " item(s) removed";
+                _this.toastOpened = true;
+            }, 400);
+        },
+
+        deleteKeywordOkButtonTap: function() {
+            var _this = this;
+
+            _this.toastOpened = false;
+
+            var index = -1;
+
+            var item = _.find(_this.list, function(item) {
+                index++;
+
+                return (_this.deleteKeywordID == item._id);
+            });
+
+            if (item) {
+                _this.list.splice(index, 1);
+
+                Meteor.call("remove_torrent_in", _this.deleteKeywordID, function(error, status) {
+                    if (error) {
+                        window.setTimeout(function() {
+                            _this.toastText = error.reason;
+                            _this.toastOpened = true;
+                        }, 400);
+                    } else {
+                        window.setTimeout(function() {
+                            _this.toastText = "1 keyword deleted";
+                            _this.toastOpened = true;
+                        }, 400);
+                    }
+                });
+
+                $("html /deep/ .keyword-menu-selectable").show();
+            }
+        },
+
+        deleteKeywordTap: function(event, detail, sender) {
+            this.deleteKeywordID = $(sender).attr("tag");
+            this.deleteKeywordOpened = true;
+        },
+
+        deSelectAll: function() {
+            this.inboxListSelected = [];
+        },
+
+        domReady: function() {
+            if (Meteor.user().profile) {
+                this.profile = Meteor.user().profile;
+            }
+
+            var _this = this;
+
+            Meteor.autorun(function() {
+                _this.toastOpened = false;
+
+                if (Meteor.status().connected) {
+                    window.setTimeout(function() {
+                        _this.toastText = "server connected";
+                        _this.toastOpened = true;
+                    }, 400);
+                } else {
+                    window.setTimeout(function() {
+                        _this.toastText = "lost server connection";
+                        _this.toastOpened = true;
+                    }, 400);
+                }
+            });
+
+            torrent_in.find().observeChanges({
+                added: function(_id, row) {
+                    var item = _.find(_this.list, function(item) {
+                        return (_id == item._id);
+                    });
+
+                    if (typeof(item) == "undefined") {
+                        _this.list.push($.extend(true, row, {
+                            _id: _id,
+                            iconClass: polymer_color(row.keyword),
+                            iconText: (isNaN(row.keyword.charAt(0)) ? row.keyword.charAt(0) : "#"),
+                            torrent_out: []
+                        }));
+
+                        _this.list = _.sortBy(_this.list, "keyword");
+
+                        Meteor.subscribe("torrent_out", {
+                            torrent_in: _.map(_this.list, function(item) {
+                                return item._id
+                            })
+                        });
+                    }
+                },
+
+                removed: function(_id) {
+                    var index = -1;
+
+                    var item = _.find(_this.list, function(item) {
+                        index++;
+
+                        return (_id == item._id);
+                    });
+
+                    if (item) {
+                        _this.list.splice(index, 1);
+                    }
+                }
+            });
+
+            torrent_out.find().observeChanges({
+                added: function(_id, row) {
+                    var group_index = -1;
+
+                    var group = _.find(_this.list, function(item) {
+                        group_index++;
+
+                        return (-1 < row.torrent_in.indexOf(item._id));
+                    });
+
+                    if (group) {
+                        var index = -1;
+
+                        var item = _.find(_this.list[group_index].torrent_out, function(item) {
+                            index++;
+
+                            return (_id == item._id);
+                        });
+
+                        if (typeof(item) == "undefined") {
+                            if (_this.list[group_index].peers <= row.peers && _this.list[group_index].seeds <= row.seeds) {
+                                _this.list[group_index].torrent_out.push($.extend(true, row, {
+                                    _id: _id,
+                                    categoryClass: polymer_color(row.category),
+                                    listClass: "item"
+                                }));
+
+                                _this.list[group_index].torrent_out = _.sortBy(_this.list[group_index].torrent_out, "time").reverse();
+                            }
+                        } else {
+                            if (row.peers < _this.list[group_index].peers && row.seeds < _this.list[group_index].seeds) {
+                                _this.list[group_index].torrent_out.splice(index, 1);
+                            }
+                        }
+                    }
+                },
+
+                changed: function(_id, row) {
+                    var row = torrent_out.findOne({
+                        _id: _id
+                    });
+
+                    var group_index = -1;
+
+                    var group = _.find(_this.list, function(item) {
+                        group_index++;
+
+                        return (-1 < row.torrent_in.indexOf(item._id));
+                    });
+
+                    if (group) {
+                        var index = -1;
+
+                        var item = _.find(_this.list[group_index].torrent_out, function(item) {
+                            index++;
+
+                            return (_id == item._id);
+                        });
+
+                        if (item) {
+                            if (row.peers < _this.list[group_index].peers && row.seeds < _this.list[group_index].seeds) {
+                                _this.list[group_index].torrent_out.splice(index, 1);
+                            } else {
+                                _this.list[group_index].torrent_out[index] = $.extend(true, _this.list[group_index].torrent_out[index], row);
+                            }
+                        }
+                    }
+                },
+
+                removed: function(_id) {
+                    for (var A = 0; A < _this.list.length; A++) {
+                        var index = -1;
+
+                        var item = _.find(_this.list[A].torrent_out, function(item) {
+                            index++;
+
+                            return (_id == item._id);
+                        });
+
+                        if (item) {
+                            _this.list[A].torrent_out.splice(index, 1);
+
+                            break;
+                        }
+                    }
+                }
+            });
+
+            $(window).on("beforeunload", function() {
+                $("#torrentz_db").val(JSON.stringify(_this.list));
+
+                // return "Are you sure you want to exit ?";
+            });
+
+            $("html /deep/ .input-text").change(function() {
+                console.log($(_this).attr("tag"), $(_this).val());
+            });
+        },
+
+        forceNarrowTap: function() {
+            if (768 < $(this.$.drawerPanel).width()) {
+                this.forceNarrow = !this.forceNarrow;
+            } else {
+                this.$.drawerPanel.togglePanel();
+            }
+        },
+
+        keywordMenuTap: function(event, opened, sender) {
+            $("html /deep/ .keyword-menu-selectable").hide();
+
+            var A = $(sender).attr("tag").split("|");
+
+            $("html /deep/ ." + A[0]).show();
+            this.toolBarClass = A[1];
+
+            if ($(this.$.drawerPanel).width() <= 768) {
+                this.$.drawerPanel.closeDrawer();
+            }
+        },
+
+        listChanged: function() {
+            if (!(this.list instanceof Array)) {
+                this.list = JSON.parse(this.list);
+            }
+
+            if (this.list.length == 0) {
+                this.page = 0;
+            } else {
+                this.page = 1;
+            }
+
+            // console.log(this.list);
+        },
+
+        on_core_overlay_open: function(event, opened, sender) {
+            if (opened) {
+                $("html /deep/ .menu-b").addClass("move-up");
+            } else {
+                $("html /deep/ .menu-b").removeClass("move-up");
+            }
+        },
+
+        refresh_trackend: function(event, detail, sender) {
+            if (80 <= event.dy) {
+                this.refresh = true;
+
+                var _this = this;
+
+                window.setTimeout(function() {
+                    _this.refresh = false;
+                    _this.$.refresh.classList.add("reset");
+                }, 4000);
+            } else {
+                this.refresh = false;
+                this.$.refresh.classList.add("reset");
+            }
+        },
+
+        refresh_trackstart: function(event, detail, sender) {
+            // if (this.$.main.scroller.scrollTop == 0 && 0 < event.yDirection) {
+            this.$.refresh.classList.remove("reset");
+            // }
+        },
+
+        refresh_tracky: function(event, detail, sender) {
+            if (!this.refresh) {
+                this.$.refresh.style.opacity = Math.min(1, 1 - ((this.refresh_max_y - event.dy) / this.refresh_max_y));
+                this.$.refresh.style.transform = this.$.refresh.style.webkitTransform = "translate3d(0, " + Math.min(event.dy, this.refresh_max_y) + "px, 0)";
+            }
+        },
+
+        searchBarToggle: function() {
+            this.$.search.toggle();
+        },
+
+        undoButtonTap: function() {
+            var _this = this;
+
+            _this.undo.forEach(function(_id) {
+                for (var A = 0; A < _this.list.length; A++) {
+                    var index = -1;
+
+                    var item = _.find(_this.list[A].torrent_out, function(item) {
+                        index++;
+
+                        return (_id == item._id);
+                    });
+
+                    if (item) {
+                        _this.list[A].torrent_out[index].listClass = "item";
+
+                        break;
+                    }
+                }
+            });
+
+            _this.undo = [];
+        }
+
+    });
+    </script>
+</polymer-element>
