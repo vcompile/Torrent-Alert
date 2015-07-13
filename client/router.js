@@ -15,7 +15,6 @@ Meteor.startup(function() {
 });
 
 Router.configure({
-
     autoRender: false,
     autoStart: false,
 
@@ -24,7 +23,6 @@ Router.configure({
     notFoundTemplate: "notFoundTemplate",
 
     progressSpinner: false
-
 });
 
 Router.map(function() {
