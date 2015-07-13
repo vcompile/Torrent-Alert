@@ -412,10 +412,6 @@
         },
 
         domReady: function() {
-            if (Meteor.user().profile) {
-                this.profile = Meteor.user().profile;
-            }
-
             var _this = this;
 
             Meteor.autorun(function() {
@@ -431,6 +427,10 @@
                         _this.toastText = "lost server connection";
                         _this.toastOpened = true;
                     }, 400);
+                }
+
+                if (Meteor.user()) {
+                    _this.profile = Meteor.user().profile;
                 }
             });
 

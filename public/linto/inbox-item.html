@@ -3,7 +3,7 @@
         <style>
         .li {
             padding: 8px;
-            width: {{width}}px;
+            /*width: {{width}}px;*/
         }
         
         .li.hidden {
@@ -26,7 +26,7 @@
                     <div auto-vertical class="lowercase"><span class="title">{{item.title}}</span> &nbsp;<b class="description">{{item.category}}</b></div>
                     <div auto-vertical class="description" horizontal justified layout>
                         <div class="overflow-hidden">{{item.size}} | <b>{{item.seeds}}</b> S / <b>{{item.peers}}</b> P</div>
-                        <div class="overflow-hidden">{{item.time}}</div>
+                        <div class="overflow-hidden">{{item.fromNow}}</div>
                     </div>
                 </div>
             </div>
@@ -70,7 +70,7 @@
                 this.item = JSON.parse(this.item);
             }
 
-            this.item.time = moment(this.item.time, "X").fromNow();
+            this.item.fromNow = moment(this.item.time, "X").fromNow();
 
             // console.log(this.item);
         },
