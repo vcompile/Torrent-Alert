@@ -208,7 +208,7 @@
             var _this = this;
 
             if (Meteor.isCordova) {
-                Meteor.cordovaSignIn({
+                Meteor.cordova_g_plus({
                     cordova_g_plus: true,
                     profile: ["email", "email_verified", "gender", "locale", "name", "picture", "sub"]
                 }, function(error) {

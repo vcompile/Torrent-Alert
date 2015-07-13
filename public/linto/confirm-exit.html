@@ -24,6 +24,10 @@
         time_store: moment().format("x"),
 
         okButtonTap: function() {
+            if (document.querySelector("html /deep/ inbox-list")) {
+                document.querySelector("html /deep/ inbox-list").save();
+            }
+
             if (Meteor.isCordova) {
                 navigator.app.exitApp();
             }

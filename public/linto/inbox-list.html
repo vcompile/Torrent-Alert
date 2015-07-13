@@ -68,7 +68,7 @@
         
         .divider {
             padding: 8px;
-            width: {{width}}px;
+            /*width: {{width}}px;*/
         }
         
         .input-text {
@@ -262,7 +262,7 @@
         forceNarrow: false,
         inboxListSelected: [],
         keyword: "",
-        list: [],
+        list: [], // JSON.parse($("#torrentz_db").val());
         page: 1,
         peers: 100,
         profile: {
@@ -562,7 +562,7 @@
             });
 
             $(window).on("beforeunload", function() {
-                $("#torrentz_db").val(JSON.stringify(_this.list));
+                _this.save();
 
                 // return "Are you sure you want to exit ?";
             });
@@ -642,6 +642,10 @@
                 this.$.refresh.style.opacity = Math.min(1, 1 - ((this.refresh_max_y - event.dy) / this.refresh_max_y));
                 this.$.refresh.style.transform = this.$.refresh.style.webkitTransform = "translate3d(0, " + Math.min(event.dy, this.refresh_max_y) + "px, 0)";
             }
+        },
+
+        save: function() {
+            $("#torrentz_db").val(JSON.stringify(this.list));
         },
 
         searchBarToggle: function() {

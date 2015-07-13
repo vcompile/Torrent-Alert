@@ -28,7 +28,6 @@ Router.configure({
 });
 
 Router.map(function() {
-
     this.route("inbox", {
         onBeforeAction: function() {
             if (Session.get("resetPasswordToken")) {
@@ -70,5 +69,4 @@ Router.map(function() {
             this.next();
         }
     });
-
 });
