@@ -48,7 +48,7 @@ observe-sequence@1.0.6
 ordered-dict@1.0.3
 raix:eventemitter@0.1.2
 raix:eventstate@0.0.2
-raix:push@2.6.10
+raix:push@2.6.11
 random@1.0.3
 reactive-dict@1.1.0
 reactive-var@1.0.5
