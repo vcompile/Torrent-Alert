@@ -1,0 +1,69 @@
+<polymer-element attributes="active" name="search-bar">
+    <template>
+        <style>
+        :host {
+            display: none;
+        }
+        
+        :host([active]) {
+            display: block;
+        }
+        
+        core-header-panel {
+            background: rgba(255, 255, 255, 0.75) !important;
+            color: #888;
+            margin: 0;
+            z-index: 100;
+        }
+        
+        core-toolbar {
+            background: white;
+        }
+        
+        core-toolbar paper-icon-button {
+            margin: 0 !important;
+        }
+        
+        input {
+            background: transparent;
+            border: none;
+            font-size: 16px;
+            outline: none;
+        }
+        </style>
+
+        <core-header-panel fit mode="standard">
+            <core-toolbar>
+                <paper-icon-button icon="arrow-back" on-tap="{{toggle}}"></paper-icon-button>
+                <input flex id="searchInput" placeholder="Search ..">
+            </core-toolbar>
+        </core-header-panel>
+    </template>
+
+    <script>
+    Polymer("search-bar", {
+
+        active: false,
+
+        publish: {
+            active: {
+                reflect: true,
+                value: false
+            }
+        },
+
+        toggle: function() {
+            this.active = !this.active;
+
+            if (this.active) {
+                var _this = this;
+
+                window.setTimeout(function() {
+                    _this.$.searchInput.focus();
+                }, 400);
+            }
+        }
+
+    });
+    </script>
+</polymer-element>
