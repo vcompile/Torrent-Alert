@@ -68,7 +68,7 @@
         
         .divider {
             padding: 8px;
-            /*width: {{width}}px;*/
+            width: {{width}}px;
         }
         
         .input-text {
@@ -163,7 +163,7 @@
                 <core-toolbar class="{{inboxListSelected.length ? '_grey' : toolBarClass}} {{ {'selection': inboxListSelected.length} | tokenList }}" id="mainToolBar">
                     <paper-icon-button class="selection-allow" icon="arrow-back" on-tap="{{deSelectAll}}"></paper-icon-button>
                     <paper-icon-button class="selection-deny" icon="menu" on-tap="{{forceNarrowTap}}"></paper-icon-button>
-                    <div flex>{{inboxListSelected.length ? inboxListSelected.length : title}}</div>
+                    <div flex>{{inboxListSelected.length ? inboxListSelected.length : toolBarText}}</div>
                     <paper-icon-button class="selection-allow" icon="delete" on-tap="{{deleteItemTap}}"></paper-icon-button>
                     <paper-icon-button class="selection-allow" icon="mail"></paper-icon-button>
                     <paper-icon-button class="selection-allow" icon="more-vert"></paper-icon-button>
@@ -273,10 +273,10 @@
         refresh: false,
         refresh_max_y: 80,
         seeds: 10,
-        title: "Torrent Alert",
         toastOpened: false,
         toastText: "",
         toolBarClass: "_teal",
+        toolBarText: "Torrent Alert",
         undo: [],
         width: 448,
 
