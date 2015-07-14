@@ -9,15 +9,13 @@ meteor-platform
 accounts-base
 accounts-google
 accounts-password
-# appcache
+appcache
 http
 
 hedcet:cordova-google-plus-native-sign-in
-iron:router
 meteorhacks:kadira
 meteorhacks:npm
 momentjs:moment
-multiply:iron-router-progress
 raix:push
 
 npm-container

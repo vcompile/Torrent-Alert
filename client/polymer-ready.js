@@ -1,5 +1,7 @@
 $(document).on("polymer-ready", function() {
 
+    // subscription controller
+
     Meteor.subscribe("torrent_in");
 
     Meteor.subscribe("torrent_out", {
@@ -9,5 +11,9 @@ $(document).on("polymer-ready", function() {
     });
 
     Meteor.subscribe("torrent_worker");
+
+    // inbox view controller
+
+    Session.set("inbox_view", JSON.parse($("#torrentz_db").val()).length ? true : false);
 
 });

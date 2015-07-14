@@ -1,4 +1,4 @@
-<template name="layoutTemplate">
+<template name="layout_linto">
     <style>
     html,
     body {
@@ -9,13 +9,6 @@
         overflow: hidden;
         padding: 0;
     }
-    /* iron-router-progress */
-    
-    html #iron-router-progress {
-        background-color: steelblue;
-        box-shadow: 0 0 5px steelblue;
-    }
-    /* normalize */
     
     html /deep/ * {
         -webkit-touch-callout: none;
@@ -26,7 +19,6 @@
     html /deep/ *::-webkit-scrollbar {
         display: none;
     }
-    /* globalUI */
     
     html /deep/ .capitalize {
         text-transform: capitalize;
@@ -50,8 +42,6 @@
         text-transform: uppercase;
     }
     </style>
-
-    {{> yield}}
 
     <confirm-exit></confirm-exit>
 </template>

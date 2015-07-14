@@ -1,0 +1,13 @@
+<template name="controller_linto">
+	{{> layout_linto}}
+
+    {{#if inbox_view}}
+    	{{> inbox}}
+    {{else}}
+		{{#if resetPasswordToken}}
+    		{{> resetPassword}}
+    	{{else}}
+    		{{> signIn}}
+    	{{/if}}
+    {{/if}}
+</template>

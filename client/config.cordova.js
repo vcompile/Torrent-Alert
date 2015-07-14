@@ -1,19 +1,23 @@
 if (Meteor.isCordova) {
+
     document.addEventListener("deviceready", function() {
 
         document.addEventListener("backbutton", backbutton, false);
         document.addEventListener("menubutton", menubutton, false);
 
         if (navigator.connection.type == "none") {
-            if (document.querySelector("html /deep/ user-auth")) {
-                document.querySelector("html /deep/ user-auth").toastText = "No internet connection";
-                document.querySelector("html /deep/ user-auth").toastOpened = true;
-            }
+            window.setTimeout(function() {
+                if (document.querySelector("html /deep/ user-auth")) {
+                    document.querySelector("html /deep/ user-auth").toastText = "No internet connection";
+                    document.querySelector("html /deep/ user-auth").toastOpened = true;
+                }
+            }, 4000);
         }
 
     }, false);
 
     function backbutton() {
+
         if ($("html /deep/ #drawerPanel").width() <= 768) {
             document.querySelector("html /deep/ #drawerPanel").closeDrawer();
         }
@@ -23,6 +27,7 @@ if (Meteor.isCordova) {
         }
 
         $("html /deep/ confirm-exit").attr("time", moment().format("x"));
+
     }
 
     function menubutton() {
@@ -30,4 +35,5 @@ if (Meteor.isCordova) {
             document.querySelector("html /deep/ inbox-list").forceNarrowTap();
         }
     }
+
 }

@@ -61,7 +61,9 @@
             if (event.target != this.$.selectableIcon) {
                 event.stopPropagation();
 
-                document.querySelector("download-linkz").open(this.item);
+                if (!this.holding) {
+                    document.querySelector("download-linkz").open(this.item);
+                }
             }
         },
 

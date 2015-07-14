@@ -167,10 +167,6 @@
     <script>
     Polymer("user-auth", {
 
-        margin: {
-            left: 8,
-            right: 8
-        },
         changePassword: {},
         changePasswordOpened: true,
         forgotPassword: {},
@@ -196,15 +192,9 @@
             this.changePasswordOpened = !this.changePasswordOpened;
         },
 
-        domReady: function() {
-            if (320 < window.innerWidth) {
-                this.width = 320;
-            } else {
-                this.width = window.innerWidth - this.margin.left - this.margin.right;
-            }
-        },
-
         googleSignInTap: function(event, detail, sender) {
+            this.toastOpened = false;
+
             var _this = this;
 
             if (Meteor.isCordova) {
@@ -213,14 +203,10 @@
                     profile: ["email", "email_verified", "gender", "locale", "name", "picture", "sub"]
                 }, function(error) {
                     if (error) {
-                        _this.toastOpened = false;
-
                         window.setTimeout(function() {
                             _this.toastText = error;
                             _this.toastOpened = true;
                         }, 400);
-                    } else {
-                        Router.go("/");
                     }
                 });
             } else {
@@ -230,14 +216,10 @@
                         requestPermissions: ["email", "profile"]
                     }, function(error) {
                         if (error) {
-                            _this.toastOpened = false;
-
                             window.setTimeout(function() {
                                 _this.toastText = Accounts.LoginCancelledError.numericError;
                                 _this.toastOpened = true;
                             }, 400);
-                        } else {
-                            Router.go("/");
                         }
                     });
                 }
@@ -294,9 +276,9 @@
                         } else {
                             if (callback_done && (typeof callback_done == "function")) {
                                 callback_done();
-
-                                delete Session.keys.resetPasswordToken;
                             }
+
+                            Session.set("resetPasswordToken", "_");
                         }
                     });
                 } else {
@@ -339,8 +321,6 @@
                                 _this.toastText = error;
                                 _this.toastOpened = true;
                             }, 400);
-                        } else {
-                            Router.go("/");
                         }
                     });
                 } else {
@@ -364,11 +344,11 @@
         },
 
         signUpTap: function(event, detail, sender) {
+            this.toastOpened = false;
+
             var _this = this;
 
             Meteor.call("signUp", _this.signUp, function(error, res) {
-                _this.toastOpened = false;
-
                 if (error) {
                     window.setTimeout(function() {
                         _this.toastText = error.reason;

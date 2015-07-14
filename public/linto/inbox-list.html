@@ -137,7 +137,7 @@
                         <div class="padding-4" flex layout vertical>
                             <div auto-vertical horizontal justified layout>
                                 <div class="title overflow-hidden lowercase" flex style="width: 32px !important;">{{keyword}}</div>
-                                <div class="badge" self-start>{{torrent_out.length}}</div>
+                                <div class="badge" self-start>{{torrent_out.length ? torrent_out.length : "#"}}</div>
                             </div>
                             <div auto-vertical class="description"><b>{{seeds}}</b> S / <b>{{peers}}</b> P</div>
                         </div>
@@ -262,7 +262,7 @@
         forceNarrow: false,
         inboxListSelected: [],
         keyword: "",
-        list: [], // JSON.parse($("#torrentz_db").val());
+        list: [],
         page: 1,
         peers: 100,
         profile: {
@@ -281,12 +281,12 @@
         width: 448,
 
         addKeywordButtonTap: function() {
+            this.toastOpened = false;
+
             this.keyword = decodeURIComponent(this.keyword).trim();
+            var keywordArray = this.keyword.replace("/", "").split(/\?[fq]=/g);
 
-            var _this = this,
-                keywordArray = _this.keyword.replace("/", "").split(/\?[fq]=/g);
-
-            _this.toastOpened = false;
+            var _this = this;
 
             if (_this.keyword.length) {
                 var row = {
@@ -335,6 +335,8 @@
         },
 
         deleteItemTap: function() {
+            this.toastOpened = false;
+
             var _this = this;
 
             _this.inboxListSelected.forEach(function(_id) {
@@ -355,12 +357,8 @@
                 }
             });
 
-            _this.listChanged();
-
             _this.undo = _this.inboxListSelected;
             _this.inboxListSelected = [];
-
-            _this.toastOpened = false;
 
             window.setTimeout(function() {
                 _this.toastText = _this.undo.length + " item(s) removed";
@@ -369,11 +367,10 @@
         },
 
         deleteKeywordOkButtonTap: function() {
-            var _this = this;
+            this.toastOpened = false;
 
-            _this.toastOpened = false;
-
-            var index = -1;
+            var _this = this,
+                index = -1;
 
             var item = _.find(_this.list, function(item) {
                 index++;
@@ -412,6 +409,8 @@
         },
 
         domReady: function() {
+            this.list = JSON.parse($("#torrentz_db").val());
+
             var _this = this;
 
             Meteor.autorun(function() {
