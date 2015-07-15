@@ -728,9 +728,9 @@
 
             if (body != "") {
                 if (Meteor.isCordova) {
-                    window.plugins.socialsharing.share("Hi,\n\n" + this.profile.name + " shared " + _this.inboxListSelected.length + ((_this.inboxListSelected.length == 1) ? " torrent" : " torrentz") + " with you using Torrent Alert" + body);
+                    window.plugins.socialsharing.share("Hi\n\n" + this.profile.name + " shared " + _this.inboxListSelected.length + ((_this.inboxListSelected.length == 1) ? " torrent" : " torrentz") + " with you using Torrent Alert" + body);
                 } else {
-                    window.location.href = 'mailto:?body=' + encodeURIComponent("Hi,\n\n" + this.profile.name + " shared " + _this.inboxListSelected.length + ((_this.inboxListSelected.length == 1) ? " torrent" : " torrentz") + " with you using Torrent Alert" + body);
+                    window.location.href = 'mailto:?body=' + encodeURIComponent("Hi\n\n" + this.profile.name + " shared " + _this.inboxListSelected.length + ((_this.inboxListSelected.length == 1) ? " torrent" : " torrentz") + " with you using Torrent Alert" + body);
                 }
             } else {
                 window.setTimeout(function() {
