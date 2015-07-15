@@ -1,6 +1,6 @@
 $(document).on("polymer-ready", function() {
 
-    // subscription controller
+    // subscription
 
     Meteor.subscribe("torrent_in");
 
@@ -12,7 +12,7 @@ $(document).on("polymer-ready", function() {
 
     Meteor.subscribe("torrent_worker");
 
-    // inbox view controller
+    // session var inbox_view
 
     Session.set("inbox_view", JSON.parse($("#torrentz_db").val()).length ? true : false);
 

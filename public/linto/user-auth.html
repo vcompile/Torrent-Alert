@@ -39,7 +39,7 @@
                 <core-collapse hidden?="{{section}}" opened?="{{signInOpened}}">
                     <div class="collapse width">
                         <div layout style="padding: 10px 15px;" vertical>
-                            <paper-input label="email" value="{{signIn.email}}"></paper-input>
+                            <paper-input autoFocus label="email" value="{{signIn.email}}"></paper-input>
                             <div horizontal justified layout>
                                 <div flex>
                                     <paper-input-decorator label="password">
@@ -59,7 +59,7 @@
                 <core-collapse hidden?="{{section}}" opened?="{{forgotPasswordOpened}}">
                     <div class="collapse width">
                         <div layout style="padding: 10px 15px;" vertical>
-                            <paper-input label="email" value="{{forgotPassword.email}}"></paper-input>
+                            <paper-input autoFocus label="email" value="{{forgotPassword.email}}"></paper-input>
                             <div horizontal justified layout>
                                 <div flex></div>
                                 <div self-end>
@@ -79,7 +79,7 @@
                     <div class="collapse width">
                         <div layout style="padding: 10px 15px;" vertical>
                             <paper-input label="username" value="{{signUp.username}}"></paper-input>
-                            <paper-input label="email" value="{{signUp.email}}"></paper-input>
+                            <paper-input autoFocus label="email" value="{{signUp.email}}"></paper-input>
                             <div horizontal justified layout>
                                 <div flex></div>
                                 <div self-end>

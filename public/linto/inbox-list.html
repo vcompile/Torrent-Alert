@@ -68,7 +68,7 @@
         
         .divider {
             padding: 8px;
-            width: {{width}}px;
+            /*width: {{width}}px;*/
         }
         
         .input-text {
@@ -116,7 +116,7 @@
                 <div class="padding-4"></div>
 
                 <template if="{{profile.email != 'user@host'}}">
-                    <div class="menu-l" horizontal justified layout>
+                    <div class="menu-l" horizontal justified layout on-tap="{{cPanelTap}}">
                         <div class="padding-4" self-start>
                             <selectable-icon iconImgSrc="{{profile.picture ? profile.picture : '/img/user.png'}}"></selectable-icon>
                         </div>
@@ -165,7 +165,7 @@
                     <paper-icon-button class="selection-deny" icon="menu" on-tap="{{forceNarrowTap}}"></paper-icon-button>
                     <div flex>{{inboxListSelected.length ? inboxListSelected.length : toolBarText}}</div>
                     <paper-icon-button class="selection-allow" icon="delete" on-tap="{{deleteItemTap}}"></paper-icon-button>
-                    <paper-icon-button class="selection-allow" icon="mail"></paper-icon-button>
+                    <paper-icon-button class="selection-allow" icon="social:share" on-tap="{{shareItemTap}}"></paper-icon-button>
                     <paper-icon-button class="selection-allow" icon="more-vert"></paper-icon-button>
                     <paper-icon-button class="selection-deny" icon="search" on-tap="{{searchBarToggle}}"></paper-icon-button>
                     <div center-center class="bottom fit" horizontal id="refresh" layout>
@@ -250,6 +250,37 @@
             </div>
         </paper-dialog>
 
+        <paper-dialog backdrop opened="{{cPanelOpened}}" transition="core-transition-bottom">
+            <div layout vertical>
+                <div layout class="padding-24" vertical>
+                    <div style="border-bottom: 2px solid #888; padding: 4px 0;">alerter</div>
+                    <div class="padding-4"></div>
+                    <div center class="disabled-text" horizontal justified layout style="padding: 8px 0;">
+                        <div>enable GCM alert</div>
+                        <paper-toggle-button checked disabled></paper-toggle-button>
+                    </div>
+                    <div center class="disabled-text" horizontal justified layout style="padding: 8px 0;">
+                        <div>enable email alert</div>
+                        <paper-toggle-button disabled></paper-toggle-button>
+                    </div>
+                    <div class="padding-4"></div>
+                    <div style="border-bottom: 2px solid #888; padding: 4px 0;">watcher</div>
+                    <div class="padding-4"></div>
+                    <div center class="disabled-text" horizontal justified layout>
+                        <div>frequency / day</div>
+                        <paper-slider disabled editable flex id="seeds" max="1000" min="1" value="2"></paper-slider>
+                    </div>
+                    <div class="padding-4"></div>
+                    <div style="border-bottom: 2px solid #888; padding: 4px 0;">other</div>
+                    <div class="padding-4"></div>
+                    <div center horizontal justified layout>
+                        <paper-button>upgrade</paper-button>
+                        <paper-button on-tap="{{signOutTap}}">signOut</paper-button>
+                    </div>
+                </div>
+            </div>
+        </paper-dialog>
+
         <search-bar id="search"></search-bar>
     </template>
 
@@ -257,6 +288,7 @@
     Polymer("inbox-list", {
 
         addKeywordOpened: false,
+        cPanelOpened: false,
         deleteKeywordID: "",
         deleteKeywordOpened: false,
         forceNarrow: false,
@@ -297,11 +329,6 @@
                     urlPart: (1 < keywordArray.length) ? keywordArray[0] : "search"
                 };
 
-                _this.keyword = "";
-
-                _this.seeds = 10;
-                _this.peers = 100;
-
                 Meteor.call("insert_torrent_in", row, function(error, status) {
                     if (error) {
                         window.setTimeout(function() {
@@ -328,10 +355,18 @@
                     _this.toastOpened = true;
                 }, 400);
             }
+
+            _this.keyword = "";
+            _this.peers = 100;
+            _this.seeds = 10;
         },
 
         addKeywordFabTap: function() {
             this.addKeywordOpened = true;
+        },
+
+        cPanelTap: function() {
+            this.cPanelOpened = true;
         },
 
         deleteItemTap: function() {
@@ -395,7 +430,8 @@
                     }
                 });
 
-                $("html /deep/ .keyword-menu-selectable").show();
+                $("html /deep/ .keyword-menu-selectable").attr("hidden", false);
+                _this.toolBarClass = "_teal";
             }
         },
 
@@ -414,18 +450,24 @@
             var _this = this;
 
             Meteor.autorun(function() {
-                _this.toastOpened = false;
-
                 if (Meteor.status().connected) {
-                    window.setTimeout(function() {
-                        _this.toastText = "server connected";
-                        _this.toastOpened = true;
-                    }, 400);
+                    if (_this.toastText != "server connected") {
+                        _this.toastOpened = false;
+
+                        window.setTimeout(function() {
+                            _this.toastText = "server connected";
+                            _this.toastOpened = true;
+                        }, 400);
+                    }
                 } else {
-                    window.setTimeout(function() {
-                        _this.toastText = "lost server connection";
-                        _this.toastOpened = true;
-                    }, 400);
+                    if (_this.toastText != "lost server connection") {
+                        _this.toastOpened = false;
+
+                        window.setTimeout(function() {
+                            _this.toastText = "lost server connection";
+                            _this.toastOpened = true;
+                        }, 400);
+                    }
                 }
 
                 if (Meteor.user()) {
@@ -580,16 +622,17 @@
         },
 
         keywordMenuTap: function(event, opened, sender) {
-            $("html /deep/ .keyword-menu-selectable").hide();
-
-            var A = $(sender).attr("tag").split("|");
-
-            $("html /deep/ ." + A[0]).show();
-            this.toolBarClass = A[1];
+            $("html /deep/ .keyword-menu-selectable").attr("hidden", true);
+            this.toolBarClass = "_teal";
 
             if ($(this.$.drawerPanel).width() <= 768) {
                 this.$.drawerPanel.closeDrawer();
             }
+
+            var A = $(sender).attr("tag").split("|");
+
+            $("html /deep/ ." + A[0]).attr("hidden", false);
+            this.toolBarClass = A[1];
         },
 
         listChanged: function() {
@@ -649,6 +692,76 @@
 
         searchBarToggle: function() {
             this.$.search.toggle();
+        },
+
+        shareItemTap: function() {
+            this.toastOpened = false;
+
+            var _this = this,
+                body = "";
+
+            for (var A = 0; A < _this.inboxListSelected.length; A++) {
+                for (var B = 0; B < _this.list.length; B++) {
+                    var index = -1;
+
+                    var item = _.find(_this.list[B].torrent_out, function(item) {
+                        index++;
+
+                        return (_this.inboxListSelected[A] == item._id);
+                    });
+
+                    if (item) {
+                        if (_this.list[B].torrent_out[index].linkz.length) {
+                            body += "\n\n" + (A + 1) + "\t\t" + _this.list[B].torrent_out[index].title + "\n\n";
+
+                            _this.list[B].torrent_out[index].linkz = _.sortBy(_this.list[B].torrent_out[index].linkz, "time");
+
+                            for (var C = 0; C < _this.list[B].torrent_out[index].linkz.length; C++) {
+                                body += "\t\t" + (C + 1) + "\t\t" + _this.list[B].torrent_out[index].linkz[C].text + "\t\t" + _this.list[B].torrent_out[index].linkz[C].url + "\n\n";
+                            }
+                        }
+
+                        break;
+                    }
+                }
+            }
+
+            if (body != "") {
+                if (Meteor.isCordova) {
+                    window.plugins.socialsharing.share("Hi,\n\n" + this.profile.name + " shared " + _this.inboxListSelected.length + ((_this.inboxListSelected.length == 1) ? " torrent" : " torrentz") + " with you using Torrent Alert" + body);
+                } else {
+                    window.location.href = 'mailto:?body=' + encodeURIComponent("Hi,\n\n" + this.profile.name + " shared " + _this.inboxListSelected.length + ((_this.inboxListSelected.length == 1) ? " torrent" : " torrentz") + " with you using Torrent Alert" + body);
+                }
+            } else {
+                window.setTimeout(function() {
+                    _this.toastText = "empty email body";
+                    _this.toastOpened = true;
+                }, 400);
+            }
+        },
+
+        signOutTap: function() {
+            this.cPanelOpened = false;
+            this.toastOpened = false;
+
+            var _this = this;
+
+            Meteor.logout(function(error) {
+                if (error) {
+                    window.setTimeout(function() {
+                        _this.toastText = error;
+                        _this.toastOpened = true;
+                    }, 400);
+                } else {
+                    $("#torrentz_db").val("[]");
+
+                    if (Meteor.isCordova) {
+                        window.plugins.googleplus.logout();
+                    }
+
+                    Session.set("inbox_view", false);
+                }
+            });
         },
 
         undoButtonTap: function() {

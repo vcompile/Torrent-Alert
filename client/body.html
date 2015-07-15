@@ -1,7 +1,55 @@
 <body>
 
+    <center>loading ..</center>
+
     <core-localstorage id="torrentz_db" name="torrentz_db" value="[]"></core-localstorage>
 
+    <style>
+    html,
+    body {
+        background: #EEE;
+        font-family: 'RobotoDraft', sans-serif;
+        margin: 0;
+        outline: 0;
+        overflow: hidden;
+        padding: 0;
+    }
+    
+    html /deep/ * {
+        -webkit-touch-callout: none;
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+        -webkit-user-select: none;
+    }
+    
+    html /deep/ *::-webkit-scrollbar {
+        display: none;
+    }
+    
+    html /deep/ .capitalize {
+        text-transform: capitalize;
+    }
+    
+    html /deep/ .lowercase {
+        text-transform: lowercase;
+    }
+    
+    html /deep/ .overflow-hidden {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    html /deep/ .uppercase {
+        text-transform: uppercase;
+    }
+    
+    html /deep/ .uppercase-start:first-letter {
+        text-transform: uppercase;
+    }
+    </style>
+
     {{> controller_linto}}
+
+    <confirm-exit></confirm-exit>
 
 </body>

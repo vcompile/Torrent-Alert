@@ -6,8 +6,9 @@ Meteor.methods({
         var user = Meteor.user();
         if (!user) throw new Meteor.Error(422, "user N");
 
-        if (user._id != "HedCET")
+        if (user._id != "HedCET") {
             throw new Meteor.Error(422, "restrictedAccess");
+        }
 
         switch (query.db) {
             case "torrent_in":
@@ -146,8 +147,9 @@ Meteor.methods({
                             if (link.substr(0, 4) == "http") {
                                 link = link.split("//", 2)[1];
 
-                                if (link.substr(0, 4) == "www.")
+                                if (link.substr(0, 4) == "www.") {
                                     link = link.substr(4);
+                                }
 
                                 linkz.push({
                                     text: link.split("/", 1).toString("utf-8"),

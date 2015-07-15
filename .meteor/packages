@@ -9,7 +9,8 @@ meteor-platform
 accounts-base
 accounts-google
 accounts-password
-appcache
+# appcache
+email
 http
 
 hedcet:cordova-google-plus-native-sign-in

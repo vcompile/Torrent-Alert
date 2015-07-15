@@ -6,12 +6,14 @@ if (Meteor.isCordova) {
         document.addEventListener("menubutton", menubutton, false);
 
         if (navigator.connection.type == "none") {
-            window.setTimeout(function() {
-                if (document.querySelector("html /deep/ user-auth")) {
-                    document.querySelector("html /deep/ user-auth").toastText = "No internet connection";
+            if (document.querySelector("html /deep/ user-auth")) {
+                document.querySelector("html /deep/ user-auth").toastOpened = false;
+
+                window.setTimeout(function() {
+                    document.querySelector("html /deep/ user-auth").toastText = "internet connection required";
                     document.querySelector("html /deep/ user-auth").toastOpened = true;
-                }
-            }, 4000);
+                }, 2000);
+            }
         }
 
     }, false);

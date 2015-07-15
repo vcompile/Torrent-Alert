@@ -1,0 +1,55 @@
+<polymer-element name="c-panel">
+    <template>
+        <style>
+        paper-action-dialog {
+            top: 0;
+        }
+        </style>
+        <paper-action-dialog autoCloseDisabled backdrop transition="core-transition-bottom" style="max-width: 512px;">
+            <div layout vertical>
+                <div class="menu-l-divider"></div>
+                <div class="disabled-text">Alerter
+                    <hr>
+                </div>
+                <div class="menu-l-divider" horizontal justified layout>
+                    <div flex self-center>Enable GCM Push</div>
+                    <div self-center>
+                        <paper-toggle-button checked disabled></paper-toggle-button>
+                    </div>
+                </div>
+                <div class="menu-l-divider" horizontal justified layout>
+                    <div flex self-center>Enable Mail</div>
+                    <div self-center>
+                        <paper-toggle-button disabled></paper-toggle-button>
+                    </div>
+                </div>
+                <div class="menu-l-divider"></div>
+                <div class="disabled-text">Watcher
+                    <hr>
+                </div>
+                <div center class="menu-l-divider" horizontal justified layout>
+                    <div>Request / Day</div>
+                    <paper-slider disabled editable flex id="peers" max="48" min="1" value="2"></paper-slider>
+                </div>
+                <div class="menu-l-divider"></div>
+                <div class="disabled-text">Other
+                    <hr>
+                </div>
+                <div class="menu-l-divider" horizontal justified layout>
+                    <paper-button>upgrade</paper-button>
+                    <paper-button>sign out</paper-button>
+                </div>
+                <div class="menu-l-divider"></div>
+            </div>
+
+            <div dismissive style="width: 100%;">
+                <div horizontal justified layout>
+                    <div flex self-center>CONTROL PANEL</div>
+                    <div self-center>
+                        <paper-icon-button core-overlay-toggle icon="clear"></paper-icon-button>
+                    </div>
+                </div>
+            </div>
+        </paper-action-dialog>
+    </template>
+</polymer-element>

@@ -1,4 +1,4 @@
-<polymer-element attributes="item selected undo" name="inbox-item">
+<polymer-element attributes="item selected" name="inbox-item">
     <template>
         <style>
         .li {
@@ -45,10 +45,10 @@
                 return;
             }
 
+            this.holding = true;
+
             this.selected = !this.selected;
             this.$.selectableIcon.fire("tap");
-
-            this.holding = true;
 
             var _this = this;
 
@@ -79,10 +79,6 @@
 
         publish: {
             selected: {
-                reflect: true,
-                value: false
-            },
-            undo: {
                 reflect: true,
                 value: false
             }

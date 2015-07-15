@@ -2,7 +2,6 @@ accounts-base@1.2.0
 accounts-google@1.0.4
 accounts-oauth@1.1.5
 accounts-password@1.1.1
-appcache@1.0.4
 autoupdate@1.2.1
 base64@1.0.3
 binary-heap@1.0.3
