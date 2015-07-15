@@ -68,7 +68,7 @@
         
         .divider {
             padding: 8px;
-            width: {{width}}px;
+            /*width: {{width}}px;*/
         }
         
         .input-text {
@@ -274,8 +274,8 @@
                     <div style="border-bottom: 2px solid #888; padding: 4px 0;">other</div>
                     <div class="padding-4"></div>
                     <div center horizontal justified layout>
-                        <paper-button>upgrade</paper-button>
-                        <paper-button on-tap="{{signOutTap}}">signOut</paper-button>
+                        <paper-button core-overlay-toggle>upgrade</paper-button>
+                        <paper-button core-overlay-toggle on-tap="{{signOutTap}}">signOut</paper-button>
                     </div>
                 </div>
             </div>
@@ -366,6 +366,10 @@
         },
 
         cPanelTap: function() {
+            if ($(this.$.drawerPanel).width() <= 768) {
+                this.$.drawerPanel.closeDrawer();
+            }
+
             this.cPanelOpened = true;
         },
 
@@ -741,23 +745,18 @@
         },
 
         signOutTap: function() {
-            this.cPanelOpened = false;
             this.toastOpened = false;
 
             var _this = this;
 
             Meteor.logout(function(error) {
-                if (error) {
+                if (!error) {
                     window.setTimeout(function() {
                         _this.toastText = error;
                         _this.toastOpened = true;
                     }, 400);
                 } else {
                     $("#torrentz_db").val("[]");
-
-                    if (Meteor.isCordova) {
-                        window.plugins.googleplus.logout();
-                    }
 
                     Session.set("inbox_view", false);
                 }
