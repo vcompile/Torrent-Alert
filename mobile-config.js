@@ -2,7 +2,7 @@ App.info({
     id: "com.vcompile.torrentz",
     name: "Torrent Alert",
     description: "Torrentz Keyword Watcher & Alerter",
-    version: "0.0.7",
+    version: "0.0.8",
     author: "Linto Cheeran",
     email: "linto@vcompile.com",
     website: "http://github.com/HedCET"
