@@ -68,7 +68,7 @@
         
         .divider {
             padding: 8px;
-            /*width: {{width}}px;*/
+            width: {{width}}px;
         }
         
         .input-text {
@@ -434,10 +434,8 @@
                     }
                 });
 
-                window.setTimeout(function() {
-                    $("html /deep/ .keyword-menu-selectable").attr("hidden", false);
-                    _this.toolBarClass = "_teal";
-                }, 200);
+                $("html /deep/ .keyword-menu-selectable").removeClass("hidden");
+                _this.toolBarClass = "_teal";
             }
         },
 
@@ -478,6 +476,12 @@
 
                 if (Meteor.user()) {
                     _this.profile = Meteor.user().profile;
+                } else {
+                    _this.profile = {
+                        email: "user@host",
+                        name: "user",
+                        picture: "/img/user.png"
+                    };
                 }
             });
 
@@ -628,7 +632,7 @@
         },
 
         keywordMenuTap: function(event, opened, sender) {
-            $('html /deep/ .keyword-menu-selectable[hidden="false"]').attr("hidden", true);
+            $("html /deep/ .keyword-menu-selectable:not(.hidden)").addClass("hidden");
             this.toolBarClass = "_teal";
 
             if ($(this.$.drawerPanel).width() <= 768) {
@@ -637,10 +641,8 @@
 
             var A = $(sender).attr("tag").split("|");
 
-            window.setTimeout(function() {
-                $("html /deep/ ." + A[0]).attr("hidden", false);
-                this.toolBarClass = A[1];
-            }, 200);
+            $("html /deep/ ." + A[0]).removeClass("hidden");
+            this.toolBarClass = A[1];
         },
 
         listChanged: function() {
@@ -754,17 +756,16 @@
             var _this = this;
 
             Meteor.logout(function(error) {
-                if (!error) {
+                if (error) {
                     window.setTimeout(function() {
                         _this.toastText = error;
                         _this.toastOpened = true;
                     }, 400);
                 } else {
+                    _this.list = [];
                     $("#torrentz_db").val("[]");
 
-                    _this.list = [];
-
-                    Session.set("inbox_view", false);
+                    Session.set("view", "signIn");
                 }
             });
         },

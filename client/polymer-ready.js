@@ -12,15 +12,14 @@ $(document).on("polymer-ready", function() {
 
     Meteor.subscribe("torrent_worker");
 
-    // session var inbox_view
+    // session var view
+
     Meteor.autorun(function() {
-        Session.set("inbox_view", (Meteor.user() || JSON.parse($("#torrentz_db").val()).length) ? true : false);
+        Session.set("view", (Meteor.user() || JSON.parse($("#torrentz_db").val()).length) ? "inbox" : "signIn");
     });
 
-    // user-auth loading
+    // loading
 
-    if (document.querySelector("html /deep/ user-auth")) {
-        document.querySelector("html /deep/ user-auth").loading = false;
-    }
+    Session.set("polymer-ready", true);
 
 });

@@ -1,11 +1,3 @@
 <template name="controller_linto">
-    {{#if inbox_view}}
-    	{{> inbox}}
-    {{else}}
-	    {{#if resetPasswordToken}}
-	    	{{> resetPassword}}
-	    {{else}}
-	    	{{> signIn}}
-	    {{/if}}
-    {{/if}}
+    {{> Template.dynamic template=view}}
 </template>
