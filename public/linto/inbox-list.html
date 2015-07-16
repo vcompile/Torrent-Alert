@@ -68,7 +68,7 @@
         
         .divider {
             padding: 8px;
-            width: {{width}}px;
+            /*width: {{width}}px;*/
         }
         
         .input-text {
@@ -206,10 +206,6 @@
 
         <paper-fab class="menu-b" hidden?="{{inboxListSelected.length && (page == 0 || page == 1)}}" icon="add" on-tap="{{addKeywordFabTap}}"></paper-fab>
 
-        <paper-toast duration="4000" id="toast" on-core-overlay-open="{{on_core_overlay_open}}" opened="{{toastOpened}}" text="{{toastText}}">
-            <div hidden?="{{!undo.length}}" on-tap="{{undoButtonTap}}" style="color: #FFEB3B;">undo</div>
-        </paper-toast>
-
         <paper-dialog autoCloseDisabled backdrop opened="{{addKeywordOpened}}" transition="core-transition-bottom">
             <div layout vertical>
                 <div layout class="padding-24" vertical>
@@ -282,6 +278,10 @@
         </paper-dialog>
 
         <search-bar id="search"></search-bar>
+
+        <paper-toast duration="4000" id="toast" on-core-overlay-open="{{on_core_overlay_open}}" opened="{{toastOpened}}" text="{{toastText}}">
+            <div hidden?="{{!undo.length}}" on-tap="{{undoButtonTap}}" style="color: #FFEB3B;">undo</div>
+        </paper-toast>
     </template>
 
     <script>
@@ -434,8 +434,10 @@
                     }
                 });
 
-                $("html /deep/ .keyword-menu-selectable").attr("hidden", false);
-                _this.toolBarClass = "_teal";
+                window.setTimeout(function() {
+                    $("html /deep/ .keyword-menu-selectable").attr("hidden", false);
+                    _this.toolBarClass = "_teal";
+                }, 200);
             }
         },
 
@@ -626,7 +628,7 @@
         },
 
         keywordMenuTap: function(event, opened, sender) {
-            $("html /deep/ .keyword-menu-selectable").attr("hidden", true);
+            $('html /deep/ .keyword-menu-selectable[hidden="false"]').attr("hidden", true);
             this.toolBarClass = "_teal";
 
             if ($(this.$.drawerPanel).width() <= 768) {
@@ -635,8 +637,10 @@
 
             var A = $(sender).attr("tag").split("|");
 
-            $("html /deep/ ." + A[0]).attr("hidden", false);
-            this.toolBarClass = A[1];
+            window.setTimeout(function() {
+                $("html /deep/ ." + A[0]).attr("hidden", false);
+                this.toolBarClass = A[1];
+            }, 200);
         },
 
         listChanged: function() {
@@ -721,7 +725,7 @@
                             _this.list[B].torrent_out[index].linkz = _.sortBy(_this.list[B].torrent_out[index].linkz, "time");
 
                             for (var C = 0; C < _this.list[B].torrent_out[index].linkz.length; C++) {
-                                body += "\t\t" + (C + 1) + "\t\t" + _this.list[B].torrent_out[index].linkz[C].text + "\t\t" + _this.list[B].torrent_out[index].linkz[C].url + "\n\n";
+                                body += "\t\t" + (C + 1) + "\t\t" + _this.list[B].torrent_out[index].linkz[C].url.replace("\\", "") + "\n\n";
                             }
                         }
 
@@ -732,9 +736,9 @@
 
             if (body != "") {
                 if (Meteor.isCordova) {
-                    window.plugins.socialsharing.share("Hi\n\n" + this.profile.name + " shared " + _this.inboxListSelected.length + ((_this.inboxListSelected.length == 1) ? " torrent" : " torrentz") + " with you using Torrent Alert" + body);
+                    window.plugins.socialsharing.share("Hi\n\n" + this.profile.name + " shared " + _this.inboxListSelected.length + ((_this.inboxListSelected.length == 1) ? " torrent" : " torrentz") + " - Torrent Alert" + body);
                 } else {
-                    window.location.href = 'mailto:?body=' + encodeURIComponent("Hi\n\n" + this.profile.name + " shared " + _this.inboxListSelected.length + ((_this.inboxListSelected.length == 1) ? " torrent" : " torrentz") + " with you using Torrent Alert" + body);
+                    window.location.href = 'mailto:?body=' + encodeURIComponent("Hi\n\n" + this.profile.name + " shared " + _this.inboxListSelected.length + ((_this.inboxListSelected.length == 1) ? " torrent" : " torrentz") + " - Torrent Alert" + body);
                 }
             } else {
                 window.setTimeout(function() {
@@ -757,6 +761,9 @@
                     }, 400);
                 } else {
                     $("#torrentz_db").val("[]");
+
+                    _this.list = [];
+
                     Session.set("inbox_view", false);
                 }
             });

@@ -1,21 +1,8 @@
 if (Meteor.isCordova) {
 
     document.addEventListener("deviceready", function() {
-
         document.addEventListener("backbutton", backbutton, false);
         document.addEventListener("menubutton", menubutton, false);
-
-        if (navigator.connection.type == "none") {
-            if (document.querySelector("html /deep/ user-auth")) {
-                document.querySelector("html /deep/ user-auth").toastOpened = false;
-
-                window.setTimeout(function() {
-                    document.querySelector("html /deep/ user-auth").toastText = "internet connection required";
-                    document.querySelector("html /deep/ user-auth").toastOpened = true;
-                }, 2000);
-            }
-        }
-
     }, false);
 
     function backbutton() {
@@ -28,7 +15,7 @@ if (Meteor.isCordova) {
             A[Z].close();
         }
 
-        $("html /deep/ confirm-exit").attr("time", moment().format("x"));
+        document.querySelector("html /deep/ confirm-exit").time = moment().format("x");
 
     }
 

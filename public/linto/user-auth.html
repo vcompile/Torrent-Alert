@@ -1,4 +1,4 @@
-<polymer-element attributes="section" name="user-auth">
+<polymer-element attributes="loading section" name="user-auth">
     <template>
         <style>
         .width {
@@ -161,6 +161,10 @@
             </div>
         </div>
 
+        <div center-center fit hidden?="{{!loading}}" horizontal layout style="background: black; opacity: 0.2;">
+            <img src="/img/loading.svg">
+        </div>
+
         <paper-toast duration="4000" id="toast" opened="{{toastOpened}}" swipeDisabled text="{{toastText}}"></paper-toast>
     </template>
 
@@ -171,6 +175,7 @@
         changePasswordOpened: true,
         forgotPassword: {},
         forgotPasswordOpened: false,
+        loading: false,
         resetPassword: {},
         resetPasswordOpened: true,
         section: null,
@@ -190,6 +195,36 @@
 
         changePasswordCollapseTap: function(event, detail, sender) {
             this.changePasswordOpened = !this.changePasswordOpened;
+        },
+
+        domReady: function() {
+            var _this = this;
+
+            Meteor.autorun(function() {
+                if (Meteor.status().connected) {
+                    if (_this.toastText != "server connected") {
+                        _this.toastOpened = false;
+
+                        window.setTimeout(function() {
+                            _this.toastText = "server connected";
+                            _this.toastOpened = true;
+                        }, 400);
+                    }
+                } else {
+                    if (_this.toastText != "lost server connection") {
+                        _this.toastOpened = false;
+
+                        window.setTimeout(function() {
+                            _this.toastText = "lost server connection";
+                            _this.toastOpened = true;
+                        }, 400);
+                    }
+                }
+
+                if (Meteor.user()) {
+                    _this.profile = Meteor.user().profile;
+                }
+            });
         },
 
         googleSignInTap: function(event, detail, sender) {
