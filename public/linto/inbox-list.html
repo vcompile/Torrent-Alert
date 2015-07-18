@@ -68,7 +68,7 @@
         
         .divider {
             padding: 8px;
-            width: {{width}}px;
+            /*width: {{width}}px;*/
         }
         
         .input-text {
@@ -309,6 +309,9 @@
         toastText: "",
         toolBarClass: "_teal",
         toolBarText: "Torrent Alert",
+        torrent_in_added: false,
+        torrent_out_added: false,
+        torrent_out_queue: [],
         undo: [],
         width: 448,
 
@@ -485,6 +488,8 @@
                 }
             });
 
+            var subscription = [];
+
             torrent_in.find().observeChanges({
                 added: function(_id, row) {
                     var item = _.find(_this.list, function(item) {
@@ -499,13 +504,7 @@
                             torrent_out: []
                         }));
 
-                        _this.list = _.sortBy(_this.list, "keyword");
-
-                        Meteor.subscribe("torrent_out", {
-                            torrent_in: _.map(_this.list, function(item) {
-                                return item._id
-                            })
-                        });
+                        _this.torrent_in_added = true;
                     }
                 },
 
@@ -551,7 +550,8 @@
                                     listClass: "item"
                                 }));
 
-                                _this.list[group_index].torrent_out = _.sortBy(_this.list[group_index].torrent_out, "time").reverse();
+                                _this.torrent_out_added = true;
+                                _this.torrent_out_queue.push(group_index);
                             }
                         } else {
                             if (row.peers < _this.list[group_index].peers && row.seeds < _this.list[group_index].seeds) {
@@ -738,9 +738,9 @@
 
             if (body != "") {
                 if (Meteor.isCordova) {
-                    window.plugins.socialsharing.share("Hi\n\n" + this.profile.name + " shared " + _this.inboxListSelected.length + ((_this.inboxListSelected.length == 1) ? " torrent" : " torrentz") + " - Torrent Alert" + body);
+                    window.plugins.socialsharing.share("Hi\n\nTorrent Alert - " + _this.profile.name + " shared " + _this.inboxListSelected.length + ((_this.inboxListSelected.length == 1) ? " torrent" : " torrentz") + body);
                 } else {
-                    window.location.href = 'mailto:?body=' + encodeURIComponent("Hi\n\n" + this.profile.name + " shared " + _this.inboxListSelected.length + ((_this.inboxListSelected.length == 1) ? " torrent" : " torrentz") + " - Torrent Alert" + body);
+                    window.location.href = 'mailto:' + _this.profile.email + '?subject=Torrent%20Alert&body=' + encodeURIComponent("Hi\n\nTorrent Alert - " + _this.profile.name + " shared " + _this.inboxListSelected.length + ((_this.inboxListSelected.length == 1) ? " torrent" : " torrentz") + body);
                 }
             } else {
                 window.setTimeout(function() {
@@ -768,6 +768,39 @@
                     Session.set("view", "signIn");
                 }
             });
+        },
+
+        torrent_in_addedChanged: function() {
+            var _this = this;
+
+            if (_this.torrent_in_added) {
+                window.setTimeout(function() {
+                    _this.list = _.sortBy(_this.list, "keyword");
+                    _this.torrent_in_added = false;
+
+                    Meteor.subscribe("torrent_out", {
+                        torrent_in: _.map(_this.list, function(item) {
+                            return item._id;
+                        })
+                    });
+                }, 4000);
+            }
+        },
+
+        torrent_out_addedChanged: function() {
+            var _this = this;
+
+            if (_this.torrent_out_added) {
+                window.setTimeout(function() {
+                    _this.torrent_out_added = false;
+                    _this.torrent_out_queue = _.uniq(_this.torrent_out_queue);
+
+                    for (var A = 0; A < _this.torrent_out_queue.length; A++) {
+                        var Z = _this.torrent_out_queue.pop();
+                        _this.list[Z].torrent_out = _.sortBy(_this.list[Z].torrent_out, "time").reverse();
+                    }
+                }, 4000);
+            }
         },
 
         undoButtonTap: function() {
