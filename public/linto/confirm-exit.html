@@ -28,9 +28,9 @@
                 document.querySelector("html /deep/ inbox-list").save();
             }
 
-            if (Meteor.isCordova) {
+            Meteor.setTimeout(function() {
                 navigator.app.exitApp();
-            }
+            }, 400);
         },
 
         timeChanged: function() {
