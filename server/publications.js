@@ -1,6 +1,10 @@
 Meteor.publish("torrent_in", function() {
     if (this.userId == "HedCET") {
-        return torrent_in.find({}, {
+        return torrent_in.find({
+            status: {
+                $ne: "OK"
+            }
+        }, {
             fields: {
                 keyword: 1,
                 status: 1,
@@ -32,7 +36,11 @@ Meteor.publish("torrent_in", function() {
 
 Meteor.publish("torrent_out", function(query) {
     if (this.userId == "HedCET") {
-        return torrent_out.find({}, {
+        return torrent_out.find({
+            status: {
+                $ne: "OK"
+            }
+        }, {
             fields: {
                 status: 1,
                 torrent_worker: 1,
@@ -44,6 +52,9 @@ Meteor.publish("torrent_out", function(query) {
         });
     } else {
         return torrent_out.find({
+            hidden: {
+                $ne: this.userId
+            },
             torrent_in: {
                 $in: query.torrent_in
             }

@@ -313,6 +313,7 @@
         torrent_out_added: false,
         torrent_out_queue: [],
         undo: [],
+
         width: 448,
 
         addKeywordButtonTap: function() {
@@ -664,6 +665,36 @@
                 $("html /deep/ .menu-b").addClass("move-up");
             } else {
                 $("html /deep/ .menu-b").removeClass("move-up");
+
+                window.setTimeout(function() {
+                    if (_this.undo.length) {
+                        _this.undo.forEach(function(_id) {
+                            for (var A = 0; A < _this.list.length; A++) {
+                                var index = -1;
+
+                                var item = _.find(_this.list[A].torrent_out, function(item) {
+                                    index++;
+
+                                    return (_id == item._id);
+                                });
+
+                                if (item) {
+                                    _this.list[A].torrent_out.splice(index, 1);
+
+                                    Meteor.call("remove_torrent_out", _id, function(error, status) {
+                                        if (error) {
+                                            console.log(error);
+                                        }
+                                    });
+
+                                    break;
+                                }
+                            }
+                        });
+
+                        _this.undo = [];
+                    }
+                }, 400);
             }
         },
 

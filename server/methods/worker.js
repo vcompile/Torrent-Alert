@@ -57,7 +57,7 @@ Meteor.methods({
                                     row.user_id.forEach(function(userId) {
                                         Push.send({
                                             from: "Torrent Alert",
-                                            title: "New Entry in " + row.keyword,
+                                            title: row.keyword,
                                             text: torrent.title,
                                             query: {
                                                 userId: userId
@@ -99,7 +99,7 @@ Meteor.methods({
 
                                                 Push.send({
                                                     from: "Torrent Alert",
-                                                    title: "New Entry in " + row.keyword,
+                                                    title: row.keyword,
                                                     text: torrent.title,
                                                     query: {
                                                         userId: userId
