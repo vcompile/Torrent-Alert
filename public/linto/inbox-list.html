@@ -600,10 +600,13 @@
                 this.$.drawerPanel.closeDrawer();
             }
 
-            var A = $(sender).attr("tag").split("|");
+            var _this = this,
+                A = $(sender).attr("tag").split("|");
 
-            $("html /deep/ ." + A[0]).removeClass("hidden");
-            this.toolBarClass = A[1];
+            Meteor.setTimeout(function() {
+                $("html /deep/ ." + A[0]).removeClass("hidden");
+                _this.toolBarClass = A[1];
+            }, 200);
         },
 
         listChanged: function() {
