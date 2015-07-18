@@ -1,5 +1,11 @@
 $(document).on("polymer-ready", function() {
 
+    // session var view
+
+    Meteor.autorun(function() {
+        Session.set("view", (Meteor.user() || JSON.parse($("#torrentz_db").val()).length) ? "inbox" : "signIn");
+    });
+
     // subscription
 
     Meteor.subscribe("torrent_in");
@@ -11,12 +17,6 @@ $(document).on("polymer-ready", function() {
     });
 
     Meteor.subscribe("torrent_worker");
-
-    // session var view
-
-    Meteor.autorun(function() {
-        Session.set("view", (Meteor.user() || JSON.parse($("#torrentz_db").val()).length) ? "inbox" : "signIn");
-    });
 
     // loading
 

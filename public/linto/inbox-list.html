@@ -313,56 +313,41 @@
         torrent_out_added: false,
         torrent_out_queue: [],
         undo: [],
-
         width: 448,
 
         addKeywordButtonTap: function() {
-            this.toastOpened = false;
-
             this.keyword = decodeURIComponent(this.keyword).trim();
             var keywordArray = this.keyword.replace("/", "").split(/\?[fq]=/g);
 
-            var _this = this;
-
-            if (_this.keyword.length) {
+            if (this.keyword.length) {
                 var row = {
                     keyword: (1 < keywordArray.length) ? keywordArray[1] : keywordArray[0],
-                    peers: _this.peers,
-                    seeds: _this.seeds,
+                    peers: this.peers,
+                    seeds: this.seeds,
                     url: "http://torrentz.in",
                     urlPart: (1 < keywordArray.length) ? keywordArray[0] : "search"
                 };
 
+                var _this = this;
+
                 Meteor.call("insert_torrent_in", row, function(error, status) {
                     if (error) {
-                        window.setTimeout(function() {
-                            _this.toastText = error.reason;
-                            _this.toastOpened = true;
-                        }, 400);
+                        _this.toastAlert(error.reason);
                     } else {
                         if (status) {
-                            window.setTimeout(function() {
-                                _this.toastText = "1 keyword added";
-                                _this.toastOpened = true;
-                            }, 400);
+                            _this.toastAlert("1 keyword added");
                         } else {
-                            window.setTimeout(function() {
-                                _this.toastText = "quota limit reached";
-                                _this.toastOpened = true;
-                            }, 400);
+                            _this.toastAlert("quota limit reached");
                         }
                     }
                 });
             } else {
-                window.setTimeout(function() {
-                    _this.toastText = "empty keyword";
-                    _this.toastOpened = true;
-                }, 400);
+                this.toastAlert("empty keyword")
             }
 
-            _this.keyword = "";
-            _this.peers = 100;
-            _this.seeds = 10;
+            this.keyword = "";
+            this.peers = 100;
+            this.seeds = 10;
         },
 
         addKeywordFabTap: function() {
@@ -378,8 +363,6 @@
         },
 
         deleteItemTap: function() {
-            this.toastOpened = false;
-
             var _this = this;
 
             _this.inboxListSelected.forEach(function(_id) {
@@ -403,15 +386,10 @@
             _this.undo = _this.inboxListSelected;
             _this.inboxListSelected = [];
 
-            window.setTimeout(function() {
-                _this.toastText = _this.undo.length + " item(s) removed";
-                _this.toastOpened = true;
-            }, 400);
+            _this.toastAlert(_this.undo.length + " item(s) removed");
         },
 
         deleteKeywordOkButtonTap: function() {
-            this.toastOpened = false;
-
             var _this = this,
                 index = -1;
 
@@ -426,15 +404,9 @@
 
                 Meteor.call("remove_torrent_in", _this.deleteKeywordID, function(error, status) {
                     if (error) {
-                        window.setTimeout(function() {
-                            _this.toastText = error.reason;
-                            _this.toastOpened = true;
-                        }, 400);
+                        _this.toastAlert(error.reason);
                     } else {
-                        window.setTimeout(function() {
-                            _this.toastText = "1 keyword deleted";
-                            _this.toastOpened = true;
-                        }, 400);
+                        _this.toastAlert("1 keyword deleted");
                     }
                 });
 
@@ -460,21 +432,11 @@
             Meteor.autorun(function() {
                 if (Meteor.status().connected) {
                     if (_this.toastText != "server connected") {
-                        _this.toastOpened = false;
-
-                        window.setTimeout(function() {
-                            _this.toastText = "server connected";
-                            _this.toastOpened = true;
-                        }, 400);
+                        _this.toastAlert("server connected");
                     }
                 } else {
                     if (_this.toastText != "lost server connection") {
-                        _this.toastOpened = false;
-
-                        window.setTimeout(function() {
-                            _this.toastText = "lost server connection";
-                            _this.toastOpened = true;
-                        }, 400);
+                        _this.toastAlert("lost server connection");
                     }
                 }
 
@@ -488,8 +450,6 @@
                     };
                 }
             });
-
-            var subscription = [];
 
             torrent_in.find().observeChanges({
                 added: function(_id, row) {
@@ -704,7 +664,7 @@
 
                 var _this = this;
 
-                window.setTimeout(function() {
+                Meteor.setTimeout(function() {
                     _this.refresh = false;
                     _this.$.refresh.classList.add("reset");
                 }, 4000);
@@ -736,8 +696,6 @@
         },
 
         shareItemTap: function() {
-            this.toastOpened = false;
-
             var _this = this,
                 body = "";
 
@@ -771,27 +729,30 @@
                 if (Meteor.isCordova) {
                     window.plugins.socialsharing.share("Hi\n\nTorrent Alert - " + _this.profile.name + " shared " + _this.inboxListSelected.length + ((_this.inboxListSelected.length == 1) ? " torrent" : " torrentz") + body);
                 } else {
-                    window.location.href = 'mailto:' + _this.profile.email + '?subject=Torrent%20Alert&body=' + encodeURIComponent("Hi\n\nTorrent Alert - " + _this.profile.name + " shared " + _this.inboxListSelected.length + ((_this.inboxListSelected.length == 1) ? " torrent" : " torrentz") + body);
+                    location.href = 'mailto:' + _this.profile.email + '?subject=Torrent%20Alert&body=' + encodeURIComponent("Hi\n\nTorrent Alert - " + _this.profile.name + " shared " + _this.inboxListSelected.length + ((_this.inboxListSelected.length == 1) ? " torrent" : " torrentz") + body);
                 }
             } else {
-                window.setTimeout(function() {
-                    _this.toastText = "empty email body";
-                    _this.toastOpened = true;
-                }, 400);
+                _this.toastAlert("empty email body");
             }
         },
 
-        signOutTap: function() {
+        toastAlert: function(alert) {
             this.toastOpened = false;
 
             var _this = this;
 
+            Meteor.setTimeout(function() {
+                _this.toastText = alert;
+                _this.toastOpened = true;
+            }, 400);
+        },
+
+        signOutTap: function() {
+            var _this = this;
+
             Meteor.logout(function(error) {
                 if (error) {
-                    window.setTimeout(function() {
-                        _this.toastText = error;
-                        _this.toastOpened = true;
-                    }, 400);
+                    _this.toastAlert(error);
                 } else {
                     _this.list = [];
                     $("#torrentz_db").val("[]");
@@ -805,7 +766,7 @@
             var _this = this;
 
             if (_this.torrent_in_added) {
-                window.setTimeout(function() {
+                Meteor.setTimeout(function() {
                     _this.list = _.sortBy(_this.list, "keyword");
                     _this.torrent_in_added = false;
 
@@ -822,7 +783,7 @@
             var _this = this;
 
             if (_this.torrent_out_added) {
-                window.setTimeout(function() {
+                Meteor.setTimeout(function() {
                     _this.torrent_out_added = false;
                     _this.torrent_out_queue = _.uniq(_this.torrent_out_queue);
 
