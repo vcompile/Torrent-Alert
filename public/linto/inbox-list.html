@@ -68,7 +68,7 @@
         
         .divider {
             padding: 8px;
-            /*width: {{width}}px;*/
+            width: {{width}}px;
         }
         
         .input-text {
@@ -666,35 +666,35 @@
             } else {
                 $("html /deep/ .menu-b").removeClass("move-up");
 
-                window.setTimeout(function() {
-                    if (_this.undo.length) {
-                        _this.undo.forEach(function(_id) {
-                            for (var A = 0; A < _this.list.length; A++) {
-                                var index = -1;
+                if (this.undo.length) {
+                    var _this = this;
 
-                                var item = _.find(_this.list[A].torrent_out, function(item) {
-                                    index++;
+                    _this.undo.forEach(function(_id) {
+                        for (var A = 0; A < _this.list.length; A++) {
+                            var index = -1;
 
-                                    return (_id == item._id);
+                            var item = _.find(_this.list[A].torrent_out, function(item) {
+                                index++;
+
+                                return (_id == item._id);
+                            });
+
+                            if (item) {
+                                _this.list[A].torrent_out.splice(index, 1);
+
+                                Meteor.call("remove_torrent_out", _id, function(error, status) {
+                                    if (error) {
+                                        console.log(error);
+                                    }
                                 });
 
-                                if (item) {
-                                    _this.list[A].torrent_out.splice(index, 1);
-
-                                    Meteor.call("remove_torrent_out", _id, function(error, status) {
-                                        if (error) {
-                                            console.log(error);
-                                        }
-                                    });
-
-                                    break;
-                                }
+                                break;
                             }
-                        });
+                        }
+                    });
 
-                        _this.undo = [];
-                    }
-                }, 400);
+                    _this.undo = [];
+                }
             }
         },
 
