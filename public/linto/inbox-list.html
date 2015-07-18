@@ -266,11 +266,9 @@
                         <div>frequency / day</div>
                         <paper-slider disabled editable flex id="seeds" max="1000" min="1" value="2"></paper-slider>
                     </div>
+                    <div style="border-bottom: 2px solid #888; padding: 4px 0;"></div>
                     <div class="padding-4"></div>
-                    <div style="border-bottom: 2px solid #888; padding: 4px 0;">other</div>
-                    <div class="padding-4"></div>
-                    <div center horizontal justified layout>
-                        <paper-button core-overlay-toggle>upgrade</paper-button>
+                    <div horizontal layout reverse>
                         <paper-button core-overlay-toggle on-tap="{{signOutTap}}">signOut</paper-button>
                     </div>
                 </div>
