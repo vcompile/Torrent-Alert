@@ -161,7 +161,144 @@
             </div>
         </div>
 
-        <div center-center fit hidden?="{{!loading}}" horizontal layout style="background: black; opacity: 0.4;"></div>
+        <div center-center fit hidden?="{{!loading}}" horizontal layout style="background: black; opacity: 0.4;">
+            <style>
+            .ball-grid-beat,
+            .ball-grid-beat > div {
+                -webkit-box-sizing: border-box;
+                box-sizing: border-box;
+                position: relative;
+            }
+            
+            .ball-grid-beat {
+                color: #fff;
+                display: block;
+                font-size: 0;
+            }
+            
+            .ball-grid-beat > div {
+                background-color: currentColor;
+                border: 0 solid currentColor;
+                display: inline-block;
+                float: none;
+            }
+            
+            .ball-grid-beat {
+                height: 108px;
+                width: 108px;
+            }
+            
+            .ball-grid-beat > div {
+                -webkit-animation-name: ball-grid-beat;
+                animation-name: ball-grid-beat;
+                -webkit-animation-iteration-count: infinite;
+                animation-iteration-count: infinite;
+                border-radius: 100%;
+                height: 24px;
+                margin: 6px;
+                width: 24px;
+            }
+            
+            .ball-grid-beat > div:nth-child(1) {
+                -webkit-animation-duration: .65s;
+                animation-duration: .65s;
+                -webkit-animation-delay: .03s;
+                animation-delay: .03s;
+            }
+            
+            .ball-grid-beat > div:nth-child(2) {
+                -webkit-animation-duration: 1.02s;
+                animation-duration: 1.02s;
+                -webkit-animation-delay: .09s;
+                animation-delay: .09s;
+            }
+            
+            .ball-grid-beat > div:nth-child(3) {
+                -webkit-animation-duration: 1.06s;
+                animation-duration: 1.06s;
+                -webkit-animation-delay: -.69s;
+                animation-delay: -.69s;
+            }
+            
+            .ball-grid-beat > div:nth-child(4) {
+                -webkit-animation-duration: 1.5s;
+                animation-duration: 1.5s;
+                -webkit-animation-delay: -.41s;
+                animation-delay: -.41s;
+            }
+            
+            .ball-grid-beat > div:nth-child(5) {
+                -webkit-animation-duration: 1.6s;
+                animation-duration: 1.6s;
+                -webkit-animation-delay: .04s;
+                animation-delay: .04s;
+            }
+            
+            .ball-grid-beat > div:nth-child(6) {
+                -webkit-animation-duration: .84s;
+                animation-duration: .84s;
+                -webkit-animation-delay: .07s;
+                animation-delay: .07s;
+            }
+            
+            .ball-grid-beat > div:nth-child(7) {
+                -webkit-animation-duration: .68s;
+                animation-duration: .68s;
+                -webkit-animation-delay: -.66s;
+                animation-delay: -.66s;
+            }
+            
+            .ball-grid-beat > div:nth-child(8) {
+                -webkit-animation-duration: .93s;
+                animation-duration: .93s;
+                -webkit-animation-delay: -.76s;
+                animation-delay: -.76s;
+            }
+            
+            .ball-grid-beat > div:nth-child(9) {
+                -webkit-animation-duration: 1.24s;
+                animation-duration: 1.24s;
+                -webkit-animation-delay: -.76s;
+                animation-delay: -.76s;
+            }
+            
+            @-webkit-keyframes ball-grid-beat {
+                0% {
+                    opacity: 1;
+                }
+                50% {
+                    opacity: .35;
+                }
+                100% {
+                    opacity: 1;
+                }
+            }
+            
+            @keyframes ball-grid-beat {
+                0% {
+                    opacity: 1;
+                }
+                50% {
+                    opacity: .35;
+                }
+                100% {
+                    opacity: 1;
+                }
+            }
+            </style>
+
+            <div class="ball-grid-beat">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+        </div>
 
         <paper-toast duration="4000" id="toast" opened="{{toastOpened}}" swipeDisabled text="{{toastText}}"></paper-toast>
     </template>

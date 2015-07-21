@@ -61,9 +61,9 @@
         }
         
         #refresh.reset {
-            opacity: 0 !important;
-            -webkit-transform: translate3d(0, 0, 0) !important;
-            transform: translate3d(0, 0, 0) !important;
+            opacity: 0!important;
+            -webkit-transform: translate3d(0, 0, 0)!important;
+            transform: translate3d(0, 0, 0)!important;
         }
         
         .divider {
@@ -85,6 +85,10 @@
             -webkit-transition: -webkit-transform 0.2s ease-in-out;
             transition: transform 0.2s ease-in-out;
             will-change: transform;
+        }
+        
+        .menu-b.move-down {
+            transform: translate3d(0, 480px, 0);
         }
         
         .menu-b.move-up {
@@ -136,7 +140,7 @@
                         </div>
                         <div class="padding-4" flex layout vertical>
                             <div auto-vertical horizontal justified layout>
-                                <div class="title overflow-hidden lowercase" flex style="width: 32px !important;">{{keyword}}</div>
+                                <div class="title overflow-hidden lowercase" flex style="width: 32px!important;">{{keyword}}</div>
                                 <div class="badge" self-start>{{torrent_out.length ? torrent_out.length : "#"}}</div>
                             </div>
                             <div auto-vertical class="description"><b>{{seeds}}</b> S / <b>{{peers}}</b> P</div>
@@ -204,7 +208,7 @@
             </core-header-panel>
         </core-drawer-panel>
 
-        <paper-fab class="menu-b" hidden?="{{inboxListSelected.length && (page == 0 || page == 1)}}" icon="add" on-tap="{{addKeywordFabTap}}"></paper-fab>
+        <paper-fab class="menu-b {{ {'move-down': inboxListSelected.length} | tokenList }}" icon="add" on-tap="{{addKeywordFabTap}}"></paper-fab>
 
         <paper-dialog autoCloseDisabled backdrop opened="{{addKeywordOpened}}" transition="core-transition-bottom">
             <div layout vertical>
@@ -312,7 +316,7 @@
         torrent_out_added: false,
         torrent_out_queue: [],
         undo: [],
-        width: 448,
+        width: 480,
 
         addKeywordButtonTap: function() {
             this.keyword = decodeURIComponent(this.keyword).trim();
@@ -725,7 +729,7 @@
                             _this.list[B].torrent_out[index].linkz = _.sortBy(_this.list[B].torrent_out[index].linkz, "time");
 
                             for (var C = 0; C < _this.list[B].torrent_out[index].linkz.length; C++) {
-                                body += "\t\t" + (C + 1) + "\t\t" + _this.list[B].torrent_out[index].linkz[C].url.replace("\\", "") + "\n\n";
+                                body += "\t\t" + (C + 1) + "\t\t" + _this.list[B].torrent_out[index].linkz[C].url.replace("//", "") + "\n\n";
                             }
                         }
 

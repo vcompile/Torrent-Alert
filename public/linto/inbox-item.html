@@ -7,7 +7,7 @@
         }
         
         .li.hidden {
-            display: none !important;
+            display: none!important;
         }
         
         .li.item {
@@ -17,8 +17,8 @@
         }
         </style>
 
-        <div center-justified horizontal layout on-holdpulse="{{inboxItemHold}}" on-tap="{{inboxItemTap}}">
-            <div class="li {{item.listClass}}" horizontal justified layout>
+        <div center-justified horizontal layout>
+            <div class="li {{item.listClass}}" horizontal justified layout on-holdpulse="{{inboxItemHold}}" on-tap="{{inboxItemTap}}">
                 <div class="padding-4" self-start>
                     <selectable-icon iconClass="{{item.categoryClass}}" iconText="{{item.linkz.length}}" id="selectableIcon" selected?="{{selected}}"></selectable-icon>
                 </div>
@@ -37,8 +37,7 @@
     Polymer("inbox-item", {
 
         holding: false,
-        item: {},
-        width: 448,
+        width: 480,
 
         inboxItemHold: function(event, detail, sender) {
             if (this.holding || event.target == this.$.selectableIcon) {
