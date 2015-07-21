@@ -587,10 +587,12 @@
                 var searchInput = $(this).val().toLowerCase(),
                     searchResult = [];
 
-                for (var A = 0; A < _this.list.length; A++) {
-                    $.merge(searchResult, _.filter(_this.list[A].torrent_out, function(item) {
-                        return (-1 < item.title.toLowerCase().search(searchInput));
-                    }));
+                if (searchInput.length) {
+                    for (var A = 0; A < _this.list.length; A++) {
+                        $.merge(searchResult, _.filter(_this.list[A].torrent_out, function(item) {
+                            return (-1 < item.title.toLowerCase().search(searchInput));
+                        }));
+                    }
                 }
 
                 $("html /deep/ search-bar").attr("list", JSON.stringify(searchResult));
