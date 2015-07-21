@@ -1,22 +1,5 @@
 <polymer-element attributes="item selected" name="inbox-item">
     <template>
-        <style>
-        .li {
-            padding: 8px;
-            width: {{width}}px;
-        }
-        
-        .li.hidden {
-            display: none!important;
-        }
-        
-        .li.item {
-            background: white;
-            border-bottom: 4px solid #EEE;
-            cursor: pointer;
-        }
-        </style>
-
         <div center-justified horizontal layout>
             <div class="li {{item.listClass}}" horizontal justified layout on-holdpulse="{{inboxItemHold}}" on-tap="{{inboxItemTap}}">
                 <div class="padding-4" self-start>
@@ -37,7 +20,6 @@
     Polymer("inbox-item", {
 
         holding: false,
-        width: 480,
 
         inboxItemHold: function(event, detail, sender) {
             if (this.holding || event.target == this.$.selectableIcon) {

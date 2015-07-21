@@ -66,11 +66,6 @@
             transform: translate3d(0, 0, 0)!important;
         }
         
-        .divider {
-            padding: 8px;
-            width: {{width}}px;
-        }
-        
         .input-text {
             background: transparent;
             border: none;
@@ -189,7 +184,7 @@
                             <template repeat="{{list}}">
                                 <template if="{{!hidden}}">
                                     <div center-justified horizontal layout>
-                                        <div class="divider" horizontal justified layout>
+                                        <div class="li" horizontal justified layout>
                                             <input class="input-text" disabled flex tag="{{_id}}" type="text" value="{{keyword}}">
                                             <div self-start>
                                                 <paper-icon-button icon="close" on-tap="{{deleteKeywordTap}}" tag="{{_id}}"></paper-icon-button>
@@ -316,7 +311,6 @@
         torrent_out_added: false,
         torrent_out_queue: [],
         undo: [],
-        width: 480,
 
         addKeywordButtonTap: function() {
             this.keyword = decodeURIComponent(this.keyword).trim();
@@ -587,6 +581,19 @@
 
             $("html /deep/ .input-text").change(function() {
                 console.log($(_this).attr("tag"), $(_this).val());
+            });
+
+            $("html /deep/ search-bar /deep/ #searchInput").keyup(function() {
+                var searchInput = $(this).val().toLowerCase(),
+                    searchResult = [];
+
+                for (var A = 0; A < _this.list.length; A++) {
+                    $.merge(searchResult, _.filter(_this.list[A].torrent_out, function(item) {
+                        return (-1 < item.title.toLowerCase().search(searchInput));
+                    }));
+                }
+
+                $("html /deep/ search-bar").attr("list", JSON.stringify(searchResult));
             });
         },
 

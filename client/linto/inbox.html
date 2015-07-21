@@ -1,4 +1,5 @@
 <template name="inbox">
+
     <style>
     html /deep/ paper-dialog {
         top: 0;
@@ -17,6 +18,21 @@
     
     html /deep/ .disabled-text {
         color: #888;
+    }
+    
+    html /deep/ .li {
+        padding: 8px;
+        width: 480px;
+    }
+    
+    html /deep/ .li.hidden {
+        display: none!important;
+    }
+    
+    html /deep/ .li.item {
+        background: white;
+        border-bottom: 4px solid #EEE;
+        cursor: pointer;
     }
     
     html /deep/ .padding-4 {
@@ -42,4 +58,5 @@
 
     <download-linkz></download-linkz>
     <inbox-list></inbox-list>
+
 </template>

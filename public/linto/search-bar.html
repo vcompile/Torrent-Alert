@@ -1,17 +1,16 @@
-<polymer-element attributes="active" name="search-bar">
+<polymer-element attributes="enabled list" name="search-bar">
     <template>
         <style>
         :host {
             display: none;
         }
         
-        :host([active]) {
+        :host([enabled]) {
             display: block;
         }
         
         core-header-panel {
-            background: rgba(255, 255, 255, 0.75);
-            color: #888;
+            background: rgba(238, 238, 238, 0.8);
             margin: 0;
             z-index: 1;
         }
@@ -38,26 +37,69 @@
                 <input flex id="searchInput" placeholder="search ..">
             </core-toolbar>
 
+            <div center-justified horizontal layout>
+                <div class="li" style="padding: 16px 8px;">{{list.length ? (list.length + " result" + (list.length == 1 ? "" : "z")) : "empty"}}</div>
+            </div>
 
+            <template repeat="{{list}}">
+                <div center-justified horizontal layout>
+                    <div class="li {{listClass}}" horizontal justified layout on-tap="{{listItemTap}}" tag="{{_id}}">
+                        <div class="padding-4" self-start>
+                            <selectable-icon iconClass="{{categoryClass}}" iconText="{{linkz.length}}"></selectable-icon>
+                        </div>
+                        <div class="padding-4" flex layout vertical>
+                            <div auto-vertical class="lowercase"><span class="title">{{title}}</span> &nbsp;<b class="description">{{category}}</b></div>
+                            <div auto-vertical class="description" horizontal justified layout>
+                                <div class="overflow-hidden">{{size}} | <b>{{seeds}}</b> S / <b>{{peers}}</b> P</div>
+                                <div class="overflow-hidden">{{fromNow}}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
         </core-header-panel>
     </template>
 
     <script>
     Polymer("search-bar", {
 
-        active: false,
+        enabled: false,
+        list: [],
+
+        listChanged: function() {
+            if (!(this.list instanceof Array)) {
+                this.list = JSON.parse(this.list);
+            }
+
+            // console.log(this.list);
+        },
+
+        listItemTap: function(event, detail, sender) {
+            var _id = $(sender).attr("tag"),
+                index = -1;
+
+            var item = _.find(this.list, function(item) {
+                index++;
+
+                return (_id == item._id);
+            });
+
+            if (item) {
+                document.querySelector("download-linkz").open(this.list[index]);
+            }
+        },
 
         publish: {
-            active: {
+            enabled: {
                 reflect: true,
                 value: false
             }
         },
 
         toggle: function() {
-            this.active = !this.active;
+            this.enabled = !this.enabled;
 
-            if (this.active) {
+            if (this.enabled) {
                 var _this = this;
 
                 Meteor.setTimeout(function() {
