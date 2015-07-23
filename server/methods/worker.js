@@ -164,7 +164,7 @@ Meteor.methods({
                         _id: row._id
                     }, {
                         $set: {
-                            linkz: linkz,
+                            linkz: _.sortBy(linkz, "time"),
                             status: "OK"
                         }
                     });

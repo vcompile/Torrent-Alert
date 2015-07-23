@@ -1,4 +1,4 @@
-<polymer-element attributes="list" name="inbox-list">
+<polymer-element name="inbox-list">
     <template>
         <style>
         core-drawer-panel /deep/ #drawer,
@@ -98,15 +98,6 @@
         
         .menu-l:hover {
             background: #EEE;
-        }
-        
-        .badge {
-            background: #EEE;
-            border-radius: 25%;
-            font-size: 10px;
-            font-weight: bold;
-            margin: 0 0 0 5px;
-            padding: 3px 5px;
         }
         </style>
 
@@ -751,7 +742,7 @@
                 if (Meteor.isCordova) {
                     window.plugins.socialsharing.share("Hi\n\nTorrent Alert - " + _this.profile.name + " shared " + _this.inboxListSelected.length + ((_this.inboxListSelected.length == 1) ? " torrent" : " torrentz") + body);
                 } else {
-                    location.href = 'mailto:' + _this.profile.email + '?subject=Torrent%20Alert&body=' + encodeURIComponent("Hi\n\nTorrent Alert - " + _this.profile.name + " shared " + _this.inboxListSelected.length + ((_this.inboxListSelected.length == 1) ? " torrent" : " torrentz") + body);
+                    window.open("mailto:" + _this.profile.email + "?subject=Torrent%20Alert&body=" + encodeURIComponent("Hi\n\nTorrent Alert - " + _this.profile.name + " shared " + _this.inboxListSelected.length + ((_this.inboxListSelected.length == 1) ? " torrent" : " torrentz") + body));
                 }
             } else {
                 _this.toastAlert("empty email body");

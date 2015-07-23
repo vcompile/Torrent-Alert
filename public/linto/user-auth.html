@@ -2,7 +2,7 @@
     <template>
         <style>
         .width {
-            width: {{width}}px;
+            width: 320px;
         }
         
         .heading {
@@ -78,10 +78,11 @@
                 <core-collapse hidden?="{{section}}" opened?="{{signUpOpened}}">
                     <div class="collapse width">
                         <div layout style="padding: 10px 15px;" vertical>
-                            <paper-input label="username" value="{{signUp.username}}"></paper-input>
-                            <paper-input label="email" value="{{signUp.email}}"></paper-input>
+                            <paper-input label="email" value="{{signIn.email}}"></paper-input>
                             <div horizontal justified layout>
-                                <div flex></div>
+                                <div flex>
+                                    <paper-input label="username" value="{{signUp.username}}"></paper-input>
+                                </div>
                                 <div self-end>
                                     <paper-button class="_blue" on-tap="{{signUpTap}}">signUp</paper-button>
                                 </div>
@@ -322,7 +323,6 @@
         signUpOpened: false,
         toastOpened: false,
         toastText: "",
-        width: 320,
 
         changePasswordTap: function(event, detail, sender) {
             console.log(this.changePassword);

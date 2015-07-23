@@ -3,12 +3,15 @@
         <paper-dialog backdrop opened="{{opened}}" transition="core-transition-bottom">
             <div class="padding-24" layout vertical>
                 <template repeat="{{item.linkz}}">
-                    <div horizontal layout onclick="window.open('{{url}}', '_system');" style="cursor: pointer; padding: 4px 0;">
+                    <div horizontal layout on-tap="{{externalLinkTap}}" style="cursor: pointer; padding: 4px 0;" tag="{{url}}">
                         <div class="padding-4" self-start>
                             <selectable-icon iconClass="{{iconClass}}" iconText="{{iconText}}"></selectable-icon>
                         </div>
                         <div class="padding-4" flex layout vertical>
-                            <div auto-vertical class="lowercase"><span class="title">{{text}}</span></div>
+                            <div auto-vertical horizontal justified layout>
+                                <div class="title overflow-hidden lowercase" flex style="width: 32px!important;">{{text}}</div>
+                                <div class="badge" hidden?="{{!priority}}" self-start>{{priority}}</div>
+                            </div>
                             <div auto-vertical class="description">{{fromNow}}</div>
                         </div>
                     </div>
@@ -23,11 +26,25 @@
         item: {},
         opened: false,
 
+        externalLinkTap: function(event, detail, sender) {
+            var _this = this,
+                url = $(sender).attr("tag")
+
+            Meteor.call("update_priority", {
+                _id: _this.item._id,
+                url: url
+            }, function(error, status) {
+                if (error) {
+                    _this.toastAlert(error.reason);
+                }
+            });
+
+            window.open(url);
+        },
+
         open: function(item) {
             if (item.linkz && item.linkz.length) {
                 this.item = item;
-
-                this.item.linkz = _.sortBy(this.item.linkz, "time");
 
                 for (var A = 0; A < this.item.linkz.length; A++) {
                     this.item.linkz[A].iconClass = polymer_color(this.item.linkz[A].text);
@@ -38,14 +55,18 @@
 
                 this.opened = true;
             } else {
-                if (document.querySelector("html /deep/ inbox-list")) {
-                    document.querySelector("html /deep/ inbox-list").toastOpened = false;
+                this.toastAlert("sever still processing it");
+            }
+        },
 
-                    Meteor.setTimeout(function() {
-                        document.querySelector("html /deep/ inbox-list").toastText = "sever still processing it";
-                        document.querySelector("html /deep/ inbox-list").toastOpened = true;
-                    }, 400);
-                }
+        toastAlert: function(alert) {
+            if (document.querySelector("html /deep/ inbox-list")) {
+                document.querySelector("html /deep/ inbox-list").toastOpened = false;
+
+                Meteor.setTimeout(function() {
+                    document.querySelector("html /deep/ inbox-list").toastText = alert;
+                    document.querySelector("html /deep/ inbox-list").toastOpened = true;
+                }, 400);
             }
         }
 

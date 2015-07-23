@@ -20,6 +20,8 @@
     Polymer("inbox-item", {
 
         holding: false,
+        item: {},
+        selected: false,
 
         inboxItemHold: function(event, detail, sender) {
             if (this.holding || event.target == this.$.selectableIcon) {

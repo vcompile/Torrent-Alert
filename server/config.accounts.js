@@ -9,8 +9,10 @@ Meteor.methods({
     signUp: function(req) {
         this.unblock();
 
-        if (req.username.length < 4) {
-            throw new Meteor.Error(422, "min username length is 4");
+        var valid_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
+
+        if (!valid_email.test(req.email)) {
+            throw new Meteor.Error(422, "invalid email");
         }
 
         var valid_username = /^[0-9a-z]+$/i;
@@ -19,10 +21,8 @@ Meteor.methods({
             throw new Meteor.Error(422, "alpha-numeric username required");
         }
 
-        var valid_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
-
-        if (!valid_email.test(req.email)) {
-            throw new Meteor.Error(422, "invalid email");
+        if (req.username.length < 4) {
+            throw new Meteor.Error(422, "min username length is 4");
         }
 
         var _id = Accounts.createUser({
