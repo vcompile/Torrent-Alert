@@ -71,6 +71,8 @@
                 this.list = JSON.parse(this.list);
             }
 
+            this.list = _.sortBy(this.list, "time");
+
             // console.log(this.list);
         },
 
