@@ -6,6 +6,10 @@ $(document).on("polymer-ready", function() {
         Session.set("view", (Meteor.user() || JSON.parse($("#torrentz_db").val()).length) ? "inbox" : "signIn");
     });
 
+    // polymer color local db
+
+    polymer_color_db = JSON.parse($("#polymer_color_db").val());
+
     // subscription
 
     Meteor.subscribe("torrent_in");

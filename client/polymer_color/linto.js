@@ -1,77 +1,27 @@
-polymer_color_db = {};
+polymer_color_class = ["_red", "_pink", "_purple", "_deep_purple", "_indigo", "_blue", "_light_blue", "_cyan", "_teal", "_green", "_light_green", "_lime", "_yellow", "_amber", "_orange", "_deep_orange", "_brown", "_grey", "_blue_grey"];
+polymer_color_local = {};
 
-polymer_color_opt = [{
-    class: "_red",
-    count: 0
-}, {
-    class: "_pink",
-    count: 0
-}, {
-    class: "_purple",
-    count: 0
-}, {
-    class: "_deep_purple",
-    count: 0
-}, {
-    class: "_indigo",
-    count: 0
-}, {
-    class: "_blue",
-    count: 0
-}, {
-    class: "_light_blue",
-    count: 0
-}, {
-    class: "_cyan",
-    count: 0
-}, {
-    class: "_teal",
-    count: 0
-}, {
-    class: "_green",
-    count: 0
-}, {
-    class: "_light_green",
-    count: 0
-}, {
-    class: "_lime",
-    count: 0
-}, {
-    class: "_yellow",
-    count: 0
-}, {
-    class: "_amber",
-    count: 0
-}, {
-    class: "_orange",
-    count: 0
-}, {
-    class: "_deep_orange",
-    count: 0
-}, {
-    class: "_brown",
-    count: 0
-}, {
-    class: "_grey",
-    count: 0
-}, {
-    class: "_blue_grey",
-    count: 0
-}];
-
-polymer_color = function(key) {
+polymer_color = function(key, save) {
     if (key) {
         key = key.replace(/[^0-9a-zA-Z]/g, "");
 
         if (key.length) {
-            if (polymer_color_db[key]) return polymer_color_db[key];
-            else {
-                var A = _.sortBy(polymer_color_opt, "count");
+            if (polymer_color_db[key]) {
+                return polymer_color_db[key];
+            } else {
+                if (polymer_color_local[key]) {
+                    return polymer_color_local[key];
+                } else {
+                    var A = polymer_color_class[Math.floor(Math.random() * polymer_color_class.length)];
 
-                polymer_color_db[key] = A[0].class;
-                A[0].count++;
+                    if (save) {
+                        polymer_color_db[key] = A;
+                    } else {
+                        polymer_color_local[key] = A;
+                    }
 
-                return A[0].class;
+                    return A;
+                }
             }
         } else return "";
     } else return "";

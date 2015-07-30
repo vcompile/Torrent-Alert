@@ -488,7 +488,7 @@
                             if (_this.list[group_index].peers <= row.peers && _this.list[group_index].seeds <= row.seeds) {
                                 _this.list[group_index].torrent_out.push($.extend(true, row, {
                                     _id: _id,
-                                    categoryClass: polymer_color(row.category),
+                                    categoryClass: polymer_color(row.category, true),
                                     listClass: "item"
                                 }));
 
@@ -693,6 +693,8 @@
         },
 
         save: function() {
+            $("#polymer_color_db").val(JSON.stringify(polymer_color_db));
+
             for (var A = 0; A < this.list.length; A++) {
                 delete this.list[A].hidden;
             }
