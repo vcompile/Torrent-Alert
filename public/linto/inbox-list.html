@@ -141,7 +141,7 @@
                         <selectable-icon iconImgSrc="/img/github.png"></selectable-icon>
                     </div>
                     <div class="padding-4" flex layout vertical>
-                        <div auto-vertical class="title">github</div>
+                        <div auto-vertical class="title">open source</div>
                         <div auto-vertical class="description">build break develop</div>
                     </div>
                 </div>
@@ -156,7 +156,7 @@
                     <div flex>{{inboxListSelected.length ? inboxListSelected.length : toolBarText}}</div>
                     <paper-icon-button class="selection-allow" icon="delete" on-tap="{{deleteItemTap}}"></paper-icon-button>
                     <paper-icon-button class="selection-allow" icon="social:share" on-tap="{{shareItemTap}}"></paper-icon-button>
-                    <paper-icon-button class="selection-allow" icon="more-vert"></paper-icon-button>
+                    <paper-icon-button class="selection-allow" icon="more-vert" on-tap="{{moreItemTap}}"></paper-icon-button>
                     <paper-icon-button class="selection-deny" icon="search" on-tap="{{searchBarToggle}}"></paper-icon-button>
                     <div center-center class="bottom fit" horizontal id="refresh" layout>
                         <div class="paper-shadow-bottom-z-1">
@@ -374,7 +374,7 @@
             _this.undo = _this.inboxListSelected;
             _this.inboxListSelected = [];
 
-            _this.toastAlert(_this.undo.length + " item" + (_this.undo.length == 1 ? "" : "z") + " removed");
+            _this.toastAlert(_this.undo.length + " item" + (_this.undo.length == 1 ? "" : "s") + " removed");
         },
 
         deleteKeywordOkButtonTap: function() {
@@ -629,6 +629,10 @@
             // console.log(this.list);
         },
 
+        moreItemTap: function() {
+            this.toastAlert("disabled downloading, statistics, etc");
+        },
+
         on_core_overlay_open: function(event, opened, sender) {
             if (opened) {
                 $("html /deep/ .menu-b").addClass("move-up");
@@ -742,7 +746,7 @@
                 if (Meteor.isCordova) {
                     window.plugins.socialsharing.share("Hi\n\nTorrent Alert - " + _this.profile.name + " shared " + _this.inboxListSelected.length + ((_this.inboxListSelected.length == 1) ? " torrent" : " torrentz") + body);
                 } else {
-                    window.location.href = "mailto:" + _this.profile.email + "?subject=" + encodeURIComponent("Torrent Alert") + "&body=" + encodeURIComponent("Hi\n\n" + _this.profile.name + " shared " + _this.inboxListSelected.length + " torrent" + (_this.inboxListSelected.length == 1 ? "" : "z") + body);
+                    window.location.href = "mailto://" + _this.profile.email + "?subject=" + encodeURIComponent("Torrent Alert") + "&body=" + encodeURIComponent("Hi\n\n" + _this.profile.name + " shared " + _this.inboxListSelected.length + " torrent" + (_this.inboxListSelected.length == 1 ? "" : "s") + body);
                 }
             } else {
                 _this.toastAlert("empty email body");

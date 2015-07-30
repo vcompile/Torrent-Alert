@@ -15,6 +15,14 @@ if (Meteor.isCordova) {
             A[Z].close();
         }
 
+        if (document.querySelector("html /deep/ inbox-list")) {
+            document.querySelector("html /deep/ inbox-list").deSelectAll();
+        }
+
+        if (document.querySelector("html /deep/ search-bar")) {
+            document.querySelector("html /deep/ search-bar").enabled = false;
+        }
+
         document.querySelector("html /deep/ confirm-exit").time = moment().format("x");
 
     }
