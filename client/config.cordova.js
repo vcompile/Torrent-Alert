@@ -7,6 +7,8 @@ if (Meteor.isCordova) {
 
     function backbutton() {
 
+        document.querySelector("html /deep/ confirm-exit").time = moment().format("x");
+
         if ($("html /deep/ #drawerPanel").width() <= 768) {
             document.querySelector("html /deep/ #drawerPanel").closeDrawer();
         }
@@ -22,8 +24,6 @@ if (Meteor.isCordova) {
         if (document.querySelector("html /deep/ search-bar")) {
             document.querySelector("html /deep/ search-bar").enabled = false;
         }
-
-        document.querySelector("html /deep/ confirm-exit").time = moment().format("x");
 
     }
 

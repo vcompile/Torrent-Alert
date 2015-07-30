@@ -23,6 +23,15 @@
         display: none;
     }
     
+    html /deep/ paper-dialog {
+        top: 0;
+    }
+    
+    html /deep/ paper-dialog::shadow #scroller {
+        padding: 0;
+        width: 320px;
+    }
+    
     html /deep/ .capitalize {
         text-transform: capitalize;
     }
@@ -39,6 +48,15 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+    }
+    
+    html /deep/ .padding-24 {
+        padding: 24px;
+    }
+    
+    html /deep/ .paper-dialog-title {
+        background: #EEE;
+        padding: 12px;
     }
     
     html /deep/ .uppercase {
