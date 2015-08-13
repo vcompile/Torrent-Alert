@@ -55,21 +55,14 @@ Meteor.methods({
         });
 
         if (row) {
-            if (1 < row.user_id.length) {
-                return torrent_in.update({
-                    _id: id,
+            return torrent_in.update({
+                _id: id,
+                user_id: user._id
+            }, {
+                $pull: {
                     user_id: user._id
-                }, {
-                    $pull: {
-                        user_id: user._id
-                    }
-                });
-            } else {
-                return torrent_in.remove({
-                    _id: id,
-                    user_id: user._id
-                });
-            }
+                }
+            });
         } else return "notFound";
     }
 
