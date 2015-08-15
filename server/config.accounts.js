@@ -9,6 +9,13 @@ Meteor.methods({
     signUp: function(req) {
         this.unblock();
 
+        var req = _.pick(req, "email", "username");
+
+        check(req, {
+            email: String,
+            username: String
+        });
+
         var valid_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
 
         if (!valid_email.test(req.email)) {
