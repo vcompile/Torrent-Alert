@@ -6,6 +6,8 @@ Meteor.methods({
         var user = Meteor.user();
         if (!user) throw new Meteor.Error(422, "user N");
 
+        check(id, String);
+
         var row = torrent_out.findOne({
             _id: id
         });
@@ -26,6 +28,13 @@ Meteor.methods({
 
         var user = Meteor.user();
         if (!user) throw new Meteor.Error(422, "user N");
+
+        var item = _.pick(item, "_id", "url");
+
+        check(item, {
+            _id: String,
+            url: String
+        });
 
         var row = torrent_out.findOne({
             _id: item._id

@@ -11,9 +11,15 @@ Meteor.methods({
             }).count() < 4) {
             var query = _.pick(row, "keyword", "peers", "seeds", "url", "urlPart");
 
-            var row = torrent_in.findOne(_.extend(_.clone(query), {
-                    user_id: user._id
-                })),
+            check(query, {
+                keyword: String,
+                peers: Integer,
+                seeds: Integer,
+                url: String,
+                urlPart: String
+            });
+
+            var row = torrent_in.findOne(query),
                 row_id = null;
 
             if (row) {
@@ -48,6 +54,8 @@ Meteor.methods({
 
         var user = Meteor.user();
         if (!user) throw new Meteor.Error(422, "user N");
+
+        check(id, String);
 
         var row = torrent_in.findOne({
             _id: id,
