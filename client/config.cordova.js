@@ -6,30 +6,28 @@ if (Meteor.isCordova) {
     }, false);
 
     function backbutton() {
+        document.querySelector("html /deep/ exit-popup").time = moment().format("x");
 
-        document.querySelector("html /deep/ confirm-exit").time = moment().format("x");
-
-        if ($("html /deep/ #drawerPanel").width() <= 768) {
+        if (document.querySelector("html /deep/ #drawerPanel")) {
             document.querySelector("html /deep/ #drawerPanel").closeDrawer();
         }
 
-        for (var A = document.querySelectorAll("html /deep/ paper-dialog"), Z = 0; Z < A.length; Z++) {
-            A[Z].close();
-        }
-
-        if (document.querySelector("html /deep/ inbox-list")) {
-            document.querySelector("html /deep/ inbox-list").deSelectAll();
+        if (document.querySelector("html /deep/ layout-inbox")) {
+            document.querySelector("html /deep/ layout-inbox").deSelectAll();
         }
 
         if (document.querySelector("html /deep/ search-bar")) {
             document.querySelector("html /deep/ search-bar").enabled = false;
         }
 
+        for (var A = document.querySelectorAll("html /deep/ paper-dialog"), Z = 0; Z < A.length; Z++) {
+            A[Z].close();
+        }
     }
 
     function menubutton() {
-        if (document.querySelector("html /deep/ inbox-list")) {
-            document.querySelector("html /deep/ inbox-list").forceNarrowTap();
+        if (document.querySelector("html /deep/ layout-inbox")) {
+            document.querySelector("html /deep/ layout-inbox").menuToggle();
         }
     }
 

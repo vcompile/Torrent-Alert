@@ -1,0 +1,494 @@
+<polymer-element attributes="loading section" name="user-check">
+    <template>
+        <style>
+        .width {
+            width: 320px;
+        }
+        
+        .heading {
+            background: #FFFFEE;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            padding-bottom: 10px;
+            padding-top: 10px;
+        }
+        
+        .divider {
+            font-weight: bold;
+            padding-bottom: 10px;
+            padding-top: 10px;
+        }
+        
+        .collapse {
+            padding-bottom: 10px;
+            padding-top: 10px;
+            border: 1px solid #ddd;
+            border-top: none;
+        }
+        </style>
+
+        <div fit layout vertical style="background: white; overflow: auto;">
+            <div center-center flex layout vertical>
+                <paper-button class="_red width" hidden?="{{section}}" on-tap="{{googleSignInTap}}">SignIn with Google</paper-button>
+                <div center-justified class="divider" hidden?="{{section}}" horizontal layout>
+                    <div>OR</div>
+                </div>
+                <div center-justified class="heading width" hidden?="{{section}}" horizontal layout on-tap="{{signInCollapseTap}}">
+                    <div>User login</div>
+                </div>
+                <core-collapse hidden?="{{section}}" opened?="{{signInOpened}}">
+                    <div class="collapse width">
+                        <div layout style="padding: 10px 15px;" vertical>
+                            <paper-input label="email" value="{{signIn.email}}"></paper-input>
+                            <div horizontal justified layout>
+                                <div flex>
+                                    <paper-input-decorator label="password">
+                                        <input is="core-input" type="password" value="{{signIn.password}}">
+                                    </paper-input-decorator>
+                                </div>
+                                <div self-end>
+                                    <paper-button class="_blue" on-tap="{{signInTap}}">signIn</paper-button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </core-collapse>
+                <div center-justified class="heading width" hidden?="{{section}}" horizontal layout on-tap="{{forgotPasswordCollapseTap}}">
+                    <div>Forgot password ?</div>
+                </div>
+                <core-collapse hidden?="{{section}}" opened?="{{forgotPasswordOpened}}">
+                    <div class="collapse width">
+                        <div layout style="padding: 10px 15px;" vertical>
+                            <paper-input label="email" value="{{forgotPassword.email}}"></paper-input>
+                            <div horizontal justified layout>
+                                <div flex></div>
+                                <div self-end>
+                                    <paper-button class="_red" on-tap="{{forgotPasswordTap}}">reset</paper-button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </core-collapse>
+                <div center-justified class="divider" hidden?="{{section}}" horizontal layout>
+                    <div>OR</div>
+                </div>
+                <div center-justified class="heading width" hidden?="{{section}}" horizontal layout on-tap="{{signUpCollapseTap}}">
+                    <div>New user ? Create new Account</div>
+                </div>
+                <core-collapse hidden?="{{section}}" opened?="{{signUpOpened}}">
+                    <div class="collapse width">
+                        <div layout style="padding: 10px 15px;" vertical>
+                            <paper-input label="email" value="{{signIn.email}}"></paper-input>
+                            <div horizontal justified layout>
+                                <div flex>
+                                    <paper-input label="username" value="{{signUp.username}}"></paper-input>
+                                </div>
+                                <div self-end>
+                                    <paper-button class="_blue" on-tap="{{signUpTap}}">signUp</paper-button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </core-collapse>
+
+                <div center-justified class="heading width" hidden?="{{section != 'resetPassword'}}" horizontal layout on-tap="{{resetPasswordCollapseTap}}">
+                    <div>Reset Password</div>
+                </div>
+                <core-collapse hidden?="{{section != 'resetPassword'}}" opened?="{{resetPasswordOpened}}">
+                    <div class="collapse width">
+                        <div layout style="padding: 10px 15px;" vertical>
+                            <paper-input-decorator label="password">
+                                <input is="core-input" type="password" value="{{resetPassword.passwordA}}">
+                            </paper-input-decorator>
+                            <paper-input-decorator label="re-type password">
+                                <input is="core-input" type="password" value="{{resetPassword.passwordZ}}">
+                            </paper-input-decorator>
+                            <div horizontal justified layout>
+                                <div flex></div>
+                                <div self-end>
+                                    <paper-button class="_blue" on-tap="{{resetPasswordTap}}">save</paper-button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </core-collapse>
+
+                <div center-justified class="heading width" hidden?="{{section != 'setPassword'}}" horizontal layout on-tap="{{setPasswordCollapseTap}}">
+                    <div>Set Password</div>
+                </div>
+                <core-collapse hidden?="{{section != 'setPassword'}}" opened?="{{setPasswordOpened}}">
+                    <div class="collapse width">
+                        <div layout style="padding: 10px 15px;" vertical>
+                            <paper-input-decorator label="password">
+                                <input is="core-input" type="password" value="{{setPassword.passwordA}}">
+                            </paper-input-decorator>
+                            <paper-input-decorator label="re-type password">
+                                <input is="core-input" type="password" value="{{setPassword.passwordZ}}">
+                            </paper-input-decorator>
+                            <div horizontal justified layout>
+                                <div flex></div>
+                                <div self-end>
+                                    <paper-button class="_blue" on-tap="{{setTap}}">save</paper-button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </core-collapse>
+
+                <div center-justified class="heading width" hidden?="{{section != 'changePassword'}}" horizontal layout on-tap="{{changePasswordCollapseTap}}">
+                    <div>Change Password</div>
+                </div>
+                <core-collapse hidden?="{{section != 'changePassword'}}" opened?="{{changePasswordOpened}}">
+                    <div class="collapse width">
+                        <div layout style="padding: 10px 15px;" vertical>
+                            <paper-input-decorator label="old password">
+                                <input is="core-input" type="password" value="{{changePassword.passwordA}}">
+                            </paper-input-decorator>
+                            <paper-input-decorator label="password">
+                                <input is="core-input" type="password" value="{{changePassword.passwordB}}">
+                            </paper-input-decorator>
+                            <paper-input-decorator label="re-type password">
+                                <input is="core-input" type="password" value="{{changePassword.passwordC}}">
+                            </paper-input-decorator>
+                            <div horizontal justified layout>
+                                <div flex></div>
+                                <div self-end>
+                                    <paper-button class="_blue" on-tap="{{changePasswordTap}}">change</paper-button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </core-collapse>
+            </div>
+        </div>
+
+        <div center-center fit hidden?="{{!loading}}" horizontal layout style="background: black; opacity: 0.4;">
+            <style>
+            .ball-grid-beat,
+            .ball-grid-beat > div {
+                -webkit-box-sizing: border-box;
+                box-sizing: border-box;
+                position: relative;
+            }
+            
+            .ball-grid-beat {
+                color: #fff;
+                display: block;
+                font-size: 0;
+            }
+            
+            .ball-grid-beat > div {
+                background-color: currentColor;
+                border: 0 solid currentColor;
+                display: inline-block;
+                float: none;
+            }
+            
+            .ball-grid-beat {
+                height: 108px;
+                width: 108px;
+            }
+            
+            .ball-grid-beat > div {
+                -webkit-animation-name: ball-grid-beat;
+                animation-name: ball-grid-beat;
+                -webkit-animation-iteration-count: infinite;
+                animation-iteration-count: infinite;
+                border-radius: 100%;
+                height: 24px;
+                margin: 6px;
+                width: 24px;
+            }
+            
+            .ball-grid-beat > div:nth-child(1) {
+                -webkit-animation-duration: .65s;
+                animation-duration: .65s;
+                -webkit-animation-delay: .03s;
+                animation-delay: .03s;
+            }
+            
+            .ball-grid-beat > div:nth-child(2) {
+                -webkit-animation-duration: 1.02s;
+                animation-duration: 1.02s;
+                -webkit-animation-delay: .09s;
+                animation-delay: .09s;
+            }
+            
+            .ball-grid-beat > div:nth-child(3) {
+                -webkit-animation-duration: 1.06s;
+                animation-duration: 1.06s;
+                -webkit-animation-delay: -.69s;
+                animation-delay: -.69s;
+            }
+            
+            .ball-grid-beat > div:nth-child(4) {
+                -webkit-animation-duration: 1.5s;
+                animation-duration: 1.5s;
+                -webkit-animation-delay: -.41s;
+                animation-delay: -.41s;
+            }
+            
+            .ball-grid-beat > div:nth-child(5) {
+                -webkit-animation-duration: 1.6s;
+                animation-duration: 1.6s;
+                -webkit-animation-delay: .04s;
+                animation-delay: .04s;
+            }
+            
+            .ball-grid-beat > div:nth-child(6) {
+                -webkit-animation-duration: .84s;
+                animation-duration: .84s;
+                -webkit-animation-delay: .07s;
+                animation-delay: .07s;
+            }
+            
+            .ball-grid-beat > div:nth-child(7) {
+                -webkit-animation-duration: .68s;
+                animation-duration: .68s;
+                -webkit-animation-delay: -.66s;
+                animation-delay: -.66s;
+            }
+            
+            .ball-grid-beat > div:nth-child(8) {
+                -webkit-animation-duration: .93s;
+                animation-duration: .93s;
+                -webkit-animation-delay: -.76s;
+                animation-delay: -.76s;
+            }
+            
+            .ball-grid-beat > div:nth-child(9) {
+                -webkit-animation-duration: 1.24s;
+                animation-duration: 1.24s;
+                -webkit-animation-delay: -.76s;
+                animation-delay: -.76s;
+            }
+            
+            @-webkit-keyframes ball-grid-beat {
+                0% {
+                    opacity: 1;
+                }
+                50% {
+                    opacity: .35;
+                }
+                100% {
+                    opacity: 1;
+                }
+            }
+            
+            @keyframes ball-grid-beat {
+                0% {
+                    opacity: 1;
+                }
+                50% {
+                    opacity: .35;
+                }
+                100% {
+                    opacity: 1;
+                }
+            }
+            </style>
+
+            <div class="ball-grid-beat">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+        </div>
+
+        <paper-toast duration="4000" id="toast" opened="{{toastOpened}}" swipeDisabled text="{{toastText}}"></paper-toast>
+    </template>
+
+    <script>
+    Polymer("user-auth", {
+
+        changePassword: {},
+        changePasswordOpened: true,
+        forgotPassword: {},
+        forgotPasswordOpened: false,
+        loading: false,
+        resetPassword: {},
+        resetPasswordOpened: true,
+        section: null,
+        setPassword: {},
+        setPasswordOpened: true,
+        signIn: {},
+        signInOpened: true,
+        signUp: {},
+        signUpOpened: false,
+        toastOpened: false,
+        toastText: "",
+
+        changePasswordTap: function(event, detail, sender) {
+            console.log(this.changePassword);
+        },
+
+        changePasswordCollapseTap: function(event, detail, sender) {
+            this.changePasswordOpened = !this.changePasswordOpened;
+        },
+
+        domReady: function() {
+            var _this = this;
+
+            Meteor.autorun(function() {
+                if (Meteor.status().connected) {
+                    if (_this.toastText != "server connected") {
+                        _this.toastAlert("server connected");
+                    }
+                } else {
+                    if (_this.toastText != "lost server connection") {
+                        _this.toastAlert("lost server connection");
+                    }
+                }
+            });
+        },
+
+        googleSignInTap: function(event, detail, sender) {
+            var _this = this;
+
+            if (Meteor.isCordova) {
+                Meteor.cordova_g_plus({
+                    cordova_g_plus: true,
+                    profile: ["email", "email_verified", "gender", "locale", "name", "picture", "sub"]
+                }, function(error) {
+                    if (error) {
+                        _this.toastAlert(error);
+                    }
+                });
+            } else {
+                if (Accounts.loginServicesConfigured()) {
+                    Meteor.loginWithGoogle({
+                        requestOfflineToken: true,
+                        requestPermissions: ["email", "profile"]
+                    }, function(error) {
+                        if (error) {
+                            _this.toastAlert(Accounts.LoginCancelledError.numericError);
+                        }
+                    });
+                }
+            }
+        },
+
+        forgotPasswordTap: function(event, detail, sender) {
+            var valid_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
+
+            if (valid_email.test(this.forgotPassword.email)) {
+                var _this = this;
+
+                Accounts.forgotPassword(_.pick(_this.forgotPassword, "email"), function(error) {
+                    if (error) {
+                        _this.toastAlert(error);
+                    } else {
+                        _this.toastAlert("reset password URL sent @ email");
+                    }
+                });
+            } else {
+                this.toastAlert("invalid email");
+            }
+        },
+
+        forgotPasswordCollapseTap: function(event, detail, sender) {
+            this.forgotPasswordOpened = !this.forgotPasswordOpened;
+            this.signInOpened = false;
+            this.signUpOpened = false;
+        },
+
+        resetPasswordTap: function(event, detail, sender) {
+            if (6 <= this.resetPassword.passwordA.length) {
+                if (this.resetPassword.passwordA == this.resetPassword.passwordZ) {
+                    var _this = this;
+
+                    Accounts.resetPassword(Session.get("resetPasswordToken"), _this.resetPassword.passwordA, function(error) {
+                        if (error) {
+                            _this.toastAlert(error);
+                        } else {
+                            if (callback_done && (typeof callback_done == "function")) {
+                                callback_done();
+                            }
+
+                            Session.set("resetPasswordToken", "");
+                        }
+                    });
+                } else {
+                    this.toastAlert("password mismatch");
+                }
+            } else {
+                this.toastAlert("min password length is 6");
+            }
+        },
+
+        resetPasswordCollapseTap: function(event, detail, sender) {
+            this.resetPasswordOpened = !this.resetPasswordOpened;
+        },
+
+        setPasswordTap: function(event, detail, sender) {
+            console.log(this.setPassword);
+        },
+
+        setPasswordCollapseTap: function(event, detail, sender) {
+            this.setPasswordOpened = !this.setPasswordOpened;
+        },
+
+        signInTap: function(event, detail, sender) {
+            var valid_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
+
+            if (valid_email.test(this.signIn.email)) {
+                if (6 <= this.signIn.password.length) {
+                    var _this = this;
+
+                    Meteor.loginWithPassword(_this.signIn.email, _this.signIn.password, function(error) {
+                        if (error) {
+                            _this.toastAlert(error);
+                        }
+                    });
+                } else {
+                    this.toastAlert("min password length is 6");
+                }
+            } else {
+                this.toastAlert("invalid email");
+            }
+        },
+
+        signInCollapseTap: function(event, detail, sender) {
+            this.forgotPasswordOpened = false;
+            this.signInOpened = !this.signInOpened;
+            this.signUpOpened = false;
+        },
+
+        signUpTap: function(event, detail, sender) {
+            var _this = this;
+
+            Meteor.call("signUp", _this.signUp, function(error, res) {
+                if (error) {
+                    _this.toastAlert(error.reason);
+                } else {
+                    _this.toastAlert(res);
+                }
+            });
+        },
+
+        signUpCollapseTap: function(event, detail, sender) {
+            this.forgotPasswordOpened = false;
+            this.signInOpened = false;
+            this.signUpOpened = !this.signUpOpened;
+        },
+
+        toastAlert: function(alert) {
+            this.toastOpened = false;
+
+            var _this = this;
+
+            Meteor.setTimeout(function() {
+                _this.toastText = alert;
+                _this.toastOpened = true;
+            }, 400);
+        },
+
+    });
+    </script>
+</polymer-element>

@@ -1,6 +1,7 @@
 <body>
 
     <core-localstorage id="torrentz_db" name="torrentz_db" value="[]"></core-localstorage>
+    <exit-popup></exit-popup>
 
     <style>
     html,
@@ -62,13 +63,7 @@
     html /deep/ .uppercase {
         text-transform: uppercase;
     }
-    
-    html /deep/ .uppercase-start:first-letter {
-        text-transform: uppercase;
-    }
     </style>
-
-    <confirm-exit></confirm-exit>
 
     {{> controller_linto}}
 

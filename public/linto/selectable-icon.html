@@ -49,9 +49,7 @@
 
         <div class="icon">
             <template if="{{iconImgSrc}}"><img class="{{iconClass}}" src="{{iconImgSrc}}"></template>
-            <template if="{{!iconImgSrc}}">
-                <span center-center class="letter {{iconClass}}" horizontal layout>{{iconText}}</span>
-            </template>
+            <span center-center class="letter {{iconClass}}" hidden?="{{iconImgSrc}}" horizontal layout>{{iconText}}</span>
             <core-icon icon="check"></core-icon>
         </div>
     </template>
