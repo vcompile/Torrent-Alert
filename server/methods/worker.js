@@ -3,21 +3,19 @@ Meteor.methods({
     worker: function(query) {
         this.unblock();
 
-        var user = Meteor.user();
-        if (!user) throw new Meteor.Error(422, "user N");
-
-        if (user._id != "HedCET") {
-            throw new Meteor.Error(422, "restrictedAccess");
-        }
-
-        var query = _.pick(query, "_id", "db", "std_out", "url");
-
         check(query, {
             _id: String,
             db: String,
             std_out: String,
             url: String
         });
+
+        var user = Meteor.user();
+        if (!user) throw new Meteor.Error(422, "user N");
+
+        if (user._id != "HedCET") {
+            throw new Meteor.Error(422, "restrictedAccess");
+        }
 
         if (20 < query.std_out.length) {
             switch (query.db) {
@@ -35,7 +33,7 @@ Meteor.methods({
                             if ($(this).find("dt a").attr("href")) {
                                 var torrent = {};
 
-                                torrent["url"] = "http://torrentz.in" + $(this).find("dt a").attr("href");
+                                torrent["urlPart"] = $(this).find("dt a").attr("href");
                                 torrent["title"] = $(this).find("dt a").text().trim().replace(/\s+/g, " ");
                                 torrent["category"] = $(this).find("dt").children().remove().end().text().replace(/[^0-9a-zA-Z]/g, " ").trim().replace(/\s+/g, " ");
                                 torrent["verified"] = $(this).find("dd .v").text().replace(/[^0-9]/g, "");
@@ -58,7 +56,7 @@ Meteor.methods({
                                 // db
 
                                 var _torrent_out = torrent_out.find({
-                                    url: torrent.url
+                                    urlPart: torrent.urlPart
                                 });
 
                                 if (_torrent_out.count() == 0) {

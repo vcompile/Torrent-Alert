@@ -3,9 +3,9 @@ Meteor.methods({
     ping_worker: function(_id) {
         this.unblock();
 
-        if (_id) {
-            check(_id, String);
+        check(_id, String);
 
+        if (_id) {
             var row = torrent_worker.findOne({
                 _id: _id
             });

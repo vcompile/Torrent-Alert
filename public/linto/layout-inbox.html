@@ -165,8 +165,8 @@
                             <template repeat="{{list}}">
                                 <template if="{{!hidden}}">
                                     <div center-justified horizontal layout>
-                                        <div layout vertical>
-                                            <div class="li" horizontal justified layout>
+                                        <div class="li" layout vertical>
+                                            <div horizontal justified layout>
                                                 <input class="input-text" disabled flex tag="{{_id}}" type="text" value="{{keyword}}">
                                                 <div self-start>
                                                     <paper-icon-button icon="close" on-tap="{{deleteKeywordTap}}" tag="{{_id}}"></paper-icon-button>
@@ -352,7 +352,7 @@
         //             });
 
         //             if (item) {
-        //                 _this.list[A].torrent_out[index].listClass = "hidden";
+        //                 _this.list[A].torrent_out[index].list_class = "hidden";
 
         //                 break;
         //             }
@@ -454,7 +454,7 @@
                                     return item._id;
                                 })
                             });
-                        }, 4000);
+                        }, 4000)();
                     }
                 },
 
@@ -473,94 +473,94 @@
                 }
             });
 
-            // torrent_out.find().observeChanges({
-            //     added: function(_id, row) {
-            //         var group_index = -1;
+            torrent_out.find().observeChanges({
+                added: function(_id, row) {
+                    var group_index = -1;
 
-            //         var group = _.find(_this.list, function(item) {
-            //             group_index++;
+                    var group = _.find(_this.list, function(item) {
+                        group_index++;
 
-            //             return (-1 < row.torrent_in.indexOf(item._id));
-            //         });
+                        return (-1 < row.torrent_in.indexOf(item._id));
+                    });
 
-            //         if (group) {
-            //             var index = -1;
+                    if (group) {
+                        var index = -1;
 
-            //             var item = _.find(_this.list[group_index].torrent_out, function(item) {
-            //                 index++;
+                        var item = _.find(_this.list[group_index].torrent_out, function(item) {
+                            index++;
 
-            //                 return (_id == item._id);
-            //             });
+                            return (_id == item._id);
+                        });
 
-            //             if (typeof(item) == "undefined") {
-            //                 if (_this.list[group_index].peers <= row.peers && _this.list[group_index].seeds <= row.seeds) {
-            //                     _this.list[group_index].torrent_out.push($.extend(true, row, {
-            //                         _id: _id,
-            //                         categoryClass: polymer_color(row.category, true),
-            //                         listClass: "item"
-            //                     }));
+                        if (typeof(item) == "undefined") {
+                            if (_this.list[group_index].peers <= row.peers && _this.list[group_index].seeds <= row.seeds) {
+                                _this.list[group_index].torrent_out.push($.extend(true, row, {
+                                    _id: _id,
+                                    category_class: polymer_color(row.category, true),
+                                    list_class: "item"
+                                }));
 
-            //                     _this.torrent_out_added = true;
-            //                     _this.torrent_out_queue.push(group_index);
-            //                 }
-            //             } else {
-            //                 if (row.peers < _this.list[group_index].peers && row.seeds < _this.list[group_index].seeds) {
-            //                     _this.list[group_index].torrent_out.splice(index, 1);
-            //                 }
-            //             }
-            //         }
-            //     },
+                                // _this.torrent_out_added = true;
+                                // _this.torrent_out_queue.push(group_index);
+                            }
+                        } else {
+                            if (row.peers < _this.list[group_index].peers && row.seeds < _this.list[group_index].seeds) {
+                                _this.list[group_index].torrent_out.splice(index, 1);
+                            }
+                        }
+                    }
+                },
 
-            //     changed: function(_id, row) {
-            //         var row = torrent_out.findOne({
-            //             _id: _id
-            //         });
+                changed: function(_id, row) {
+                    var row = torrent_out.findOne({
+                        _id: _id
+                    });
 
-            //         var group_index = -1;
+                    var group_index = -1;
 
-            //         var group = _.find(_this.list, function(item) {
-            //             group_index++;
+                    var group = _.find(_this.list, function(item) {
+                        group_index++;
 
-            //             return (-1 < row.torrent_in.indexOf(item._id));
-            //         });
+                        return (-1 < row.torrent_in.indexOf(item._id));
+                    });
 
-            //         if (group) {
-            //             var index = -1;
+                    if (group) {
+                        var index = -1;
 
-            //             var item = _.find(_this.list[group_index].torrent_out, function(item) {
-            //                 index++;
+                        var item = _.find(_this.list[group_index].torrent_out, function(item) {
+                            index++;
 
-            //                 return (_id == item._id);
-            //             });
+                            return (_id == item._id);
+                        });
 
-            //             if (item) {
-            //                 if (row.peers < _this.list[group_index].peers && row.seeds < _this.list[group_index].seeds) {
-            //                     _this.list[group_index].torrent_out.splice(index, 1);
-            //                 } else {
-            //                     _this.list[group_index].torrent_out[index] = $.extend(true, _this.list[group_index].torrent_out[index], row);
-            //                 }
-            //             }
-            //         }
-            //     },
+                        if (item) {
+                            if (row.peers < _this.list[group_index].peers && row.seeds < _this.list[group_index].seeds) {
+                                _this.list[group_index].torrent_out.splice(index, 1);
+                            } else {
+                                _this.list[group_index].torrent_out[index] = $.extend(true, _this.list[group_index].torrent_out[index], row);
+                            }
+                        }
+                    }
+                },
 
-            //     removed: function(_id) {
-            //         for (var A = 0; A < _this.list.length; A++) {
-            //             var index = -1;
+                removed: function(_id) {
+                    for (var A = 0; A < _this.list.length; A++) {
+                        var index = -1;
 
-            //             var item = _.find(_this.list[A].torrent_out, function(item) {
-            //                 index++;
+                        var item = _.find(_this.list[A].torrent_out, function(item) {
+                            index++;
 
-            //                 return (_id == item._id);
-            //             });
+                            return (_id == item._id);
+                        });
 
-            //             if (item) {
-            //                 _this.list[A].torrent_out.splice(index, 1);
+                        if (item) {
+                            _this.list[A].torrent_out.splice(index, 1);
 
-            //                 break;
-            //             }
-            //         }
-            //     }
-            // });
+                            break;
+                        }
+                    }
+                }
+            });
 
             // $(window).on("beforeunload", function() {
             //     _this.save();
@@ -588,23 +588,6 @@
             // }, 800));
         },
 
-        // keywordMenuTap: function(event, opened, sender) {
-        //     var _id = $(sender).attr("tag");
-
-        //     for (var A = 0; A < this.list.length; A++) {
-        //         if (_id == this.list[A]._id) {
-        //             this.list[A].hidden = false;
-        //             this.toolBarClass = this.list[A].iconClass;
-        //         } else {
-        //             this.list[A].hidden = true;
-        //         }
-        //     }
-
-        //     if ($(this.$.drawerPanel).width() <= 768) {
-        //         this.$.drawerPanel.closeDrawer();
-        //     }
-        // },
-
         listChanged: function() {
             if (!(this.list instanceof Array)) {
                 this.list = JSON.parse(this.list);
@@ -617,6 +600,21 @@
             }
 
             // console.log(this.list);
+        },
+
+        menuKeywordTap: function(event, opened, sender) {
+            var _id = $(sender).attr("tag");
+
+            for (var A = 0; A < this.list.length; A++) {
+                if (_id == this.list[A]._id) {
+                    this.list[A].hidden = false;
+                    this.toolBar.class = this.list[A].icon.class;
+                } else {
+                    this.list[A].hidden = true;
+                }
+            }
+
+            this.$.drawerPanel.closeDrawer();
         },
 
         menuToggle: function() {
@@ -815,7 +813,7 @@
         //             });
 
         //             if (item) {
-        //                 _this.list[A].torrent_out[index].listClass = "item";
+        //                 _this.list[A].torrent_out[index].list_class = "item";
 
         //                 break;
         //             }

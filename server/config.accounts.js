@@ -9,8 +9,6 @@ Meteor.methods({
     signUp: function(req) {
         this.unblock();
 
-        var req = _.pick(req, "email", "username");
-
         check(req, {
             email: String,
             username: String

@@ -52,7 +52,7 @@ Meteor.publish("torrent_out", function(query) {
             fields: {
                 status: 1,
                 torrent_worker: 1,
-                url: 1
+                urlPart: 1
             },
             sort: {
                 time: -1
