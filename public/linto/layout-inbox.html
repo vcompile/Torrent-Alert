@@ -140,10 +140,10 @@
             </core-header-panel>
 
             <core-header-panel id="main" main on-trackend="{{refresh_trackend}}" on-trackstart="{{refresh_trackstart}}" on-tracky="{{refresh_tracky}}">
-                <core-toolbar class="{{inboxListSelected.length ? 'grey-500' : toolBar.class}} {{ {'selection': inboxListSelected.length} | tokenList }}" id="mainToolBar">
+                <core-toolbar class="{{listSelected.length ? 'grey-500' : toolBar.class}} {{ {'selection': listSelected.length} | tokenList }}" id="mainToolBar">
                     <paper-icon-button class="selection-allow" icon="arrow-back" on-tap="{{deSelectAll}}"></paper-icon-button>
                     <paper-icon-button class="selection-deny" icon="menu" on-tap="{{menuToggle}}"></paper-icon-button>
-                    <div flex>{{inboxListSelected.length ? inboxListSelected.length : toolBar.text}}</div>
+                    <div flex>{{listSelected.length ? listSelected.length : toolBar.text}}</div>
                     <paper-icon-button class="selection-allow" icon="delete" on-tap="{{deleteItemTap}}"></paper-icon-button>
                     <paper-icon-button class="selection-allow" icon="social:share" on-tap="{{shareItemTap}}"></paper-icon-button>
                     <paper-icon-button class="selection-allow" icon="more-vert" on-tap="{{moreItemTap}}"></paper-icon-button>
@@ -161,7 +161,7 @@
                         </div>
                     </section>
                     <section touch-action="pan-x pan-y">
-                        <core-selector multi excludedLocalNames="div" selected="{{inboxListSelected}}" selectedAttribute="selected" valueattr="tag">
+                        <core-selector multi excludedLocalNames="div" selected="{{listSelected}}" selectedAttribute="selected" valueattr="tag">
                             <template repeat="{{list}}">
                                 <template if="{{!hidden}}">
                                     <div center-justified horizontal layout>
@@ -184,7 +184,7 @@
             </core-header-panel>
         </core-drawer-panel>
 
-        <paper-fab class="menu-b {{ {'move-down': inboxListSelected.length} | tokenList }}" icon="add" on-tap="{{addKeywordFabTap}}"></paper-fab>
+        <paper-fab class="menu-b {{ {'move-down': listSelected.length} | tokenList }}" icon="add" on-tap="{{addKeywordFabTap}}"></paper-fab>
 
         <paper-dialog backdrop id="addKeyword" transition="core-transition-bottom">
             <div layout vertical>
@@ -258,7 +258,7 @@
 
         <search-bar id="search"></search-bar>
 
-        <paper-toast duration="4000" id="toast" on-core-overlay-open="{{on_core_overlay_open}}" text="{{toast.text}}">
+        <paper-toast duration="4000" id="toast" on-core-overlay-open="{{on_core_overlay_open}}">
             <div hidden?="{{!undo.length}}" on-tap="{{undoTap}}" style="color: #FFEB3B;">undo</div>
         </paper-toast>
     </template>
@@ -283,17 +283,13 @@
         },
 
         list: [],
-        inboxListSelected: [],
+        listSelected: [],
 
         keyword: "",
         peers: 100,
         seeds: 10,
 
         undo: [],
-
-        toast: {
-            text: ""
-        },
 
         addKeywordFabTap: function() {
             this.$.addKeyword.opened = true;
@@ -312,17 +308,17 @@
                         urlPart: (1 < keywordArray.length) ? keywordArray[0] : "search"
                     };
 
-                // Meteor.call("insert_torrent_in", row, function(error, status) {
-                //     if (error) {
-                //         console.log(error);
-                //     } else {
-                //         if (status) {
-                //             _this.toastAlert("1 keyword added");
-                //         } else {
-                //             _this.toastAlert("quota limit reached");
-                //         }
-                //     }
-                // });
+                Meteor.call("insert_torrent_in", row, function(error, status) {
+                    if (error) {
+                        console.log(error);
+                    } else {
+                        if (status) {
+                            _this.toastAlert("1 keyword added");
+                        } else {
+                            _this.toastAlert("quota limit reached");
+                        }
+                    }
+                });
             } else {
                 this.toastAlert("empty keyword");
             }
@@ -334,14 +330,13 @@
 
         cPanelTap: function() {
             this.$.drawerPanel.closeDrawer();
-
             this.$.cPanel.opened = true;
         },
 
         // deleteItemTap: function() {
         //     var _this = this;
 
-        //     _this.inboxListSelected.forEach(function(_id) {
+        //     _this.listSelected.forEach(function(_id) {
         //         for (var A = 0; A < _this.list.length; A++) {
         //             var index = -1;
 
@@ -359,8 +354,8 @@
         //         }
         //     });
 
-        //     _this.undo = _this.inboxListSelected;
-        //     _this.inboxListSelected = [];
+        //     _this.undo = _this.listSelected;
+        //     _this.listSelected = [];
 
         //     _this.toastAlert(_this.undo.length + " item" + (_this.undo.length == 1 ? "" : "s") + " removed");
         // },
@@ -400,7 +395,7 @@
         // },
 
         deSelectAll: function() {
-            this.inboxListSelected = [];
+            this.listSelected = [];
         },
 
         // domReady: function() {
@@ -623,7 +618,7 @@
 
         // on_core_overlay_open: function(event, opened, sender) {
         //     if (opened) {
-        //         if (this.inboxListSelected.length == 0) {
+        //         if (this.listSelected.length == 0) {
         //             $("html /deep/ .menu-b").addClass("move-up");
         //         }
         //     } else {
@@ -712,14 +707,14 @@
         //     var _this = this,
         //         body = "";
 
-        //     for (var A = 0; A < _this.inboxListSelected.length; A++) {
+        //     for (var A = 0; A < _this.listSelected.length; A++) {
         //         for (var B = 0; B < _this.list.length; B++) {
         //             var index = -1;
 
         //             var item = _.find(_this.list[B].torrent_out, function(item) {
         //                 index++;
 
-        //                 return (_this.inboxListSelected[A] == item._id);
+        //                 return (_this.listSelected[A] == item._id);
         //             });
 
         //             if (item) {
@@ -740,25 +735,25 @@
 
         //     if (body != "") {
         //         if (Meteor.isCordova) {
-        //             window.plugins.socialsharing.share("Hi\n\nTorrent Alert - " + _this.profile.name + " shared " + _this.inboxListSelected.length + ((_this.inboxListSelected.length == 1) ? " torrent" : " torrentz") + body);
+        //             window.plugins.socialsharing.share("Hi\n\nTorrent Alert - " + _this.profile.name + " shared " + _this.listSelected.length + ((_this.listSelected.length == 1) ? " torrent" : " torrentz") + body);
         //         } else {
-        //             window.location.href = "mailto://" + _this.profile.email + "?subject=" + encodeURIComponent("Torrent Alert") + "&body=" + encodeURIComponent("Hi\n\n" + _this.profile.name + " shared " + _this.inboxListSelected.length + " torrent" + (_this.inboxListSelected.length == 1 ? "" : "s") + body);
+        //             window.location.href = "mailto://" + _this.profile.email + "?subject=" + encodeURIComponent("Torrent Alert") + "&body=" + encodeURIComponent("Hi\n\n" + _this.profile.name + " shared " + _this.listSelected.length + " torrent" + (_this.listSelected.length == 1 ? "" : "s") + body);
         //         }
         //     } else {
         //         _this.toastAlert("empty email body");
         //     }
         // },
 
-        // toastAlert: function(alert) {
-        //     this.toastOpened = false;
+        toastAlert: function(alert) {
+            this.$.toast.opened = false;
 
-        //     var _this = this;
+            var _this = this;
 
-        //     Meteor.setTimeout(function() {
-        //         _this.toastText = alert;
-        //         _this.toastOpened = true;
-        //     }, 400);
-        // },
+            Meteor.setTimeout(function() {
+                _this.$.toast.text = alert;
+                _this.$.toast.opened = true;
+            }, 400);
+        },
 
         // signOutTap: function() {
         //     var _this = this;

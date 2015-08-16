@@ -3,21 +3,20 @@ Meteor.methods({
     insert_torrent_in: function(row) {
         this.unblock();
 
+        check(row, {
+            keyword: String,
+            peers: Match.Integer,
+            seeds: Match.Integer,
+            urlPart: String
+        });
+
         var user = Meteor.user();
         if (!user) throw new Meteor.Error(422, "user N");
 
         if (torrent_in.find({
                 user_id: user._id
-            }).count() < 4) {
-            var query = _.pick(row, "keyword", "peers", "seeds", "url", "urlPart");
-
-            check(query, {
-                keyword: String,
-                peers: Integer,
-                seeds: Integer,
-                url: String,
-                urlPart: String
-            });
+            }).count() < 5) {
+            var query = _.pick(row, "keyword", "peers", "seeds", "urlPart");
 
             var row = torrent_in.findOne(query),
                 row_id = null;
@@ -52,10 +51,10 @@ Meteor.methods({
     remove_torrent_in: function(id) {
         this.unblock();
 
+        check(id, String);
+
         var user = Meteor.user();
         if (!user) throw new Meteor.Error(422, "user N");
-
-        check(id, String);
 
         var row = torrent_in.findOne({
             _id: id,

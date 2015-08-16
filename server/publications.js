@@ -9,7 +9,6 @@ Meteor.publish("torrent_in", function() {
                 keyword: 1,
                 status: 1,
                 torrent_worker: 1,
-                url: 1,
                 urlPart: 1
             },
             sort: {
@@ -24,7 +23,6 @@ Meteor.publish("torrent_in", function() {
                 keyword: 1,
                 peers: 1,
                 seeds: 1,
-                url: 1,
                 urlPart: 1
             },
             sort: {
@@ -35,6 +33,16 @@ Meteor.publish("torrent_in", function() {
 });
 
 Meteor.publish("torrent_out", function(query) {
+    check(query, Match.Where(function(A) {
+        if (A instanceof Array) {
+            for (var index = 0; index < A.length; index++) {
+                check(A[index], String);
+            }
+
+            return true;
+        } else return false;
+    }));
+
     if (this.userId == "HedCET") {
         return torrent_out.find({
             status: {
@@ -68,7 +76,6 @@ Meteor.publish("torrent_out", function(query) {
                 time: 1,
                 title: 1,
                 torrent_in: 1,
-                url: 1,
                 verified: 1
             },
             sort: {
