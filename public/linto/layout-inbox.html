@@ -295,31 +295,34 @@
             text: ""
         },
 
+        addKeywordFabTap: function() {
+            this.$.addKeyword.opened = true;
+        },
+
         addKeywordOk: function() {
             this.keyword = decodeURIComponent(this.keyword).trim();
-            var keywordArray = this.keyword.split("/").filter(Boolean).reverse()[0].trim().split(/\?[fq]=/g);
+            var keywordArray = (this.keyword.split("/").filter(Boolean).reverse()[0] || "").trim().split(/\?[fq]=/g);
 
             if (this.keyword.length) {
-                var row = {
-                    keyword: (1 < keywordArray.length) ? keywordArray[1] : keywordArray[0],
-                    peers: parseInt(this.peers),
-                    seeds: parseInt(this.seeds),
-                    urlPart: (1 < keywordArray.length) ? keywordArray[0] : "search"
-                };
+                var _this = this,
+                    row = {
+                        keyword: (1 < keywordArray.length) ? keywordArray[1] : keywordArray[0],
+                        peers: parseInt(this.peers),
+                        seeds: parseInt(this.seeds),
+                        urlPart: (1 < keywordArray.length) ? keywordArray[0] : "search"
+                    };
 
-                var _this = this;
-
-                Meteor.call("insert_torrent_in", row, function(error, status) {
-                    if (error) {
-                        _this.toastAlert(error.reason);
-                    } else {
-                        if (status) {
-                            _this.toastAlert("1 keyword added");
-                        } else {
-                            _this.toastAlert("quota limit reached");
-                        }
-                    }
-                });
+                // Meteor.call("insert_torrent_in", row, function(error, status) {
+                //     if (error) {
+                //         console.log(error);
+                //     } else {
+                //         if (status) {
+                //             _this.toastAlert("1 keyword added");
+                //         } else {
+                //             _this.toastAlert("quota limit reached");
+                //         }
+                //     }
+                // });
             } else {
                 this.toastAlert("empty keyword");
             }
@@ -329,17 +332,11 @@
             this.seeds = 10;
         },
 
-        addKeywordFabTap: function() {
-            this.$.addKeyword.opened = true;
+        cPanelTap: function() {
+            this.$.drawerPanel.closeDrawer();
+
+            this.$.cPanel.opened = true;
         },
-
-        // cPanelTap: function() {
-        //     if ($(this.$.drawerPanel).width() <= 768) {
-        //         this.$.drawerPanel.closeDrawer();
-        //     }
-
-        //     this.cPanelOpened = true;
-        // },
 
         // deleteItemTap: function() {
         //     var _this = this;
