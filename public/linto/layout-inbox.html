@@ -144,9 +144,9 @@
                     <paper-icon-button class="selection-allow" icon="arrow-back" on-tap="{{deSelectAll}}"></paper-icon-button>
                     <paper-icon-button class="selection-deny" icon="menu" on-tap="{{menuToggle}}"></paper-icon-button>
                     <div flex>{{listSelected.length ? listSelected.length : toolBar.text}}</div>
-                    <paper-icon-button class="selection-allow" icon="delete" on-tap="{{deleteItemTap}}"></paper-icon-button>
-                    <paper-icon-button class="selection-allow" icon="social:share" on-tap="{{shareItemTap}}"></paper-icon-button>
-                    <paper-icon-button class="selection-allow" icon="more-vert" on-tap="{{moreItemTap}}"></paper-icon-button>
+                    <paper-icon-button class="selection-allow" icon="delete" on-tap="{{deleteTap}}"></paper-icon-button>
+                    <paper-icon-button class="selection-allow" icon="social:share" on-tap="{{shareTap}}"></paper-icon-button>
+                    <paper-icon-button class="selection-allow" icon="more-vert" on-tap="{{moreTap}}"></paper-icon-button>
                     <paper-icon-button class="selection-deny" icon="search" on-tap="{{searchBarToggle}}"></paper-icon-button>
                     <div center-center class="bottom fit" horizontal id="refresh" layout>
                         <div class="paper-shadow-bottom-z-1">
@@ -262,7 +262,7 @@
         <search-bar id="search"></search-bar>
 
         <paper-toast duration="4000" id="toast" on-core-overlay-open="{{on_core_overlay_open}}">
-            <div hidden?="{{!undo.length}}" on-tap="{{undoTap}}" style="color: #FFEB3B;">undo</div>
+            <div hidden?="{{undo.length < 1}}" on-tap="{{undoTap}}" style="color: #FFEB3B;">undo</div>
         </paper-toast>
     </template>
 
@@ -446,7 +446,15 @@
                             torrent_out: []
                         }));
 
-                        _this.torrent_in_added = true;
+                        _.debounce(function() {
+                            _this.list = _.sortBy(_this.list, "keyword");
+
+                            Meteor.subscribe("torrent_out", {
+                                torrent_in: _.map(_this.list, function(item) {
+                                    return item._id;
+                                })
+                            });
+                        }, 4000);
                     }
                 },
 
@@ -611,17 +619,17 @@
             // console.log(this.list);
         },
 
-        // menuToggle: function() {
-        //     if (this.$.drawerPanel.narrow && $(this.$.drawerPanel).width() < parseInt(this.$.drawerPanel.responsiveWidth)) {
-        //         this.$.drawerPanel.togglePanel();
-        //     } else {
-        //         this.$.drawerPanel.forceNarrow = !this.$.drawerPanel.forceNarrow;
-        //     }
-        // },
+        menuToggle: function() {
+            if (this.$.drawerPanel.narrow && $(this.$.drawerPanel).width() < parseInt(this.$.drawerPanel.responsiveWidth)) {
+                this.$.drawerPanel.togglePanel();
+            } else {
+                this.$.drawerPanel.forceNarrow = !this.$.drawerPanel.forceNarrow;
+            }
+        },
 
-        // moreItemTap: function() {
-        //     this.toastAlert("downloading, streaming, etc not included");
-        // },
+        moreTap: function() {
+            this.toastAlert("client/server downloading, streaming, etc");
+        },
 
         // on_core_overlay_open: function(event, opened, sender) {
         //     if (opened) {
@@ -775,23 +783,6 @@
         //             Session.set("view", "signIn");
         //         }
         //     });
-        // },
-
-        // torrent_in_addedChanged: function() {
-        //     var _this = this;
-
-        //     if (_this.torrent_in_added) {
-        //         Meteor.setTimeout(function() {
-        //             _this.list = _.sortBy(_this.list, "keyword");
-        //             _this.torrent_in_added = false;
-
-        //             Meteor.subscribe("torrent_out", {
-        //                 torrent_in: _.map(_this.list, function(item) {
-        //                     return item._id;
-        //                 })
-        //             });
-        //         }, 8000);
-        //     }
         // },
 
         // torrent_out_addedChanged: function() {

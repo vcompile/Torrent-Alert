@@ -34,10 +34,10 @@ Meteor.publish("torrent_in", function() {
 
 Meteor.publish("torrent_out", function(query) {
     check(query, Match.Where(function(A) {
-        if (A instanceof Array) {
-            for (var index = 0; index < A.length; index++) {
-                check(A[index], String);
-            }
+        if (A.torrent_in) {
+            A.torrent_in.forEach(function(item) {
+                check(item, String);
+            });
 
             return true;
         } else return false;
