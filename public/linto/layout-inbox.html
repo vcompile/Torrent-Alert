@@ -126,7 +126,7 @@
 
                 <div class="padding-4"></div>
 
-                <div class="menu-l" horizontal justified layout on-tap="{{open_github_sourceinput.}}">
+                <div class="menu-l" horizontal justified layout on-tap="{{open_github_source}}">
                     <div class="padding-4" self-start>
                         <selectable-icon iconImgSrc="/img/github.png"></selectable-icon>
                     </div>
@@ -189,16 +189,16 @@
         <paper-dialog backdrop id="addKeyword" transition="core-transition-bottom">
             <div layout vertical>
                 <div layout class="padding-24" vertical>
-                    <div style="border-bottom: 2px solid #888; padding: 4px 0;">add item to scheduler</div>
+                    <div style="border-bottom: 2px solid #888; padding: 4px 0;">add to scheduler</div>
                     <div class="padding-4"></div>
-                    <paper-input autoFocus label="keyword" value="{{input.keyword}}"></paper-input>
+                    <paper-input autoFocus label="keyword" value="{{keyword}}"></paper-input>
                     <div center horizontal justified layout>
                         <div>min peer count</div>
-                        <paper-slider editable flex id="peers" max="1000" min="1" value="{{input.peers}}"></paper-slider>
+                        <paper-slider editable flex id="peers" max="1000" min="1" value="{{peers}}"></paper-slider>
                     </div>
                     <div center horizontal justified layout>
                         <div>min seed count</div>
-                        <paper-slider editable flex id="seeds" max="1000" min="1" value="{{input.seeds}}"></paper-slider>
+                        <paper-slider editable flex id="seeds" max="1000" min="1" value="{{seeds}}"></paper-slider>
                     </div>
                 </div>
                 <div class="paper-dialog-title" horizontal layout reverse>
@@ -258,8 +258,8 @@
 
         <search-bar id="search"></search-bar>
 
-        <paper-toast duration="4000" id="toast" on-core-overlay-open="{{on_core_overlay_open}}" text="{{toastText}}">
-            <div hidden?="{{!undo.length}}" on-tap="{{undoButtonTap}}" style="color: #FFEB3B;">undo</div>
+        <paper-toast duration="4000" id="toast" on-core-overlay-open="{{on_core_overlay_open}}" text="{{toast.text}}">
+            <div hidden?="{{!undo.length}}" on-tap="{{undoTap}}" style="color: #FFEB3B;">undo</div>
         </paper-toast>
     </template>
 
@@ -285,59 +285,53 @@
         list: [],
         inboxListSelected: [],
 
-        input: {
-            keyword: "",
-            peers: 100,
-            seeds: 10,
-        },
+        keyword: "",
+        peers: 100,
+        seeds: 10,
 
         undo: [],
 
         toast: {
-            opened: false,
             text: ""
         },
 
-        // window.open("http://github.com/HedCET/torrentzAlert", "_system");
+        addKeywordOk: function() {
+            this.keyword = decodeURIComponent(this.keyword).trim();
+            var keywordArray = this.keyword.split("/").filter(Boolean).reverse()[0].trim().split(/\?[fq]=/g);
 
-        // addKeywordButtonTap: function() {
-        //     this.keyword = decodeURIComponent(this.keyword).trim();
-        //     var keywordArray = this.keyword.replace("/", "").split(/\?[fq]=/g);
+            if (this.keyword.length) {
+                var row = {
+                    keyword: (1 < keywordArray.length) ? keywordArray[1] : keywordArray[0],
+                    peers: parseInt(this.peers),
+                    seeds: parseInt(this.seeds),
+                    urlPart: (1 < keywordArray.length) ? keywordArray[0] : "search"
+                };
 
-        //     if (this.keyword.length) {
-        //         var row = {
-        //             keyword: (1 < keywordArray.length) ? keywordArray[1] : keywordArray[0],
-        //             peers: this.peers,
-        //             seeds: this.seeds,
-        //             url: "http://torrentz.in",
-        //             urlPart: (1 < keywordArray.length) ? keywordArray[0] : "search"
-        //         };
+                var _this = this;
 
-        //         var _this = this;
+                Meteor.call("insert_torrent_in", row, function(error, status) {
+                    if (error) {
+                        _this.toastAlert(error.reason);
+                    } else {
+                        if (status) {
+                            _this.toastAlert("1 keyword added");
+                        } else {
+                            _this.toastAlert("quota limit reached");
+                        }
+                    }
+                });
+            } else {
+                this.toastAlert("empty keyword");
+            }
 
-        //         Meteor.call("insert_torrent_in", row, function(error, status) {
-        //             if (error) {
-        //                 _this.toastAlert(error.reason);
-        //             } else {
-        //                 if (status) {
-        //                     _this.toastAlert("1 keyword added");
-        //                 } else {
-        //                     _this.toastAlert("quota limit reached");
-        //                 }
-        //             }
-        //         });
-        //     } else {
-        //         this.toastAlert("empty keyword");
-        //     }
+            this.keyword = "";
+            this.peers = 100;
+            this.seeds = 10;
+        },
 
-        //     this.keyword = "";
-        //     this.peers = 100;
-        //     this.seeds = 10;
-        // },
-
-        // addKeywordFabTap: function() {
-        //     this.addKeywordOpened = true;
-        // },
+        addKeywordFabTap: function() {
+            this.$.addKeyword.opened = true;
+        },
 
         // cPanelTap: function() {
         //     if ($(this.$.drawerPanel).width() <= 768) {
@@ -408,9 +402,9 @@
         //     this.deleteKeywordOpened = true;
         // },
 
-        // deSelectAll: function() {
-        //     this.inboxListSelected = [];
-        // },
+        deSelectAll: function() {
+            this.inboxListSelected = [];
+        },
 
         // domReady: function() {
         //     this.list = JSON.parse($("#torrentz_db").val());
@@ -669,6 +663,10 @@
         //         }
         //     }
         // },
+
+        open_github_source: function() {
+            window.open("http://github.com/HedCET/torrentzAlert", "_system");
+        },
 
         // refresh_trackend: function(event, detail, sender) {
         //     if (80 <= event.dy) {
