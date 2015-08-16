@@ -9,14 +9,14 @@
     "core-resizable": "Polymer/core-resizable#^0.5"
   },
   "version": "0.5.6",
-  "homepage": "https://github.com/polymer/core-animated-pages",
+  "homepage": "https://github.com/Polymer/core-animated-pages",
   "_release": "0.5.6",
   "_resolution": {
     "type": "version",
     "tag": "0.5.6",
     "commit": "53d095f3de302e0e72d80967652af67feb56626b"
   },
-  "_source": "git://github.com/polymer/core-animated-pages.git",
-  "_target": "~0.5.5",
-  "_originalSource": "polymer/core-animated-pages"
+  "_source": "git://github.com/Polymer/core-animated-pages.git",
+  "_target": "^0.5",
+  "_originalSource": "Polymer/core-animated-pages"
 }

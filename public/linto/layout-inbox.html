@@ -631,78 +631,78 @@
             this.toastAlert("client/server downloading, streaming, etc");
         },
 
-        // on_core_overlay_open: function(event, opened, sender) {
-        //     if (opened) {
-        //         if (this.listSelected.length == 0) {
-        //             $("html /deep/ .menu-b").addClass("move-up");
-        //         }
-        //     } else {
-        //         $("html /deep/ .menu-b").removeClass("move-up");
+        on_core_overlay_open: function(event, opened, sender) {
+            if (opened) {
+                if (this.listSelected.length == 0) {
+                    $("html /deep/ .menu-b").addClass("move-up");
+                }
+            } else {
+                $("html /deep/ .menu-b").removeClass("move-up");
 
-        //         if (this.undo.length) {
-        //             var _this = this;
+                // if (this.undo.length) {
+                //     var _this = this;
 
-        //             _this.undo.forEach(function(_id) {
-        //                 for (var A = 0; A < _this.list.length; A++) {
-        //                     var index = -1;
+                //     _this.undo.forEach(function(_id) {
+                //         for (var A = 0; A < _this.list.length; A++) {
+                //             var index = -1;
 
-        //                     var item = _.find(_this.list[A].torrent_out, function(item) {
-        //                         index++;
+                //             var item = _.find(_this.list[A].torrent_out, function(item) {
+                //                 index++;
 
-        //                         return (_id == item._id);
-        //                     });
+                //                 return (_id == item._id);
+                //             });
 
-        //                     if (item) {
-        //                         _this.list[A].torrent_out.splice(index, 1);
+                //             if (item) {
+                //                 _this.list[A].torrent_out.splice(index, 1);
 
-        //                         Meteor.call("remove_torrent_out", _id, function(error, status) {
-        //                             if (error) {
-        //                                 console.log(error);
-        //                             }
-        //                         });
+                //                 Meteor.call("remove_torrent_out", _id, function(error, status) {
+                //                     if (error) {
+                //                         console.log(error);
+                //                     }
+                //                 });
 
-        //                         break;
-        //                     }
-        //                 }
-        //             });
+                //                 break;
+                //             }
+                //         }
+                //     });
 
-        //             _this.undo = [];
-        //         }
-        //     }
-        // },
+                //     _this.undo = [];
+                // }
+            }
+        },
 
         open_github_source: function() {
             window.open("http://github.com/HedCET/torrentzAlert", "_system");
         },
 
-        // refresh_trackend: function(event, detail, sender) {
-        //     if (80 <= event.dy) {
-        //         this.refresh = true;
+        refresh_trackend: function(event, detail, sender) {
+            if (80 <= event.dy) {
+                this.refresh = true;
 
-        //         var _this = this;
+                var _this = this;
 
-        //         Meteor.setTimeout(function() {
-        //             _this.refresh = false;
-        //             _this.$.refresh.classList.add("reset");
-        //         }, 4000);
-        //     } else {
-        //         this.refresh = false;
-        //         this.$.refresh.classList.add("reset");
-        //     }
-        // },
+                Meteor.setTimeout(function() {
+                    _this.refresh = false;
+                    _this.$.refresh.classList.add("reset");
+                }, 4000);
+            } else {
+                this.refresh = false;
+                this.$.refresh.classList.add("reset");
+            }
+        },
 
-        // refresh_trackstart: function(event, detail, sender) {
-        //     // if (this.$.main.scroller.scrollTop == 0 && 0 < event.yDirection) {
-        //     this.$.refresh.classList.remove("reset");
-        //     // }
-        // },
+        refresh_trackstart: function(event, detail, sender) {
+            // if (this.$.main.scroller.scrollTop == 0 && 0 < event.yDirection) {
+            this.$.refresh.classList.remove("reset");
+            // }
+        },
 
-        // refresh_tracky: function(event, detail, sender) {
-        //     if (!this.refresh) {
-        //         this.$.refresh.style.opacity = Math.min(1, 1 - ((this.refresh_max_y - event.dy) / this.refresh_max_y));
-        //         this.$.refresh.style.transform = this.$.refresh.style.webkitTransform = "translate3d(0, " + Math.min(event.dy, this.refresh_max_y) + "px, 0)";
-        //     }
-        // },
+        refresh_tracky: function(event, detail, sender) {
+            if (!this.refresh) {
+                this.$.refresh.style.opacity = Math.min(1, 1 - ((this.refresh_max_y - event.dy) / this.refresh_max_y));
+                this.$.refresh.style.transform = this.$.refresh.style.webkitTransform = "translate3d(0, " + Math.min(event.dy, this.refresh_max_y) + "px, 0)";
+            }
+        },
 
         // save: function() {
         //     $("#polymer_color_db").val(JSON.stringify(polymer_color_db));

@@ -12,14 +12,14 @@
     "web-component-tester": "Polymer/web-component-tester#^1.0.0"
   },
   "version": "0.5.6",
-  "homepage": "https://github.com/polymer/paper-input",
+  "homepage": "https://github.com/Polymer/paper-input",
   "_release": "0.5.6",
   "_resolution": {
     "type": "version",
     "tag": "0.5.6",
     "commit": "7409968bd18b2906c4180b2f230a5f1741707609"
   },
-  "_source": "git://github.com/polymer/paper-input.git",
-  "_target": "~0.5.5",
-  "_originalSource": "polymer/paper-input"
+  "_source": "git://github.com/Polymer/paper-input.git",
+  "_target": "^0.5",
+  "_originalSource": "Polymer/paper-input"
 }

@@ -8,14 +8,14 @@
     "paper-button": "Polymer/paper-button#^0.5"
   },
   "version": "0.5.6",
-  "homepage": "https://github.com/polymer/paper-toast",
+  "homepage": "https://github.com/Polymer/paper-toast",
   "_release": "0.5.6",
   "_resolution": {
     "type": "version",
     "tag": "0.5.6",
     "commit": "890be9c9f7d050d4ec3934122bc79fc59600a6f6"
   },
-  "_source": "git://github.com/polymer/paper-toast.git",
-  "_target": "~0.5.5",
-  "_originalSource": "polymer/paper-toast"
+  "_source": "git://github.com/Polymer/paper-toast.git",
+  "_target": "^0.5",
+  "_originalSource": "Polymer/paper-toast"
 }
