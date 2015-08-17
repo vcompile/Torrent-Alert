@@ -13,12 +13,6 @@
             padding-top: 10px;
         }
         
-        .divider {
-            font-weight: bold;
-            padding-bottom: 10px;
-            padding-top: 10px;
-        }
-        
         .collapse {
             padding-bottom: 10px;
             padding-top: 10px;
@@ -27,142 +21,155 @@
         }
         </style>
 
-        <div fit layout vertical style="background: white; overflow: auto;">
-            <div center-center flex layout vertical>
-                <paper-button class="_red width" hidden?="{{section}}" on-tap="{{googleSignInTap}}">SignIn with Google</paper-button>
-                <div center-justified class="divider" hidden?="{{section}}" horizontal layout>
-                    <div>OR</div>
-                </div>
-                <div center-justified class="heading width" hidden?="{{section}}" horizontal layout on-tap="{{signInCollapseTap}}">
-                    <div>User login</div>
-                </div>
-                <core-collapse hidden?="{{section}}" opened?="{{signInOpened}}">
-                    <div class="collapse width">
-                        <div layout style="padding: 10px 15px;" vertical>
-                            <paper-input label="email" value="{{signIn.email}}"></paper-input>
-                            <div horizontal justified layout>
-                                <div flex>
-                                    <paper-input-decorator label="password">
-                                        <input is="core-input" type="password" value="{{signIn.password}}">
-                                    </paper-input-decorator>
-                                </div>
-                                <div self-end>
-                                    <paper-button class="_blue" on-tap="{{signInTap}}">signIn</paper-button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </core-collapse>
-                <div center-justified class="heading width" hidden?="{{section}}" horizontal layout on-tap="{{forgotPasswordCollapseTap}}">
-                    <div>Forgot password ?</div>
-                </div>
-                <core-collapse hidden?="{{section}}" opened?="{{forgotPasswordOpened}}">
-                    <div class="collapse width">
-                        <div layout style="padding: 10px 15px;" vertical>
-                            <paper-input label="email" value="{{forgotPassword.email}}"></paper-input>
-                            <div horizontal justified layout>
-                                <div flex></div>
-                                <div self-end>
-                                    <paper-button class="_red" on-tap="{{forgotPasswordTap}}">reset</paper-button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </core-collapse>
-                <div center-justified class="divider" hidden?="{{section}}" horizontal layout>
-                    <div>OR</div>
-                </div>
-                <div center-justified class="heading width" hidden?="{{section}}" horizontal layout on-tap="{{signUpCollapseTap}}">
-                    <div>New user ? Create new Account</div>
-                </div>
-                <core-collapse hidden?="{{section}}" opened?="{{signUpOpened}}">
-                    <div class="collapse width">
-                        <div layout style="padding: 10px 15px;" vertical>
-                            <paper-input label="email" value="{{signIn.email}}"></paper-input>
-                            <div horizontal justified layout>
-                                <div flex>
-                                    <paper-input label="username" value="{{signUp.username}}"></paper-input>
-                                </div>
-                                <div self-end>
-                                    <paper-button class="_blue" on-tap="{{signUpTap}}">signUp</paper-button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </core-collapse>
+        <div center-center fit layout style="background: white; overflow: auto;" vertical>
+            <paper-button class="red-500 width" hidden?="{{section}}" on-tap="{{googleSignInTap}}">SignIn with Google</paper-button>
 
-                <div center-justified class="heading width" hidden?="{{section != 'resetPassword'}}" horizontal layout on-tap="{{resetPasswordCollapseTap}}">
-                    <div>Reset Password</div>
-                </div>
-                <core-collapse hidden?="{{section != 'resetPassword'}}" opened?="{{resetPasswordOpened}}">
-                    <div class="collapse width">
-                        <div layout style="padding: 10px 15px;" vertical>
-                            <paper-input-decorator label="password">
-                                <input is="core-input" type="password" value="{{resetPassword.passwordA}}">
-                            </paper-input-decorator>
-                            <paper-input-decorator label="re-type password">
-                                <input is="core-input" type="password" value="{{resetPassword.passwordZ}}">
-                            </paper-input-decorator>
-                            <div horizontal justified layout>
-                                <div flex></div>
-                                <div self-end>
-                                    <paper-button class="_blue" on-tap="{{resetPasswordTap}}">save</paper-button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </core-collapse>
-
-                <div center-justified class="heading width" hidden?="{{section != 'setPassword'}}" horizontal layout on-tap="{{setPasswordCollapseTap}}">
-                    <div>Set Password</div>
-                </div>
-                <core-collapse hidden?="{{section != 'setPassword'}}" opened?="{{setPasswordOpened}}">
-                    <div class="collapse width">
-                        <div layout style="padding: 10px 15px;" vertical>
-                            <paper-input-decorator label="password">
-                                <input is="core-input" type="password" value="{{setPassword.passwordA}}">
-                            </paper-input-decorator>
-                            <paper-input-decorator label="re-type password">
-                                <input is="core-input" type="password" value="{{setPassword.passwordZ}}">
-                            </paper-input-decorator>
-                            <div horizontal justified layout>
-                                <div flex></div>
-                                <div self-end>
-                                    <paper-button class="_blue" on-tap="{{setTap}}">save</paper-button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </core-collapse>
-
-                <div center-justified class="heading width" hidden?="{{section != 'changePassword'}}" horizontal layout on-tap="{{changePasswordCollapseTap}}">
-                    <div>Change Password</div>
-                </div>
-                <core-collapse hidden?="{{section != 'changePassword'}}" opened?="{{changePasswordOpened}}">
-                    <div class="collapse width">
-                        <div layout style="padding: 10px 15px;" vertical>
-                            <paper-input-decorator label="old password">
-                                <input is="core-input" type="password" value="{{changePassword.passwordA}}">
-                            </paper-input-decorator>
-                            <paper-input-decorator label="password">
-                                <input is="core-input" type="password" value="{{changePassword.passwordB}}">
-                            </paper-input-decorator>
-                            <paper-input-decorator label="re-type password">
-                                <input is="core-input" type="password" value="{{changePassword.passwordC}}">
-                            </paper-input-decorator>
-                            <div horizontal justified layout>
-                                <div flex></div>
-                                <div self-end>
-                                    <paper-button class="_blue" on-tap="{{changePasswordTap}}">change</paper-button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </core-collapse>
+            <div center class="width" hidden?="{{section}}" horizontal layout>
+                <div flex style="border: 1px solid black;"></div>
+                <div style="font-weight: bold; padding: 16px 8px;">OR</div>
+                <div flex style="border: 1px solid black;"></div>
             </div>
+
+            <div center-justified class="heading width" hidden?="{{section}}" horizontal layout on-tap="{{signInCollapse}}">
+                <div>User login</div>
+            </div>
+
+            <core-collapse allowOverflow hidden?="{{section}}" id="signIn" opened>
+                <div class="collapse width">
+                    <div layout style="padding: 16px;" vertical>
+                        <paper-input label="email" value="{{signIn.email}}"></paper-input>
+                        <div horizontal justified layout>
+                            <div flex>
+                                <paper-input-decorator label="password">
+                                    <input is="core-input" type="password" value="{{signIn.password}}">
+                                </paper-input-decorator>
+                            </div>
+                            <div self-end>
+                                <paper-button class="blue-500" on-tap="{{signInTap}}">signIn</paper-button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </core-collapse>
+
+            <div center-justified class="heading width" hidden?="{{section}}" horizontal layout on-tap="{{forgotPasswordCollapse}}">
+                <div>Forgot password ?</div>
+            </div>
+
+            <core-collapse allowOverflow hidden?="{{section}}" id="forgotPassword">
+                <div class="collapse width">
+                    <div layout style="padding: 16px;" vertical>
+                        <paper-input label="email" value="{{forgotPassword.email}}"></paper-input>
+                        <div horizontal justified layout>
+                            <div flex></div>
+                            <div self-end>
+                                <paper-button class="red-500" on-tap="{{forgotPasswordTap}}">reset</paper-button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </core-collapse>
+
+            <div center class="width" hidden?="{{section}}" horizontal layout>
+                <div flex style="border: 1px solid black;"></div>
+                <div style="font-weight: bold; padding: 16px 8px;">OR</div>
+                <div flex style="border: 1px solid black;"></div>
+            </div>
+
+            <div center-justified class="heading width" hidden?="{{section}}" horizontal layout on-tap="{{signUpCollapse}}">
+                <div>New user ? Create new Account</div>
+            </div>
+
+            <core-collapse allowOverflow hidden?="{{section}}" id="signUp">
+                <div class="collapse width">
+                    <div layout style="padding: 16px;" vertical>
+                        <paper-input label="email" value="{{signUp.email}}"></paper-input>
+                        <div horizontal justified layout>
+                            <div flex>
+                                <paper-input label="username" value="{{signUp.username}}"></paper-input>
+                            </div>
+                            <div self-end>
+                                <paper-button class="blue-500" on-tap="{{signUpTap}}">signUp</paper-button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </core-collapse>
+
+            <div center-justified class="heading width" hidden?="{{section != 'resetPassword'}}" horizontal layout on-tap="{{resetPasswordCollapse}}">
+                <div>Reset Password</div>
+            </div>
+
+            <core-collapse allowOverflow hidden?="{{section != 'resetPassword'}}" id="resetPassword" opened>
+                <div class="collapse width">
+                    <div layout style="padding: 16px;" vertical>
+                        <paper-input-decorator label="password">
+                            <input is="core-input" type="password" value="{{resetPassword.passwordA}}">
+                        </paper-input-decorator>
+                        <paper-input-decorator label="re-type password">
+                            <input is="core-input" type="password" value="{{resetPassword.passwordZ}}">
+                        </paper-input-decorator>
+                        <div horizontal justified layout>
+                            <div flex></div>
+                            <div self-end>
+                                <paper-button class="blue-500" on-tap="{{resetPasswordTap}}">save</paper-button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </core-collapse>
+
+            <div center-justified class="heading width" hidden?="{{section != 'setPassword'}}" horizontal layout on-tap="{{setPasswordCollapse}}">
+                <div>Set Password</div>
+            </div>
+
+            <core-collapse allowOverflow hidden?="{{section != 'setPassword'}}" id="setPassword" opened>
+                <div class="collapse width">
+                    <div layout style="padding: 16px;" vertical>
+                        <paper-input-decorator label="password">
+                            <input is="core-input" type="password" value="{{setPassword.passwordA}}">
+                        </paper-input-decorator>
+                        <paper-input-decorator label="re-type password">
+                            <input is="core-input" type="password" value="{{setPassword.passwordZ}}">
+                        </paper-input-decorator>
+                        <div horizontal justified layout>
+                            <div flex></div>
+                            <div self-end>
+                                <paper-button class="blue-500" on-tap="{{setTap}}">save</paper-button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </core-collapse>
+
+            <div center-justified class="heading width" hidden?="{{section != 'changePassword'}}" horizontal layout on-tap="{{changePasswordCollapse}}">
+                <div>Change Password</div>
+            </div>
+
+            <core-collapse allowOverflow hidden?="{{section != 'changePassword'}}" id="changePassword" opened>
+                <div class="collapse width">
+                    <div layout style="padding: 16px;" vertical>
+                        <paper-input-decorator label="old password">
+                            <input is="core-input" type="password" value="{{changePassword.passwordA}}">
+                        </paper-input-decorator>
+                        <paper-input-decorator label="password">
+                            <input is="core-input" type="password" value="{{changePassword.passwordB}}">
+                        </paper-input-decorator>
+                        <paper-input-decorator label="re-type password">
+                            <input is="core-input" type="password" value="{{changePassword.passwordC}}">
+                        </paper-input-decorator>
+                        <div horizontal justified layout>
+                            <div flex></div>
+                            <div self-end>
+                                <paper-button class="blue-500" on-tap="{{changePasswordTap}}">change</paper-button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </core-collapse>
         </div>
 
-        <div center-center fit hidden?="{{!loading}}" horizontal layout style="background: black; opacity: 0.4;">
+        <div center-center fit hidden?="{{!loading}}" layout style="background: black; opacity: 0.4;" vertical>
             <style>
             .ball-grid-beat,
             .ball-grid-beat > div {
@@ -301,35 +308,33 @@
             </div>
         </div>
 
-        <paper-toast duration="4000" id="toast" opened="{{toastOpened}}" swipeDisabled text="{{toastText}}"></paper-toast>
+        <paper-toast duration="4000" id="toast"></paper-toast>
     </template>
 
     <script>
-    Polymer("user-auth", {
+    Polymer("user-check", {
 
         changePassword: {},
-        changePasswordOpened: true,
         forgotPassword: {},
-        forgotPasswordOpened: false,
         loading: false,
         resetPassword: {},
-        resetPasswordOpened: true,
         section: null,
         setPassword: {},
-        setPasswordOpened: true,
         signIn: {},
-        signInOpened: true,
         signUp: {},
-        signUpOpened: false,
-        toastOpened: false,
-        toastText: "",
 
         changePasswordTap: function(event, detail, sender) {
             console.log(this.changePassword);
         },
 
-        changePasswordCollapseTap: function(event, detail, sender) {
-            this.changePasswordOpened = !this.changePasswordOpened;
+        changePasswordCollapse: function(event, detail, sender) {
+            this.$.changePassword.toggle();
+
+            for (var A = document.querySelectorAll("html /deep/ core-collapse"), Z = 0; Z < A.length; Z++) {
+                if (A[Z].opened && A[Z].id != "changePassword") {
+                    A[Z].toggle();
+                }
+            }
         },
 
         domReady: function() {
@@ -337,11 +342,11 @@
 
             Meteor.autorun(function() {
                 if (Meteor.status().connected) {
-                    if (_this.toastText != "server connected") {
+                    if (_this.$.toast.text != "server connected") {
                         _this.toastAlert("server connected");
                     }
                 } else {
-                    if (_this.toastText != "lost server connection") {
+                    if ( /* _this.$.toast.text && */ _this.$.toast.text != "lost server connection") {
                         _this.toastAlert("lost server connection");
                     }
                 }
@@ -392,10 +397,14 @@
             }
         },
 
-        forgotPasswordCollapseTap: function(event, detail, sender) {
-            this.forgotPasswordOpened = !this.forgotPasswordOpened;
-            this.signInOpened = false;
-            this.signUpOpened = false;
+        forgotPasswordCollapse: function(event, detail, sender) {
+            this.$.forgotPassword.toggle();
+
+            for (var A = document.querySelectorAll("html /deep/ core-collapse"), Z = 0; Z < A.length; Z++) {
+                if (A[Z].opened && A[Z].id != "forgotPassword") {
+                    A[Z].toggle();
+                }
+            }
         },
 
         resetPasswordTap: function(event, detail, sender) {
@@ -422,16 +431,28 @@
             }
         },
 
-        resetPasswordCollapseTap: function(event, detail, sender) {
-            this.resetPasswordOpened = !this.resetPasswordOpened;
+        resetPasswordCollapse: function(event, detail, sender) {
+            this.$.resetPassword.toggle();
+
+            for (var A = document.querySelectorAll("html /deep/ core-collapse"), Z = 0; Z < A.length; Z++) {
+                if (A[Z].opened && A[Z].id != "resetPassword") {
+                    A[Z].toggle();
+                }
+            }
         },
 
         setPasswordTap: function(event, detail, sender) {
             console.log(this.setPassword);
         },
 
-        setPasswordCollapseTap: function(event, detail, sender) {
-            this.setPasswordOpened = !this.setPasswordOpened;
+        setPasswordCollapse: function(event, detail, sender) {
+            this.$.setPassword.toggle();
+
+            for (var A = document.querySelectorAll("html /deep/ core-collapse"), Z = 0; Z < A.length; Z++) {
+                if (A[Z].opened && A[Z].id != "setPassword") {
+                    A[Z].toggle();
+                }
+            }
         },
 
         signInTap: function(event, detail, sender) {
@@ -454,10 +475,14 @@
             }
         },
 
-        signInCollapseTap: function(event, detail, sender) {
-            this.forgotPasswordOpened = false;
-            this.signInOpened = !this.signInOpened;
-            this.signUpOpened = false;
+        signInCollapse: function(event, detail, sender) {
+            this.$.signIn.toggle();
+
+            for (var A = document.querySelectorAll("html /deep/ core-collapse"), Z = 0; Z < A.length; Z++) {
+                if (A[Z].opened && A[Z].id != "signIn") {
+                    A[Z].toggle();
+                }
+            }
         },
 
         signUpTap: function(event, detail, sender) {
@@ -472,22 +497,26 @@
             });
         },
 
-        signUpCollapseTap: function(event, detail, sender) {
-            this.forgotPasswordOpened = false;
-            this.signInOpened = false;
-            this.signUpOpened = !this.signUpOpened;
+        signUpCollapse: function(event, detail, sender) {
+            this.$.signUp.toggle();
+
+            for (var A = document.querySelectorAll("html /deep/ core-collapse"), Z = 0; Z < A.length; Z++) {
+                if (A[Z].opened && A[Z].id != "signUp") {
+                    A[Z].toggle();
+                }
+            }
         },
 
         toastAlert: function(alert) {
-            this.toastOpened = false;
+            this.$.toast.dismiss();
 
             var _this = this;
 
             Meteor.setTimeout(function() {
-                _this.toastText = alert;
-                _this.toastOpened = true;
+                _this.$.toast.text = alert;
+                _this.$.toast.show();
             }, 400);
-        },
+        }
 
     });
     </script>
