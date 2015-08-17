@@ -679,10 +679,16 @@
 
                 var _this = this;
 
-                Meteor.setTimeout(function() {
-                    _this.refresh = false;
-                    _this.$.refresh.classList.add("reset");
-                }, 4000);
+                Meteor.call("refresh_torrent_in", function(error, status) {
+                    Meteor.setTimeout(function() {
+                        _this.refresh = false;
+                        _this.$.refresh.classList.add("reset");
+                    }, 8000);
+
+                    if (error) {
+                        console.log(error);
+                    }
+                });
             } else {
                 this.refresh = false;
                 this.$.refresh.classList.add("reset");

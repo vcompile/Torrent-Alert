@@ -10,15 +10,13 @@ Meteor.setInterval(function() {
                 status: {
                     $eq: "OK"
                 }
-            }).forEach(function(row) {
-                torrent_in.update({
-                    _id: row._id
-                }, {
-                    $set: {
-                        status: moment().format(),
-                        torrent_worker: (_torrent_worker.length ? _torrent_worker[Math.floor(Math.random() * _torrent_worker.length)]._id : "MAC")
-                    }
-                });
+            }, {
+                $set: {
+                    status: moment().format(),
+                    torrent_worker: (_torrent_worker.length ? _torrent_worker[Math.floor(Math.random() * _torrent_worker.length)]._id : "MAC")
+                }
+            }, {
+                multi: true
             });
 
             torrent_out.find({
@@ -26,7 +24,7 @@ Meteor.setInterval(function() {
                     $eq: "OK"
                 },
             }).forEach(function(row) {
-                if (Math.floor(moment.duration(moment().diff(moment(row.time, "X"))).asMonths()) > 12) {
+                if (Math.floor(moment.duration(moment().diff(moment(row.time, "X"))).asMonths()) > 24) {
                     torrent_out.remove({
                         _id: row._id
                     });
