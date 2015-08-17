@@ -144,8 +144,8 @@
                     <paper-icon-button class="selection-allow" icon="arrow-back" on-tap="{{deSelectAll}}"></paper-icon-button>
                     <paper-icon-button class="selection-deny" icon="menu" on-tap="{{menuToggle}}"></paper-icon-button>
                     <div flex>{{listSelected.length ? listSelected.length : toolBar.text}}</div>
-                    <paper-icon-button class="selection-allow" icon="delete" on-tap="{{deleteTap}}"></paper-icon-button>
-                    <paper-icon-button class="selection-allow" icon="social:share" on-tap="{{shareTap}}"></paper-icon-button>
+                    <paper-icon-button class="selection-allow" icon="delete" on-tap="{{deleteSelectedTap}}"></paper-icon-button>
+                    <paper-icon-button class="selection-allow" icon="social:share" on-tap="{{shareSelectedTap}}"></paper-icon-button>
                     <paper-icon-button class="selection-allow" icon="more-vert" on-tap="{{moreTap}}"></paper-icon-button>
                     <paper-icon-button class="selection-deny" icon="search" on-tap="{{searchBarToggle}}"></paper-icon-button>
                     <div center-center class="bottom fit" horizontal id="refresh" layout>
@@ -288,12 +288,13 @@
         list: [],
         listSelected: [],
 
+        torrent_out_queue: [],
+
         keyword: "",
         peers: 100,
         seeds: 10,
 
         deleteKeywordID: "",
-
         undo: [],
 
         addKeywordFabTap: function() {
@@ -335,35 +336,9 @@
 
         cPanelTap: function() {
             this.$.drawerPanel.closeDrawer();
+
             this.$.cPanel.opened = true;
         },
-
-        // deleteItemTap: function() {
-        //     var _this = this;
-
-        //     _this.listSelected.forEach(function(_id) {
-        //         for (var A = 0; A < _this.list.length; A++) {
-        //             var index = -1;
-
-        //             var item = _.find(_this.list[A].torrent_out, function(item) {
-        //                 index++;
-
-        //                 return (_id == item._id);
-        //             });
-
-        //             if (item) {
-        //                 _this.list[A].torrent_out[index].list_class = "hidden";
-
-        //                 break;
-        //             }
-        //         }
-        //     });
-
-        //     _this.undo = _this.listSelected;
-        //     _this.listSelected = [];
-
-        //     _this.toastAlert(_this.undo.length + " item" + (_this.undo.length == 1 ? "" : "s") + " removed");
-        // },
 
         deleteKeywordOk: function() {
             var _this = this,
@@ -396,7 +371,35 @@
 
         deleteKeywordTap: function(event, detail, sender) {
             this.deleteKeywordID = $(sender).attr("tag");
+
             this.$.deleteKeyword.opened = true;
+        },
+
+        deleteSelectedTap: function() {
+            var _this = this;
+
+            _this.listSelected.forEach(function(_id) {
+                for (var A = 0; A < _this.list.length; A++) {
+                    var index = -1;
+
+                    var item = _.find(_this.list[A].torrent_out, function(item) {
+                        index++;
+
+                        return (_id == item._id);
+                    });
+
+                    if (item) {
+                        _this.list[A].torrent_out[index].list_class = "hidden";
+
+                        break;
+                    }
+                }
+            });
+
+            _this.undo = _this.listSelected;
+            _this.listSelected = [];
+
+            _this.toastAlert(_this.undo.length + " item" + (_this.undo.length == 1 ? "" : "s") + " removed");
         },
 
         deSelectAll: function() {
@@ -500,8 +503,16 @@
                                     list_class: "item"
                                 }));
 
-                                // _this.torrent_out_added = true;
-                                // _this.torrent_out_queue.push(group_index);
+                                _this.torrent_out_queue.push(group_index);
+
+                                _.debounce(function() {
+                                    _this.torrent_out_queue = _.uniq(_this.torrent_out_queue);
+
+                                    for (var A = 0; A < _this.torrent_out_queue.length; A++) {
+                                        var Z = _this.torrent_out_queue.pop();
+                                        _this.list[Z].torrent_out = _.sortBy(_this.list[Z].torrent_out, "time").reverse();
+                                    }
+                                }, 8000)();
                             }
                         } else {
                             if (row.peers < _this.list[group_index].peers && row.seeds < _this.list[group_index].seeds) {
@@ -571,21 +582,10 @@
             // $("html /deep/ .input-text").change(function() {
             //     console.log($(_this).attr("tag"), $(_this).val());
             // });
+        },
 
-            // $("html /deep/ search-bar /deep/ #searchInput").keyup(_.debounce(function() {
-            //     var searchInput = $(this).val().toLowerCase(),
-            //         searchResult = [];
-
-            //     if (searchInput.length) {
-            //         for (var A = 0; A < _this.list.length; A++) {
-            //             $.merge(searchResult, _.filter(_this.list[A].torrent_out, function(item) {
-            //                 return (-1 < item.title.toLowerCase().search(searchInput));
-            //             }));
-            //         }
-            //     }
-
-            //     $("html /deep/ search-bar").attr("list", JSON.stringify(_.sortBy(searchResult, "time")));
-            // }, 800));
+        getList: function() {
+            return this.list;
         },
 
         listChanged: function() {
@@ -637,35 +637,35 @@
             } else {
                 $("html /deep/ .menu-b").removeClass("move-up");
 
-                // if (this.undo.length) {
-                //     var _this = this;
+                if (this.undo.length) {
+                    var _this = this;
 
-                //     _this.undo.forEach(function(_id) {
-                //         for (var A = 0; A < _this.list.length; A++) {
-                //             var index = -1;
+                    _this.undo.forEach(function(_id) {
+                        for (var A = 0; A < _this.list.length; A++) {
+                            var index = -1;
 
-                //             var item = _.find(_this.list[A].torrent_out, function(item) {
-                //                 index++;
+                            var item = _.find(_this.list[A].torrent_out, function(item) {
+                                index++;
 
-                //                 return (_id == item._id);
-                //             });
+                                return (_id == item._id);
+                            });
 
-                //             if (item) {
-                //                 _this.list[A].torrent_out.splice(index, 1);
+                            if (item) {
+                                _this.list[A].torrent_out.splice(index, 1);
 
-                //                 Meteor.call("remove_torrent_out", _id, function(error, status) {
-                //                     if (error) {
-                //                         console.log(error);
-                //                     }
-                //                 });
+                                Meteor.call("remove_torrent_out", _id, function(error, status) {
+                                    if (error) {
+                                        console.log(error);
+                                    }
+                                });
 
-                //                 break;
-                //             }
-                //         }
-                //     });
+                                break;
+                            }
+                        }
+                    });
 
-                //     _this.undo = [];
-                // }
+                    _this.undo = [];
+                }
             }
         },
 
@@ -702,60 +702,60 @@
             }
         },
 
-        // save: function() {
-        //     $("#polymer_color_db").val(JSON.stringify(polymer_color_db));
+        save: function() {
+            $("#polymer_color_db").val(JSON.stringify(polymer_color_db));
 
-        //     for (var A = 0; A < this.list.length; A++) {
-        //         delete this.list[A].hidden;
-        //     }
+            for (var A = 0; A < this.list.length; A++) {
+                delete this.list[A].hidden;
+            }
 
-        //     $("#torrentz_db").val(JSON.stringify(this.list));
-        // },
+            $("#torrentz_db").val(JSON.stringify(this.list));
+        },
 
-        // searchBarToggle: function() {
-        //     this.$.search.toggle();
-        // },
+        searchBarToggle: function() {
+            this.$.search.toggle();
+        },
 
-        // shareItemTap: function() {
-        //     var _this = this,
-        //         body = "";
+        shareSelectedTap: function() {
+            var _this = this,
+                body = "";
 
-        //     for (var A = 0; A < _this.listSelected.length; A++) {
-        //         for (var B = 0; B < _this.list.length; B++) {
-        //             var index = -1;
+            for (var A = 0; A < _this.listSelected.length; A++) {
+                for (var B = 0; B < _this.list.length; B++) {
+                    var index = -1;
 
-        //             var item = _.find(_this.list[B].torrent_out, function(item) {
-        //                 index++;
+                    var item = _.find(_this.list[B].torrent_out, function(item) {
+                        index++;
 
-        //                 return (_this.listSelected[A] == item._id);
-        //             });
+                        return (_this.listSelected[A] == item._id);
+                    });
 
-        //             if (item) {
-        //                 if (_this.list[B].torrent_out[index].linkz.length) {
-        //                     body += "\n\n" + (A + 1) + "\t\t" + _this.list[B].torrent_out[index].title + "\n\n";
+                    if (item) {
+                        if (_this.list[B].torrent_out[index].linkz.length) {
+                            body += "\n\n" + (A + 1) + "\t\t" + _this.list[B].torrent_out[index].title + "\n\n";
 
-        //                     _this.list[B].torrent_out[index].linkz = _.sortBy(_this.list[B].torrent_out[index].linkz, "time");
+                            _this.list[B].torrent_out[index].linkz = _.sortBy(_this.list[B].torrent_out[index].linkz, "time");
 
-        //                     for (var C = 0; C < _this.list[B].torrent_out[index].linkz.length; C++) {
-        //                         body += "\t\t" + (C + 1) + "\t\t" + _this.list[B].torrent_out[index].linkz[C].url.replace("//", "") + "\n\n";
-        //                     }
-        //                 }
+                            for (var C = 0; C < _this.list[B].torrent_out[index].linkz.length; C++) {
+                                body += "\t\t" + (C + 1) + "\t\t" + _this.list[B].torrent_out[index].linkz[C].url.replace("//", "") + "\n\n";
+                            }
+                        }
 
-        //                 break;
-        //             }
-        //         }
-        //     }
+                        break;
+                    }
+                }
+            }
 
-        //     if (body != "") {
-        //         if (Meteor.isCordova) {
-        //             window.plugins.socialsharing.share("Hi\n\nTorrent Alert - " + _this.profile.name + " shared " + _this.listSelected.length + ((_this.listSelected.length == 1) ? " torrent" : " torrentz") + body);
-        //         } else {
-        //             window.location.href = "mailto://" + _this.profile.email + "?subject=" + encodeURIComponent("Torrent Alert") + "&body=" + encodeURIComponent("Hi\n\n" + _this.profile.name + " shared " + _this.listSelected.length + " torrent" + (_this.listSelected.length == 1 ? "" : "s") + body);
-        //         }
-        //     } else {
-        //         _this.toastAlert("empty email body");
-        //     }
-        // },
+            if (body != "") {
+                if (Meteor.isCordova) {
+                    window.plugins.socialsharing.share("Hi\n\nTorrent Alert - " + _this.user.name + " shared " + _this.listSelected.length + ((_this.listSelected.length == 1) ? " torrent" : " torrentz") + body);
+                } else {
+                    window.open("mailto:" + _this.user.email + "?subject=" + encodeURIComponent("Torrent Alert") + "&body=" + encodeURIComponent("Hi\n\n" + _this.user.name + " shared " + _this.listSelected.length + " torrent" + (_this.listSelected.length == 1 ? "" : "s") + body), "_system");
+                }
+            } else {
+                _this.toastAlert("empty email body");
+            }
+        },
 
         toastAlert: function(alert) {
             this.$.toast.opened = false;
@@ -768,60 +768,44 @@
             }, 400);
         },
 
-        // signOutTap: function() {
-        //     var _this = this;
+        signOut: function() {
+            var _this = this;
 
-        //     Meteor.logout(function(error) {
-        //         if (error) {
-        //             _this.toastAlert(error);
-        //         } else {
-        //             _this.list = [];
-        //             $("#torrentz_db").val("[]");
+            Meteor.logout(function(error) {
+                if (error) {
+                    _this.toastAlert(error);
+                } else {
+                    _this.list = [];
+                    $("#torrentz_db").val("[]");
 
-        //             Session.set("view", "signIn");
-        //         }
-        //     });
-        // },
+                    Session.set("view", "signIn");
+                }
+            });
+        },
 
-        // torrent_out_addedChanged: function() {
-        //     var _this = this;
+        undoTap: function() {
+            var _this = this;
 
-        //     if (_this.torrent_out_added) {
-        //         Meteor.setTimeout(function() {
-        //             _this.torrent_out_added = false;
-        //             _this.torrent_out_queue = _.uniq(_this.torrent_out_queue);
+            _this.undo.forEach(function(_id) {
+                for (var A = 0; A < _this.list.length; A++) {
+                    var index = -1;
 
-        //             for (var A = 0; A < _this.torrent_out_queue.length; A++) {
-        //                 var Z = _this.torrent_out_queue.pop();
-        //                 _this.list[Z].torrent_out = _.sortBy(_this.list[Z].torrent_out, "time").reverse();
-        //             }
-        //         }, 4000);
-        //     }
-        // },
+                    var item = _.find(_this.list[A].torrent_out, function(item) {
+                        index++;
 
-        // undoButtonTap: function() {
-        //     var _this = this;
+                        return (_id == item._id);
+                    });
 
-        //     _this.undo.forEach(function(_id) {
-        //         for (var A = 0; A < _this.list.length; A++) {
-        //             var index = -1;
+                    if (item) {
+                        _this.list[A].torrent_out[index].list_class = "item";
 
-        //             var item = _.find(_this.list[A].torrent_out, function(item) {
-        //                 index++;
+                        break;
+                    }
+                }
+            });
 
-        //                 return (_id == item._id);
-        //             });
-
-        //             if (item) {
-        //                 _this.list[A].torrent_out[index].list_class = "item";
-
-        //                 break;
-        //             }
-        //         }
-        //     });
-
-        //     _this.undo = [];
-        // }
+            _this.undo = [];
+        }
 
     });
     </script>
