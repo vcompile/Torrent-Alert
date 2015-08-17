@@ -573,11 +573,11 @@
                 }
             });
 
-            // $(window).on("beforeunload", function() {
-            //     _this.save();
+            $(window).on("beforeunload", function() {
+                _this.save();
 
-            //     // return "Are you sure you want to exit ?";
-            // });
+                // return "Are you sure you want to exit ?";
+            });
 
             // $("html /deep/ .input-text").change(function() {
             //     console.log($(_this).attr("tag"), $(_this).val());
