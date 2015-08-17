@@ -334,6 +334,14 @@
             this.seeds = 10;
         },
 
+        baseView: function() {
+            for (var C = 0; C < this.list.length; C++) {
+                this.list[C].hidden = false;
+            }
+
+            this.toolBar.class = "teal-500";
+        },
+
         cPanelTap: function() {
             this.$.drawerPanel.closeDrawer();
 
@@ -361,11 +369,7 @@
                     }
                 });
 
-                for (var A = 0; A < _this.list.length; A++) {
-                    _this.list[A].hidden = false;
-                }
-
-                _this.toolBar.class = "teal-500";
+                this.baseView();
             }
         },
 
@@ -472,6 +476,9 @@
 
                     if (item) {
                         _this.list.splice(index, 1);
+
+                        this.deSelectAll();
+                        this.baseView();
                     }
                 }
             });
@@ -677,6 +684,9 @@
             if (80 <= event.dy) {
                 this.refresh = true;
 
+                this.deSelectAll();
+                this.baseView();
+
                 var _this = this;
 
                 Meteor.call("version_control", function(error, record) {
@@ -697,16 +707,6 @@
                                 }
                             } else {
                                 _this.list.splice(A, 1);
-
-                                _.debounce(function() {
-                                    _this.listSelected = [];
-
-                                    for (var C = 0; C < _this.list.length; C++) {
-                                        _this.list[C].hidden = false;
-                                    }
-
-                                    _this.toolBar.class = "teal-500";
-                                }, 400)();
                             }
                         }
                     }
@@ -733,9 +733,7 @@
         save: function() {
             $("#polymer_color_db").val(JSON.stringify(polymer_color_db));
 
-            for (var A = 0; A < this.list.length; A++) {
-                delete this.list[A].hidden;
-            }
+            this.baseView();
 
             $("#torrentz_db").val(JSON.stringify(this.list));
         },
