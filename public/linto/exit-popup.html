@@ -1,10 +1,10 @@
-<polymer-element attributes="time" name="confirm-exit">
+<polymer-element attributes="time" name="exit-popup">
     <template>
-        <paper-dialog autoCloseDisabled backdrop opened="{{opened}}" transition="core-transition-bottom">
+        <paper-dialog backdrop id="exitCallback" transition="core-transition-bottom">
             <div layout vertical>
                 <div class="padding-24">Are you sure you want to exit ?</div>
                 <div class="paper-dialog-title" horizontal layout reverse>
-                    <paper-button core-overlay-toggle on-tap="{{okButtonTap}}">
+                    <paper-button core-overlay-toggle on-tap="{{exitOk}}">
                         <core-icon icon="check"></core-icon>&nbsp;&nbsp;Ok
                     </paper-button>
                     <paper-button core-overlay-toggle>
@@ -18,14 +18,12 @@
     <script>
     Polymer("confirm-exit", {
 
-        opened: false,
-
         time: null,
         time_store: moment().format("x"),
 
-        okButtonTap: function() {
-            if (document.querySelector("html /deep/ inbox-list")) {
-                document.querySelector("html /deep/ inbox-list").save();
+        exitOk: function() {
+            if (document.querySelector("html /deep/ layout-inbox")) {
+                document.querySelector("html /deep/ layout-inbox").save();
             }
 
             // Meteor.setTimeout(function() {
@@ -35,7 +33,7 @@
 
         timeChanged: function() {
             if ((parseInt(this.time) - parseInt(this.time_store)) < 2000) {
-                this.opened = true;
+                this.$.exitCallback.open();
             }
 
             this.time_store = moment().format("x");

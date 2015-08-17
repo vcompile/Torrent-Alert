@@ -298,7 +298,7 @@
         undo: [],
 
         addKeywordFabTap: function() {
-            this.$.addKeyword.opened = true;
+            this.$.addKeyword.open();
         },
 
         addKeywordOk: function() {
@@ -337,7 +337,7 @@
         cPanelTap: function() {
             this.$.drawerPanel.closeDrawer();
 
-            this.$.cPanel.opened = true;
+            this.$.cPanel.open();
         },
 
         deleteKeywordOk: function() {
@@ -372,7 +372,7 @@
         deleteKeywordTap: function(event, detail, sender) {
             this.deleteKeywordID = $(sender).attr("tag");
 
-            this.$.deleteKeyword.opened = true;
+            this.$.deleteKeyword.open();
         },
 
         deleteSelectedTap: function() {
@@ -757,17 +757,6 @@
             }
         },
 
-        toastAlert: function(alert) {
-            this.$.toast.opened = false;
-
-            var _this = this;
-
-            Meteor.setTimeout(function() {
-                _this.$.toast.text = alert;
-                _this.$.toast.opened = true;
-            }, 400);
-        },
-
         signOut: function() {
             var _this = this;
 
@@ -781,6 +770,17 @@
                     Session.set("view", "signIn");
                 }
             });
+        },
+
+        toastAlert: function(alert) {
+            this.$.toast.dismiss();
+
+            var _this = this;
+
+            Meteor.setTimeout(function() {
+                _this.$.toast.text = alert;
+                _this.$.toast.show();
+            }, 400);
         },
 
         undoTap: function() {

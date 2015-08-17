@@ -8,5 +8,5 @@ Template.inbox.helpers({
 Template.inbox.rendered = function() {
     $(window).on("resize", _.debounce(function() {
         Session.set("width", ((480 < $(window).width()) ? 480 : ($(window).width() - 32)));
-    }, 800));
+    }, 400));
 };
