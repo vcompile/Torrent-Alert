@@ -48,31 +48,6 @@ Meteor.methods({
         } else return false;
     },
 
-    refresh_torrent_in: function() {
-        this.unblock();
-
-        var user = Meteor.user();
-        if (!user) throw new Meteor.Error(422, "user N");
-
-        var _torrent_worker = torrent_worker.find({
-            status: "UP"
-        }).fetch();
-
-        return torrent_in.update({
-            status: {
-                $eq: "OK"
-            },
-            user_id: user._id
-        }, {
-            $set: {
-                status: moment().format(),
-                torrent_worker: (_torrent_worker.length ? _torrent_worker[Math.floor(Math.random() * _torrent_worker.length)]._id : "MAC")
-            }
-        }, {
-            multi: true
-        });
-    },
-
     remove_torrent_in: function(id) {
         this.unblock();
 

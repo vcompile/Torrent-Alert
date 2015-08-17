@@ -679,7 +679,7 @@
 
                 var _this = this;
 
-                Meteor.call("refresh_torrent_in", function(error, status) {
+                Meteor.call("version_control", function(error, record) {
                     Meteor.setTimeout(function() {
                         _this.refresh = false;
                         _this.$.refresh.classList.add("reset");
@@ -687,6 +687,28 @@
 
                     if (error) {
                         console.log(error);
+                    } else {
+                        for (var A = 0; A < _this.list.length; A++) {
+                            if (-1 < record.torrent_in.indexOf(_this.list[A]._id)) {
+                                for (var B = 0; B < _this.list[A].torrent_out.length; B++) {
+                                    if (record.torrent_out.indexOf(_this.list[A].torrent_out[B]._id) == -1) {
+                                        _this.list[A].torrent_out.splice(B, 1);
+                                    }
+                                }
+                            } else {
+                                _this.list.splice(A, 1);
+
+                                _.debounce(function() {
+                                    _this.listSelected = [];
+
+                                    for (var C = 0; C < _this.list.length; C++) {
+                                        _this.list[C].hidden = false;
+                                    }
+
+                                    _this.toolBar.class = "teal-500";
+                                }, 400)();
+                            }
+                        }
                     }
                 });
             } else {
