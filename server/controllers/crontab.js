@@ -6,7 +6,7 @@ Meteor.setInterval(function() {
                 status: "UP"
             }).fetch();
 
-            torrent_in.find({
+            torrent_in.update({
                 status: {
                     $eq: "OK"
                 }
