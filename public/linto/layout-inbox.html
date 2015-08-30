@@ -682,7 +682,7 @@
         },
 
         refresh_trackend: function(event, detail, sender) {
-            if (80 <= event.dy) {
+            if (Meteor.isCordova && Meteor.status().connected && 80 <= event.dy) {
                 this.refresh = true;
 
                 this.deSelectAll();
@@ -725,7 +725,7 @@
         },
 
         refresh_tracky: function(event, detail, sender) {
-            if (!this.refresh) {
+            if (Meteor.isCordova && Meteor.status().connected && !this.refresh) {
                 this.$.refresh.style.opacity = Math.min(1, 1 - ((this.refresh_max_y - event.dy) / this.refresh_max_y));
                 this.$.refresh.style.transform = this.$.refresh.style.webkitTransform = "translate3d(0, " + Math.min(event.dy, this.refresh_max_y) + "px, 0)";
             }
