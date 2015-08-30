@@ -175,8 +175,16 @@
                                             <paper-progress hidden?="{{torrent_out.length}}" indeterminate style="width: 100%;"></paper-progress>
                                         </div>
                                     </div>
-                                    <template repeat="{{item in torrent_out}}">
-                                        <inbox-item item="{{item}}" tag="{{item._id}}"></inbox-item>
+
+                                    <template repeat="{{item, index in torrent_out}}">
+                                        <inbox-item hidden?="{{pagination && 20 <= index}}" item="{{item}}" tag="{{item._id}}"></inbox-item>
+                                        <template if="{{pagination && 20 == index}}">
+                                            <div center-justified horizontal layout>
+                                                <div class="li" justified horizontal layout>
+                                                    <paper-button on-tap="{{paginationToggle}}" tag="{{_id}}">more</paper-button>
+                                                </div>
+                                            </div>
+                                        </template>
                                     </template>
                                 </template>
                             </template>
@@ -335,8 +343,9 @@
         },
 
         baseView: function() {
-            for (var C = 0; C < this.list.length; C++) {
-                this.list[C].hidden = false;
+            for (var A = 0; A < this.list.length; A++) {
+                this.list[A].hidden = false;
+                this.list[A].pagination = false;
             }
 
             this.toolBar.class = "teal-500";
@@ -616,6 +625,8 @@
             for (var A = 0; A < this.list.length; A++) {
                 if (_id == this.list[A]._id) {
                     this.list[A].hidden = false;
+                    this.list[A].pagination = true;
+
                     this.toolBar.class = this.list[A].icon.class;
                 } else {
                     this.list[A].hidden = true;
@@ -679,6 +690,16 @@
 
         open_github_source: function() {
             window.open("http://github.com/HedCET/torrentzAlert", "_system");
+        },
+
+        paginationToggle: function(event, opened, sender) {
+            var _id = $(sender).attr("tag");
+
+            for (var A = 0; A < this.list.length; A++) {
+                if (_id == this.list[A]._id) {
+                    this.list[A].pagination = false;
+                }
+            }
         },
 
         refresh_trackend: function(event, detail, sender) {
