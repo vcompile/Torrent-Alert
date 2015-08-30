@@ -19,6 +19,10 @@ if (Meteor.isCordova) {
             document.querySelector("html /deep/ search-bar").enabled = false;
         }
 
+        for (var A = document.querySelectorAll("html /deep/ paper-action-dialog"), Z = 0; Z < A.length; Z++) {
+            A[Z].close();
+        }
+
         for (var A = document.querySelectorAll("html /deep/ paper-dialog"), Z = 0; Z < A.length; Z++) {
             A[Z].close();
         }

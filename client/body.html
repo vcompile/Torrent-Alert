@@ -26,10 +26,17 @@
         display: none;
     }
     
+    html /deep/ paper-action-dialog,
     html /deep/ paper-dialog {
         top: 0;
     }
     
+    html /deep/ paper-action-dialog {
+        bottom: 0;
+    }
+    
+    html /deep/ paper-action-dialog::shadow #actions,
+    html /deep/ paper-action-dialog::shadow #scroller,
     html /deep/ paper-dialog::shadow #scroller {
         padding: 0;
         width: 320px;

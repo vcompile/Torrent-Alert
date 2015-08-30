@@ -175,7 +175,6 @@
                                             <paper-progress hidden?="{{torrent_out.length}}" indeterminate style="width: 100%;"></paper-progress>
                                         </div>
                                     </div>
-
                                     <template repeat="{{item, index in torrent_out}}">
                                         <inbox-item hidden?="{{pagination && 20 <= index}}" item="{{item}}" tag="{{item._id}}"></inbox-item>
                                         <template if="{{pagination && 20 == index}}">

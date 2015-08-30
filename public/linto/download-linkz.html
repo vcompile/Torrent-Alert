@@ -1,6 +1,6 @@
 <polymer-element name="download-linkz">
     <template>
-        <paper-dialog backdrop id="downloadLinkz" transition="core-transition-bottom">
+        <paper-action-dialog backdrop id="downloadLinkz" transition="core-transition-bottom">
             <div class="padding-24" layout vertical>
                 <template repeat="{{item.linkz}}">
                     <div horizontal layout on-tap="{{externalLinkTap}}" style="cursor: pointer; padding: 4px 0;" tag="{{url}}">
@@ -17,13 +17,26 @@
                     </div>
                 </template>
             </div>
-        </paper-dialog>
+            <div dismissive on-tap="{{dialogToggle}}">
+                <div class="paper-dialog-title" layout vertical>
+                    <div auto-vertical class="description padding-4" horizontal justified layout>
+                        <div class="overflow-hidden">{{item.size}}</div>
+                        <div class="overflow-hidden"><b>{{item.seeds}}</b> S / <b>{{item.peers}}</b> P</div>
+                    </div>
+                    <div auto-vertical class="lowercase padding-4"><span class="title">{{item.title}}</span> &nbsp;<b class="description {{item.category_class}}"> {{item.category}}&nbsp;</b></div>
+                </div>
+            </div>
+        </paper-action-dialog>
     </template>
 
     <script>
     Polymer("download-linkz", {
 
         item: {},
+
+        dialogToggle: function() {
+            this.$.downloadLinkz.close();
+        },
 
         externalLinkTap: function(event, detail, sender) {
             var _this = this,
