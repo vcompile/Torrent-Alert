@@ -33,15 +33,9 @@ Meteor.publish("torrent_in", function() {
 });
 
 Meteor.publish("torrent_out", function(query) {
-    check(query, Match.Where(function(A) {
-        if (A.torrent_in) {
-            A.torrent_in.forEach(function(item) {
-                check(item, String);
-            });
-
-            return true;
-        } else return false;
-    }));
+    check(query, {
+        torrent_in: [String]
+    });
 
     if (this.userId == "HedCET") {
         return torrent_out.find({
