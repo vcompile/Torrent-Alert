@@ -1,4 +1,5 @@
 Meteor.setInterval(function() {
+    // if (-1 < crontab_time.indexOf(moment().format("HH:mm"))) {
     new fibers(function() {
         torrent_in.find({
             "user_id.0": {
@@ -32,4 +33,5 @@ Meteor.setInterval(function() {
             });
         });
     }).run();
+    // }
 }, 1000 * 60);
