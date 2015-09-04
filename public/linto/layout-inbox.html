@@ -199,7 +199,7 @@
             </core-header-panel>
         </core-drawer-panel>
 
-        <paper-fab class="menu-b {{ {'move-down': listSelected.length} | tokenList }} {{user.email == 'user@host' ? 'move-down' : 'move-up'}}" icon="add" on-tap="{{addKeywordFabTap}}"></paper-fab>
+        <paper-fab class="menu-b {{listSelected.length ? 'move-down' : menu_b_class}}" icon="add" on-tap="{{addKeywordFabTap}}"></paper-fab>
 
         <paper-dialog backdrop id="addKeyword" transition="core-transition-bottom">
             <div layout vertical>
@@ -309,6 +309,8 @@
         deleteKeywordID: "",
         undo: [],
 
+        menu_b_class: "move-down",
+
         addKeywordFabTap: function() {
             this.$.addKeyword.open();
         },
@@ -338,6 +340,8 @@
                             }
                         }
                     });
+                } else {
+                    _this.toastAlert("internet/user required");
                 }
             } else {
                 this.toastAlert("empty keyword");
@@ -433,10 +437,12 @@
             Meteor.autorun(function() {
                 if (Meteor.status().connected) {
                     if (_this.$.toast.text != "server connected") {
+                        _this.menu_b_class = "";
                         _this.toastAlert("server connected");
                     }
                 } else {
                     if ( /* _this.$.toast.text && */ _this.$.toast.text != "lost server connection") {
+                        _this.menu_b_class = "move-down";
                         _this.toastAlert("lost server connection");
                     }
                 }
@@ -658,11 +664,13 @@
 
         on_core_overlay_open: function(event, opened, sender) {
             if (opened) {
-                if (this.listSelected.length == 0) {
-                    $("html /deep/ .menu-b").addClass("move-up");
+                if (this.menu_b_class == "") {
+                    this.menu_b_class = "move-up";
                 }
             } else {
-                $("html /deep/ .menu-b").removeClass("move-up");
+                if (this.menu_b_class == "move-up") {
+                    this.menu_b_class = "";
+                }
 
                 if (this.undo.length) {
                     var _this = this;
@@ -818,16 +826,20 @@
         signOut: function() {
             var _this = this;
 
-            Meteor.logout(function(error) {
-                if (error) {
-                    _this.toastAlert(error);
-                } else {
-                    _this.list = [];
-                    $("#torrentz_db").val("[]");
+            if (Meteor.status().connected) {
+                Meteor.logout(function(error) {
+                    if (error) {
+                        _this.toastAlert(error);
+                    } else {
+                        _this.list = [];
+                        $("#torrentz_db").val("[]");
 
-                    Session.set("view", "signIn");
-                }
-            });
+                        Session.set("view", "signIn");
+                    }
+                });
+            } else {
+                _this.toastAlert("internet/user required");
+            }
         },
 
         toastAlert: function(alert) {
