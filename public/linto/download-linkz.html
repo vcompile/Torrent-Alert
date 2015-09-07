@@ -38,7 +38,7 @@
                     <div auto-vertical class="description padding-4" horizontal justified layout>
                         <div class="overflow-hidden">{{item.size}} | <b>{{item.seeds}}</b> S / <b>{{item.peers}}</b> P</div>
                         <div class="overflow-hidden" id="view">
-                            {{view == 'comment' ? item.commentz.length : item.linkz.length}}
+                            {{view == 'comment' ? (item.commentz.length ? item.commentz.length : "#") : item.linkz.length}}
                             <core-icon icon="{{view == 'comment' ? 'communication:comment' : 'link'}}" id="view_toggle" style="height: 16px;"></core-icon>
                         </div>
                     </div>
