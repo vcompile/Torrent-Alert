@@ -1,7 +1,7 @@
 <polymer-element name="download-linkz">
     <template>
         <paper-action-dialog backdrop id="downloadLinkz" transition="core-transition-bottom">
-            <div class="padding-24" layout vertical>
+            <div class="padding-24" hidden?="{{view != 'comment'}}" layout vertical>
                 <template repeat="{{item.linkz}}">
                     <div horizontal layout on-tap="{{externalLinkTap}}" style="cursor: pointer; padding: 4px 0;" tag="{{url}}">
                         <div class="padding-4" self-start>
@@ -19,9 +19,12 @@
             </div>
             <div dismissive on-tap="{{dialogToggle}}">
                 <div class="paper-dialog-title" layout vertical>
-                    <div auto-vertical class="description padding-4" horizontal justified layout>
+                    <div auto-vertical class="description padding-4" end horizontal justified layout>
                         <div class="overflow-hidden">{{item.size}} | <b>{{item.seeds}}</b> S / <b>{{item.peers}}</b> P</div>
-                        <div class="overflow-hidden"></div>
+                        <div class="overflow-hidden" id="view">
+                            {{view == 'comment' ? '#' : item.linkz.length}}
+                            <core-icon icon="{{view == 'comment' ? 'communication:comment' : 'link'}}" id="view_icon" style="height: 16px;"></core-icon>
+                        </div>
                     </div>
                     <div auto-vertical class="lowercase padding-4"><span class="title">{{item.title}}</span>&nbsp;&nbsp;<b class="description {{item.category_class}}">&nbsp;&nbsp;{{item.category}}&nbsp;&nbsp;</b></div>
                 </div>
@@ -33,9 +36,15 @@
     Polymer("download-linkz", {
 
         item: {},
+        view: "comment",
 
-        dialogToggle: function() {
-            this.$.downloadLinkz.close();
+        dialogToggle: function(event, detail, sender) {
+            if (event.target == this.$.view || event.target == this.$.view_icon) {
+                if (this.view == "comment") this.view = "link";
+                else this.view = "comment";
+            } else {
+                this.$.downloadLinkz.close();
+            }
         },
 
         externalLinkTap: function(event, detail, sender) {
