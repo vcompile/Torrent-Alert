@@ -16,7 +16,7 @@ Meteor.methods({
         });
 
         if (row) {
-            var A = item.comment.replace(/\s+/g, " ").trim()
+            var A = item.comment.replace(/\s+/g, " ").trim();
 
             if (A.length) {
                 return torrent_out.update({
