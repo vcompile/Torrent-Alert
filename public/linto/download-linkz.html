@@ -10,7 +10,7 @@
                         <div class="padding-4" flex layout vertical>
                             <div auto-vertical horizontal justified layout>
                                 <div class="title overflow-hidden lowercase" flex style="width: 32px!important;">{{text}}</div>
-                                <div class="badge" hidden?="{{!priority}}" self-start>{{priority}}</div>
+                                <div class="badge grey-500" hidden?="{{!click_count}}" self-start>{{click_count}}</div>
                             </div>
                             <div auto-vertical class="description">{{fromNow}}</div>
                         </div>
@@ -20,8 +20,8 @@
             <div dismissive on-tap="{{dialogToggle}}">
                 <div class="paper-dialog-title" layout vertical>
                     <div auto-vertical class="description padding-4" horizontal justified layout>
-                        <div class="overflow-hidden">{{item.size}}</div>
-                        <div class="overflow-hidden"><b>{{item.seeds}}</b> S / <b>{{item.peers}}</b> P</div>
+                        <div class="overflow-hidden">{{item.size}} | <b>{{item.seeds}}</b> S / <b>{{item.peers}}</b> P</div>
+                        <div class="overflow-hidden"></div>
                     </div>
                     <div auto-vertical class="lowercase padding-4"><span class="title">{{item.title}}</span>&nbsp;&nbsp;<b class="description {{item.category_class}}">&nbsp;&nbsp;{{item.category}}&nbsp;&nbsp;</b></div>
                 </div>
@@ -43,13 +43,14 @@
                 url = $(sender).attr("tag")
 
             if (Meteor.status().connected) {
-                Meteor.call("update_priority", {
+                Meteor.call("update_click_count", {
                     _id: _this.item._id,
                     url: url
                 }, function(error, status) {
                     if (error) {
                         console.log(error);
                     }
+                    console.log(status);
                 });
             }
 

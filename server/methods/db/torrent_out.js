@@ -23,7 +23,7 @@ Meteor.methods({
         } else return "notFound";
     },
 
-    update_priority: function(item) {
+    update_click_count: function(item) {
         this.unblock();
 
         check(item, {
@@ -44,7 +44,7 @@ Meteor.methods({
                 "linkz.url": item.url
             }, {
                 $inc: {
-                    "linkz.$.priority": 1
+                    "linkz.$.click_count": 1
                 }
             });
         } else return "notFound";
