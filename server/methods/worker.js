@@ -42,6 +42,7 @@ Meteor.methods({
                                 torrent["peers"] = $(this).find("dd .u").text().replace(/[^0-9]/g, "");
                                 torrent["seeds"] = $(this).find("dd .d").text().replace(/[^0-9]/g, "");
 
+                                torrent["commentz"] = [];
                                 torrent["hidden"] = [];
                                 torrent["linkz"] = [];
 

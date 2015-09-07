@@ -17,13 +17,29 @@
                     </div>
                 </template>
             </div>
-            <div dismissive on-tap="{{dialogToggle}}">
+            <div class="padding-24" hidden?="{{view != 'link'}}" layout vertical>
+                <paper-input-decorator label="comment">
+                    <paper-autogrow-textarea>
+                        <textarea id="comment" value="{{comment}}"></textarea>
+                    </paper-autogrow-textarea>
+                </paper-input-decorator>
+                <paper-button class="blue-500" on-tap="{{postAnonymously}}">Post Anonymously</paper-button>
+                <div center horizontal layout>
+                    <div flex style="border: 1px solid black;"></div>
+                    <div style="font-weight: bold; padding: 16px 8px;">{{item.commentz.length ? "comment stack" : "empty comment stack"}}</div>
+                    <div flex style="border: 1px solid black;"></div>
+                </div>
+                <template repeat="{{comment in item.commentz}}">
+                    <div class="comment lowercase">{{comment}}</div>
+                </template>
+            </div>
+            <div dismissive on-tap="{{dialogToggle}}" style="cursor: pointer;">
                 <div class="paper-dialog-title" layout vertical>
-                    <div auto-vertical class="description padding-4" end horizontal justified layout>
+                    <div auto-vertical class="description padding-4" horizontal justified layout>
                         <div class="overflow-hidden">{{item.size}} | <b>{{item.seeds}}</b> S / <b>{{item.peers}}</b> P</div>
                         <div class="overflow-hidden" id="view">
-                            {{view == 'comment' ? '#' : item.linkz.length}}
-                            <core-icon icon="{{view == 'comment' ? 'communication:comment' : 'link'}}" id="view_icon" style="height: 16px;"></core-icon>
+                            {{view == 'comment' ? item.commentz.length : item.linkz.length}}
+                            <core-icon icon="{{view == 'comment' ? 'communication:comment' : 'link'}}" id="view_toggle" style="height: 16px;"></core-icon>
                         </div>
                     </div>
                     <div auto-vertical class="lowercase padding-4"><span class="title">{{item.title}}</span>&nbsp;&nbsp;<b class="description {{item.category_class}}">&nbsp;&nbsp;{{item.category}}&nbsp;&nbsp;</b></div>
@@ -35,11 +51,12 @@
     <script>
     Polymer("download-linkz", {
 
+        comment: "",
         item: {},
         view: "comment",
 
         dialogToggle: function(event, detail, sender) {
-            if (event.target == this.$.view || event.target == this.$.view_icon) {
+            if (event.target == this.$.view || event.target == this.$.view_toggle) {
                 if (this.view == "comment") this.view = "link";
                 else this.view = "comment";
             } else {
@@ -59,7 +76,6 @@
                     if (error) {
                         console.log(error);
                     }
-                    console.log(status);
                 });
             }
 
@@ -83,6 +99,31 @@
             } else {
                 this.toastAlert("under processing");
             }
+        },
+
+        postAnonymously: function() {
+            var A = this.comment.replace(/\s+/g, " ").trim();
+
+            if (A.length) {
+                if (Meteor.status().connected) {
+                    var _this = this;
+
+                    Meteor.call("insert_comment", {
+                        _id: _this.item._id,
+                        comment: A
+                    }, function(error, status) {
+                        if (error) {
+                            console.log(error);
+                        }
+                    });
+                } else {
+                    this.toastAlert("internet/user required");
+                }
+            } else {
+                this.toastAlert("empty comment");
+            }
+
+            this.comment = "";
         },
 
         toastAlert: function(alert) {

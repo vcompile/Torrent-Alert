@@ -63,6 +63,7 @@ Meteor.publish("torrent_out", function(query) {
         }, {
             fields: {
                 category: 1,
+                commentz: 1,
                 linkz: 1,
                 peers: 1,
                 seeds: 1,
