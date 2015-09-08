@@ -1,0 +1,72 @@
+<polymer-element attributes="item selected" name="inbox-item">
+    <template>
+        <div center-justified horizontal layout>
+            <div class="li {{item.list_class}}" horizontal justified layout on-holdpulse="{{inboxItemHold}}" on-tap="{{inboxItemTap}}">
+                <div class="padding-4" self-start>
+                    <selectable-icon iconClass="{{item.category_class}}" iconText="{{item.linkz.length}}" id="selectableIcon" selected?="{{selected}}"></selectable-icon>
+                </div>
+                <div class="padding-4" flex layout vertical>
+                    <div auto-vertical class="lowercase"><span class="title">{{item.title}}</span>&nbsp;&nbsp;<b class="description">{{item.category}}</b></div>
+                    <div auto-vertical class="description" horizontal justified layout>
+                        <div>{{item.size}} | <b>{{item.seeds}}</b> S / <b>{{item.peers}}</b> P</div>
+                        <div class="overflow-hidden">{{item.fromNow}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script>
+    Polymer("inbox-item", {
+
+        holding: false,
+        item: {},
+        selected: false,
+
+        inboxItemHold: function(event, detail, sender) {
+            if (this.holding || event.target == this.$.selectableIcon) {
+                return;
+            }
+
+            this.holding = true;
+
+            this.selected = !this.selected;
+            this.$.selectableIcon.fire("tap");
+
+            var _this = this;
+
+            Meteor.setTimeout(function() {
+                _this.holding = false;
+            }, 800);
+        },
+
+        inboxItemTap: function(event, detail, sender) {
+            if (event.target != this.$.selectableIcon) {
+                event.stopPropagation();
+
+                if (!this.holding) {
+                    document.querySelector("download-linkz").open(this.item);
+                }
+            }
+        },
+
+        itemChanged: function() {
+            if (!(this.item instanceof Object)) {
+                this.item = JSON.parse(this.item);
+            }
+
+            this.item.fromNow = moment(this.item.time, "X").fromNow();
+
+            // console.log(this.item);
+        },
+
+        publish: {
+            selected: {
+                reflect: true,
+                value: false
+            }
+        }
+
+    });
+    </script>
+</polymer-element>
