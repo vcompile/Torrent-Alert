@@ -1,60 +1,33 @@
-Meteor.methods({
+torrent_in_worker = function(id) {
+    var row = torrent_in.findOne({
+        _id: id
+    });
 
-    worker: function(query) {
-        this.unblock();
-
-        check(query, {
-            _id: String,
-            db: String,
-            std_out: String,
-            url: String
-        });
-
-        var user = Meteor.user();
-        if (!user) throw new Meteor.Error(422, "user N");
-
-        if (user._id != "HedCET") {
-            throw new Meteor.Error(422, "restrictedAccess");
-        }
-
-        if (20 < query.std_out.length) {
-            switch (query.db) {
-                case "torrent_in":
-                    var row = torrent_in.findOne({
-                        _id: query._id
-                    });
-
-                    if (row) {
+    if (row) {
+        if (row.user_id.length) {
+            exec("curl -L --proxy " + opt.proxy + " --proxy-user " + opt.proxy_user + " " + opt.url + "/" + row.urlPart + "?q=" + encodeURIComponent(row.keyword), function(error, std_out, std_error) {
+                new fibers(function() {
+                    if (error) {
+                        console.log(row, error);
+                    } else {
                         var cheerio = Meteor.npmRequire("cheerio");
-                        $ = cheerio.load(query.std_out);
+                        $ = cheerio.load(std_out);
 
                         $(".results dl").each(function(index, element) {
-
                             if ($(this).find("dt a").attr("href")) {
                                 var torrent = {};
 
                                 torrent["urlPart"] = $(this).find("dt a").attr("href");
-                                torrent["title"] = $(this).find("dt a").text().trim().replace(/\s+/g, " ");
-                                torrent["category"] = $(this).find("dt").children().remove().end().text().replace(/[^0-9a-zA-Z]/g, " ").trim().replace(/\s+/g, " ");
-                                torrent["verified"] = $(this).find("dd .v").text().replace(/[^0-9]/g, "");
-                                torrent["time"] = $(this).find("dd .a span").attr("title") ? moment($(this).find("dd .a span").attr("title").trim().replace(/\s+/g, " "), "ddd, DD MMM YYYY HH:mm:ss").format("X") : moment().format("X");
-                                torrent["size"] = $(this).find("dd .s").text().replace(/[^0-9a-zA-Z]/g, " ").trim().replace(/\s+/g, " ");
+                                torrent["title"] = $(this).find("dt a").text().replace(/\s+/g, " ").trim();
+                                torrent["category"] = $(this).find("dt").children().remove().end().text().replace(/[^0-9a-zA-Z]/g, " ").replace(/\s+/g, " ").trim();
+                                torrent["time"] = $(this).find("dd .a span").attr("title") ? moment($(this).find("dd .a span").attr("title").replace(/\s+/g, " ").trim(), "ddd, DD MMM YYYY HH:mm:ss").format("X") : moment().format("X");
+                                torrent["size"] = $(this).find("dd .s").text().replace(/[^0-9a-zA-Z]/g, " ").replace(/\s+/g, " ").trim();
                                 torrent["peers"] = $(this).find("dd .u").text().replace(/[^0-9]/g, "");
                                 torrent["seeds"] = $(this).find("dd .d").text().replace(/[^0-9]/g, "");
 
-                                torrent["commentz"] = [];
                                 torrent["hidden"] = [];
                                 torrent["linkz"] = [];
-
-                                torrent["status"] = moment().format();
-
-                                var _torrent_worker = torrent_worker.find({
-                                    status: "UP"
-                                }).fetch();
-
-                                torrent["torrent_worker"] = (_torrent_worker.length ? _torrent_worker[Math.floor(Math.random() * _torrent_worker.length)]._id : "MAC");
-
-                                // db
+                                torrent["commentz"] = [];
 
                                 var _torrent_out = torrent_out.find({
                                     urlPart: torrent.urlPart
@@ -67,22 +40,32 @@ Meteor.methods({
 
                                     if (row.peers <= torrent.peers && row.seeds <= torrent.seeds) {
                                         row.user_id.forEach(function(userId) {
-                                            Push.send({
-                                                from: "Torrent Alert",
-                                                title: row.keyword,
-                                                text: torrent.title,
-                                                query: {
-                                                    userId: userId
-                                                }
-                                            });
+                                            if (torrent_push.find({
+                                                    torrent_in: row._id,
+                                                    torrent_out: torrent_out_id,
+                                                    user_id: userId
+                                                }).count() == 0) {
 
-                                            torrent_push.insert({
-                                                torrent_in: row._id,
-                                                torrent_out: torrent_out_id,
-                                                user_id: userId
-                                            });
+                                                Push.send({
+                                                    from: "Torrent Alert",
+                                                    query: {
+                                                        userId: userId
+                                                    },
+                                                    text: torrent.title,
+                                                    title: row.keyword
+                                                });
+
+                                                torrent_push.insert({
+                                                    torrent_in: row._id,
+                                                    torrent_out: torrent_out_id,
+                                                    user_id: userId
+                                                });
+
+                                            }
                                         });
                                     }
+
+                                    torrent_out_worker(torrent_out_id);
                                 } else {
                                     _torrent_out.fetch().forEach(function(item) {
                                         torrent_out.update({
@@ -94,10 +77,7 @@ Meteor.methods({
                                             $set: {
                                                 category: torrent.category,
                                                 peers: torrent.peers,
-                                                seeds: torrent.seeds,
-                                                status: torrent.status,
-                                                torrent_worker: torrent.torrent_worker,
-                                                verified: torrent.verified
+                                                seeds: torrent.seeds
                                             }
                                         });
 
@@ -108,13 +88,14 @@ Meteor.methods({
                                                         torrent_out: item._id,
                                                         user_id: userId
                                                     }).count() == 0) {
+
                                                     Push.send({
                                                         from: "Torrent Alert",
-                                                        title: row.keyword,
-                                                        text: torrent.title,
                                                         query: {
                                                             userId: userId
-                                                        }
+                                                        },
+                                                        text: torrent.title,
+                                                        title: row.keyword
                                                     });
 
                                                     torrent_push.insert({
@@ -122,67 +103,106 @@ Meteor.methods({
                                                         torrent_out: item._id,
                                                         user_id: userId
                                                     });
+
                                                 }
                                             });
                                         }
+
+                                        torrent_out_worker(item._id);
                                     });
                                 }
                             }
                         });
+                    }
+                }).run();
+            });
+        } else {
+            torrent_in.remove({
+                _id: row._id
+            });
 
-                        torrent_in.update({
-                            _id: row._id
-                        }, {
-                            $set: {
-                                status: "OK"
-                            }
-                        });
-                    } else console.log("notFound", query);
-                    break;
-
-                case "torrent_out":
-                    var row = torrent_out.findOne({
-                        _id: query._id
-                    });
-
-                    if (row) {
-                        var linkz = [];
-
-                        var cheerio = Meteor.npmRequire("cheerio");
-                        $ = cheerio.load(query.std_out);
-
-                        $(".download dl").each(function(index, element) {
-                            if ($(this).find("dt a").attr("href")) {
-                                var link = $(this).find("dt a").attr("href");
-
-                                if (link.substr(0, 4) == "http") {
-                                    link = link.split("//", 2)[1];
-
-                                    if (link.substr(0, 4) == "www.") {
-                                        link = link.substr(4);
-                                    }
-
-                                    linkz.push({
-                                        text: link.split("/", 1).toString("utf-8"),
-                                        time: ($(this).find("dd span").attr("title") ? moment($(this).find("dd span").attr("title").trim().replace(/\s+/g, " "), "ddd, DD MMM YYYY HH:mm:ss").format("X") : moment().format("X")),
-                                        url: "//" + link
-                                    });
-                                }
-                            }
-                        });
-
-                        torrent_out.update({
-                            _id: row._id
-                        }, {
-                            $set: {
-                                linkz: _.sortBy(linkz, "time"),
-                                status: "OK"
-                            }
-                        });
-                    } else console.log("notFound", query);
-                    break;
-            }
-        } else console.log("std_out minLength is 20", query);
+            torrent_out.find({
+                torrent_in: row._id
+            }).forEach(function(A) {
+                torrent_out.update({
+                    _id: A._id
+                }, {
+                    $pull: {
+                        torrent_in: row._id
+                    }
+                });
+            });
+        }
     }
+};
 
-});
+torrent_out_worker = function(id) {
+    var row = torrent_out.findOne({
+        _id: id
+    });
+
+    if (row) {
+        if (row.torrent_in.length) {
+            var _user_id = [];
+
+            row.torrent_in.forEach(function(id) {
+                var A = torrent_in.findOne({
+                    _id: id
+                });
+
+                _user_id = _user_id.concat(A.user_id);
+            });
+
+            if (_.difference(_.uniq(_user_id), row.hidden).length) {
+                exec("curl -L --proxy " + opt.proxy + " --proxy-user " + opt.proxy_user + " " + opt.url + row.urlPart, function(error, std_out, std_error) {
+                    new fibers(function() {
+                        if (error) {
+                            console.log(row, error);
+                        } else {
+                            var linkz = [];
+
+                            var cheerio = Meteor.npmRequire("cheerio");
+                            $ = cheerio.load(std_out);
+
+                            $(".download dl").each(function(index, element) {
+                                if ($(this).find("dt a").attr("href")) {
+                                    var link = $(this).find("dt a").attr("href");
+
+                                    if (link.substr(0, 4) == "http") {
+                                        link = link.split("//", 2)[1];
+
+                                        if (link.substr(0, 4) == "www.") {
+                                            link = link.substr(4);
+                                        }
+
+                                        linkz.push({
+                                            text: link.split("/", 1).toString("utf-8"),
+                                            time: ($(this).find("dd span").attr("title") ? moment($(this).find("dd span").attr("title").trim().replace(/\s+/g, " "), "ddd, DD MMM YYYY HH:mm:ss").format("X") : moment().format("X")),
+                                            url: "//" + link
+                                        });
+                                    }
+                                }
+                            });
+
+                            torrent_out.update({
+                                _id: row._id
+                            }, {
+                                $set: {
+                                    linkz: _.sortBy(linkz, "time")
+                                }
+                            });
+                        }
+                    }).run();
+                });
+            } else {
+                torrent_out.remove({
+                    _id: row._id
+                });
+            }
+        } else {
+            torrent_out.remove({
+                _id: row._id
+            });
+        }
+    }
+};

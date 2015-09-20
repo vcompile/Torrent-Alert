@@ -5,8 +5,8 @@ Meteor.startup(function() {
 
     Accounts.loginServiceConfiguration.insert({
         service: "google",
-        clientId: "1035713157090-frci49e652m1ep8n9qerin4r8u9vpb9f.apps.googleusercontent.com",
-        secret: "9IZvL7GcscaLyOGpzvUz7uA4"
+        clientId: "",
+        secret: ""
     });
 });
 

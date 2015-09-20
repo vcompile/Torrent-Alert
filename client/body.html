@@ -26,6 +26,10 @@
         display: none;
     }
     
+    html /deep/ core-toolbar paper-icon-button {
+        margin: 0!important;
+    }
+    
     html /deep/ paper-action-dialog,
     html /deep/ paper-dialog {
         top: 0;
@@ -42,22 +46,49 @@
         width: 300px;
     }
     
+    html /deep/ paper-tab {
+        max-width: 300px;
+    }
+    
+    html /deep/ paper-tabs::shadow #selectionBar {
+        background: black;
+    }
+    
     html /deep/ .capitalize {
         text-transform: capitalize;
     }
     
+    html /deep/ .description {
+        font-size: .75em;
+        margin-bottom: .1em;
+        margin-top: .1em;
+    }
+    
     html /deep/ .hidden {
-        display: none !important;
+        display: none!important;
     }
     
     html /deep/ .lowercase {
         text-transform: lowercase;
     }
     
+    html /deep/ .menu-l {
+        cursor: pointer;
+        padding: 8px;
+    }
+    
+    html /deep/ .menu-l:hover {
+        background: #EEE;
+    }
+    
     html /deep/ .overflow-hidden {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+    }
+    
+    html /deep/ .padding-4 {
+        padding: 4px;
     }
     
     html /deep/ .padding-24 {
@@ -68,8 +99,17 @@
         background: #EEE;
         padding: 12px;
     }
+    
+    html /deep/ .title {
+        font-size: 1em;
+        line-height: 1.25em;
+        margin-bottom: .1em;
+        margin-top: .1em;
+    }
     </style>
 
     {{> controller_linto}}
+
+    <paper-toast duration="4000" id="toast"></paper-toast>
 
 </body>

@@ -2,6 +2,7 @@ if (Meteor.isCordova) {
     document.addEventListener("deviceready", function() {
         document.addEventListener("backbutton", backbutton, false);
         document.addEventListener("menubutton", menubutton, false);
+        document.addEventListener("pause", pause, false);
     }, false);
 
     function backbutton() {
@@ -9,10 +10,6 @@ if (Meteor.isCordova) {
 
         if (document.querySelector("html /deep/ #drawerPanel")) {
             document.querySelector("html /deep/ #drawerPanel").closeDrawer();
-        }
-
-        if (document.querySelector("html /deep/ layout-inbox")) {
-            document.querySelector("html /deep/ layout-inbox").deSelectAll();
         }
 
         if (document.querySelector("html /deep/ search-bar")) {
@@ -31,6 +28,12 @@ if (Meteor.isCordova) {
     function menubutton() {
         if (document.querySelector("html /deep/ layout-inbox")) {
             document.querySelector("html /deep/ layout-inbox").menuToggle();
+        }
+    }
+
+    function pause() {
+        if (document.querySelector("html /deep/ layout-inbox")) {
+            document.querySelector("html /deep/ layout-inbox").save();
         }
     }
 }

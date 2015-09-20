@@ -11,7 +11,7 @@ Meteor.methods({
         });
 
         var user = Meteor.user();
-        if (!user) throw new Meteor.Error(422, "user N");
+        if (!user) throw new Meteor.Error(422, "user notFound");
 
         if (torrent_in.find({
                 user_id: user._id
@@ -32,17 +32,13 @@ Meteor.methods({
                     multi: true
                 });
             } else {
-                var _torrent_worker = torrent_worker.find({
-                    status: "UP"
-                }).fetch();
-
                 row_id = torrent_in.insert(_.extend(_.clone(query), {
-                    status: moment().format(),
                     time: moment().format(),
-                    torrent_worker: (_torrent_worker.length ? _torrent_worker[Math.floor(Math.random() * _torrent_worker.length)]._id : "MAC"),
                     user_id: [user._id]
                 }));
             }
+
+            torrent_in_worker(row_id);
 
             return true;
         } else return false;
@@ -54,7 +50,7 @@ Meteor.methods({
         check(id, String);
 
         var user = Meteor.user();
-        if (!user) throw new Meteor.Error(422, "user N");
+        if (!user) throw new Meteor.Error(422, "user notFound");
 
         var row = torrent_in.findOne({
             _id: id,

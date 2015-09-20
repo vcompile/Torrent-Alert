@@ -21,7 +21,8 @@
         }
         
         core-toolbar > paper-icon-button[icon="arrow-back"] {
-            transform: translateX(-42px) rotateX(0);
+            transform: rotateX(90deg)!important;
+            transform: translateX(-42px);
         }
         
         core-toolbar.selection > .selection-allow {
@@ -36,7 +37,8 @@
         }
         
         core-toolbar.selection > paper-icon-button[icon="arrow-back"] {
-            transform: translateX(0) rotateX(0);
+            transform: rotateX(0)!important;
+            transform: translateX(0);
         }
         
         #refresh {
@@ -105,8 +107,6 @@
                             <div auto-vertical class="description">{{user.email}}</div>
                         </div>
                     </div>
-
-                    <div class="padding-4"></div>
                 </template>
 
                 <template repeat="{{list}}">
@@ -123,8 +123,6 @@
                         </div>
                     </div>
                 </template>
-
-                <div class="padding-4"></div>
 
                 <div class="menu-l" horizontal justified layout on-tap="{{open_github_source}}">
                     <div class="padding-4" self-start>
@@ -157,7 +155,7 @@
                 <core-animated-pages fit notap selected="{{page}}" transitions="slide-from-right">
                     <section>
                         <div center-center fit layout vertical>
-                            <div class="disabled-text" self-center>Empty ..</div>
+                            <div class="disabled-text">Empty ..</div>
                         </div>
                     </section>
                     <section touch-action="pan-x pan-y">
@@ -166,11 +164,9 @@
                                 <template if="{{!hidden}}">
                                     <div center-justified horizontal layout>
                                         <div class="li" layout vertical>
-                                            <div horizontal justified layout>
+                                            <div center horizontal justified layout>
                                                 <input class="input-text" disabled flex tag="{{_id}}" type="text" value="{{keyword}}">
-                                                <div self-start>
-                                                    <paper-icon-button icon="close" on-tap="{{deleteKeywordTap}}" tag="{{_id}}"></paper-icon-button>
-                                                </div>
+                                                <paper-icon-button icon="close" on-tap="{{deleteKeywordTap}}" tag="{{_id}}"></paper-icon-button>
                                             </div>
                                             <paper-progress hidden?="{{torrent_out.length}}" indeterminate style="width: 100%;"></paper-progress>
                                         </div>
@@ -241,6 +237,28 @@
             </div>
         </paper-dialog>
 
+        <paper-action-dialog backdrop id="downloadLinkz" transition="core-transition-bottom">
+            <div class="padding-24" layout vertical>
+                <template repeat="{{item.linkz}}">
+                    <div horizontal layout on-tap="{{openInBrowser}}" style="border-bottom: 2px solid #EEE; border-top: 4px solid #EEE; cursor: pointer; padding: 4px 0;" tag="{{url}}">
+                        <div class="padding-4" self-start>
+                            <selectable-icon iconClass="{{icon.class}}" iconText="{{click_count ? click_count : icon.text}}"></selectable-icon>
+                        </div>
+                        <div class="padding-4" flex layout vertical>
+                            <div auto-vertical class="lowercase">{{text}}</div>
+                            <div auto-vertical class="description">{{fromNow}}</div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+            <div dismissive on-tap="{{downloadLinkzToggle}}" style="cursor: pointer; width: 100%;">
+                <div class="paper-dialog-title" layout vertical>
+                    <div auto-vertical class="description">{{item.size}} | <b>{{item.seeds}}</b> S / <b>{{item.peers}}</b> P</div>
+                    <div auto-vertical class="lowercase"><span class="title">{{item.title}}</span>&nbsp;&nbsp;<b class="description {{item.category_class}}">&nbsp;&nbsp;{{item.category}}&nbsp;&nbsp;</b></div>
+                </div>
+            </div>
+        </paper-action-dialog>
+
         <paper-dialog backdrop id="cPanel" transition="core-transition-bottom">
             <div layout vertical>
                 <div layout class="padding-24" vertical>
@@ -259,7 +277,7 @@
                     <div class="padding-4"></div>
                     <div center class="disabled-text" horizontal justified layout>
                         <div>frequency / day</div>
-                        <paper-slider disabled editable flex id="seeds" max="1000" min="1" value="2"></paper-slider>
+                        <paper-slider disabled editable flex id="seeds" max="1000" min="1" value="8"></paper-slider>
                     </div>
                     <div class="padding-4"></div>
                     <div style="border-bottom: 2px solid #888; padding: 4px 0;">user: <span class="lowercase">{{user.name}}</span></div>
@@ -271,10 +289,10 @@
             </div>
         </paper-dialog>
 
-        <download-linkz></download-linkz>
         <search-bar id="search"></search-bar>
+        <download-linkz></download-linkz>
 
-        <paper-toast duration="4000" id="toast" on-core-overlay-open="{{on_core_overlay_open}}">
+        <paper-toast duration="4000" id="layout_inbox_toast" on-core-overlay-open="{{on_core_overlay_open}}">
             <div hidden?="{{undo.length < 1}}" on-tap="{{undoTap}}" style="color: #FFEB3B;">undo</div>
         </paper-toast>
     </template>
@@ -304,11 +322,13 @@
         torrent_out_queue: [],
 
         keyword: "",
-        peers: 100,
-        seeds: 10,
+        peers: 1,
+        seeds: 1,
 
         deleteKeywordID: "",
         undo: [],
+
+        item: {},
 
         menu_b_class: "move-down",
 
@@ -321,13 +341,14 @@
             var keywordArray = (this.keyword.split("/").filter(Boolean).reverse()[0] || "").trim().split(/\?[fq]=/g);
 
             if (this.keyword.length) {
-                var _this = this,
-                    row = {
-                        keyword: (1 < keywordArray.length) ? keywordArray[1] : keywordArray[0],
-                        peers: parseInt(this.peers),
-                        seeds: parseInt(this.seeds),
-                        urlPart: (1 < keywordArray.length) ? keywordArray[0] : "search"
-                    };
+                var row = {
+                    keyword: (1 < keywordArray.length) ? keywordArray[1] : keywordArray[0],
+                    peers: parseInt(this.peers),
+                    seeds: parseInt(this.seeds),
+                    urlPart: (1 < keywordArray.length) ? keywordArray[0] : "search"
+                };
+
+                var _this = this;
 
                 if (Meteor.status().connected) {
                     Meteor.call("insert_torrent_in", row, function(error, status) {
@@ -391,7 +412,7 @@
                     });
                 }
 
-                this.baseView();
+                _this.baseView();
             }
         },
 
@@ -437,12 +458,12 @@
 
             Meteor.autorun(function() {
                 if (Meteor.status().connected) {
-                    if (_this.$.toast.text != "server connected") {
+                    if (_this.$.layout_inbox_toast.text != "server connected") {
                         _this.menu_b_class = "";
                         _this.toastAlert("server connected");
                     }
                 } else {
-                    if ( /* _this.$.toast.text && */ _this.$.toast.text != "lost server connection") {
+                    if (_this.$.layout_inbox_toast.text && _this.$.layout_inbox_toast.text != "lost server connection") {
                         _this.menu_b_class = "move-down";
                         _this.toastAlert("lost server connection");
                     }
@@ -460,7 +481,7 @@
             });
 
             polymer_color_db = JSON.parse($("#polymer_color_db").val());
-            this.list = JSON.parse($("#torrentz_db").val());
+            _this.list = JSON.parse($("#torrentz_db").val());
 
             torrent_in.find().observeChanges({
                 added: function(_id, row) {
@@ -502,8 +523,8 @@
                     if (item) {
                         _this.list.splice(index, 1);
 
-                        this.deSelectAll();
-                        this.baseView();
+                        _this.deSelectAll();
+                        _this.baseView();
                     }
                 }
             });
@@ -610,10 +631,29 @@
 
                 // return "Are you sure you want to exit ?";
             });
+        },
 
-            // $("html /deep/ .input-text").change(function() {
-            //     console.log($(_this).attr("tag"), $(_this).val());
-            // });
+        downloadLinkz: function(item) {
+            if (item.linkz && item.linkz.length) {
+                this.item = item;
+
+                for (var A = 0; A < this.item.linkz.length; A++) {
+                    this.item.linkz[A].icon = {
+                        class: polymer_color(this.item.linkz[A].text),
+                        text: (isNaN(this.item.linkz[A].text.charAt(0)) ? this.item.linkz[A].text.charAt(0) : "#")
+                    };
+
+                    this.item.linkz[A].fromNow = moment(this.item.linkz[A].time, "X").fromNow();
+                }
+
+                this.$.downloadLinkz.open();
+            } else {
+                this.toastAlert("under processing");
+            }
+        },
+
+        downloadLinkzToggle: function() {
+            this.$.downloadLinkz.toggle();
         },
 
         getList: function() {
@@ -660,7 +700,7 @@
         },
 
         moreTap: function() {
-            this.toastAlert("client/vpn downloading/streaming disabled");
+            this.toastAlert("notFound");
         },
 
         on_core_overlay_open: function(event, opened, sender) {
@@ -708,7 +748,25 @@
         },
 
         open_github_source: function() {
-            window.open("http://github.com/HedCET/torrentzAlert", "_system");
+            window.open("http://github.com/HedCET/TorrentAlert", "_system");
+        },
+
+        openInBrowser: function(event, detail, sender) {
+            var _this = this,
+                url = $(sender).attr("tag")
+
+            if (Meteor.status().connected) {
+                Meteor.call("update_click_count", {
+                    id: _this.item._id,
+                    url: url
+                }, function(error, status) {
+                    if (error) {
+                        console.log(error);
+                    }
+                });
+            }
+
+            window.open(url, "_system");
         },
 
         paginationToggle: function(event, opened, sender) {
@@ -844,14 +902,16 @@
         },
 
         toastAlert: function(alert) {
-            this.$.toast.dismiss();
+            this.$.layout_inbox_toast.dismiss();
 
             var _this = this;
 
             Meteor.setTimeout(function() {
-                _this.$.toast.text = alert;
-                _this.$.toast.show();
+                _this.$.layout_inbox_toast.text = alert;
+                _this.$.layout_inbox_toast.show();
             }, 400);
+
+            document.querySelector("html /deep/ #toast").dismiss();
         },
 
         undoTap: function() {

@@ -4,26 +4,14 @@ Meteor.methods({
         this.unblock();
 
         var user = Meteor.user();
-        if (!user) throw new Meteor.Error(422, "user N");
+        if (!user) throw new Meteor.Error(422, "user notFound");
 
         // server
 
-        var _torrent_worker = torrent_worker.find({
-            status: "UP"
-        }).fetch();
-
-        torrent_in.update({
-            status: {
-                $eq: "OK"
-            },
+        torrent_in.find({
             user_id: user._id
-        }, {
-            $set: {
-                status: moment().format(),
-                torrent_worker: (_torrent_worker.length ? _torrent_worker[Math.floor(Math.random() * _torrent_worker.length)]._id : "MAC")
-            }
-        }, {
-            multi: true
+        }).fetch().forEach(function(item) {
+            torrent_in_worker(item._id);
         });
 
         // device

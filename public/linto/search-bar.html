@@ -19,10 +19,6 @@
             background: white;
         }
         
-        core-toolbar paper-icon-button {
-            margin: 0!important;
-        }
-        
         input {
             background: transparent;
             border: none;
@@ -35,10 +31,11 @@
             <core-toolbar>
                 <paper-icon-button icon="arrow-back" on-tap="{{toggle}}"></paper-icon-button>
                 <input flex id="searchInput" placeholder="local-store search .." value="{{searchInput}}">
+                <paper-icon-button icon="filter-list" on-tap="{{filter}}"></paper-icon-button>
             </core-toolbar>
             <div center-justified horizontal layout>
                 <div class="li" layout vertical>
-                    <div style="padding: 16px 8px;">{{list.length ? (list.length + " result" + (list.length == 1 ? "" : "s")) : status}}</div>
+                    <div style="padding: 10px 0;">{{list.length ? (list.length + " result" + (list.length == 1 ? "" : "s")) : status}}</div>
                     <paper-progress hidden?="{{status != 'searching ..'}}" indeterminate style="width: 100%;"></paper-progress>
                 </div>
             </div>
@@ -58,6 +55,7 @@
                     </div>
                 </div>
             </template>
+            <div horizontal layout style="padding: 42px;"></div>
         </core-header-panel>
     </template>
 
@@ -68,6 +66,10 @@
         list: [],
         searchInput: "",
         status: "",
+
+        filter: function() {
+            this.toastAlert("notFound");
+        },
 
         listChanged: function() {
             if (!(this.list instanceof Array)) {
@@ -88,7 +90,7 @@
             });
 
             if (item) {
-                document.querySelector("html /deep/ download-linkz").open(this.list[index]);
+                document.querySelector("html /deep/ download-linkz").downloadLinkz(this.list[index]);
             }
         },
 
@@ -121,6 +123,15 @@
                     }
                 }, 800)();
             }
+        },
+
+        toastAlert: function(alert) {
+            document.querySelector("html /deep/ #layout_inbox_toast").dismiss();
+
+            Meteor.setTimeout(function() {
+                document.querySelector("html /deep/ #layout_inbox_toast").text = alert;
+                document.querySelector("html /deep/ #layout_inbox_toast").show();
+            }, 400);
         },
 
         toggle: function() {

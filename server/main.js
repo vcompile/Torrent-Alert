@@ -1,4 +1,9 @@
+exec = Npm.require("child_process").exec;
 fibers = Npm.require("fibers");
 
-crontab_time = ["09:00", "21:00"];
-ping_interval = 60; // in min
+opt = {
+    proxy: "",
+    proxy_user: "",
+
+    url: ""
+};
