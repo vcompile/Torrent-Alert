@@ -253,8 +253,8 @@
             </div>
             <div dismissive on-tap="{{downloadLinkzToggle}}" style="cursor: pointer; width: 100%;">
                 <div class="paper-dialog-title" layout vertical>
-                    <div auto-vertical class="description">{{item.size}} | <b>{{item.seeds}}</b> S / <b>{{item.peers}}</b> P</div>
-                    <div auto-vertical class="lowercase"><span class="title">{{item.title}}</span>&nbsp;&nbsp;<b class="description {{item.category_class}}">&nbsp;&nbsp;{{item.category}}&nbsp;&nbsp;</b></div>
+                    <div auto-vertical class="description" style="padding: 0 4px;">{{item.size}} | <b>{{item.seeds}}</b> S / <b>{{item.peers}}</b> P</div>
+                    <div auto-vertical class="lowercase" style="padding: 0 4px;"><span class="title">{{item.title}}</span>&nbsp;&nbsp;<b class="description {{item.category_class}}">&nbsp;&nbsp;{{item.category}}&nbsp;&nbsp;</b></div>
                 </div>
             </div>
         </paper-action-dialog>
