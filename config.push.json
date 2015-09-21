@@ -1,7 +1,7 @@
 {
     "gcm": {
-        "apiKey": "AIzaSyBuIz2LAO01hnOtfejZ80-3rb0prKfBf74",
-        "projectNumber": 1035713157090
+        "apiKey": "",
+        "projectNumber": 12345
     },
     "alert": true,
     "badge": true,

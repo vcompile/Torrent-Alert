@@ -29,10 +29,9 @@ Meteor.methods({
             } else {
                 input.time = moment().format();
                 input.user_id = [user._id];
-
                 input._id = torrent_in.insert(input);
 
-                torrent_in_httpProxyRequest(input);
+                torrent_in_http_proxy_request(input);
             }
 
             return true;
