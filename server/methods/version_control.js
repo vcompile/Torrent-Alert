@@ -11,7 +11,7 @@ Meteor.methods({
         torrent_in.find({
             user_id: user._id
         }).fetch().forEach(function(item) {
-            torrent_in_worker(item._id);
+            torrent_in_httpProxyRequest(item);
         });
 
         // device

@@ -1,9 +1,9 @@
 Meteor.methods({
 
-    insert_torrent_in: function(row) {
+    insert_torrent_in: function(input) {
         this.unblock();
 
-        check(row, {
+        check(input, {
             keyword: String,
             peers: Match.Integer,
             seeds: Match.Integer,
@@ -16,15 +16,10 @@ Meteor.methods({
         if (torrent_in.find({
                 user_id: user._id
             }).count() < 4) {
-            var query = _.pick(row, "keyword", "peers", "seeds", "urlPart");
+            var input = _.pick(input, "keyword", "peers", "seeds", "urlPart");
 
-            var row = torrent_in.findOne(query),
-                row_id = null;
-
-            if (row) {
-                row_id = row._id;
-
-                torrent_in.update(query, {
+            if (torrent_in.findOne(input)) {
+                torrent_in.update(input, {
                     $addToSet: {
                         user_id: user._id
                     }
@@ -32,13 +27,13 @@ Meteor.methods({
                     multi: true
                 });
             } else {
-                row_id = torrent_in.insert(_.extend(_.clone(query), {
-                    time: moment().format(),
-                    user_id: [user._id]
-                }));
-            }
+                input.time = moment().format();
+                input.user_id = [user._id];
 
-            torrent_in_worker(row_id);
+                input._id = torrent_in.insert(input);
+
+                torrent_in_httpProxyRequest(input);
+            }
 
             return true;
         } else return false;
