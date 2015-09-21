@@ -20,8 +20,8 @@ Meteor.setInterval(function() {
             }
         });
 
-        torrent_out.find().forEach(function(A) {
-            if (A.torrent_in.length) {
+        torrent_out.find().forEach(function(row) {
+            if (row.torrent_in.length) {
                 var _user_id = [];
 
                 row.torrent_in.forEach(function(id) {
@@ -29,17 +29,27 @@ Meteor.setInterval(function() {
                         _id: id
                     });
 
-                    _user_id = _user_id.concat(A.user_id);
+                    if (A) {
+                        _user_id = _user_id.concat(A.user_id);
+                    } else {
+                        torrent_out.update({
+                            _id: row._id
+                        }, {
+                            $pull: {
+                                torrent_in: id
+                            }
+                        });
+                    }
                 });
 
                 if (_.difference(_.uniq(_user_id), row.hidden).length == 0) {
                     torrent_out.remove({
-                        _id: A._id
+                        _id: row._id
                     });
                 }
             } else {
                 torrent_out.remove({
-                    _id: A._id
+                    _id: row._id
                 });
             }
         });
