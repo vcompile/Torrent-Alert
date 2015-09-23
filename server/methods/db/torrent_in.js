@@ -11,7 +11,7 @@ Meteor.methods({
         });
 
         var user = Meteor.user();
-        if (!user) throw new Meteor.Error(422, "user notFound");
+        if (!user) throw new Meteor.Error(422, "userNotFound");
 
         if (torrent_in.find({
                 user_id: user._id
@@ -44,14 +44,12 @@ Meteor.methods({
         check(id, String);
 
         var user = Meteor.user();
-        if (!user) throw new Meteor.Error(422, "user notFound");
+        if (!user) throw new Meteor.Error(422, "userNotFound");
 
-        var row = torrent_in.findOne({
-            _id: id,
-            user_id: user._id
-        });
-
-        if (row) {
+        if (torrent_in.findOne({
+                _id: id,
+                user_id: user._id
+            })) {
             return torrent_in.update({
                 _id: id,
                 user_id: user._id

@@ -4,4 +4,4 @@ Meteor.setInterval(function() {
             torrent_in_http_proxy_request(item);
         });
     }).run();
-}, 1000 * 60 * 60 * 4);
+}, 1000 * 60 * 60 * 6);

@@ -6,15 +6,13 @@ Meteor.methods({
         check(id, String);
 
         var user = Meteor.user();
-        if (!user) throw new Meteor.Error(422, "user notFound");
+        if (!user) throw new Meteor.Error(422, "userNotFound");
 
-        var row = torrent_out.findOne({
-            _id: id
-        });
-
-        if (row) {
+        if (torrent_out.findOne({
+                _id: id
+            })) {
             return torrent_out.update({
-                _id: row._id
+                _id: id
             }, {
                 $addToSet: {
                     hidden: user._id
@@ -32,15 +30,13 @@ Meteor.methods({
         });
 
         var user = Meteor.user();
-        if (!user) throw new Meteor.Error(422, "user notFound");
+        if (!user) throw new Meteor.Error(422, "userNotFound");
 
-        var row = torrent_out.findOne({
-            _id: item.id
-        });
-
-        if (row) {
+        if (torrent_out.findOne({
+                _id: item.id
+            })) {
             return torrent_out.update({
-                _id: row._id,
+                _id: item.id,
                 "linkz.url": item.url
             }, {
                 $inc: {
