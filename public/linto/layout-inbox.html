@@ -103,8 +103,8 @@
                             <selectable-icon iconImgSrc="{{user.picture ? user.picture : '/img/user.png'}}"></selectable-icon>
                         </div>
                         <div class="padding-4" flex layout vertical>
-                            <div auto-vertical class="title capitalize">{{user.name}}</div>
-                            <div auto-vertical class="description">{{user.email}}</div>
+                            <div class="title capitalize">{{user.name}}</div>
+                            <div class="description">{{user.email}}</div>
                         </div>
                     </div>
                 </template>
@@ -115,11 +115,11 @@
                             <selectable-icon iconClass="{{icon.class}}" iconText="{{icon.text}}"></selectable-icon>
                         </div>
                         <div class="padding-4" flex layout vertical>
-                            <div auto-vertical horizontal justified layout>
+                            <div horizontal justified layout>
                                 <div class="title overflow-hidden lowercase" flex style="width: 32px!important;">{{keyword}}</div>
                                 <div class="badge" self-start>{{torrent_out.length ? torrent_out.length : "#"}}</div>
                             </div>
-                            <div auto-vertical class="description"><b>{{seeds}}</b> S / <b>{{peers}}</b> P</div>
+                            <div class="description"><b>{{seeds}}</b> S / <b>{{peers}}</b> P</div>
                         </div>
                     </div>
                 </template>
@@ -129,8 +129,8 @@
                         <selectable-icon iconImgSrc="/img/github.png"></selectable-icon>
                     </div>
                     <div class="padding-4" flex layout vertical>
-                        <div auto-vertical class="title">open source</div>
-                        <div auto-vertical class="description">build break develop</div>
+                        <div class="title">open source</div>
+                        <div class="description">build break develop</div>
                     </div>
                 </div>
 
@@ -237,7 +237,15 @@
             </div>
         </paper-dialog>
 
+        <core-localstorage name="proxy" value="{{proxy}}"></core-localstorage>
+
         <paper-action-dialog backdrop id="downloadLinkz" transition="core-transition-bottom">
+            <div style="position: fixed; right: 0; top: 0;">
+                <div center class="{{proxy ? 'paper-dialog-title' : 'disabled-text paper-dialog-title'}}" horizontal layout style="background: #EEE; border-radius: 0 0 0 18px;">
+                    <div class="padding-4" on-tap="{{proxyToggle}}">proxy</div>
+                    <paper-toggle-button checked="{{proxy}}" class="padding-4"></paper-toggle-button>
+                </div>
+            </div>
             <div class="padding-24" layout vertical>
                 <template repeat="{{item.linkz}}">
                     <div horizontal layout on-tap="{{openInBrowser}}" style="border-bottom: 2px solid #EEE; border-top: 4px solid #EEE; cursor: pointer; padding: 4px 0;" tag="{{url}}">
@@ -245,16 +253,16 @@
                             <selectable-icon iconClass="{{icon.class}}" iconText="{{click_count ? click_count : icon.text}}"></selectable-icon>
                         </div>
                         <div class="padding-4" flex layout vertical>
-                            <div auto-vertical class="lowercase">{{text}}</div>
-                            <div auto-vertical class="description">{{fromNow}}</div>
+                            <div class="lowercase">{{text}}</div>
+                            <div class="description">{{fromNow}}</div>
                         </div>
                     </div>
                 </template>
             </div>
             <div dismissive on-tap="{{downloadLinkzToggle}}" style="cursor: pointer; width: 100%;">
                 <div class="paper-dialog-title" layout vertical>
-                    <div auto-vertical class="description" style="padding: 0 4px;">{{item.size}} | <b>{{item.seeds}}</b> S / <b>{{item.peers}}</b> P</div>
-                    <div auto-vertical class="lowercase" style="padding: 0 4px;"><span class="title">{{item.title}}</span>&nbsp;&nbsp;<b class="description {{item.category_class}}">&nbsp;&nbsp;{{item.category}}&nbsp;&nbsp;</b></div>
+                    <div class="description" style="padding: 0 4px;">{{item.size}} | <b>{{item.seeds}}</b> S / <b>{{item.peers}}</b> P</div>
+                    <div class="lowercase" style="padding: 0 4px;"><span class="title">{{item.title}}</span>&nbsp;&nbsp;<b class="description {{item.category_class}}">&nbsp;&nbsp;{{item.category}}&nbsp;&nbsp;</b></div>
                 </div>
             </div>
         </paper-action-dialog>
@@ -273,17 +281,10 @@
                         <paper-toggle-button disabled></paper-toggle-button>
                     </div>
                     <div class="padding-4"></div>
-                    <div style="border-bottom: 2px solid #888; padding: 4px 0;">other</div>
-                    <div class="padding-4"></div>
-                    <div center class="{{proxy ? '' : 'disabled-text'}}" horizontal justified layout style="padding: 8px 0;">
-                        <div>enable proxy</div>
-                        <paper-toggle-button checked="{{proxy}}"></paper-toggle-button>
-                    </div>
-                    <div class="padding-4"></div>
                     <div style="border-bottom: 2px solid #888; padding: 4px 0;">scheduler</div>
                     <div class="padding-4"></div>
                     <div center class="disabled-text" horizontal justified layout>
-                        <div>frequency / day</div>
+                        <div>schedule / day</div>
                         <paper-slider disabled editable flex id="seeds" max="1000" min="1" value="4"></paper-slider>
                     </div>
                     <div class="padding-4"></div>
@@ -323,6 +324,8 @@
             picture: "/img/user.png"
         },
 
+        menu_b_class: "move-down",
+
         list: [],
         listSelected: [],
 
@@ -336,8 +339,6 @@
         undo: [],
 
         item: {},
-
-        menu_b_class: "move-down",
 
         proxy: true,
 
@@ -786,6 +787,10 @@
                     this.list[A].pagination = false;
                 }
             }
+        },
+
+        proxyToggle: function() {
+            this.proxy = !this.proxy;
         },
 
         refresh_trackend: function(event, detail, sender) {
