@@ -273,6 +273,13 @@
                         <paper-toggle-button disabled></paper-toggle-button>
                     </div>
                     <div class="padding-4"></div>
+                    <div style="border-bottom: 2px solid #888; padding: 4px 0;">other</div>
+                    <div class="padding-4"></div>
+                    <div center class="{{proxy ? '' : 'disabled-text'}}" horizontal justified layout style="padding: 8px 0;">
+                        <div>enable proxy</div>
+                        <paper-toggle-button checked="{{proxy}}"></paper-toggle-button>
+                    </div>
+                    <div class="padding-4"></div>
                     <div style="border-bottom: 2px solid #888; padding: 4px 0;">scheduler</div>
                     <div class="padding-4"></div>
                     <div center class="disabled-text" horizontal justified layout>
@@ -331,6 +338,8 @@
         item: {},
 
         menu_b_class: "move-down",
+
+        proxy: true,
 
         addKeywordFabTap: function() {
             this.$.addKeyword.open();
@@ -766,7 +775,7 @@
                 });
             }
 
-            window.open(url, "_system");
+            window.open((this.proxy ? "http://proxy.vcompile.com/index.php?url=" + encodeURIComponent(url) : url), "_system");
         },
 
         paginationToggle: function(event, opened, sender) {
