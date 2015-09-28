@@ -1,30 +1,32 @@
 <polymer-element name="polymer-ready">
-    <template>
-        <core-localstorage name="torrentz_db" value="{{torrentz_db}}"></core-localstorage>
-    </template>
+    <template></template>
 
     <script>
     Polymer("polymer-ready", {
-        torrentz_db: [],
+        list: [],
 
         domReady: function() {
             Session.set("polymer-ready", true);
 
-            var _this = this;
-
-            Meteor.autorun(function() {
-                Session.set("view", Meteor.user() ? "inbox" : ((!Meteor.status().connected && _this.torrentz_db.length) ? "inbox" : "signIn"));
-            });
-
-            Meteor.subscribe("torrent_out", {
-                torrent_in: _.map(_this.torrentz_db, function(item) {
-                    return item._id
-                })
-            });
-
             if ($("#opt").val().polymer_color_db) {
                 polymer_color_db = $("#opt").val().polymer_color_db;
             }
+
+            if ($("#opt").val().list) {
+                this.list = $("#opt").val().list;
+            }
+
+            var _this = this;
+
+            Meteor.autorun(function() {
+                Session.set("view", Meteor.user() ? "inbox" : ((!Meteor.status().connected && _this.list.length) ? "inbox" : "signIn"));
+            });
+
+            Meteor.subscribe("torrent_out", {
+                torrent_in: _.map(_this.list, function(item) {
+                    return item._id
+                })
+            });
         }
     });
     </script>

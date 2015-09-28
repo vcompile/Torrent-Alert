@@ -52,7 +52,8 @@ Meteor.methods({
                 user_id: user._id
             })) {
             return torrent_in.update({
-                _id: id
+                _id: id,
+                user_id: user._id
             }, {
                 $pull: {
                     user_id: user._id

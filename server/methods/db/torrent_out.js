@@ -37,7 +37,8 @@ Meteor.methods({
                 "linkz.url": item.url
             })) {
             return torrent_out.update({
-                _id: item.id
+                _id: item.id,
+                "linkz.url": item.url
             }, {
                 $inc: {
                     "linkz.$.click_count": 1

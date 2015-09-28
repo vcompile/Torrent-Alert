@@ -112,7 +112,7 @@
                     _this.status = "notFound in local-store";
 
                     var searchInput = _this.searchInput.toLowerCase(),
-                        searchList = document.querySelector("html /deep/ layout-inbox").getList();
+                        searchList = document.querySelector("html /deep/ layout-inbox").list;
 
                     if (searchInput.length && searchList.length) {
                         for (var A = 0; A < searchList.length; A++) {

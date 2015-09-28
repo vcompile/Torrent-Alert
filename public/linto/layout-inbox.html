@@ -1,7 +1,5 @@
 <polymer-element name="layout-inbox">
     <template>
-        <core-localstorage name="torrentz_db" value="{{list}}"></core-localstorage>
-
         <style>
         core-drawer-panel /deep/ #drawer,
         core-drawer-panel /deep/ #main #scrim {
@@ -499,6 +497,18 @@
                 }
             });
 
+            if ($("#opt").val().list) {
+                _this.list = $("#opt").val().list;
+            }
+
+            if ($("#opt").val().toolBar) {
+                _this.toolBar = $("#opt").val().toolBar;
+            }
+
+            if ($("#opt").val().proxy) {
+                _this.proxy = $("#opt").val().proxy;
+            }
+
             torrent_in.find().observeChanges({
                 added: function(_id, row) {
                     var item = _.find(_this.list, function(item) {
@@ -641,14 +651,6 @@
                     }
                 }
             });
-
-            if ($("#opt").val().toolBar) {
-                _this.toolBar = $("#opt").val().toolBar;
-            }
-
-            if ($("#opt").val().proxy) {
-                _this.proxy = $("#opt").val().proxy;
-            }
         },
 
         downloadLinkz: function(item) {
@@ -672,10 +674,6 @@
 
         downloadLinkzToggle: function() {
             this.$.downloadLinkz.toggle();
-        },
-
-        getList: function() {
-            return this.list;
         },
 
         listChanged: function() {
