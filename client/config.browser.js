@@ -5,3 +5,9 @@ var isChrome = /Chrome/.test(navigator.userAgent);
 if (!isChrome) {
     alert("google chrome browser is required");
 }
+
+$(window).on("beforeunload", function() {
+    save();
+
+    // return "Are you sure you want to exit ?";
+});

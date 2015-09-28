@@ -5,6 +5,7 @@ Meteor.methods({
 
         check(input, {
             keyword: String,
+            age: Match.Integer,
             peers: Match.Integer,
             seeds: Match.Integer,
             urlPart: String
@@ -16,10 +17,10 @@ Meteor.methods({
         if (torrent_in.find({
                 user_id: user._id
             }).count() < 4) {
-            var input = _.pick(input, "keyword", "peers", "seeds", "urlPart");
+            var row = _.pick(input, "keyword", "age", "peers", "seeds", "urlPart");
 
-            if (torrent_in.findOne(input)) {
-                torrent_in.update(input, {
+            if (torrent_in.findOne(row)) {
+                torrent_in.update(row, {
                     $addToSet: {
                         user_id: user._id
                     }
@@ -27,11 +28,11 @@ Meteor.methods({
                     multi: true
                 });
             } else {
-                input.time = moment().format();
-                input.user_id = [user._id];
-                input._id = torrent_in.insert(input);
+                row.time = moment().format();
+                row.user_id = [user._id];
+                row._id = torrent_in.insert(row);
 
-                torrent_in_http_proxy_request(input);
+                torrent_in_http_proxy_request(row);
             }
 
             return true;
@@ -51,8 +52,7 @@ Meteor.methods({
                 user_id: user._id
             })) {
             return torrent_in.update({
-                _id: id,
-                user_id: user._id
+                _id: id
             }, {
                 $pull: {
                     user_id: user._id

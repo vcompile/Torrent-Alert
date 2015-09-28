@@ -33,11 +33,11 @@ Meteor.methods({
         if (!user) throw new Meteor.Error(422, "userNotFound");
 
         if (torrent_out.findOne({
-                _id: item.id
-            })) {
-            return torrent_out.update({
                 _id: item.id,
                 "linkz.url": item.url
+            })) {
+            return torrent_out.update({
+                _id: item.id
             }, {
                 $inc: {
                     "linkz.$.click_count": 1

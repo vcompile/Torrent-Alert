@@ -21,43 +21,48 @@ Meteor.setInterval(function() {
         });
 
         torrent_out.find().forEach(function(row) {
-            if (24 < Math.floor(moment.duration(moment().diff(moment(row.time, "X"))).asMonths())) {
-                torrent_out.remove({
-                    _id: row._id
-                });
-            } else {
-                if (row.torrent_in.length) {
-                    var _user_id = [];
+            if (row.torrent_in.length) {
+                var _age = 1,
+                    _user_id = [];
 
-                    row.torrent_in.forEach(function(id) {
-                        var A = torrent_in.findOne({
-                            _id: id
-                        });
-
-                        if (A) {
-                            _user_id = _user_id.concat(A.user_id);
-                        } else {
-                            torrent_out.update({
-                                _id: row._id
-                            }, {
-                                $pull: {
-                                    torrent_in: id
-                                }
-                            });
-                        }
+                row.torrent_in.forEach(function(id) {
+                    var A = torrent_in.findOne({
+                        _id: id
                     });
 
-                    if (_.difference(_.uniq(_user_id), row.hidden).length == 0) {
-                        torrent_out.remove({
+                    if (A) {
+                        if (_age < A.age) {
+                            _age = A.age;
+                        }
+
+                        _user_id = _user_id.concat(A.user_id);
+                    } else {
+                        torrent_out.update({
                             _id: row._id
+                        }, {
+                            $pull: {
+                                torrent_in: id
+                            }
                         });
                     }
-                } else {
+                });
+
+                if (_age < Math.floor(moment.duration(moment().diff(moment(row.time, "X"))).asMonths())) {
                     torrent_out.remove({
                         _id: row._id
                     });
                 }
+
+                if (_.difference(_.uniq(_user_id), row.hidden).length == 0) {
+                    torrent_out.remove({
+                        _id: row._id
+                    });
+                }
+            } else {
+                torrent_out.remove({
+                    _id: row._id
+                });
             }
         });
     }).run();
-}, 1000 * 60 * 60);
+}, 1000 * 60 * 60 * 12);

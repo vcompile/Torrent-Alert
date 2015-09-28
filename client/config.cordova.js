@@ -32,8 +32,6 @@ if (Meteor.isCordova) {
     }
 
     function pause() {
-        if (document.querySelector("html /deep/ layout-inbox")) {
-            document.querySelector("html /deep/ layout-inbox").save();
-        }
+        save();
     }
 }
