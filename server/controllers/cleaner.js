@@ -22,8 +22,7 @@ Meteor.setInterval(function() {
 
         torrent_out.find().forEach(function(row) {
             if (row.torrent_in.length) {
-                var _age = 1,
-                    _user_id = [];
+                var _age = 1;
 
                 row.torrent_in.forEach(function(id) {
                     var A = torrent_in.findOne({
@@ -31,11 +30,13 @@ Meteor.setInterval(function() {
                     });
 
                     if (A) {
+                        if (A.age == 0) {
+                            _age = 48;
+                        }
+
                         if (_age < A.age) {
                             _age = A.age;
                         }
-
-                        _user_id = _user_id.concat(A.user_id);
                     } else {
                         torrent_out.update({
                             _id: row._id
@@ -48,12 +49,6 @@ Meteor.setInterval(function() {
                 });
 
                 if (_age < Math.floor(moment.duration(moment().diff(moment(row.time, "X"))).asMonths())) {
-                    torrent_out.remove({
-                        _id: row._id
-                    });
-                }
-
-                if (_.difference(_.uniq(_user_id), row.hidden).length == 0) {
                     torrent_out.remove({
                         _id: row._id
                     });
