@@ -119,7 +119,7 @@
                                 <div class="title overflow-hidden lowercase" flex style="width: 32px!important;">{{keyword}}</div>
                                 <div class="badge" self-start>{{torrent_out.length ? torrent_out.length : "#"}}</div>
                             </div>
-                            <div class="description"><b>{{seeds}}</b> S / <b>{{peers}}</b> P</div>
+                            <div class="description"><b>{{age}}</b> M | <b>{{peers}}</b> L / <b>{{seeds}}</b> S</div>
                         </div>
                     </div>
                 </template>
@@ -204,7 +204,7 @@
                     <div class="padding-4"></div>
                     <paper-input autoFocus label="keyword" value="{{keyword}}"></paper-input>
                     <div center horizontal justified layout>
-                        <div>max age (month)</div>
+                        <div>max age (in month)</div>
                         <paper-slider editable flex max="48" min="1" value="{{age}}"></paper-slider>
                     </div>
                     <div center horizontal justified layout>
@@ -265,7 +265,7 @@
 
             <div dismissive on-tap="{{downloadLinkzToggle}}" style="cursor: pointer; width: 100%;">
                 <div class="paper-dialog-title" layout vertical>
-                    <div class="description" style="padding: 0 4px;">{{item.size}} | <b>{{item.seeds}}</b> S / <b>{{item.peers}}</b> P</div>
+                    <div class="description" style="padding: 0 4px;">{{item.size}} | <b>{{item.peers}}</b> L / <b>{{item.seeds}}</b> S</div>
                     <div class="lowercase" style="padding: 0 4px;"><span class="title">{{item.title}}</span>&nbsp;&nbsp;<b class="description {{item.category_class}}">&nbsp;&nbsp;{{item.category}}&nbsp;&nbsp;</b></div>
                 </div>
             </div>
@@ -575,28 +575,22 @@
                         });
 
                         if (typeof(item) == "undefined") {
-                            if (_this.list[group_index].peers <= row.peers && _this.list[group_index].seeds <= row.seeds) {
-                                _this.list[group_index].torrent_out.push($.extend(true, row, {
-                                    _id: _id,
-                                    category_class: polymer_color(row.category, true),
-                                    list_class: "item"
-                                }));
+                            _this.list[group_index].torrent_out.push($.extend(true, row, {
+                                _id: _id,
+                                category_class: polymer_color(row.category, true),
+                                list_class: "item"
+                            }));
 
-                                _this.torrent_out_queue.push(group_index);
+                            _this.torrent_out_queue.push(group_index);
 
-                                _.debounce(function() {
-                                    _this.torrent_out_queue = _.uniq(_this.torrent_out_queue);
+                            _.debounce(function() {
+                                _this.torrent_out_queue = _.uniq(_this.torrent_out_queue);
 
-                                    for (var A = 0; A < _this.torrent_out_queue.length; A++) {
-                                        var Z = _this.torrent_out_queue.pop();
-                                        _this.list[Z].torrent_out = _.sortBy(_this.list[Z].torrent_out, "time").reverse();
-                                    }
-                                }, 8000)();
-                            }
-                        } else {
-                            if (row.peers < _this.list[group_index].peers && row.seeds < _this.list[group_index].seeds) {
-                                _this.list[group_index].torrent_out.splice(index, 1);
-                            }
+                                for (var A = 0; A < _this.torrent_out_queue.length; A++) {
+                                    var Z = _this.torrent_out_queue.pop();
+                                    _this.list[Z].torrent_out = _.sortBy(_this.list[Z].torrent_out, "time").reverse();
+                                }
+                            }, 8000)();
                         }
                     }
                 },
@@ -624,11 +618,7 @@
                         });
 
                         if (item) {
-                            if (row.peers < _this.list[group_index].peers && row.seeds < _this.list[group_index].seeds) {
-                                _this.list[group_index].torrent_out.splice(index, 1);
-                            } else {
-                                _this.list[group_index].torrent_out[index] = $.extend(true, _this.list[group_index].torrent_out[index], row);
-                            }
+                            _this.list[group_index].torrent_out[index] = $.extend(true, _this.list[group_index].torrent_out[index], row);
                         }
                     }
                 },

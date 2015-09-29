@@ -4,6 +4,7 @@ Meteor.publish("torrent_in", function() {
     }, {
         fields: {
             keyword: 1,
+            age: 1,
             peers: 1,
             seeds: 1,
             urlPart: 1
