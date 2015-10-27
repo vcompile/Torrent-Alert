@@ -1,7 +1,31 @@
 marked-element
 ==============
 
-**This element is compatible with Polymer 0.5 and lower only, and will be deprecated.**  
-You can check out a similar 0.8-compatible version of this element at [https://github.com/polymerelements/marked-element](https://github.com/polymerelements/marked-element)
+Element wrapper for the [marked](https://github.com/chjj/marked) library.
 
-See the [component page](http://polymer.github.io/marked-element) for more information.
+`<marked-element>` accepts Markdown source either via its `markdown` attribute:
+
+```html
+<marked-element markdown="`Markdown` is _awesome_!"></marked-element>
+```
+
+Or, you can provide it via a `<script type="text/markdown">` element child:
+
+```html
+<marked-element>
+  <script type="text/markdown">
+    Check out my markdown!
+
+    We can even embed elements without fear of the HTML parser mucking up their
+    textual representation:
+
+    <awesome-sauce>
+      <div>Oops, I'm about to forget to close this div.
+    </awesome-sauce>
+    
+  </script>
+</marked-element>
+```
+
+Note that the `<script type="text/markdown">` approach is _static_. Changes to
+the script content will _not_ update the rendered markdown!

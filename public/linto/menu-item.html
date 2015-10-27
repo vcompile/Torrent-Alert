@@ -1,0 +1,51 @@
+<dom-module id="menu-item">
+
+    <style>
+    .menu-li {
+        border-bottom: 2px solid #EEE;
+        border-top: 2px solid #EEE;
+    }
+    </style>
+
+    <template>
+        <paper-icon-item class="cursor-p hover menu-li relative" on-tap="paperIconItemTap">
+            <div item-icon>
+                <selectable-icon icon_class$="[[icon_class(item.name)]]" icon_text$="[[icon_count(item.patent.length)]]"></selectable-icon>
+            </div>
+
+            <paper-item-body style="margin-right: 0; min-height: 0; padding: 14px 0;" two-line>
+                <div>[[item.name]]</div>
+                <div secondary>[[item.time]]</div>
+            </paper-item-body>
+
+            <paper-ripple></paper-ripple>
+        </paper-icon-item>
+    </template>
+
+    <script>
+    Polymer({
+
+        icon_class: function(text) {
+            return polymer_color(text);
+        },
+
+        icon_count: function(count) {
+            return (count ? count : "#");
+        },
+
+        is: "menu-item",
+
+        paperIconItemTap: function(e) {
+            $("#menu_toggle").click();
+        },
+
+        properties: {
+            item: {
+                type: Object
+            }
+        }
+
+    });
+    </script>
+
+</dom-module>

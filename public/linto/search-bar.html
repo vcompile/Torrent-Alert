@@ -1,151 +1,110 @@
-<polymer-element attributes="enabled list" name="search-bar">
-    <template>
-        <style>
-        :host {
-            display: none;
-        }
-        
-        :host([enabled]) {
-            display: block;
-        }
-        
-        core-header-panel {
-            background: rgba(238, 238, 238, 0.8);
-            margin: 0;
-            z-index: 1;
-        }
-        
-        core-toolbar {
-            background: white;
-        }
-        
-        input {
-            background: transparent;
-            border: none;
-            font-size: 16px;
-            outline: none;
-        }
-        </style>
+<dom-module id="search-bar">
 
-        <core-header-panel fit mode="standard">
-            <core-toolbar>
-                <paper-icon-button icon="arrow-back" on-tap="{{toggle}}"></paper-icon-button>
-                <input flex id="searchInput" placeholder="local-store search .." value="{{searchInput}}">
-                <paper-icon-button icon="filter-list" on-tap="{{filter}}"></paper-icon-button>
-            </core-toolbar>
-            <div center-justified horizontal layout>
-                <div class="li" layout vertical>
-                    <div style="padding: 10px 0;">{{list.length ? (list.length + " result" + (list.length == 1 ? "" : "s")) : status}}</div>
-                    <paper-progress hidden?="{{status != 'searching ..'}}" indeterminate style="width: 100%;"></paper-progress>
+    <style>
+    :host {
+        display: none;
+    }
+    
+    :host([active]) {
+        display: block;
+    }
+    
+    paper-toolbar {
+        --paper-toolbar-background: white;
+        --paper-toolbar-color: black;
+    }
+    
+    input {
+        background: transparent;
+        border: none;
+        font-size: 18px;
+        padding: 0 12px;
+    }
+    </style>
+
+    <template>
+        <paper-header-panel class="fit" style="background: #EEE; z-index: 1;">
+            <paper-toolbar>
+                <paper-icon-button icon="arrow-back" on-click="toggle"></paper-icon-button>
+                <input class="flex" id="input" on-keyup="search" placeholder="search">
+                <paper-icon-button icon="filter-list" on-tap="filter"></paper-icon-button>
+            </paper-toolbar>
+
+            <div class="center-justified horizontal layout">
+                <div class="li">
+                    <div class="bordered cursor-d etc" id="title" style="padding: 16px;">empty</div>
+
+                    <div style="padding: 0 4px;">
+                        <paper-progress hidden id="progress" indeterminate style="width: 100%;"></paper-progress>
+                    </div>
+
+                    <template as="patent" is="dom-repeat" items="[[list]]">
+                        <inbox-item item$="[[patent]]"></inbox-item>
+                    </template>
+
+                    <div style="min-height: 80px;"></div>
                 </div>
             </div>
-            <template repeat="{{list}}">
-                <div center-justified horizontal layout>
-                    <div class="li {{list_class}}" horizontal justified layout on-tap="{{listItemTap}}" tag="{{_id}}">
-                        <div class="padding-4" self-start>
-                            <selectable-icon iconClass="{{category_class}}" iconText="{{linkz.length}}"></selectable-icon>
-                        </div>
-                        <div class="padding-4" flex layout vertical>
-                            <div auto-vertical class="lowercase"><span class="title">{{title}}</span> &nbsp;<b class="description">{{category}}</b></div>
-                            <div auto-vertical class="description" horizontal justified layout>
-                                <div class="overflow-hidden">{{size}} | <b>{{seeds}}</b> S / <b>{{peers}}</b> P</div>
-                                <div class="overflow-hidden">{{fromNow}}</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </template>
-            <div horizontal layout style="padding: 42px;"></div>
-        </core-header-panel>
+        </paper-header-panel>
     </template>
 
     <script>
-    Polymer("search-bar", {
+    Polymer({
 
-        enabled: false,
-        list: [],
-        searchInput: "",
-        status: "",
+        search: function() {
+            this.$.progress.hidden = false;
+            this.$.title.textContent = "searching ..";
+
+            this.list = [];
+
+            this.debounce("search", function() {
+                this.$.progress.hidden = true;
+                this.$.title.textContent = "notFound in input";
+
+                this.list = _patent.find({
+                    input: {
+                        $regex: this.$.input.value
+                    }
+                }).fetch();
+
+                if (this.list.length) {
+                    this.$.title.textContent = this.list.length + " patent exists";
+                }
+            }, 1000);
+        },
 
         filter: function() {
-            this.toastAlert("searchFilterNotFound");
+            document.querySelector("#polymer_toast").toast("filterNotFound");
         },
 
-        listChanged: function() {
-            if (!(this.list instanceof Array)) {
-                this.list = JSON.parse(this.list);
-            }
+        is: "search-bar",
 
-            // console.log(this.list);
-        },
-
-        listItemTap: function(event, detail, sender) {
-            var _id = $(sender).attr("tag"),
-                index = -1;
-
-            var item = _.find(this.list, function(item) {
-                index++;
-
-                return (_id == item._id);
-            });
-
-            if (item) {
-                document.querySelector("html /deep/ layout-inbox").downloadLinkz(this.list[index]);
-            }
-        },
-
-        publish: {
-            enabled: {
-                reflect: true,
+        properties: {
+            active: {
+                notify: true,
+                reflectToAttribute: true,
+                type: Boolean,
                 value: false
+            },
+            list: {
+                type: Array,
+                value: function() {
+                    return [];
+                }
             }
-        },
-
-        searchInputChanged: function() {
-            if (document.querySelector("html /deep/ layout-inbox")) {
-                this.status = "searching ..";
-
-                var _this = this;
-
-                _.debounce(function() {
-                    _this.list = [];
-                    _this.status = "notFound in local-store";
-
-                    var searchInput = _this.searchInput.toLowerCase(),
-                        searchList = document.querySelector("html /deep/ layout-inbox").list;
-
-                    if (searchInput.length && searchList.length) {
-                        for (var A = 0; A < searchList.length; A++) {
-                            $.merge(_this.list, _.filter(searchList[A].torrent_out, function(item) {
-                                return (-1 < item.title.toLowerCase().search(searchInput));
-                            }));
-                        }
-                    }
-                }, 800)();
-            }
-        },
-
-        toastAlert: function(alert) {
-            document.querySelector("html /deep/ #layout_inbox_toast").dismiss();
-
-            Meteor.setTimeout(function() {
-                document.querySelector("html /deep/ #layout_inbox_toast").text = alert;
-                document.querySelector("html /deep/ #layout_inbox_toast").show();
-            }, 400);
         },
 
         toggle: function() {
-            this.enabled = !this.enabled;
+            this.active = !this.active;
 
-            if (this.enabled) {
-                var _this = this;
-
-                Meteor.setTimeout(function() {
-                    _this.$.searchInput.focus();
+            if (this.active) {
+                this.async(function() {
+                    this.$.input.focus();
                 }, 400);
             }
         }
 
     });
     </script>
-</polymer-element>
+
+</dom-module>

@@ -1,72 +1,61 @@
-<polymer-element attributes="item selected" name="inbox-item">
+<dom-module id="inbox-item">
+
     <template>
-        <div center-justified horizontal layout>
-            <div class="li {{item.list_class}}" horizontal justified layout on-holdpulse="{{inboxItemHold}}" on-tap="{{inboxItemTap}}">
-                <div class="padding-4" self-start>
-                    <selectable-icon iconClass="{{item.category_class}}" iconText="{{item.linkz.length}}" id="selectableIcon" selected?="{{selected}}"></selectable-icon>
-                </div>
-                <div class="padding-4" flex layout vertical>
-                    <div auto-vertical class="lowercase"><span class="title">{{item.title}}</span>&nbsp;&nbsp;<b class="description">{{item.category}}</b></div>
-                    <div auto-vertical class="description" horizontal justified layout>
-                        <div>{{item.size}} | <b>{{item.peers}}</b> L / <b>{{item.seeds}}</b> S</div>
-                        <div class="overflow-hidden">{{item.fromNow}}</div>
-                    </div>
-                </div>
+        <paper-icon-item class="bg-white bordered cursor-p hover relative" on-tap="paperIconItemTap" style="align-items: flex-start;">
+            <div item-icon style="margin-top: 16px;">
+                <selectable-icon icon_class$="[[polymer_class(item.icon_class)]]" icon_text$="[[placeholder(item.icon_text)]]" id="selectableIcon" selected$="[[selected]]"></selectable-icon>
             </div>
-        </div>
+
+            <paper-item-body two-line style="margin-right: 0; min-height: 0; padding: 14px 0;">
+                <div><span>[[item.cc]]</span> <span>[[placeholder(item.input)]]</span> <span>[[item.kc]]</span></div>
+                <div class="lowercase" secondary>[[secondary(item)]]</div>
+            </paper-item-body>
+
+            <!-- <paper-ripple></paper-ripple> -->
+        </paper-icon-item>
     </template>
 
     <script>
-    Polymer("inbox-item", {
+    Polymer({
 
-        holding: false,
-        item: {},
-        selected: false,
+        is: "inbox-item",
 
-        inboxItemHold: function(event, detail, sender) {
-            if (this.holding || event.target == this.$.selectableIcon) {
-                return;
-            }
+        paperIconItemTap: function(e) {
+            if (Polymer.dom(e).localTarget.id != "selectableIcon") {
+                e.stopPropagation();
 
-            this.holding = true;
+                var patent_view = document.querySelector("#patent_view");
 
-            this.selected = !this.selected;
-            this.$.selectableIcon.fire("tap");
-
-            var _this = this;
-
-            Meteor.setTimeout(function() {
-                _this.holding = false;
-            }, 800);
-        },
-
-        inboxItemTap: function(event, detail, sender) {
-            if (event.target != this.$.selectableIcon) {
-                event.stopPropagation();
-
-                if (!this.holding) {
-                    document.querySelector("html /deep/ layout-inbox").downloadLinkz(this.item);
-                }
+                patent_view.item = this.item;
+                patent_view.toggle();
             }
         },
 
-        itemChanged: function() {
-            if (!(this.item instanceof Object)) {
-                this.item = JSON.parse(this.item);
-            }
-
-            this.item.fromNow = moment(this.item.time, "X").fromNow();
-
-            // console.log(this.item);
+        placeholder: function(text) {
+            return (text ? text : "#");
         },
 
-        publish: {
+        polymer_class: function(text) {
+            return (text ? polymer_color(text) : "grey-500");
+        },
+
+        properties: {
+            item: {
+                type: Object
+            },
             selected: {
-                reflect: true,
+                notify: true,
+                reflectToAttribute: true,
+                type: Boolean,
                 value: false
             }
+        },
+
+        secondary: function(item) {
+            return (item.legal_status ? item.legal_status : (item.uspto_error ? item.uspto_error : "#"));
         }
 
     });
     </script>
-</polymer-element>
+
+</dom-module>

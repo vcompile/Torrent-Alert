@@ -1,0 +1,44 @@
+<dom-module id="exit-controller">
+
+    <template>
+        <paper-dialog id="exit" style="width: 320px;">
+            <div>Are you sure you want to exit ?</div>
+
+            <div class="buttons">
+                <paper-button dialog-dismiss>
+                    <iron-icon icon="close"></iron-icon>
+                    cancel
+                </paper-button>
+                <paper-button dialog-confirm on-tap="exit">
+                    <iron-icon icon="check"></iron-icon>
+                    ok
+                </paper-button>
+            </div>
+        </paper-dialog>
+    </template>
+
+    <script>
+    Polymer({
+
+        _time: moment().format("x"),
+
+        is: "exit-controller",
+
+        exit: function() {
+            if (Meteor.isCordova) {
+                navigator.app.exitApp();
+            }
+        },
+
+        time: function(time) {
+            if ((parseInt(time) - parseInt(this._time)) < 1000) {
+                this.$.exit.open();
+            }
+
+            this._time = moment().format("x");
+        }
+
+    });
+    </script>
+
+</dom-module>

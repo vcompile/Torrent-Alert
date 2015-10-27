@@ -1,33 +1,36 @@
-<polymer-element name="polymer-ready">
-    <template></template>
+<dom-module id="polymer-ready">
+
+    <template>
+        <iron-localstorage id="clex_project" name="clex_project" on-iron-localstorage-load-empty="initialize" value="{{clex_project}}"></iron-localstorage>
+    </template>
 
     <script>
-    Polymer("polymer-ready", {
-        list: [],
+    Polymer({
 
-        domReady: function() {
-            Session.set("polymer-ready", true);
+        _clex_project_changed: function(item) {
+            Session.set("polymer-ready", (Session.get("polymer-ready") ? Session.get("polymer-ready") + 1 : 1));
+        },
 
-            if ($("#opt").val().polymer_color_db) {
-                polymer_color_db = $("#opt").val().polymer_color_db;
+        initialize: function() {
+            this.clex_project = [];
+        },
+
+        is: "polymer-ready",
+
+        observers: [
+            "_clex_project_changed(clex_project.splices)",
+        ],
+
+        properties: {
+            clex_project: {
+                type: Array,
+                value: function() {
+                    return [];
+                }
             }
-
-            if ($("#opt").val().list) {
-                this.list = $("#opt").val().list;
-            }
-
-            var _this = this;
-
-            Meteor.autorun(function() {
-                Session.set("view", Meteor.user() ? "inbox" : ((!Meteor.status().connected && _this.list.length) ? "inbox" : "signIn"));
-            });
-
-            Meteor.subscribe("torrent_out", {
-                torrent_in: _.map(_this.list, function(item) {
-                    return item._id
-                })
-            });
         }
+
     });
     </script>
-</polymer-element>
+
+</dom-module>
