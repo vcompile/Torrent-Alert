@@ -14,6 +14,14 @@
         padding: 16px;
     }
     
+    .circle {
+        border: 2px solid white;
+        border-radius: 50%;
+        margin-left: 2px;
+        margin-right: 2px;
+        padding: 2px;
+    }
+    
     .page-body {
         overflow: auto;
         padding: 24px;
@@ -35,9 +43,61 @@
     <template>
         <neon-animated-pages class="fit" selected="[[selected]]">
             <card-router id="router">
-                <div class="fit center-justified horizontal layout cyan-500">
+                <div class="center-justified cyan-500 fit horizontal layout">
                     <div class="layout li vertical">
-                        <div class="flex"></div>
+                        <neon-animated-pages class="flex" id="introduction" on-tap="introduction_tap" selected="1">
+                            <neon-animatable class="cyan-500 layout vertical">
+                                <div class="center-justified horizontal layout" style="padding: 32px 16px;">
+                                    <div>Torrent Sharing, offline support, etc</div>
+                                </div>
+                                <img class="flex" src="/img/0.png" style="object-fit: contain; overflow: hidden;">
+                                <div class="center-justified horizontal layout" style="padding: 8px;">
+                                    <div class="circle"></div>
+                                    <div class="circle white"></div>
+                                    <div class="circle white"></div>
+                                    <div class="circle white"></div>
+                                </div>
+                            </neon-animatable>
+
+                            <neon-animatable class="cyan-500 layout vertical">
+                                <div class="center-justified horizontal layout" style="padding: 32px 16px;">
+                                    <div>100+ site indexing &amp; in-built proxy</div>
+                                </div>
+                                <img class="flex" src="/img/1.png" style="object-fit: contain; overflow: hidden;">
+                                <div class="center-justified horizontal layout" style="padding: 8px;">
+                                    <div class="circle white"></div>
+                                    <div class="circle"></div>
+                                    <div class="circle white"></div>
+                                    <div class="circle white"></div>
+                                </div>
+                            </neon-animatable>
+
+                            <neon-animatable class="cyan-500 layout vertical">
+                                <div class="center-justified horizontal layout" style="padding: 32px 16px;">
+                                    <div>SemanticSearch in V2</div>
+                                </div>
+                                <img class="flex" src="/img/2.png" style="object-fit: contain; overflow: hidden;">
+                                <div class="center-justified horizontal layout" style="padding: 8px;">
+                                    <div class="circle white"></div>
+                                    <div class="circle white"></div>
+                                    <div class="circle"></div>
+                                    <div class="circle white"></div>
+                                </div>
+                            </neon-animatable>
+
+                            <neon-animatable class="cyan-500 layout vertical">
+                                <div class="center-justified horizontal layout" style="padding: 32px 16px;">
+                                    <div>Flexible Scheduler (96/day)</div>
+                                </div>
+                                <img class="flex" src="/img/3.png" style="object-fit: contain; overflow: hidden;">
+                                <div class="center-justified horizontal layout" style="padding: 8px;">
+                                    <div class="circle white"></div>
+                                    <div class="circle white"></div>
+                                    <div class="circle white"></div>
+                                    <div class="circle"></div>
+                                </div>
+                            </neon-animatable>
+                        </neon-animated-pages>
 
                         <div class="horizontal layout">
                             <div class="cursor-p flex white" on-click="sign_in" style="padding: 16px; text-align: center;">SIGN IN</div>
@@ -63,6 +123,14 @@
 
                             <div class="end-justified horizontal layout">
                                 <paper-button class="blue-500" on-click="sign_in_submit">submit</paper-button>
+                            </div>
+
+                            <br>
+
+                            <div class="horizontal layout">
+                                <img class="cursor-p" disabled src="/img/fb.png" style="opacity: 0.4;">
+                                <img class="cursor-p" on-click="google" src="/img/google-plus.png">
+                                <img class="cursor-p" disabled src="/img/twitter.png" style="opacity: 0.4;">
                             </div>
                         </div>
 
@@ -145,6 +213,50 @@
             this.selected = 0;
         },
 
+        google: function() {
+            var _this = this;
+
+            if (Meteor.isCordova) {
+                document.querySelector("#load_awesome").toggle();
+
+                Meteor.cordova_g_plus({
+                    cordova_g_plus: true,
+                    profile: ["email", "email_verified", "gender", "locale", "name", "picture", "sub"]
+                }, function(error) {
+                    if (error) {
+                        document.querySelector("#load_awesome").toggle();
+
+                        document.querySelector("#polymer_toast").toast(error);
+                    }
+                });
+            } else {
+                if (Accounts.loginServicesConfigured()) {
+                    Meteor.loginWithGoogle({
+                        requestOfflineToken: true,
+                        requestPermissions: ["email", "profile"]
+                    }, function(error) {
+                        if (error) {
+                            document.querySelector("#polymer_toast").toast("error code - " + Accounts.LoginCancelledError.numericError);
+                        }
+                    });
+                }
+            }
+        },
+
+        introduction_tap: function(e, d) {
+            var introduction = document.querySelector("#introduction");
+
+            if (d.x < $(window).width() / 2) {
+                if (0 < introduction.selected && introduction.selected <= 3) {
+                    introduction.selected = parseInt(introduction.selected) - 1;
+                }
+            } else {
+                if (0 <= introduction.selected && introduction.selected < 3) {
+                    introduction.selected = parseInt(introduction.selected) + 1;
+                }
+            }
+        },
+
         is: "user-check",
 
         properties: {
@@ -173,7 +285,23 @@
         },
 
         resend_enrollment_email_submit: function() {
-            document.querySelector("#polymer_toast").toast("sendEnrollmentEmailNotFound");
+            var valid_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
+
+            if (valid_email.test(this.email)) {
+                document.querySelector("#load_awesome").toggle();
+
+                Meteor.call("sendEnrollmentEmail", this.email, function(error, res) {
+                    document.querySelector("#load_awesome").toggle();
+
+                    if (error) {
+                        document.querySelector("#polymer_toast").toast(error.reason);
+                    } else {
+                        document.querySelector("#polymer_toast").toast(res);
+                    }
+                });
+            } else {
+                document.querySelector("#polymer_toast").toast("invalid email");
+            }
         },
 
         reset_password: function() {
@@ -191,7 +319,7 @@
 
             if (valid_email.test(this.email)) {
                 Accounts.forgotPassword({
-                    email: _this.email
+                    email: this.email
                 }, function(error) {
                     if (error) {
                         document.querySelector("#polymer_toast").toast(error.reason);

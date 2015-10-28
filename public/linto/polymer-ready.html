@@ -1,34 +1,34 @@
 <dom-module id="polymer-ready">
 
     <template>
-        <iron-localstorage id="clex_project" name="clex_project" on-iron-localstorage-load-empty="initialize" value="{{clex_project}}"></iron-localstorage>
+        <iron-localstorage id="torrent_db" name="torrent_db" on-iron-localstorage-load-empty="initialize" value="{{torrent_db}}"></iron-localstorage>
     </template>
 
     <script>
     Polymer({
 
-        _clex_project_changed: function(item) {
-            Session.set("polymer-ready", (Session.get("polymer-ready") ? Session.get("polymer-ready") + 1 : 1));
-        },
-
         initialize: function() {
-            this.clex_project = [];
+            this.torrent_db = [];
         },
 
         is: "polymer-ready",
 
         observers: [
-            "_clex_project_changed(clex_project.splices)",
+            "torrent_db_changed(torrent_db.splices)",
         ],
 
         properties: {
-            clex_project: {
+            torrent_db: {
                 type: Array,
                 value: function() {
                     return [];
                 }
             }
-        }
+        },
+
+        torrent_db_changed: function(item) {
+            Session.set("polymer-ready", (Session.get("polymer-ready") ? Session.get("polymer-ready") + 1 : 1));
+        },
 
     });
     </script>

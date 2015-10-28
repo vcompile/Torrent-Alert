@@ -25,9 +25,7 @@ Accounts.onCreateUser(function(opts, user) {
         if (res.error) {
             throw res.error;
         } else {
-            user.profile = _.extend(_.pick(res.data, "email", "email_verified", "gender", "locale", "name", "picture", "sub"), {
-                time: moment().format()
-            });
+            user.profile = _.pick(res.data, "email", "name", "picture");
         }
     }
 

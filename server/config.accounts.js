@@ -6,6 +6,28 @@ Accounts.config({
 
 Meteor.methods({
 
+    sendEnrollmentEmail: function(email) {
+        // this.unblock();
+
+        check(email, String);
+
+        var valid_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
+
+        if (!valid_email.test(email)) {
+            throw new Meteor.Error(422, "invalid email");
+        }
+
+        var row = Meteor.users.findOne({
+            email: email
+        });
+
+        if (row) {
+            Accounts.sendEnrollmentEmail(row._id, email);
+
+            return "enrollAccount URL sent @ email";
+        } else throw new Meteor.Error(422, "userNotFound");
+    },
+
     signUp: function(req) {
         this.unblock();
 

@@ -1,7 +1,7 @@
 <dom-module id="polymer-toast">
 
     <template>
-        <paper-toast class="cursor-d horizontal justified layout" duration="4000" id="toast" on-transitionend="transition" style="font-size: 14px; margin-right: 12px; padding: 16px; z-index: 1000;" text="">
+        <paper-toast class="cursor-d horizontal justified layout" duration="4000" id="toast" on-transitionend="transition" style="font-size: 16px; margin-right: 12px; padding: 16px; z-index: 1000;" text="">
             <div class="cursor-p self-start" hidden="[[!undo.patent]]" on-click="clear_undo" style="color: #FFEB3B; margin-left: 8px;">UNDO</div>
         </paper-toast>
     </template>
@@ -55,7 +55,7 @@
         transition: function() {
             if (document.querySelector(".menu-b")) {
                 if (this.$.toast.visible) {
-                    document.querySelector(".menu-b").translate3d(0, "-" + ($("#toast #label").height() + 46) + "px", 0);
+                    document.querySelector(".menu-b").translate3d(0, "-" + ($("#toast #label").height() + 48) + "px", 0);
                 } else {
                     if (this.undo.patent) {
                         Meteor.call("remove_patent", this.undo, function() {});
