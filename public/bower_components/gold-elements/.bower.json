@@ -38,6 +38,5 @@
   },
   "_source": "git://github.com/polymerelements/gold-elements.git",
   "_target": "~1.0.1",
-  "_originalSource": "polymerelements/gold-elements",
-  "_direct": true
+  "_originalSource": "polymerelements/gold-elements"
 }

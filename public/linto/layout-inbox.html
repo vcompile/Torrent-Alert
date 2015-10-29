@@ -84,44 +84,51 @@
     .undo {
         display: none!important;
     }
+    
+    .primary-text {
+        font-size: 16px;
+        line-height: 24px;
+    }
+    
+    .secondary-text {
+        color: #757575;
+        font-size: 14px;
+        line-height: 20px;
+    }
     </style>
 
     <template>
         <paper-drawer-panel id="drawer">
             <paper-header-panel drawer>
-                <template if="[[user._id]]" is="dom-if">
-                    <paper-icon-item class="cursor-p hover menu-li relative" on-click="user_opt">
-                        <div item-icon>
-                            <selectable-icon icon_img_src="/img/user.png"></selectable-icon>
+                <div class="fit layout vertical">
+                    <template if="[[user._id]]" is="dom-if">
+                        <div class="cursor-p horizontal hover justified layout menu-li relative" style="border">
+                            <div style="padding: 16px; padding-right: 8px;">
+                                <selectable-icon icon_img_src$="[[placeholder_user_img(user.profile.picture)]]"></selectable-icon>
+                            </div>
+
+                            <div class="flex layout vertical" style="padding: 16px; padding-left: 8px;">
+                                <div class="horizontal justified layout">
+                                    <div class="etc flex primary-text self-center">[[user.profile.name]]</div>
+                                    <div class="secondary-text self-start">12</div>
+                                </div>
+                                <div class="etc secondary-text">[[user.profile.email]]</div>
+                            </div>
+
+                            <paper-ripple></paper-ripple>
                         </div>
-
-                        <paper-item-body two-line style="margin-right: 0; min-height: 0; padding: 14px 0;">
-                            <div>[[user.profile.name]]</div>
-                            <div secondary>[[user.profile.email]]</div>
-                        </paper-item-body>
-
-                        <paper-ripple></paper-ripple>
-                    </paper-icon-item>
-                </template>
-
-                <iron-selector attr-for-selected="item" id="menu_opt" on-iron-select="menu_opt" selectable="menu-item" selected-attribute="selected">
-                    <template is="dom-repeat" items="[[project]]">
-                        <menu-item item$="[[item]]"></menu-item>
                     </template>
-                </iron-selector>
 
-                <paper-icon-item class="cursor-p hover menu-li relative" onclick="window.open('http://github.com/HedCET/clex', '_system')">
-                    <div item-icon>
-                        <selectable-icon icon_img_src="/img/github.png"></selectable-icon>
+                    <div class="flex">
+                        <iron-selector attr-for-selected="item" id="menu_opt" on-iron-select="menu_opt" selectable="menu-item" selected-attribute="selected">
+                            <template is="dom-repeat" items="[[project]]">
+                                <menu-item item$="[[item]]"></menu-item>
+                            </template>
+                        </iron-selector>
                     </div>
 
-                    <paper-item-body two-line style="margin-right: 0; min-height: 0; padding: 14px 0;">
-                        <div>open source</div>
-                        <div secondary>build break develop</div>
-                    </paper-item-body>
-
-                    <paper-ripple></paper-ripple>
-                </paper-icon-item>
+                    <div class="cursor-p menu-li" onclick="window.open('http://vcompile.com/torrentz')" style="padding: 16px;">About TorrentAlert</div>
+                </div>
             </paper-header-panel>
 
             <paper-header-panel main>
@@ -129,7 +136,7 @@
                     <paper-icon-button class="selection-visible" icon="arrow-back" on-click="clear_patent_selection"></paper-icon-button>
                     <paper-icon-button class="selection-hidden" icon="menu" on-click="menuToggle"></paper-icon-button>
 
-                    <div class="title" id="main_toolbar_title">project-store</div>
+                    <div class="title" id="main_toolbar_title">TorrentAlert</div>
 
                     <paper-icon-button class="selection-visible" icon="delete" on-click="remove_patent"></paper-icon-button>
                     <paper-icon-button class="selection-visible" icon="more-vert" on-click="more_opt"></paper-icon-button>
@@ -183,7 +190,7 @@
             </paper-header-panel>
         </paper-drawer-panel>
 
-        <paper-fab class="menu-b" id="fab" icon="add"></paper-fab>
+        <paper-fab class="menu-b" id="fab" icon="add" on-click="add_project"></paper-fab>
 
         <paper-dialog id="add_prompt" style="width: 320px;">
             <div>Are you sure you want to add this item ?</div>
@@ -235,11 +242,20 @@
             </div>
         </paper-dialog>
 
+        <add-project id="add_project"></add-project>
         <search-bar id="search_bar"></search-bar>
     </template>
 
     <script>
     Polymer({
+
+        add_project: function() {
+            this.$.add_project.toggle();
+        },
+
+        placeholder_user_img: function(A) {
+            return A ? A : "/img/user.png";
+        },
 
         add_ok: function() {
             switch (this.$.add_prompt.dataset.opt) {
@@ -326,7 +342,7 @@
         ],
 
         patent_selected_changed: function(change) {
-            this.$.main_toolbar_title.textContent = (this.patent_selected.length ? this.patent_selected.length : "project-store");
+            this.$.main_toolbar_title.textContent = (this.patent_selected.length ? this.patent_selected.length : "TorrentAlert");
 
             this.$.main_toolbar.toggleClass("grey-500", this.patent_selected.length);
             this.$.main_toolbar.toggleClass("selection", this.patent_selected.length);

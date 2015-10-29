@@ -1,0 +1,130 @@
+<dom-module id="add-project">
+
+    <style>
+    :host {
+        display: none;
+    }
+    
+    :host([active]) {
+        display: block;
+    }
+    
+    paper-button {
+        margin: 0;
+        min-width: 50%;
+        padding: 16px;
+    }
+    
+    paper-toolbar {
+        --paper-toolbar-background: white;
+        --paper-toolbar-color: black;
+    }
+    
+    paper-toolbar paper-icon-button {
+        margin: 0!important;
+    }
+    
+    paper-toolbar .title {
+        padding: 0 12px;
+    }
+    </style>
+
+    <template>
+        <paper-header-panel class="fit" style="background: white; z-index: 1;">
+            <paper-toolbar>
+                <paper-icon-button icon="arrow-back" on-click="toggle"></paper-icon-button>
+                <div class="title">scheduler</div>
+                <!-- <paper-icon-button icon="more-vert"></paper-icon-button> -->
+            </paper-toolbar>
+
+            <div class="center-justified horizontal layout">
+                <div class="li" style="padding: 24px;">
+                    <paper-input auto-validate label="keyword" required value="[[input]]"></paper-input>
+
+                    <br>
+
+                    <div class="center horizontal justified layout">
+                        <div class="cursor-d flex" style="text-align: right;">min leech count</div>
+                        <paper-slider class="flex" editable max="1000" min="1" value="[[leech]]"></paper-slider>
+                    </div>
+                    <div class="center horizontal justified layout">
+                        <div class="cursor-d flex" style="text-align: right;">min seed count</div>
+                        <paper-slider class="flex" editable max="1000" min="1" value="[[seed]]"></paper-slider>
+                    </div>
+
+                    <br>
+
+                    <div class="end-justified horizontal layout">
+                        <div class="cursor-d" on-click="date_picker_open">within <span style="border-bottom: 2px solid #AAA;">[[within]]</span> month</div>
+                    </div>
+                    <br>
+
+                    <div class="end-justified horizontal layout">
+                        <paper-button class="blue-500" on-click="submit">submit</paper-button>
+                    </div>
+                </div>
+            </div>
+        </paper-header-panel>
+
+        <paper-dialog class="paper-date-picker-dialog" id="date_picker" modal on-iron-overlay-closed="date_picker_close">
+            <paper-date-picker id="date"></paper-date-picker>
+
+            <div class="buttons">
+                <paper-button dialog-dismiss>cancel</paper-button>
+                <paper-button dialog-confirm>ok</paper-button>
+            </div>
+        </paper-dialog>
+    </template>
+
+    <script>
+    Polymer({
+
+        date_picker_close: function() {
+            if (this.$.date.date) {
+                var A = Math.ceil(moment.duration(moment().diff(moment(this.$.date.date))).asMonths());
+
+                if (0 < A && A < 48) {
+                    this.within = A;
+                }
+            }
+        },
+
+        date_picker_open: function() {
+            this.$.date_picker.open();
+        },
+
+        is: "add-project",
+
+        properties: {
+            active: {
+                notify: true,
+                reflectToAttribute: true,
+                type: Boolean,
+                value: false
+            },
+            input: {
+                type: String,
+                value: ""
+            },
+            leech: {
+                type: Number,
+                value: 1
+            },
+            seed: {
+                type: Number,
+                value: 1
+            },
+            within: {
+                type: Number,
+                value: 6
+            }
+        },
+
+        toggle: function() {
+            this.active = !this.active;
+        }
+
+    });
+    </script>
+
+</dom-module>
