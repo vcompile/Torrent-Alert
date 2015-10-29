@@ -5,8 +5,7 @@
         "load-awesome": "~1.1.0",
         "neon-elements": "PolymerElements/neon-elements#~1.0.0",
         "paper-elements": "PolymerElements/paper-elements#~1.0.5",
-        "polymer": "Polymer/polymer#^1.0.0",
-        "Swiper": "swiper#~3.1.7"
+        "polymer": "Polymer/polymer#^1.0.0"
     },
     "name": "polymer-1.0",
     "version": "1.7.5"

@@ -28,21 +28,19 @@ Meteor.methods({
         } else throw new Meteor.Error(422, "userNotFound");
     },
 
-    signUp: function(req) {
+    signUp: function(email) {
         this.unblock();
 
-        check(req, {
-            email: String
-        });
+        check(email, String);
 
         var valid_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
 
-        if (!valid_email.test(req.email)) {
+        if (!valid_email.test(email)) {
             throw new Meteor.Error(422, "invalid email");
         }
 
         var _id = Accounts.createUser({
-            email: req.email
+            email: email
         })
 
         var row = Meteor.users.findOne({
@@ -55,7 +53,7 @@ Meteor.methods({
             }, {
                 $set: {
                     profile: {
-                        email: req.email,
+                        email: email,
                         name: "user"
                     }
                 }

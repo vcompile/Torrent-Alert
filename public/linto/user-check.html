@@ -50,7 +50,7 @@
             <card-router id="router">
                 <div class="center-justified cyan-500 fit horizontal layout">
                     <div class="layout li vertical">
-                        <neon-animated-pages class="flex" id="swiper" on-tap="swiper_tap" selected="1">
+                        <neon-animated-pages class="flex" id="swiper" on-tap="swiper_tap" selected="3">
                             <neon-animatable class="cyan-500 layout vertical">
                                 <div class="center-justified horizontal layout" style="padding: 32px 16px;">
                                     <div>Torrent Sharing, offline support, etc</div>
@@ -373,7 +373,7 @@
             if (valid_email.test(this.email)) {
                 document.querySelector("#load_awesome").toggle();
 
-                Meteor.call("signUp", email, function(error, res) {
+                Meteor.call("signUp", this.email, function(error, res) {
                     document.querySelector("#load_awesome").toggle();
 
                     if (error) {
