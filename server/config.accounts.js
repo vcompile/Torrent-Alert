@@ -54,7 +54,8 @@ Meteor.methods({
                 $set: {
                     profile: {
                         email: email,
-                        name: "user"
+                        name: "user",
+                        picture: "/img/user.png"
                     }
                 }
             });

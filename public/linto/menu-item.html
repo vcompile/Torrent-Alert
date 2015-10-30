@@ -5,33 +5,39 @@
         border-bottom: 2px solid #EEE;
         border-top: 2px solid #EEE;
     }
+    
+    .primary-text {
+        font-size: 16px;
+        line-height: 24px;
+    }
+    
+    .secondary-text {
+        color: #757575;
+        font-size: 14px;
+        line-height: 20px;
+    }
     </style>
 
     <template>
-        <paper-icon-item class="cursor-p hover menu-li relative" on-tap="paperIconItemTap">
-            <div item-icon>
-                <selectable-icon icon_class$="[[icon_class(item.name)]]" icon_text$="[[icon_count(item.patent.length)]]"></selectable-icon>
+        <div class="cursor-p horizontal hover justified layout menu-li relative" style="border">
+            <div style="padding: 16px; padding-right: 8px;">
+                <selectable-icon icon_class$="[[return_class(item.keyword)]]" icon_text$="[[return_icon_text(item.keyword)]]"></selectable-icon>
             </div>
 
-            <paper-item-body style="margin-right: 0; min-height: 0; padding: 14px 0;" two-line>
-                <div>[[item.name]]</div>
-                <div secondary>[[item.time]]</div>
-            </paper-item-body>
+            <div class="flex layout vertical" style="padding: 16px; padding-left: 8px;">
+                <div class="horizontal justified layout">
+                    <div class="etc flex primary-text self-center">[[item.keyword]]</div>
+                    <div class="secondary-text self-start">[[return_count(item.torrent.length)]]</div>
+                </div>
+                <div class="etc secondary-text">[[return_description(item)]]</div>
+            </div>
 
             <paper-ripple></paper-ripple>
-        </paper-icon-item>
+        </div>
     </template>
 
     <script>
     Polymer({
-
-        icon_class: function(text) {
-            return polymer_color(text);
-        },
-
-        icon_count: function(count) {
-            return (count ? count : "#");
-        },
 
         is: "menu-item",
 
@@ -43,6 +49,22 @@
             item: {
                 type: Object
             }
+        },
+
+        return_class: function(text) {
+            return polymer_color(text);
+        },
+
+        return_count: function(count) {
+            return (count ? count : "#");
+        },
+
+        return_icon_text: function(text) {
+            return (isNaN(text.charAt(0)) ? text.charAt(0) : "#");
+        },
+
+        return_description: function(item) {
+            return (item.worker == "schedule" ? item.within + "M | " + item.leech + "L / " + item.seed + "S" : moment(item.time).format("YYYY-MMM-DD ddd"));
         }
 
     });

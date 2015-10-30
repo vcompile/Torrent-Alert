@@ -1,4 +1,4 @@
-<dom-module id="add-project">
+<dom-module id="add-keyword">
 
     <style>
     :host {
@@ -39,17 +39,17 @@
 
             <div class="center-justified horizontal layout">
                 <div class="li" style="padding: 24px;">
-                    <paper-input auto-validate label="keyword" required value="[[input]]"></paper-input>
+                    <paper-input auto-validate label="keyword" required value="{{keyword}}"></paper-input>
 
                     <br>
 
                     <div class="center horizontal justified layout">
                         <div class="cursor-d flex" style="text-align: right;">min leech count</div>
-                        <paper-slider class="flex" editable max="1000" min="1" value="[[leech]]"></paper-slider>
+                        <paper-slider class="flex" editable max="1000" min="1" value="{{leech}}"></paper-slider>
                     </div>
                     <div class="center horizontal justified layout">
                         <div class="cursor-d flex" style="text-align: right;">min seed count</div>
-                        <paper-slider class="flex" editable max="1000" min="1" value="[[seed]]"></paper-slider>
+                        <paper-slider class="flex" editable max="1000" min="1" value="{{seed}}"></paper-slider>
                     </div>
 
                     <br>
@@ -93,7 +93,7 @@
             this.$.date_picker.open();
         },
 
-        is: "add-project",
+        is: "add-keyword",
 
         properties: {
             active: {
@@ -118,6 +118,43 @@
                 type: Number,
                 value: 6
             }
+        },
+
+        submit: function() {
+            this.keyword = decodeURIComponent(this.keyword).trim();
+            var keywordArray = (this.keyword.split("/").filter(Boolean).reverse()[0] || "").trim().split(/\?[fq]=/g);
+
+            if (this.keyword.length) {
+                var row = {
+                    keyword: ((1 < keywordArray.length) ? keywordArray[1] : keywordArray[0]),
+                    leech: parseInt(this.leech),
+                    seed: parseInt(this.seed),
+                    url: ((1 < keywordArray.length) ? keywordArray[0] : "search"),
+                    within: parseInt(this.within),
+                    worker: "schedule"
+                };
+
+                if (Meteor.status().connected) {
+                    Meteor.call("insert_keyword", row, function(error, response) {
+                        if (error) {
+                            document.querySelector("#polymer_toast").toast((error.reason == "userNotFound") ? "internet/user required" : error.reason);
+                        } else {
+                            document.querySelector("#polymer_toast").toast(response);
+                        }
+                    });
+                } else {
+                    document.querySelector("#polymer_toast").toast("internet/user required");
+                }
+
+                this.toggle();
+            } else {
+                document.querySelector("#polymer_toast").toast("empty keyword");
+            }
+
+            this.keyword = "";
+            this.leech = 1;
+            this.seed = 1;
+            this.within = 6;
         },
 
         toggle: function() {

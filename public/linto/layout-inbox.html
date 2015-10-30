@@ -74,17 +74,6 @@
         transform: translate3d(0, 80px, 0)!important;
     }
     
-    .project_name {
-        background: transparent;
-        border: none;
-        font-size: 16px;
-        padding: 16px 8px;
-    }
-    
-    .undo {
-        display: none!important;
-    }
-    
     .primary-text {
         font-size: 16px;
         line-height: 24px;
@@ -95,6 +84,10 @@
         font-size: 14px;
         line-height: 20px;
     }
+    
+    .undo {
+        display: none!important;
+    }
     </style>
 
     <template>
@@ -104,7 +97,7 @@
                     <template if="[[user._id]]" is="dom-if">
                         <div class="cursor-p horizontal hover justified layout menu-li relative" style="border">
                             <div style="padding: 16px; padding-right: 8px;">
-                                <selectable-icon icon_img_src$="[[placeholder_user_img(user.profile.picture)]]"></selectable-icon>
+                                <selectable-icon icon_img_src$="[[user.profile.picture]]"></selectable-icon>
                             </div>
 
                             <div class="flex layout vertical" style="padding: 16px; padding-left: 8px;">
@@ -133,14 +126,14 @@
 
             <paper-header-panel main>
                 <paper-toolbar id="main_toolbar">
-                    <paper-icon-button class="selection-visible" icon="arrow-back" on-click="clear_patent_selection"></paper-icon-button>
+                    <paper-icon-button class="selection-visible" icon="arrow-back" on-click="clear_torrent_selection"></paper-icon-button>
                     <paper-icon-button class="selection-hidden" icon="menu" on-click="menuToggle"></paper-icon-button>
 
                     <div class="title" id="main_toolbar_title">TorrentAlert</div>
 
-                    <paper-icon-button class="selection-visible" icon="delete" on-click="remove_patent"></paper-icon-button>
-                    <paper-icon-button class="selection-visible" icon="more-vert" on-click="more_opt"></paper-icon-button>
-                    <paper-icon-button class="selection-hidden" icon="search" on-click="search"></paper-icon-button>
+                    <paper-icon-button class="selection-visible" icon="delete" on-click="remove_torrent"></paper-icon-button>
+                    <paper-icon-button class="selection-visible" icon="social:share" on-click="share"></paper-icon-button>
+                    <paper-icon-button class="selection-hidden" icon="search" on-click="search_bar"></paper-icon-button>
                 </paper-toolbar>
 
                 <neon-animated-pages class="fit" id="main_page" selected="1">
@@ -151,33 +144,33 @@
                     <neon-animatable>
                         <div class="center-justified horizontal layout">
                             <div class="li">
-                                <iron-selector attr-for-selected="item" multi selectable="inbox-item" selected-attribute="selected" selected-values="{{patent_selected}}">
-                                    <template as="project" is="dom-repeat" items="[[project]]">
-                                        <template if="[[project_selected(menu_selected, project._id)]]" is="dom-if">
+                                <iron-selector attr-for-selected="item" multi selectable="inbox-item" selected-attribute="selected" selected-values="{{torrent_selected}}">
+                                    <template is="dom-repeat" items="[[project]]">
+                                        <template if="[[project_selected(menu_selected, item._id)]]" is="dom-if">
                                             <div class="bordered center horizontal justified layout">
-                                                <input class="flex project_name" data-_id$="[[project._id]]" on-change="change_project_name" placeholder="project_name" value="{{project.name}}">
+                                                <div class="flex" style="padding: 16px;">[[item.keyword]]</div>
 
-                                                <paper-menu-button horizontal-align="right" style="margin-right: 8px;">
-                                                    <paper-icon-button class="dropdown-trigger" icon="cloud-queue"></paper-icon-button>
-                                                    <paper-menu class="dropdown-content" on-iron-select="project_opt">
-                                                        <paper-item class="cursor-p" data-_id$="[[project._id]]" data-opt="collaborate">Collaborate</paper-item>
-                                                        <paper-item class="cursor-p" data-_id$="[[project._id]]" data-opt="export">Export</paper-item>
-                                                        <paper-item class="cursor-p" data-_id$="[[project._id]]" data-opt="uspto_sc">SC</paper-item>
-                                                        <paper-item class="cursor-p" data-_id$="[[project._id]]" data-opt="uspto_ifw">SC &amp; IFW</paper-item>
-                                                        <paper-item class="cursor-p" data-_id$="[[project._id]]" data-opt="uspto_fee">Fee biblio</paper-item>
-                                                        <paper-item class="cursor-p" data-_id$="[[project._id]]" data-opt="trash">Trash</paper-item>
-                                                        <paper-item class="cursor-p" data-_id$="[[project._id]]" data-opt="worker">Worker</paper-item>
-                                                    </paper-menu>
-                                                </paper-menu-button>
+                                                <paper-icon-button class="selection-hidden" data-id$="[[item._id]]" icon="close" hidden="[[isSchedule(item.worker)]]" on-click="remove_project" style="margin-right: 8px;"></paper-icon-button>
+
+                                                <template if="[[isSchedule(item.worker)]]" is="dom-if">
+                                                    <paper-menu-button horizontal-align="right" style="margin-right: 8px;">
+                                                        <paper-icon-button class="dropdown-trigger" icon="more-vert"></paper-icon-button>
+
+                                                        <paper-menu class="dropdown-content" on-iron-select="project_opt">
+                                                            <paper-item class="cursor-p" data-id$="[[item._id]]" data-opt="remove">Remove</paper-item>
+                                                            <paper-item class="cursor-p" data-id$="[[item._id]]" data-opt="schedule">Schedule</paper-item>
+                                                        </paper-menu>
+                                                    </paper-menu-button>
+                                                </template>
                                             </div>
 
                                             <div style="padding: 0 4px;">
-                                                <paper-progress data-project_progress$="[[project._id]]" hidden style="width: 100%;"></paper-progress>
+                                                <paper-progress data-progress$="[[item._id]]" hidden style="width: 100%;"></paper-progress>
                                             </div>
 
-                                            <template as="patent" is="dom-repeat" items="[[project.patent]]">
-                                                <inbox-item item$="[[patent]]"></inbox-item>
-                                            </template>
+                                            <!-- <template as="torrent" is="dom-repeat" items="[[item.torrent]]">
+                                                <inbox-item item$="[[torrent]]"></inbox-item>
+                                            </template> -->
                                         </template>
                                     </template>
                                 </iron-selector>
@@ -190,42 +183,7 @@
             </paper-header-panel>
         </paper-drawer-panel>
 
-        <paper-fab class="menu-b" id="fab" icon="add" on-click="add_project"></paper-fab>
-
-        <paper-dialog id="add_prompt" style="width: 320px;">
-            <div>Are you sure you want to add this item ?</div>
-
-            <div class="buttons">
-                <paper-button dialog-dismiss>
-                    <iron-icon icon="close"></iron-icon>
-                    cancel
-                </paper-button>
-                <paper-button on-click="add_ok">
-                    <iron-icon icon="check"></iron-icon>
-                    ok
-                </paper-button>
-            </div>
-        </paper-dialog>
-
-        <paper-dialog id="ifw_prompt" style="width: 320px;">
-            <ul style="list-style: inside;">
-                <li>Each entry separated by semi-colon</li>
-                <li>Leave it empty to download whole IFW</li>
-            </ul>
-
-            <paper-textarea id="ifw_document_code" label="IFW document code" value=""></paper-textarea>
-
-            <div class="buttons">
-                <paper-button dialog-dismiss>
-                    <iron-icon icon="close"></iron-icon>
-                    cancel
-                </paper-button>
-                <paper-button on-click="ifw_ok">
-                    <iron-icon icon="check"></iron-icon>
-                    ok
-                </paper-button>
-            </div>
-        </paper-dialog>
+        <paper-fab class="menu-b" id="fab" icon="add" on-click="add_keyword"></paper-fab>
 
         <paper-dialog id="remove_prompt" style="width: 320px;">
             <div>Are you sure to delete this item ?</div>
@@ -242,77 +200,23 @@
             </div>
         </paper-dialog>
 
-        <add-project id="add_project"></add-project>
+        <add-keyword id="add_keyword"></add-keyword>
         <search-bar id="search_bar"></search-bar>
     </template>
 
     <script>
     Polymer({
 
-        add_project: function() {
-            this.$.add_project.toggle();
+        add_keyword: function() {
+            this.$.add_keyword.toggle();
         },
 
-        placeholder_user_img: function(A) {
-            return A ? A : "/img/user.png";
+        clear_torrent_selection: function() {
+            this.torrent_selected = [];
         },
 
-        add_ok: function() {
-            switch (this.$.add_prompt.dataset.opt) {
-                case "uspto_fee":
-                    Meteor.call("uspto_fee", this.$.add_prompt.dataset._id, function(error, response) {
-                        if (error) {
-                            document.querySelector("#polymer_toast").toast(error.reason);
-                        } else {
-                            document.querySelector("#polymer_toast").toast(response);
-                        }
-                    });
-                    break;
-
-                case "uspto_sc":
-                    Meteor.call("uspto_sc", this.$.add_prompt.dataset._id, function(error, response) {
-                        if (error) {
-                            document.querySelector("#polymer_toast").toast(error.reason);
-                        } else {
-                            document.querySelector("#polymer_toast").toast(response);
-                        }
-                    });
-                    break;
-            }
-
-            this.$.add_prompt.close();
-        },
-
-        change_project_name: function(e) {
-            Meteor.call("change_project_name", {
-                project_id: Polymer.dom(e).localTarget.dataset._id,
-                project_name: Polymer.dom(e).localTarget.value
-            }, function(error, response) {
-                if (error) {
-                    document.querySelector("#polymer_toast").toast(error.reason);
-                } else {
-                    document.querySelector("#polymer_toast").toast(response);
-                }
-            });
-        },
-
-        clear_patent_selection: function() {
-            this.patent_selected = [];
-        },
-
-        ifw_ok: function() {
-            Meteor.call("uspto_ifw", {
-                ifw: this.$.ifw_document_code.value,
-                project: this.$.ifw_prompt.dataset._id
-            }, function(error, response) {
-                if (error) {
-                    document.querySelector("#polymer_toast").toast(error.reason);
-                } else {
-                    document.querySelector("#polymer_toast").toast(response);
-                }
-            });
-
-            this.$.ifw_prompt.close();
+        isSchedule: function(worker) {
+            return (worker == "schedule")
         },
 
         is: "layout-inbox",
@@ -333,77 +237,28 @@
             this.menu_selected = document.querySelector("#menu_opt").selected._id;
         },
 
-        more_opt: function() {
-            document.querySelector("#polymer_toast").toast("moreOptNotFound");
-        },
-
         observers: [
-            "patent_selected_changed(patent_selected.splices)"
+            "torrent_selected_changed(torrent_selected.splices)"
         ],
 
-        patent_selected_changed: function(change) {
-            this.$.main_toolbar_title.textContent = (this.patent_selected.length ? this.patent_selected.length : "TorrentAlert");
+        torrent_selected_changed: function(change) {
+            this.$.main_toolbar_title.textContent = (this.torrent_selected.length ? this.torrent_selected.length : "TorrentAlert");
 
-            this.$.main_toolbar.toggleClass("grey-500", this.patent_selected.length);
-            this.$.main_toolbar.toggleClass("selection", this.patent_selected.length);
+            this.$.main_toolbar.toggleClass("grey-500", this.torrent_selected.length);
+            this.$.main_toolbar.toggleClass("selection", this.torrent_selected.length);
 
-            this.$.fab.toggleClass("move-down", this.patent_selected.length);
+            this.$.fab.toggleClass("move-down", this.torrent_selected.length);
         },
 
         project_opt: function(e, d) {
             switch (d.item.dataset.opt) {
-                case "collaborate":
-                    document.querySelector("#polymer_toast").toast("collaborateNotFound");
+                case "remove":
+                    // remove_project
+                    document.querySelector("#polymer_toast").toast("remove");
                     break;
 
-                case "export":
-                    Meteor.call("export", d.item.dataset._id, function(error, response) {
-                        if (error) {
-                            document.querySelector("#polymer_toast").toast(error.reason);
-                        } else {
-                            window.open(response);
-                        }
-                    });
-
-                    document.querySelector("#polymer_toast").toast("exporting to xlsx");
-                    break;
-
-                case "uspto_fee":
-                    this.async(function() {
-                        this.$.add_prompt.dataset._id = d.item.dataset._id;
-                        this.$.add_prompt.dataset.opt = "uspto_fee";
-
-                        this.$.add_prompt.open();
-                    }, 200);
-                    break;
-
-                case "uspto_ifw":
-                    this.async(function() {
-                        this.$.ifw_prompt.dataset._id = d.item.dataset._id;
-
-                        this.$.ifw_prompt.open();
-                    }, 200);
-                    break;
-
-                case "uspto_sc":
-                    this.async(function() {
-                        this.$.add_prompt.dataset._id = d.item.dataset._id;
-                        this.$.add_prompt.dataset.opt = "uspto_sc";
-
-                        this.$.add_prompt.open();
-                    }, 200);
-                    break;
-
-                case "trash":
-                    this.async(function() {
-                        this.$.remove_prompt.dataset._id = d.item.dataset._id;
-
-                        this.$.remove_prompt.open();
-                    }, 200);
-                    break;
-
-                case "worker":
-                    document.querySelector("#polymer_toast").toast("workerNotFound");
+                case "schedule":
+                    document.querySelector("#polymer_toast").toast("schedule");
                     break;
             }
         },
@@ -417,7 +272,7 @@
                 type: String,
                 value: ""
             },
-            patent_selected: {
+            torrent_selected: {
                 type: Array,
                 value: function() {
                     return [];
@@ -426,7 +281,15 @@
             project: {
                 type: Array,
                 value: function() {
-                    return [];
+                    return [{
+                        _id: "12345",
+                        keyword: "All Type Character",
+                        time: moment().format(),
+                        torrent: [{
+                            title: "12345"
+                        }],
+                        worker: "search"
+                    }];
                 }
             },
             user: {
@@ -452,15 +315,15 @@
 
             // _this.project = ; // local-store
 
-            _worker.find().observe({
-                added: function() {
-                    project_progress();
-                },
+            // _worker.find().observe({
+            //     added: function() {
+            //         project_progress();
+            //     },
 
-                removed: function(old) {
-                    project_progress();
-                }
-            });
+            //     removed: function(old) {
+            //         project_progress();
+            //     }
+            // });
 
             _project.find().observe({
                 added: function(row) {
@@ -469,16 +332,16 @@
                     });
 
                     if (!item) {
-                        for (var A = 0; A < row.patent.length; A++) {
-                            var item = _patent.findOne({
-                                _id: row.patent[A]
+                        for (var A = 0; A < row.torrent.length; A++) {
+                            var item = _torrent.findOne({
+                                _id: row.torrent[A]
                             });
 
-                            row.patent[A] = (item ? item : {
-                                _id: row.patent[A]
+                            row.torrent[A] = (item ? item : {
+                                _id: row.torrent[A]
                             });
 
-                            row.patent[A].project = {
+                            row.torrent[A].keyword = {
                                 _id: row._id
                             };
                         }
@@ -488,7 +351,7 @@
                         _this.project = _.clone(_this.project);
                     }
 
-                    subscribe_patent();
+                    subscribe_torrent();
                 },
 
                 changed: function(row, old) {
@@ -497,16 +360,16 @@
                     }).indexOf(row._id);
 
                     if (-1 < index) {
-                        for (var A = 0; A < row.patent.length; A++) {
-                            var item = _patent.findOne({
-                                _id: row.patent[A]
+                        for (var A = 0; A < row.torrent.length; A++) {
+                            var item = _torrent.findOne({
+                                _id: row.torrent[A]
                             });
 
-                            row.patent[A] = (item ? item : {
-                                _id: row.patent[A]
+                            row.torrent[A] = (item ? item : {
+                                _id: row.torrent[A]
                             });
 
-                            row.patent[A].project = {
+                            row.torrent[A].project = {
                                 _id: row._id
                             };
                         }
@@ -517,8 +380,8 @@
                         _this.project = _.clone(_this.project);
                     }
 
-                    if (old.patent.length < row.patent.length) {
-                        subscribe_patent();
+                    if (old.torrent.length < row.torrent.length) {
+                        subscribe_torrent();
                     }
                 },
 
@@ -535,17 +398,17 @@
                 }
             });
 
-            _patent.find().observe({
+            _torrent.find().observe({
                 added: function(row) {
                     for (var A = 0; A < _this.project.length; A++) {
-                        var index = _.map(_this.project[A].patent, function(item) {
+                        var index = _.map(_this.project[A].torrent, function(item) {
                             return item._id;
                         }).indexOf(row._id);
 
                         if (-1 < index) {
-                            _this.project[A].patent[index] = _.clone($.extend(true, _this.project[A].patent[index], row)); // row;
+                            _this.project[A].torrent[index] = _.clone($.extend(true, _this.project[A].torrent[index], row)); // row;
 
-                            _this.project[A].patent = _.clone(_this.project[A].patent);
+                            _this.project[A].torrent = _.clone(_this.project[A].torrent);
                             _this.project[A] = _.clone(_this.project[A]);
                             _this.project = _.clone(_this.project);
                         }
@@ -554,14 +417,14 @@
 
                 changed: function(row, old) {
                     for (var A = 0; A < _this.project.length; A++) {
-                        var index = _.map(_this.project[A].patent, function(item) {
+                        var index = _.map(_this.project[A].torrent, function(item) {
                             return item._id;
                         }).indexOf(row._id);
 
                         if (-1 < index) {
-                            _this.project[A].patent[index] = _.clone($.extend(true, _this.project[A].patent[index], row));
+                            _this.project[A].torrent[index] = _.clone($.extend(true, _this.project[A].torrent[index], row));
 
-                            _this.project[A].patent = _.clone(_this.project[A].patent);
+                            _this.project[A].torrent = _.clone(_this.project[A].torrent);
                             _this.project[A] = _.clone(_this.project[A]);
                             _this.project = _.clone(_this.project);
                         }
@@ -570,14 +433,14 @@
 
                 removed: function(old) {
                     for (var A = 0; A < _this.project.length; A++) {
-                        var index = _.map(_this.project[A].patent, function(item) {
+                        var index = _.map(_this.project[A].torrent, function(item) {
                             return item._id;
                         }).indexOf(old._id);
 
                         if (-1 < index) {
-                            _this.project[A].patent.splice(index, 1);
+                            _this.project[A].torrent.splice(index, 1);
 
-                            _this.project[A].patent = _.clone(_this.project[A].patent);
+                            _this.project[A].torrent = _.clone(_this.project[A].torrent);
                             _this.project[A] = _.clone(_this.project[A]);
                             _this.project = _.clone(_this.project);
                         }
@@ -586,52 +449,52 @@
             });
         },
 
-        remove_ok: function(e) {
-            var _this = this;
+        // remove_ok: function(e) {
+        //     var _this = this;
 
-            Meteor.call("remove_project", this.$.remove_prompt.dataset._id, function(error, response) {
-                if (error) {
-                    document.querySelector("#polymer_toast").toast(error.reason);
-                } else {
-                    _this.$.main_toolbar.className = _this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "");
+        //     Meteor.call("remove_project", this.$.remove_prompt.dataset.id, function(error, response) {
+        //         if (error) {
+        //             document.querySelector("#polymer_toast").toast(error.reason);
+        //         } else {
+        //             _this.$.main_toolbar.className = _this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "");
 
-                    _this.menu_selected = "";
+        //             _this.menu_selected = "";
 
-                    document.querySelector("#polymer_toast").toast(response);
-                }
-            });
+        //             document.querySelector("#polymer_toast").toast(response);
+        //         }
+        //     });
 
-            this.$.remove_prompt.close();
-        },
+        //     this.$.remove_prompt.close();
+        // },
 
-        remove_patent: function() {
-            $("inbox-item.iron-selected").addClass("undo");
+        // remove_torrent: function() {
+        //     $("inbox-item.iron-selected").addClass("undo");
 
-            var patent = _.map(this.patent_selected, function(A) {
-                return A._id;
-            });
+        //     var torrent = _.map(this.torrent_selected, function(A) {
+        //         return A._id;
+        //     });
 
-            document.querySelector("#polymer_toast").undo = {
-                patent: patent,
-                project: _.map(this.patent_selected, function(A) {
-                    return A.project._id;
-                })
-            };
+        //     document.querySelector("#polymer_toast").undo = {
+        //         project: _.map(this.torrent_selected, function(A) {
+        //             return A.project._id;
+        //         }),
+        //         torrent: torrent
+        //     };
 
-            this.clear_patent_selection();
+        //     this.clear_torrent_selection();
 
-            document.querySelector("#polymer_toast").toast(patent.length + " patent removed");
-        },
+        //     document.querySelector("#polymer_toast").toast(torrent.length + " patent removed");
+        // },
 
-        search: function() {
+        search_bar: function() {
             this.$.search_bar.toggle();
         },
 
-        user_opt: function() {
-            document.querySelector("#polymer_toast").toast("userOptNotFound");
+        // user_opt: function() {
+        //     document.querySelector("#polymer_toast").toast("userOptNotFound");
 
-            this.menuToggle();
-        }
+        //     this.menuToggle();
+        // }
 
     });
     </script>

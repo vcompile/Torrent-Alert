@@ -1,8 +1,8 @@
-Meteor.subscribe("keyword");
+Meteor.subscribe("project");
 
 subscribe_torrent = _.debounce(function() {
     Meteor.subscribe("torrent", {
-        keyword: _.map(_keyword.find().fetch(), function(item) {
+        keyword: _.map(_torrent.find().fetch(), function(item) {
             return item._id;
         })
     });
