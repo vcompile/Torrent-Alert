@@ -8,25 +8,25 @@ Meteor.publish("project", function() {
     });
 });
 
-Meteor.publish("torrent", function(input) {
-    check(input, {
-        project: [String]
-    });
+// Meteor.publish("torrent", function(input) {
+//     check(input, {
+//         project: [String]
+//     });
 
-    return _torrent.find({
-        project: {
-            $in: input.project
-        }
-    }, {
-        fields: {
-            project: false
-        },
-        limit: 50,
-        sort: {
-            time: -1
-        }
-    });
-});
+//     return _torrent.find({
+//         project: {
+//             $in: input.project
+//         }
+//     }, {
+//         fields: {
+//             project: false
+//         },
+//         limit: 50,
+//         sort: {
+//             time: -1
+//         }
+//     });
+// });
 
 // Meteor.publish("torrent_in", function() {
 //     return torrent_in.find({

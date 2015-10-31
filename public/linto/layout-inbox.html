@@ -144,7 +144,7 @@
                     <neon-animatable>
                         <div class="center-justified horizontal layout">
                             <div class="li">
-                                <iron-selector attr-for-selected="item" multi selectable="inbox-item" selected-attribute="selected" selected-values="{{torrent_selected}}">
+                                <iron-selector activate-event="click" attr-for-selected="item" multi selectable="inbox-item" selected-attribute="selected" selected-values="{{torrent_selected}}">
                                     <template is="dom-repeat" items="[[project]]">
                                         <template if="[[project_selected(menu_selected, item._id)]]" is="dom-if">
                                             <div class="bordered center horizontal justified layout">
@@ -168,9 +168,9 @@
                                                 <paper-progress data-progress$="[[item._id]]" hidden style="width: 100%;"></paper-progress>
                                             </div>
 
-                                            <!-- <template as="torrent" is="dom-repeat" items="[[item.torrent]]">
+                                            <template as="torrent" is="dom-repeat" items="[[item.torrent]]">
                                                 <inbox-item item$="[[torrent]]"></inbox-item>
-                                            </template> -->
+                                            </template>
                                         </template>
                                     </template>
                                 </iron-selector>
@@ -286,7 +286,29 @@
                         keyword: "All Type Character",
                         time: moment().format(),
                         torrent: [{
-                            title: "12345"
+                            category: "A",
+                            leech: "100",
+                            seed: "100",
+                            site: [],
+                            size: "100MB",
+                            time: moment("2014-01-01", "YYYY-MM-DD").format(),
+                            title: "12345 Wha Happened YIFY like CAPITAL word come in title Linto Cheeran"
+                        }, {
+                            category: "A",
+                            leech: "100",
+                            seed: "100",
+                            site: [],
+                            size: "100MB",
+                            time: moment("2014-01-01", "YYYY-MM-DD").format(),
+                            title: "12345 Wha Happened YIFY like CAPITAL word come in title Linto Cheeran"
+                        }, {
+                            category: "A",
+                            leech: "100",
+                            seed: "100",
+                            site: [],
+                            size: "100MB",
+                            time: moment("2014-01-01", "YYYY-MM-DD").format(),
+                            title: "12345 Wha Happened YIFY like CAPITAL word come in title Linto Cheeran"
                         }],
                         worker: "search"
                     }];

@@ -1,43 +1,43 @@
 <dom-module id="inbox-item">
 
+    <style>
+    .primary-text {
+        font-size: 16px;
+        line-height: 24px;
+    }
+    
+    .secondary-text {
+        color: #757575;
+        font-size: 14px;
+        line-height: 20px;
+    }
+    </style>
+
     <template>
-        <paper-icon-item class="bg-white bordered cursor-p hover relative" on-tap="paperIconItemTap" style="align-items: flex-start;">
-            <div item-icon style="margin-top: 16px;">
-                <selectable-icon icon_class$="[[polymer_class(item.icon_class)]]" icon_text$="[[placeholder(item.icon_text)]]" id="selectableIcon" selected$="[[selected]]"></selectable-icon>
+        <div class="bordered cursor-p horizontal hover justified layout white" on-click="click" style="border">
+            <div style="padding: 16px; padding-right: 8px;">
+                <selectable-icon icon_class$="[[return_class(item.category)]]" icon_text$="[[return_text(item.site.length)]]" id="selectable_icon" selected$="[[selected]]"></selectable-icon>
             </div>
 
-            <paper-item-body two-line style="margin-right: 0; min-height: 0; padding: 14px 0;">
-                <div><span>[[item.cc]]</span> <span>[[placeholder(item.input)]]</span> <span>[[item.kc]]</span></div>
-                <div class="lowercase" secondary>[[secondary(item)]]</div>
-            </paper-item-body>
-
-            <!-- <paper-ripple></paper-ripple> -->
-        </paper-icon-item>
+            <div class="flex layout vertical" style="padding: 16px; padding-left: 8px;">
+                <div class="secondary-text">[[return_description(item)]]</div>
+                <div class="primary-text" style="text-align: justify; text-justify: newspaper;">[[item.title]]</div>
+                <div class="secondary-text" style="text-align: right;">[[return_time(item.time)]]</div>
+            </div>
+        </div>
     </template>
 
     <script>
     Polymer({
 
-        is: "inbox-item",
-
-        paperIconItemTap: function(e) {
-            if (Polymer.dom(e).localTarget.id != "selectableIcon") {
+        click: function(e) {
+            if (Polymer.dom(e).localTarget.id != "selectable_icon") {
                 e.stopPropagation();
 
-                var patent_view = document.querySelector("#patent_view");
-
-                patent_view.item = this.item;
-                patent_view.toggle();
             }
         },
 
-        placeholder: function(text) {
-            return (text ? text : "#");
-        },
-
-        polymer_class: function(text) {
-            return (text ? polymer_color(text) : "grey-500");
-        },
+        is: "inbox-item",
 
         properties: {
             item: {
@@ -51,8 +51,20 @@
             }
         },
 
-        secondary: function(item) {
-            return (item.legal_status ? item.legal_status : (item.uspto_error ? item.uspto_error : "#"));
+        return_class: function(text) {
+            return polymer_color(text);
+        },
+
+        return_description: function(item) {
+            return item.size + " | " + item.leech + "L / " + item.seed + "S";
+        },
+
+        return_time: function(time) {
+            return moment(time).fromNow();
+        },
+
+        return_text: function(text) {
+            return (text ? text : "#");
         }
 
     });

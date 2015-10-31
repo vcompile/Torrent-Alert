@@ -27,7 +27,7 @@
             <div class="flex layout vertical" style="padding: 16px; padding-left: 8px;">
                 <div class="horizontal justified layout">
                     <div class="etc flex primary-text self-center">[[item.keyword]]</div>
-                    <div class="secondary-text self-start">[[return_count(item.torrent.length)]]</div>
+                    <div class="secondary-text self-start">[[return_text(item.torrent.length)]]</div>
                 </div>
                 <div class="etc secondary-text">[[return_description(item)]]</div>
             </div>
@@ -55,16 +55,16 @@
             return polymer_color(text);
         },
 
-        return_count: function(count) {
-            return (count ? count : "#");
+        return_description: function(item) {
+            return (item.worker == "schedule" ? item.within + "M | " + item.leech + "L / " + item.seed + "S" : moment(item.time).format("YYYY-MMM-DD ddd hh:mm A"));
         },
 
         return_icon_text: function(text) {
             return (isNaN(text.charAt(0)) ? text.charAt(0) : "#");
         },
 
-        return_description: function(item) {
-            return (item.worker == "schedule" ? item.within + "M | " + item.leech + "L / " + item.seed + "S" : moment(item.time).format("YYYY-MMM-DD ddd"));
+        return_text: function(text) {
+            return (text ? text : "#");
         }
 
     });
