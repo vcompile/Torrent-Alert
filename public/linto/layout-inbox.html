@@ -168,18 +168,9 @@
                                             <div class="bordered center horizontal justified layout">
                                                 <div class="flex" style="padding: 16px;">[[item.keyword]]</div>
 
-                                                <paper-icon-button class="selection-hidden" data-id$="[[item._id]]" icon="close" hidden="[[is_search(item.worker)]]" on-click="remove_project" style="margin-right: 8px;"></paper-icon-button>
+                                                <paper-icon-button data-id$="[[item._id]]" icon="schedule" hidden="[[!is_search(item.worker)]]" on-click="schedule_project"></paper-icon-button>
 
-                                                <template if="[[is_search(item.worker)]]" is="dom-if">
-                                                    <paper-menu-button horizontal-align="right" style="margin-right: 8px;">
-                                                        <paper-icon-button class="dropdown-trigger" icon="more-vert"></paper-icon-button>
-
-                                                        <paper-menu class="dropdown-content" on-iron-select="project_opt">
-                                                            <paper-item class="cursor-p" data-id$="[[item._id]]" data-opt="remove">Remove</paper-item>
-                                                            <paper-item class="cursor-p" data-id$="[[item._id]]" data-opt="schedule">Schedule</paper-item>
-                                                        </paper-menu>
-                                                    </paper-menu-button>
-                                                </template>
+                                                <paper-icon-button data-id$="[[item._id]]" icon="close" on-click="remove_project" style="margin-right: 8px;"></paper-icon-button>
                                             </div>
 
                                             <div style="padding: 0 4px;">
@@ -232,7 +223,7 @@
                 </div>
 
                 <div class="end-justified horizontal layout">
-                    <paper-button class="blue-500" on-click="sign_out" style="margin: 0; width: 50%;">signOut</paper-button>
+                    <paper-button class="blue-500" on-click="sign_out" style="margin: 8px 0; width: 50%;">SIGN OUT</paper-button>
                 </div>
             </div>
         </paper-dialog>
@@ -241,11 +232,26 @@
             <div>Are you sure to delete this item ?</div>
 
             <div class="buttons">
-                <paper-button dialog-dismiss>
+                <paper-button onclick="document.querySelector('#remove_prompt').close();">
                     <iron-icon icon="close"></iron-icon>
                     cancel
                 </paper-button>
                 <paper-button on-click="remove_ok">
+                    <iron-icon icon="check"></iron-icon>
+                    ok
+                </paper-button>
+            </div>
+        </paper-dialog>
+
+        <paper-dialog id="schedule_prompt" style="max-width: 320px;">
+            <div>Are you sure to schedule this item ?</div>
+
+            <div class="buttons">
+                <paper-button onclick="document.querySelector('#schedule_prompt').close();">
+                    <iron-icon icon="close"></iron-icon>
+                    cancel
+                </paper-button>
+                <paper-button on-click="schedule_ok">
                     <iron-icon icon="check"></iron-icon>
                     ok
                 </paper-button>
@@ -339,18 +345,6 @@
             this.$.fab.toggleClass("move-down", this.torrent_selected.length);
         },
 
-        project_opt: function(e, d) {
-            switch (d.item.dataset.opt) {
-                case "remove":
-                    document.querySelector("#polymer_toast").toast("remove");
-                    break;
-
-                case "schedule":
-                    document.querySelector("#polymer_toast").toast("schedule");
-                    break;
-            }
-        },
-
         project_selected: function(menu_opt, project_opt) {
             return (menu_opt == "" ? true : menu_opt == project_opt);
         },
@@ -413,7 +407,7 @@
             Tracker.autorun(function() {
                 if (Session.equals("polymer-ready", 2)) {
                     // _this.project = document.querySelector("#torrent_db").value
-                    _this.proxy = document.querySelector("#proxy").value;
+                    // _this.proxy = document.querySelector("#proxy").value;
                 }
             });
 
@@ -551,6 +545,34 @@
             });
         },
 
+        remove_ok: function(e) {
+            var _this = this;
+
+            if (Meteor.status().connected) {
+                Meteor.call("remove_project", _this.$.remove_prompt.dataset.id, function(error, response) {
+                    if (error) {
+                        document.querySelector("#polymer_toast").toast(error.reason);
+                    } else {
+                        document.querySelector("#polymer_toast").toast(response);
+
+                        _this.$.main_toolbar.className = _this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "");
+
+                        _this.menu_selected = "";
+                    }
+                });
+            } else {
+                document.querySelector("#polymer_toast").toast("internet/user required");
+            }
+
+            this.$.remove_prompt.close();
+        },
+
+        remove_project: function(e) {
+            this.$.remove_prompt.dataset.id = Polymer.dom(e).localTarget.dataset.id;
+
+            this.$.remove_prompt.open();
+        },
+
         return_class: function(text) {
             return polymer_color(text ? text : "#");
         },
@@ -575,8 +597,62 @@
             return (item.size ? item.size : "#") + " | " + (item.leech ? item.leech + "L" : "#") + " / " + (item.seed ? item.seed + "S" : "#");
         },
 
+        schedule_ok: function(e) {
+            var _this = this;
+
+            if (Meteor.status().connected) {
+                Meteor.call("schedule_project", _this.$.schedule_prompt.dataset.id, function(error, response) {
+                    if (error) {
+                        document.querySelector("#polymer_toast").toast(error.reason);
+                    } else {
+                        document.querySelector("#polymer_toast").toast(response);
+
+                        _this.$.main_toolbar.className = _this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "");
+
+                        _this.menu_selected = "";
+                    }
+                });
+            } else {
+                document.querySelector("#polymer_toast").toast("internet/user required");
+            }
+
+            this.$.schedule_prompt.close();
+        },
+
+        schedule_project: function(e) {
+            this.$.schedule_prompt.dataset.id = Polymer.dom(e).localTarget.dataset.id;
+
+            this.$.schedule_prompt.open();
+        },
+
         search_bar: function() {
             this.$.search_bar.toggle();
+        },
+
+        share: function() {
+            var body = "";
+
+            for (var A = 0; A < this.torrent_selected.length; A++) {
+                if (this.torrent_selected[A].link.length) {
+                    body += "\n\n" + (A + 1) + "\t\t" + this.torrent_selected[A].title + "\n\n";
+
+                    this.torrent_selected[A].link = _.sortBy(this.torrent_selected[A].link, "time");
+
+                    for (var Z = 0; Z < this.torrent_selected[A].link.length; Z++) {
+                        body += "\t\t" + (Z + 1) + "\t\t" + this.torrent_selected[A].link[Z].url + "\n\n";
+                    }
+                }
+            }
+
+            if (body != "") {
+                if (Meteor.isCordova) {
+                    window.plugins.socialsharing.share("Hi\n\nTorrentAlert - " + this.user.profile.name + " shared " + this.torrent_selected.length + " torrent" + body);
+                } else {
+                    window.open("mailto:" + this.user.profile.email + "?subject=" + encodeURIComponent("TorrentAlert") + "&body=" + encodeURIComponent("Hi\n\n" + this.user.profile.name + " shared " + this.torrent_selected.length + " torrent" + body), "_system");
+                }
+            } else {
+                document.querySelector("#polymer_toast").toast("empty email body");
+            }
         },
 
         sign_out: function() {

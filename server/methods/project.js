@@ -76,6 +76,52 @@ Meteor.methods({
                 return input._id;
             }
         } else return "";
+    },
+
+    remove_project: function(id) {
+        this.unblock();
+
+        var user = Meteor.user();
+        if (!user) throw new Meteor.Error(422, "userNotFound");
+
+        check(id, String);
+
+        if (_project.findOne({
+                _id: id,
+                user: user._id
+            })) {
+            return _project.update({
+                _id: id,
+                user: user._id
+            }, {
+                $pull: {
+                    user: user._id
+                }
+            }) + " item removed";
+        } else return "notFound";
+    },
+
+    schedule_project: function(id) {
+        this.unblock();
+
+        var user = Meteor.user();
+        if (!user) throw new Meteor.Error(422, "userNotFound");
+
+        check(id, String);
+
+        if (_project.findOne({
+                _id: id,
+                user: user._id
+            })) {
+            return _project.update({
+                _id: id,
+                user: user._id
+            }, {
+                $set: {
+                    worker: "schedule"
+                }
+            }) + " item moved to scheduler";
+        } else return "notFound";
     }
 
 });
