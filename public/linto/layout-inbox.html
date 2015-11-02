@@ -99,7 +99,7 @@
             <paper-header-panel drawer>
                 <div class="fit layout vertical">
                     <template if="[[user._id]]" is="dom-if">
-                        <div class="cursor-p horizontal hover justified layout menu-li relative" style="border">
+                        <div class="cursor-p horizontal hover justified layout menu-li relative" on-click="user_prompt" style="border">
                             <div style="padding: 16px; padding-right: 8px;">
                                 <selectable-icon icon_img_src$="[[user.profile.picture]]"></selectable-icon>
                             </div>
@@ -107,7 +107,7 @@
                             <div class="flex layout vertical" style="padding: 16px; padding-left: 8px;">
                                 <div class="horizontal justified layout">
                                     <div class="etc flex self-center" style="font-size: 16px; line-height: 24px;">[[user.profile.name]]</div>
-                                    <div class="self-start" style="color: #757575; font-size: 14px; line-height: 20px;">12</div>
+                                    <div class="self-start" style="color: #757575; font-size: 14px; line-height: 20px;">[[return_text(project.length)]]</div>
                                 </div>
                                 <div class="etc" style="color: #757575; font-size: 14px; line-height: 20px;">[[user.profile.email]]</div>
                             </div>
@@ -203,7 +203,41 @@
 
         <paper-fab class="menu-b" id="fab" icon="add" on-click="add_project"></paper-fab>
 
-        <paper-dialog id="remove_prompt" style="width: 320px;">
+        <paper-dialog id="user_prompt" style="max-width: 320px;">
+            <div class="layout vertical">
+                <div style="border-bottom: 2px solid #888; margin: 8px 0; padding: 4px 0;">alerter</div>
+
+                <div class="center horizontal justified layout" style="padding: 8px 0;">
+                    <div style="color: #757575;">enable GCM</div>
+                    <paper-toggle-button checked disabled></paper-toggle-button>
+                </div>
+
+                <div class="center horizontal justified layout" style="padding: 8px 0;">
+                    <div style="color: #757575;">enable email alert</div>
+                    <paper-toggle-button disabled></paper-toggle-button>
+                </div>
+
+                <div style="border-bottom: 2px solid #888; margin: 8px 0; padding: 4px 0;">scheduler</div>
+
+                <div class="center horizontal justified layout">
+                    <div style="color: #757575;">schedule / day</div>
+                    <paper-slider disabled editable id="seeds" max="96" min="1" style="width: 100px;" value="4"></paper-slider>
+                </div>
+
+                <div style="border-bottom: 2px solid #888; margin: 8px 0; padding: 4px 0;">user: <span>{{user.name}}</span></div>
+
+                <div class="center horizontal justified layout" style="padding: 8px 0;">
+                    <div>enable proxy</div>
+                    <paper-toggle-button checked="{{proxy}}"></paper-toggle-button>
+                </div>
+
+                <div class="end-justified horizontal layout">
+                    <paper-button class="blue-500" on-click="sign_out" style="margin: 0; width: 50%;">signOut</paper-button>
+                </div>
+            </div>
+        </paper-dialog>
+
+        <paper-dialog id="remove_prompt" style="max-width: 320px;">
             <div>Are you sure to delete this item ?</div>
 
             <div class="buttons">
@@ -219,10 +253,10 @@
         </paper-dialog>
 
         <modal-wrapper id="torrent_prompt">
-            <div class="center-center fit horizontal layout" style="background: rgba(0, 0, 0, 0.4); padding: 24px; z-index: 1;">
+            <div class="center-center fit horizontal layout" on-click="torrent_prompt_close" style="background: rgba(0, 0, 0, 0.4); padding: 24px; z-index: 1;">
                 <div class="layout vertical" style="height: 100%; max-width: 320px;">
                     <div class="flex white" style="overflow: auto; padding: 24px;">
-                        <iron-selector activate-event="click" on-iron-select="link" selected-attribute="selected">
+                        <iron-selector activate-event="click" id="link" on-click="link" selected-attribute="selected">
                             <template is="dom-repeat" items="[[torrent_prompt.link]]">
                                 <div class="cursor-p horizontal justified layout menu-li" data-link$="[[item.url]]">
                                     <div style="padding: 16px; padding-right: 8px;">
@@ -238,7 +272,7 @@
                         </iron-selector>
                     </div>
 
-                    <div class="cursor-p layout vertical" on-click="torrent_prompt_close" style="background: #EEE; padding: 24px;">
+                    <div class="cursor-p layout vertical" style="background: #EEE; padding: 24px;">
                         <div style="color: #757575; font-size: 14px; line-height: 20px;">[[return_torrent_description(torrent_prompt)]]</div>
 
                         <div style=" text-align: justify; text-justify: newspaper;"><span style="font-size: 16px; line-height: 24px;">[[torrent_prompt.title]]</span>&nbsp;&nbsp;<span class$="[[return_class(torrent_prompt.category)]]" style="font-size: 14px; line-height: 20px; padding-left: 4px; padding-right: 4px;">[[torrent_prompt.category]]</span>&nbsp;&nbsp;</div>
@@ -268,10 +302,12 @@
 
         is: "layout-inbox",
 
-        link: function(e, d) {
+        link: function(e) {
             e.stopPropagation();
 
-            window.open((document.querySelector("#proxy").value ? "http://proxy.vcompile.com/index.php?url=" + encodeURIComponent(d.item.dataset.link) : d.item.dataset.link), "_system");
+            this.async(function() {
+                window.open((this.proxy ? "http://proxy.vcompile.com/index.php?url=" + encodeURIComponent(document.querySelector("#link").selectedItem.dataset.link) : document.querySelector("#link").selectedItem.dataset.link), "_system");
+            }, 200);
         },
 
         menuToggle: function() {
@@ -342,11 +378,22 @@
                     return [];
                 }
             },
+            proxy: {
+                observer: "proxy_change",
+                type: Boolean,
+                value: false
+            },
             user: {
                 type: Object,
                 value: function() {
                     return {};
                 }
+            }
+        },
+
+        proxy_change: function(A, Z) {
+            if (typeof(Z) != "undefined") {
+                document.querySelector("#proxy").value = this.proxy;
             }
         },
 
@@ -363,7 +410,12 @@
                 _this.$.main_page.selected = (_project.find().count() ? 1 : 0);
             });
 
-            // _this.project = ; // local-store
+            Tracker.autorun(function() {
+                if (Session.equals("polymer-ready", 2)) {
+                    // _this.project = document.querySelector("#torrent_db").value
+                    _this.proxy = document.querySelector("#proxy").value;
+                }
+            });
 
             // _worker.find().observe({
             //     added: function() {
@@ -527,7 +579,25 @@
             this.$.search_bar.toggle();
         },
 
-        torrent_prompt_close: function(e, d) {
+        sign_out: function() {
+            var _this = this;
+
+            if (Meteor.status().connected) {
+                Meteor.logout(function(error) {
+                    if (error) {
+                        document.querySelector("#polymer_toast").toast(error.reason);
+                    } else {
+                        _this.project = [];
+
+                        Session.set("view", "user_check");
+                    }
+                });
+            } else {
+                document.querySelector("#polymer_toast").toast("internet/user required");
+            }
+        },
+
+        torrent_prompt_close: function() {
             this.$.torrent_prompt.toggle();
         },
 
@@ -539,6 +609,14 @@
             } else {
                 document.querySelector("#polymer_toast").toast("under processing");
             }
+        },
+
+        user_prompt: function() {
+            this.menuToggle();
+
+            this.async(function() {
+                this.$.user_prompt.open();
+            }, 400);
         }
 
     });
