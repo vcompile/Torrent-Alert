@@ -9,6 +9,11 @@
         display: block;
     }
     
+    paper-progress {
+        --paper-progress-active-color: var(--paper-light-blue-500);
+        --paper-progress-secondary-color: var(--paper-light-blue-100);
+    }
+    
     paper-toolbar {
         --paper-toolbar-background: white;
         --paper-toolbar-color: black;
@@ -23,23 +28,21 @@
     </style>
 
     <template>
-        <paper-header-panel class="fit" style="background: #EEE; z-index: 1;">
+        <paper-header-panel class="fit" style="background: rgba(255, 255, 255, 0.75); z-index: 1;">
             <paper-toolbar>
                 <paper-icon-button icon="arrow-back" on-click="toggle"></paper-icon-button>
                 <input class="flex" id="input" on-keyup="search" placeholder="search">
-                <paper-icon-button icon="filter-list" on-tap="filter"></paper-icon-button>
             </paper-toolbar>
 
             <div class="center-justified horizontal layout">
                 <div class="li">
-                    <div class="bordered cursor-d etc" id="title" style="padding: 16px;">empty</div>
+                    <paper-progress hidden id="progress" indeterminate style="width: 100%;"></paper-progress>
 
-                    <div style="padding: 0 4px;">
-                        <paper-progress hidden id="progress" indeterminate style="width: 100%;"></paper-progress>
-                    </div>
-
-                    <template as="patent" is="dom-repeat" items="[[list]]">
-                        <inbox-item item$="[[patent]]"></inbox-item>
+                    <template is="dom-repeat" items="[[list]]">
+                        <div class="bordered cursor-p horizontal layout white" on-click="add_project">
+                            <iron-icon icon="chevron-right" style="padding: 16px; padding-right: 8px;"></iron-icon>
+                            <div class="flex" style="font-size: 16px; line-height: 24px; padding: 16px; padding-left: 8px; text-align: justify; text-justify: newspaper;">[[item]]</div>
+                        </div>
                     </template>
 
                     <div style="min-height: 80px;"></div>
@@ -51,30 +54,43 @@
     <script>
     Polymer({
 
-        search: function() {
-            this.$.progress.hidden = false;
-            this.$.title.textContent = "searching ..";
+        add_project: function(e, d) {
+            var keyword = Polymer.dom(e).localTarget.textContent.trim();
 
-            this.list = [];
+            if (keyword.length) {
+                var row = {
+                    keyword: keyword,
+                    leech: 1,
+                    seed: 1,
+                    url: "search",
+                    within: 6,
+                    worker: "search"
+                };
 
-            this.debounce("search", function() {
-                this.$.progress.hidden = true;
-                this.$.title.textContent = "notFound in input";
+                if (Meteor.status().connected) {
+                    Meteor.call("insert_project", row, function(error, response) {
+                        if (error) {
+                            document.querySelector("#polymer_toast").toast((error.reason == "userNotFound") ? "internet/user required" : error.reason);
+                        } else {
+                            if (response == "") {
+                                document.querySelector("#polymer_toast").toast("unknown issue");
+                            } else {
+                                document.querySelector("#polymer_toast").toast("i keyword added");
 
-                this.list = _patent.find({
-                    input: {
-                        $regex: this.$.input.value
-                    }
-                }).fetch();
+                                document.querySelector("#main_toolbar").className = document.querySelector("#main_toolbar").className.replace(/ ?[a-z\-]+\-500/g, "") + " " + polymer_color(keyword);
 
-                if (this.list.length) {
-                    this.$.title.textContent = this.list.length + " patent exists";
+                                document.querySelector("#layout_inbox").menu_selected = response;
+                            }
+                        }
+                    });
+                } else {
+                    document.querySelector("#polymer_toast").toast("internet/user required");
                 }
-            }, 1000);
-        },
 
-        filter: function() {
-            document.querySelector("#polymer_toast").toast("filterNotFound");
+                this.toggle();
+            } else {
+                document.querySelector("#polymer_toast").toast("empty keyword");
+            }
         },
 
         is: "search-bar",
@@ -92,6 +108,28 @@
                     return [];
                 }
             }
+        },
+
+        search: function() {
+            this.$.progress.hidden = false;
+
+            this.debounce("search", function() {
+                if (this.$.input.value.trim().length) {
+                    var _this = this;
+
+                    if (Meteor.status().connected) {
+                        Meteor.call("search", this.$.input.value.trim(), function(error, response) {
+                            _this.$.progress.hidden = true;
+
+                            if (!error) {
+                                _this.list = response;
+                            }
+                        });
+                    } else {
+                        document.querySelector("#polymer_toast").toast("internet/user required");
+                    }
+                }
+            }, 4000);
         },
 
         toggle: function() {

@@ -15,6 +15,17 @@
         padding: 0;
     }
     
+    paper-progress {
+        --paper-progress-active-color: var(--paper-light-blue-500);
+        --paper-progress-secondary-color: var(--paper-light-blue-100);
+    }
+    
+    paper-toggle-button {
+        --paper-toggle-button-checked-bar-color: var(--paper-green-500);
+        --paper-toggle-button-checked-button-color: var(--paper-green-500);
+        --paper-toggle-button-checked-ink-color: var(--paper-green-500);
+    }
+    
     paper-toolbar {
         --paper-toolbar-background: var(--paper-cyan-700);
         --paper-toolbar-color: white;
@@ -74,19 +85,12 @@
         transform: translate3d(0, 80px, 0)!important;
     }
     
-    .primary-text {
-        font-size: 16px;
-        line-height: 24px;
-    }
-    
-    .secondary-text {
-        color: #757575;
-        font-size: 14px;
-        line-height: 20px;
-    }
-    
     .undo {
         display: none!important;
+    }
+    
+    paper-dialog {
+        width: 288px;
     }
     </style>
 
@@ -102,10 +106,10 @@
 
                             <div class="flex layout vertical" style="padding: 16px; padding-left: 8px;">
                                 <div class="horizontal justified layout">
-                                    <div class="etc flex primary-text self-center">[[user.profile.name]]</div>
-                                    <div class="secondary-text self-start">12</div>
+                                    <div class="etc flex self-center" style="font-size: 16px; line-height: 24px;">[[user.profile.name]]</div>
+                                    <div class="self-start" style="color: #757575; font-size: 14px; line-height: 20px;">12</div>
                                 </div>
-                                <div class="etc secondary-text">[[user.profile.email]]</div>
+                                <div class="etc" style="color: #757575; font-size: 14px; line-height: 20px;">[[user.profile.email]]</div>
                             </div>
 
                             <paper-ripple></paper-ripple>
@@ -113,9 +117,23 @@
                     </template>
 
                     <div class="flex">
-                        <iron-selector attr-for-selected="item" id="menu_opt" on-iron-select="menu_opt" selectable="menu-item" selected-attribute="selected">
+                        <iron-selector activate-event="click" id="menu_opt" on-iron-select="menu_opt" selected-attribute="selected">
                             <template is="dom-repeat" items="[[project]]">
-                                <menu-item item$="[[item]]"></menu-item>
+                                <div class="cursor-p horizontal hover justified layout menu-li relative" data-id$="[[item._id]]" style="border">
+                                    <div style="padding: 16px; padding-right: 8px;">
+                                        <selectable-icon icon_class$="[[return_class(item.keyword)]]" icon_text$="[[return_icon_text(item.keyword)]]"></selectable-icon>
+                                    </div>
+
+                                    <div class="flex layout vertical" style="padding: 16px; padding-left: 8px;">
+                                        <div class="horizontal justified layout">
+                                            <div class="etc flex self-center" style="font-size: 16px; line-height: 24px;">[[item.keyword]]</div>
+                                            <div class="self-start" style="color: #757575; font-size: 14px; line-height: 20px;">[[return_text(item.torrent.length)]]</div>
+                                        </div>
+                                        <div class="etc" style="color: #757575; font-size: 14px; line-height: 20px;">[[return_project_description(item)]]</div>
+                                    </div>
+
+                                    <paper-ripple></paper-ripple>
+                                </div>
                             </template>
                         </iron-selector>
                     </div>
@@ -150,9 +168,9 @@
                                             <div class="bordered center horizontal justified layout">
                                                 <div class="flex" style="padding: 16px;">[[item.keyword]]</div>
 
-                                                <paper-icon-button class="selection-hidden" data-id$="[[item._id]]" icon="close" hidden="[[isSchedule(item.worker)]]" on-click="remove_project" style="margin-right: 8px;"></paper-icon-button>
+                                                <paper-icon-button class="selection-hidden" data-id$="[[item._id]]" icon="close" hidden="[[is_search(item.worker)]]" on-click="remove_project" style="margin-right: 8px;"></paper-icon-button>
 
-                                                <template if="[[isSchedule(item.worker)]]" is="dom-if">
+                                                <template if="[[is_search(item.worker)]]" is="dom-if">
                                                     <paper-menu-button horizontal-align="right" style="margin-right: 8px;">
                                                         <paper-icon-button class="dropdown-trigger" icon="more-vert"></paper-icon-button>
 
@@ -183,7 +201,7 @@
             </paper-header-panel>
         </paper-drawer-panel>
 
-        <paper-fab class="menu-b" id="fab" icon="add" on-click="add_keyword"></paper-fab>
+        <paper-fab class="menu-b" id="fab" icon="add" on-click="add_project"></paper-fab>
 
         <paper-dialog id="remove_prompt" style="width: 320px;">
             <div>Are you sure to delete this item ?</div>
@@ -200,26 +218,61 @@
             </div>
         </paper-dialog>
 
-        <add-keyword id="add_keyword"></add-keyword>
+        <modal-wrapper id="torrent_prompt">
+            <div class="center-center fit horizontal layout" style="background: rgba(0, 0, 0, 0.4); padding: 24px; z-index: 1;">
+                <div class="layout vertical" style="height: 100%; max-width: 320px;">
+                    <div class="flex white" style="overflow: auto; padding: 24px;">
+                        <iron-selector activate-event="click" on-iron-select="link" selected-attribute="selected">
+                            <template is="dom-repeat" items="[[torrent_prompt.link]]">
+                                <div class="cursor-p horizontal justified layout menu-li" data-link$="[[item.url]]">
+                                    <div style="padding: 16px; padding-right: 8px;">
+                                        <selectable-icon icon_class$="[[return_class(item.text)]]" icon_text$="[[return_icon_text(item.text)]]"></selectable-icon>
+                                    </div>
+
+                                    <div class="flex layout vertical" style="padding: 16px; padding-left: 8px;">
+                                        <div class="etc" style="font-size: 16px; line-height: 24px;">[[item.text]]</div>
+                                        <div class="etc" style="color: #757575; font-size: 14px; line-height: 20px;">[[return_time(item.time)]]</div>
+                                    </div>
+                                </div>
+                            </template>
+                        </iron-selector>
+                    </div>
+
+                    <div class="cursor-p layout vertical" on-click="torrent_prompt_close" style="background: #EEE; padding: 24px;">
+                        <div style="color: #757575; font-size: 14px; line-height: 20px;">[[return_torrent_description(torrent_prompt)]]</div>
+
+                        <div style=" text-align: justify; text-justify: newspaper;"><span style="font-size: 16px; line-height: 24px;">[[torrent_prompt.title]]</span>&nbsp;&nbsp;<span class$="[[return_class(torrent_prompt.category)]]" style="font-size: 14px; line-height: 20px; padding-left: 4px; padding-right: 4px;">[[torrent_prompt.category]]</span>&nbsp;&nbsp;</div>
+                    </div>
+                </div>
+            </div>
+        </modal-wrapper>
+
+        <add-project id="add_project"></add-project>
         <search-bar id="search_bar"></search-bar>
     </template>
 
     <script>
     Polymer({
 
-        add_keyword: function() {
-            this.$.add_keyword.toggle();
+        add_project: function() {
+            this.$.add_project.toggle();
         },
 
         clear_torrent_selection: function() {
             this.torrent_selected = [];
         },
 
-        isSchedule: function(worker) {
-            return (worker == "schedule")
+        is_search: function(worker) {
+            return (worker == "search")
         },
 
         is: "layout-inbox",
+
+        link: function(e, d) {
+            e.stopPropagation();
+
+            window.open((document.querySelector("#proxy").value ? "http://proxy.vcompile.com/index.php?url=" + encodeURIComponent(d.item.dataset.link) : d.item.dataset.link), "_system");
+        },
 
         menuToggle: function() {
             if (this.$.drawer.narrow && $(this.$.drawer).width() <= parseInt(this.$.drawer.responsiveWidth)) {
@@ -229,19 +282,19 @@
             }
         },
 
-        menu_opt: function() {
-            this.$.main_toolbar.className = this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "") + " " + document.querySelector("menu-item.iron-selected selectable-icon").icon_class;
-
+        menu_opt: function(e, d) {
             this.menuToggle();
 
-            this.menu_selected = document.querySelector("#menu_opt").selected._id;
+            this.$.main_toolbar.className = this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "") + " " + document.querySelector("#menu_opt .iron-selected selectable-icon").icon_class;
+
+            this.menu_selected = d.item.dataset.id;
         },
 
         observers: [
-            "torrent_selected_changed(torrent_selected.splices)"
+            "torrent_selected_change(torrent_selected.splices)"
         ],
 
-        torrent_selected_changed: function(change) {
+        torrent_selected_change: function(change) {
             this.$.main_toolbar_title.textContent = (this.torrent_selected.length ? this.torrent_selected.length : "TorrentAlert");
 
             this.$.main_toolbar.toggleClass("grey-500", this.torrent_selected.length);
@@ -253,7 +306,6 @@
         project_opt: function(e, d) {
             switch (d.item.dataset.opt) {
                 case "remove":
-                    // remove_project
                     document.querySelector("#polymer_toast").toast("remove");
                     break;
 
@@ -272,6 +324,12 @@
                 type: String,
                 value: ""
             },
+            torrent_prompt: {
+                type: Object,
+                value: function() {
+                    return {};
+                }
+            },
             torrent_selected: {
                 type: Array,
                 value: function() {
@@ -281,37 +339,7 @@
             project: {
                 type: Array,
                 value: function() {
-                    return [{
-                        _id: "12345",
-                        keyword: "All Type Character",
-                        time: moment().format(),
-                        torrent: [{
-                            category: "A",
-                            leech: "100",
-                            seed: "100",
-                            site: [],
-                            size: "100MB",
-                            time: moment("2014-01-01", "YYYY-MM-DD").format(),
-                            title: "12345 Wha Happened YIFY like CAPITAL word come in title Linto Cheeran"
-                        }, {
-                            category: "A",
-                            leech: "100",
-                            seed: "100",
-                            site: [],
-                            size: "100MB",
-                            time: moment("2014-01-01", "YYYY-MM-DD").format(),
-                            title: "12345 Wha Happened YIFY like CAPITAL word come in title Linto Cheeran"
-                        }, {
-                            category: "A",
-                            leech: "100",
-                            seed: "100",
-                            site: [],
-                            size: "100MB",
-                            time: moment("2014-01-01", "YYYY-MM-DD").format(),
-                            title: "12345 Wha Happened YIFY like CAPITAL word come in title Linto Cheeran"
-                        }],
-                        worker: "search"
-                    }];
+                    return [];
                 }
             },
             user: {
@@ -363,7 +391,7 @@
                                 _id: row.torrent[A]
                             });
 
-                            row.torrent[A].keyword = {
+                            row.torrent[A].project = {
                                 _id: row._id
                             };
                         }
@@ -430,7 +458,7 @@
                         if (-1 < index) {
                             _this.project[A].torrent[index] = _.clone($.extend(true, _this.project[A].torrent[index], row)); // row;
 
-                            _this.project[A].torrent = _.clone(_this.project[A].torrent);
+                            _this.project[A].torrent = _.sortBy(_this.project[A].torrent, "time").reverse();
                             _this.project[A] = _.clone(_this.project[A]);
                             _this.project = _.clone(_this.project);
                         }
@@ -471,52 +499,47 @@
             });
         },
 
-        // remove_ok: function(e) {
-        //     var _this = this;
+        return_class: function(text) {
+            return polymer_color(text ? text : "#");
+        },
 
-        //     Meteor.call("remove_project", this.$.remove_prompt.dataset.id, function(error, response) {
-        //         if (error) {
-        //             document.querySelector("#polymer_toast").toast(error.reason);
-        //         } else {
-        //             _this.$.main_toolbar.className = _this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "");
+        return_project_description: function(item) {
+            return (item.worker == "schedule" ? item.within + "M | " + item.leech + "L / " + item.seed + "S" : moment(item.time).format("MMM DD ddd hh:mm A"));
+        },
 
-        //             _this.menu_selected = "";
+        return_icon_text: function(text) {
+            return (isNaN(text.charAt(0)) ? text.charAt(0) : "#");
+        },
 
-        //             document.querySelector("#polymer_toast").toast(response);
-        //         }
-        //     });
+        return_text: function(text) {
+            return (text ? text : "#");
+        },
 
-        //     this.$.remove_prompt.close();
-        // },
+        return_time: function(time) {
+            return moment(time).fromNow();
+        },
 
-        // remove_torrent: function() {
-        //     $("inbox-item.iron-selected").addClass("undo");
-
-        //     var torrent = _.map(this.torrent_selected, function(A) {
-        //         return A._id;
-        //     });
-
-        //     document.querySelector("#polymer_toast").undo = {
-        //         project: _.map(this.torrent_selected, function(A) {
-        //             return A.project._id;
-        //         }),
-        //         torrent: torrent
-        //     };
-
-        //     this.clear_torrent_selection();
-
-        //     document.querySelector("#polymer_toast").toast(torrent.length + " patent removed");
-        // },
+        return_torrent_description: function(item) {
+            return (item.size ? item.size : "#") + " | " + (item.leech ? item.leech + "L" : "#") + " / " + (item.seed ? item.seed + "S" : "#");
+        },
 
         search_bar: function() {
             this.$.search_bar.toggle();
         },
 
-        // user_opt: function() {
-        //     document.querySelector("#polymer_toast").toast("userOptNotFound");
+        torrent_prompt_close: function(e, d) {
+            this.$.torrent_prompt.toggle();
+        },
 
-        //     this.menuToggle();
-        // }
+        torrent_prompt_open: function(item) {
+            if (_.has(item, "link")) {
+                this.torrent_prompt = item;
+
+                this.$.torrent_prompt.toggle();
+            } else {
+                document.querySelector("#polymer_toast").toast("under processing");
+            }
+        }
 
     });
     </script>

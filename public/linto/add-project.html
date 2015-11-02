@@ -1,4 +1,4 @@
-<dom-module id="add-keyword">
+<dom-module id="add-project">
 
     <style>
     :host {
@@ -34,7 +34,6 @@
             <paper-toolbar>
                 <paper-icon-button icon="arrow-back" on-click="toggle"></paper-icon-button>
                 <div class="title">scheduler</div>
-                <!-- <paper-icon-button icon="more-vert"></paper-icon-button> -->
             </paper-toolbar>
 
             <div class="center-justified horizontal layout">
@@ -60,7 +59,7 @@
                     <br>
 
                     <div class="end-justified horizontal layout">
-                        <paper-button class="blue-500" on-click="submit">submit</paper-button>
+                        <paper-button class="blue-500" on-click="add_project">submit</paper-button>
                     </div>
                 </div>
             </div>
@@ -79,6 +78,51 @@
     <script>
     Polymer({
 
+        add_project: function() {
+            this.keyword = decodeURIComponent(this.keyword).trim();
+            var keywordArray = (this.keyword.split("/").filter(Boolean).reverse()[0] || "").trim().split(/\?[fq]=/g);
+
+            if (this.keyword.length) {
+                var row = {
+                    keyword: (1 < keywordArray.length ? keywordArray[1] : keywordArray[0]),
+                    leech: parseInt(this.leech),
+                    seed: parseInt(this.seed),
+                    url: (1 < keywordArray.length ? keywordArray[0] : "search"),
+                    within: parseInt(this.within),
+                    worker: "schedule"
+                };
+
+                if (Meteor.status().connected) {
+                    Meteor.call("insert_project", row, function(error, response) {
+                        if (error) {
+                            document.querySelector("#polymer_toast").toast((error.reason == "userNotFound") ? "internet/user required" : error.reason);
+                        } else {
+                            if (response == "") {
+                                document.querySelector("#polymer_toast").toast("quota limit reached");
+                            } else {
+                                document.querySelector("#polymer_toast").toast("i keyword added");
+
+                                document.querySelector("#main_toolbar").className = document.querySelector("#main_toolbar").className.replace(/ ?[a-z\-]+\-500/g, "") + " " + polymer_color(1 < keywordArray.length ? keywordArray[1] : keywordArray[0]);
+
+                                document.querySelector("#layout_inbox").menu_selected = response;
+                            }
+                        }
+                    });
+                } else {
+                    document.querySelector("#polymer_toast").toast("internet/user required");
+                }
+
+                this.toggle();
+            } else {
+                document.querySelector("#polymer_toast").toast("empty keyword");
+            }
+
+            this.keyword = "";
+            this.leech = 1;
+            this.seed = 1;
+            this.within = 6;
+        },
+
         date_picker_close: function() {
             if (this.$.date.date) {
                 var A = Math.ceil(moment.duration(moment().diff(moment(this.$.date.date))).asMonths());
@@ -93,7 +137,7 @@
             this.$.date_picker.open();
         },
 
-        is: "add-keyword",
+        is: "add-project",
 
         properties: {
             active: {
@@ -118,43 +162,6 @@
                 type: Number,
                 value: 6
             }
-        },
-
-        submit: function() {
-            this.keyword = decodeURIComponent(this.keyword).trim();
-            var keywordArray = (this.keyword.split("/").filter(Boolean).reverse()[0] || "").trim().split(/\?[fq]=/g);
-
-            if (this.keyword.length) {
-                var row = {
-                    keyword: ((1 < keywordArray.length) ? keywordArray[1] : keywordArray[0]),
-                    leech: parseInt(this.leech),
-                    seed: parseInt(this.seed),
-                    url: ((1 < keywordArray.length) ? keywordArray[0] : "search"),
-                    within: parseInt(this.within),
-                    worker: "schedule"
-                };
-
-                if (Meteor.status().connected) {
-                    Meteor.call("insert_keyword", row, function(error, response) {
-                        if (error) {
-                            document.querySelector("#polymer_toast").toast((error.reason == "userNotFound") ? "internet/user required" : error.reason);
-                        } else {
-                            document.querySelector("#polymer_toast").toast(response);
-                        }
-                    });
-                } else {
-                    document.querySelector("#polymer_toast").toast("internet/user required");
-                }
-
-                this.toggle();
-            } else {
-                document.querySelector("#polymer_toast").toast("empty keyword");
-            }
-
-            this.keyword = "";
-            this.leech = 1;
-            this.seed = 1;
-            this.within = 6;
         },
 
         toggle: function() {

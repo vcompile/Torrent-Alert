@@ -1,13 +1,17 @@
 _worker.find().observe({
     added: function(row) {
         if (row.status == "") {
-            switch (row.worker) {
+            switch (row.type) {
                 case "schedule":
-                    console.log(row);
+                    _crawler("schedule");
                     break;
 
                 case "search":
-                    console.log(row);
+                    _crawler("search");
+                    break;
+
+                case "torrent":
+                    _crawler("torrent");
                     break;
             }
         }

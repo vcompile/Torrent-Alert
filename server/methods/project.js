@@ -1,6 +1,6 @@
 Meteor.methods({
 
-    insert_keyword: function(input) {
+    insert_project: function(input) {
         this.unblock();
 
         var user = Meteor.user();
@@ -19,7 +19,7 @@ Meteor.methods({
 
         if (input.worker == "schedule") {
             A = ((_project.find({
-                user_id: user._id,
+                user: user._id,
                 worker: input.worker
             }).count() < 4) ? true : false);
         }
@@ -30,9 +30,11 @@ Meteor.methods({
             if (row) {
                 var update_count = _project.update(input, {
                     $addToSet: {
-                        user_id: user._id
+                        user: user._id
                     },
-                    time: moment().format()
+                    $set: {
+                        time: moment().format()
+                    }
                 }, {
                     multi: true
                 });
@@ -40,44 +42,40 @@ Meteor.methods({
                 if (input.worker == "search" && update_count && !_worker.findOne({
                         project: row._id,
                         status: "",
-                        type: "project",
-                        worker: input.worker
+                        type: input.worker
                     })) {
                     _worker.insert({
                         project: row._id,
                         status: "",
                         time_insert: moment().format(),
-                        type: "project",
-                        worker: input.worker
+                        type: input.worker
                     });
                 }
 
-                return update_count + " keyword updated";
+                return row._id;
             } else {
                 input.time = moment().format();
                 input.torrent = [];
-                input.user_id = [user._id];
+                input.user = [user._id];
 
                 input._id = _project.insert(input);
 
                 if (!_worker.findOne({
                         project: input._id,
                         status: "",
-                        type: "project",
-                        worker: input.worker
+                        type: input.worker
                     })) {
                     _worker.insert({
                         project: input._id,
                         status: "",
                         time_insert: moment().format(),
-                        type: "project",
-                        worker: input.worker
+                        type: input.worker
                     });
                 }
 
-                return "1 keyword added";
+                return input._id;
             }
-        } else return "quota limit reached";
+        } else return "";
     }
 
 });

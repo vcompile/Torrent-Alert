@@ -1,13 +1,19 @@
 <dom-module id="polymer-ready">
 
     <template>
-        <iron-localstorage id="torrent_db" name="torrent_db" on-iron-localstorage-load-empty="initialize" value="{{torrent_db}}"></iron-localstorage>
+        <iron-localstorage id="proxy" name="proxy" on-iron-localstorage-load-empty="_proxy" value="{{proxy}}"></iron-localstorage>
+
+        <iron-localstorage id="torrent_db" name="torrent_db" on-iron-localstorage-load-empty="_torrent_db" value="{{torrent_db}}"></iron-localstorage>
     </template>
 
     <script>
     Polymer({
 
-        initialize: function() {
+        _proxy: function() {
+            this.proxy = false;
+        },
+
+        _torrent_db: function() {
             this.torrent_db = [];
         },
 
@@ -18,6 +24,10 @@
         ],
 
         properties: {
+            proxy: {
+                type: Boolean,
+                value: false
+            },
             torrent_db: {
                 type: Array,
                 value: function() {
