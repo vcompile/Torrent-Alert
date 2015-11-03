@@ -6,7 +6,9 @@ if (Meteor.isCordova) {
     }, false);
 
     function backbutton() {
-        document.querySelector("#exit_controller").time(moment().format("x"));
+        if (document.querySelector("#exit_controller")) {
+            document.querySelector("#exit_controller").time(moment().format("x"));
+        }
 
         if (document.querySelector("modal-wrapper")) {
             document.querySelector("modal-wrapper").active = true;

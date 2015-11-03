@@ -14,7 +14,7 @@ App.info({
     version: "1.7.5",
     author: "Linto Cheeran",
     email: "linto.cet@gmail.com",
-    website: "http://vcompile.com"
+    website: "http://vcompile.com/torrentz"
 });
 
 // App.launchScreens({

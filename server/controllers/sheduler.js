@@ -1,7 +1,9 @@
 Meteor.setInterval(function() {
     new fibers(function() {
-        _project.find().fetch().forEach(function(item) {
-            if (item.worker == "schedule" && 6 < moment.duration(moment().diff(moment(item.time))).asHours()) {
+        _project.find({
+            worker: "schedule"
+        }).fetch().forEach(function(item) {
+            if (6 < moment.duration(moment().diff(moment(item.time))).asHours()) {
                 if (!_worker.findOne({
                         project: item._id,
                         status: "",
