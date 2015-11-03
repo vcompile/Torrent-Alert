@@ -59,6 +59,8 @@
                     document.querySelector(".menu-b").translate3d(0, "-" + ($("#toast #label").height() + 48) + "px", 0);
                 } else {
                     if (this.undo.torrent) {
+                        $("inbox-item.undo").remove();
+
                         if (Meteor.status().connected) {
                             Meteor.call("remove_torrent", this.undo, function() {});
                         } else {
