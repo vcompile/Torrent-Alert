@@ -28,7 +28,7 @@
     </style>
 
     <template>
-        <paper-header-panel class="fit" style="background: rgba(255, 255, 255, 0.75); z-index: 1;">
+        <paper-header-panel class="fit" style="background: rgba(255, 255, 255, 0.5); z-index: 1;">
             <paper-toolbar>
                 <paper-icon-button icon="arrow-back" on-click="toggle"></paper-icon-button>
                 <input class="flex" id="input" on-keyup="search" placeholder="search">
@@ -36,7 +36,7 @@
 
             <div class="center-justified horizontal layout">
                 <div class="li">
-                    <paper-progress hidden id="progress" indeterminate style="width: 100%;"></paper-progress>
+                    <paper-progress hidden id="progress" indeterminate style="position: fixed; width: 100%;"></paper-progress>
 
                     <template is="dom-repeat" items="[[list]]">
                         <div class="bordered cursor-p horizontal layout white" on-click="add_project">

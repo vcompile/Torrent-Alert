@@ -8,6 +8,10 @@ if (Meteor.isCordova) {
     function backbutton() {
         document.querySelector("#exit_controller").time(moment().format("x"));
 
+        if (document.querySelector("modal-wrapper")) {
+            document.querySelector("modal-wrapper").active = true;
+        }
+
         if (document.querySelector("#drawer")) {
             document.querySelector("#drawer").closeDrawer();
         }

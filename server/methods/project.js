@@ -94,19 +94,6 @@ Meteor.methods({
         });
 
         if (row) {
-            _torrent.update({
-                _id: {
-                    $in: row.torrent
-                },
-                user: user._id
-            }, {
-                $pull: {
-                    user: user._id
-                }
-            }, {
-                multi: true
-            });
-
             _project.update({
                 _id: row._id
             }, {

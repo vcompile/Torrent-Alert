@@ -193,7 +193,7 @@
 
         <paper-fab class="menu-b" id="fab" icon="add" on-click="add_project"></paper-fab>
 
-        <paper-dialog id="user_prompt" style="width: 320px;">
+        <paper-dialog id="user_prompt" style="width: 320px;" with-backdrop>
             <div class="layout vertical">
                 <div style="border-bottom: 2px solid #888; margin: 8px 0; padding: 4px 0;">alerter</div>
 
@@ -227,7 +227,7 @@
             </div>
         </paper-dialog>
 
-        <paper-dialog id="remove_prompt" style="width: 320px;">
+        <paper-dialog id="remove_prompt" style="width: 320px;" with-backdrop>
             <div>Are you sure to delete this item ?</div>
 
             <div class="buttons">
@@ -242,7 +242,7 @@
             </div>
         </paper-dialog>
 
-        <paper-dialog id="schedule_prompt" style="width: 320px;">
+        <paper-dialog id="schedule_prompt" style="width: 320px;" with-backdrop>
             <div>Are you sure to schedule this item ?</div>
 
             <div class="buttons">
@@ -258,7 +258,7 @@
         </paper-dialog>
 
         <modal-wrapper id="torrent_prompt">
-            <div class="center-center fit horizontal layout" on-click="torrent_prompt_close" style="padding: 24px; z-index: 1;">
+            <div class="center-center fit horizontal layout" on-click="torrent_prompt_close" style="background: rgba(0, 0, 0, 0.5); padding: 24px; padding-bottom: 48px; z-index: 1;">
                 <div class="layout vertical" style="height: 100%; width: 320px;">
                     <div class="flex white" style="overflow: auto; padding: 24px;">
                         <iron-selector activate-event="click" id="link" on-click="link" selected-attribute="selected">
@@ -382,17 +382,17 @@
             var _this = this;
 
             Tracker.autorun(function() {
+                _this.$.main_page.selected = (_project.find().count() ? 1 : 0);
+            });
+
+            Tracker.autorun(function() {
                 if (Meteor.user()) {
                     _this.user = Meteor.user();
                 }
             });
 
             Tracker.autorun(function() {
-                _this.$.main_page.selected = (_project.find().count() ? 1 : 0);
-            });
-
-            Tracker.autorun(function() {
-                if (Session.equals("torrent_db", "exists")) {
+                if (0 < Session.get("project_count_local")) {
                     _this.project = document.querySelector("#torrent_db").value;
                 }
             });
@@ -458,8 +458,6 @@
 
                     if (-1 < index) {
                         _this.project.splice(index, 1);
-
-                        _this.project = _.clone(_this.project);
                     }
                 }
             });
@@ -506,7 +504,6 @@
                         if (-1 < index) {
                             _this.project[A].torrent.splice(index, 1);
 
-                            _this.project[A].torrent = _.clone(_this.project[A].torrent);
                             _this.project[A] = _.clone(_this.project[A]);
                             _this.project = _.clone(_this.project);
                         }
@@ -621,7 +618,7 @@
                 return item.url ? "YES" : "NO";
             });
 
-            return (A.NO ? A.YES + " / " : "") + torrent.length;
+            return (A.YES && A.NO ? A.YES + " / " : "") + torrent.length;
         },
 
         return_torrent_description: function(item) {
