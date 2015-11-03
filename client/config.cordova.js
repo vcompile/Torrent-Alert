@@ -6,32 +6,38 @@ if (Meteor.isCordova) {
     }, false);
 
     function backbutton() {
-        document.querySelector("html /deep/ exit-popup").time = moment().format("x");
-
-        if (document.querySelector("html /deep/ #drawerPanel")) {
-            document.querySelector("html /deep/ #drawerPanel").closeDrawer();
+        if (document.querySelector("#exit_controller")) {
+            document.querySelector("#exit_controller").time(moment().format("x"));
         }
 
-        if (document.querySelector("html /deep/ search-bar")) {
-            document.querySelector("html /deep/ search-bar").enabled = false;
+        if (document.querySelector("modal-wrapper")) {
+            document.querySelector("modal-wrapper").active = true;
         }
 
-        for (var A = document.querySelectorAll("html /deep/ paper-action-dialog"), Z = 0; Z < A.length; Z++) {
-            A[Z].close();
+        if (document.querySelector("#drawer")) {
+            document.querySelector("#drawer").closeDrawer();
         }
 
-        for (var A = document.querySelectorAll("html /deep/ paper-dialog"), Z = 0; Z < A.length; Z++) {
+        if (document.querySelector("#add_project")) {
+            document.querySelector("#add_project").active = false;
+        }
+
+        if (document.querySelector("#search_bar")) {
+            document.querySelector("#search_bar").active = false;
+        }
+
+        for (var A = document.querySelectorAll("paper-dialog"), Z = 0; Z < A.length; Z++) {
             A[Z].close();
         }
     }
 
     function menubutton() {
-        if (document.querySelector("html /deep/ layout-inbox")) {
-            document.querySelector("html /deep/ layout-inbox").menuToggle();
+        if (document.querySelector("#layout_inbox")) {
+            document.querySelector("#layout_inbox").menuToggle();
         }
     }
 
     function pause() {
-        save();
+        project_save();
     }
 }

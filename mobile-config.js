@@ -11,10 +11,10 @@ App.info({
     id: "com.vcompile.torrentz",
     name: "Torrent Alert",
     description: "Torrent Keyword Watcher & Alerter",
-    version: "1.6.1",
+    version: "1.7.5",
     author: "Linto Cheeran",
     email: "linto.cet@gmail.com",
-    website: "http://github.com/HedCET"
+    website: "http://vcompile.com/torrentz"
 });
 
 // App.launchScreens({
@@ -28,4 +28,4 @@ App.info({
 //     "android_xhdpi_landscape": ".build/splash/splash-1280x720.png"
 // });
 
-// App.setPreference("android-installLocation", "preferExternal");
+App.setPreference("android-installLocation", "preferExternal");

@@ -1,0 +1,81 @@
+<dom-module id="polymer-toast">
+
+    <template>
+        <paper-toast class="cursor-d horizontal justified layout" duration="4000" id="toast" on-transitionend="transition" style="font-size: 16px; margin-right: 12px; padding: 16px; z-index: 1000;" text="">
+            <div class="cursor-p self-start" hidden="[[!undo.torrent]]" on-click="clear_undo" style="color: #FFEB3B; margin-left: 8px;">UNDO</div>
+        </paper-toast>
+    </template>
+
+    <script>
+    Polymer({
+
+        clear_undo: function() {
+            $("inbox-item.undo").removeClass("undo");
+
+            this.undo = {};
+
+            this.$.toast.hide();
+        },
+
+        is: "polymer-toast",
+
+        properties: {
+            undo: {
+                type: Array,
+                value: function() {
+                    return {};
+                }
+            }
+        },
+
+        ready: function() {
+            var _this = this;
+
+            Tracker.autorun(function() {
+                if (Meteor.status().connected) {
+                    if (_this.$.toast.text != "server connected") {
+                        _this.toast("server connected");
+                    }
+                } else {
+                    if (_this.$.toast.text != "lost server connection") {
+                        _this.toast("lost server connection");
+                    }
+                }
+            });
+        },
+
+        toast: function(text) {
+            this.$.toast.hide();
+
+            this.async(function() {
+                this.$.toast.text = text;
+                this.$.toast.show();
+            }, 400);
+        },
+
+        transition: function() {
+            if (document.querySelector(".menu-b")) {
+                if (this.$.toast.visible) {
+                    document.querySelector(".menu-b").translate3d(0, "-" + ($("#toast #label").height() + 48) + "px", 0);
+                } else {
+                    if (this.undo.torrent) {
+                        $("inbox-item.undo").remove();
+
+                        if (Meteor.status().connected) {
+                            Meteor.call("remove_torrent", this.undo, function() {});
+                        } else {
+                            document.querySelector("#polymer_toast").toast("internet/user required");
+                        }
+
+                        this.undo = {};
+                    }
+
+                    document.querySelector(".menu-b").translate3d(0, 0, 0);
+                }
+            }
+        }
+
+    });
+    </script>
+
+</dom-module>

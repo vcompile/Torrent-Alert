@@ -1,12 +1,13 @@
-callback_done = null;
+_done = null;
 
 Accounts.onEnrollmentLink(function(token, done) {
     if (Meteor.user()) {
         Meteor.logout();
     }
 
-    Session.set("resetPasswordToken", token);
-    callback_done = done;
+    Session.set("password_token", token);
+
+    _done = done;
 });
 
 Accounts.onResetPasswordLink(function(token, done) {
@@ -14,6 +15,7 @@ Accounts.onResetPasswordLink(function(token, done) {
         Meteor.logout();
     }
 
-    Session.set("resetPasswordToken", token);
-    callback_done = done;
+    Session.set("password_token", token);
+
+    _done = done;
 });

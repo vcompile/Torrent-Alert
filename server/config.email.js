@@ -1,12 +1,12 @@
-Accounts.emailTemplates.siteName = "Torrent Alert";
-Accounts.emailTemplates.from = "Linto Cheeran<linto@vcompile.com>";
+Accounts.emailTemplates.siteName = "TorrentAlert";
+Accounts.emailTemplates.from = "LintoCheeran<linto@vcompile.com>";
 
 Accounts.emailTemplates.enrollAccount.subject = function(user) {
     return "enrollAccount URL";
 };
 
 Accounts.emailTemplates.enrollAccount.text = function(user, url) {
-    return "Hi,\n\nPlease open the URL below in google chrome browser to enroll password\n\n" + url + "\n\nThank You"
+    return "Hi,\n\nPlease open the URL below in google chrome browser to enroll password\n\n" + url + "\n\nThankYou"
 };
 
 Accounts.emailTemplates.resetPassword.subject = function(user) {
@@ -14,7 +14,7 @@ Accounts.emailTemplates.resetPassword.subject = function(user) {
 };
 
 Accounts.emailTemplates.resetPassword.text = function(user, url) {
-    return "Hi,\n\nPlease open the URL below in google chrome browser to reset your password\n\n" + url + "\n\nThank You"
+    return "Hi,\n\nPlease open the URL below in google chrome browser to reset your password\n\n" + url + "\n\nThankYou"
 };
 
 Accounts.emailTemplates.verifyEmail.subject = function(user) {
@@ -22,5 +22,5 @@ Accounts.emailTemplates.verifyEmail.subject = function(user) {
 };
 
 Accounts.emailTemplates.verifyEmail.text = function(user, url) {
-    return "Hi,\n\nPlease open the URL below in google chrome browser to verify your registered mailId\n\n" + url + "\n\nThank You"
+    return "Hi,\n\nPlease open the URL below in google chrome browser to verify your registered mailId\n\n" + url + "\n\nThankYou"
 };

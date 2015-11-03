@@ -1,9 +1,13 @@
 {
     "dependencies": {
-        "core-elements": "Polymer/core-elements#~0.5.5",
-        "paper-elements": "Polymer/paper-elements#~0.5.5",
-        "polymer": "Polymer/polymer#~0.5.5"
+        "gold-elements": "polymerelements/gold-elements#~1.0.1",
+        "iron-elements": "PolymerElements/iron-elements#^1.0.0",
+        "load-awesome": "~1.1.0",
+        "neon-elements": "PolymerElements/neon-elements#~1.0.0",
+        "paper-date-picker": "polymer-paper-datepicker#~1.0.3",
+        "paper-elements": "PolymerElements/paper-elements#~1.0.5",
+        "polymer": "Polymer/polymer#^1.0.0"
     },
-    "name": "HedCET",
-    "version": "15.7.5"
+    "name": "polymer-1.0",
+    "version": "1.7.5"
 }
