@@ -11,20 +11,13 @@ Meteor.publish("project", function() {
     });
 });
 
-Meteor.publish("torrent", function(input) {
-    check(input, {
-        project: [String]
-    });
-
+Meteor.publish("torrent", function() {
     return _torrent.find({
-        project: {
-            $in: input.project
-        }
+        user: this.userId
     }, {
         fields: {
-            project: false
+            user: false
         },
-        limit: 50,
         sort: {
             time: -1
         }

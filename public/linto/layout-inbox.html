@@ -88,10 +88,6 @@
     .undo {
         display: none!important;
     }
-    
-    paper-dialog {
-        width: 288px;
-    }
     </style>
 
     <template>
@@ -127,7 +123,7 @@
                                     <div class="flex layout vertical" style="padding: 16px; padding-left: 8px;">
                                         <div class="horizontal justified layout">
                                             <div class="etc flex self-center" style="font-size: 16px; line-height: 24px;">[[item.keyword]]</div>
-                                            <div class="self-start" style="color: #757575; font-size: 14px; line-height: 20px;">[[return_text(item.torrent.length)]]</div>
+                                            <div class="self-start" style="color: #757575; font-size: 14px; line-height: 20px;">[[return_torrent_count(item.torrent)]]</div>
                                         </div>
                                         <div class="etc" style="color: #757575; font-size: 14px; line-height: 20px;">[[return_project_description(item)]]</div>
                                     </div>
@@ -168,7 +164,11 @@
                                             <div class="bordered center horizontal justified layout">
                                                 <div class="flex" style="padding: 16px;">[[item.keyword]]</div>
 
-                                                <paper-icon-button data-id$="[[item._id]]" icon="schedule" hidden="[[!is_search(item.worker)]]" on-click="schedule_project"></paper-icon-button>
+                                                <paper-icon-button data-index$="[[index]]" icon="sort" on-click="sort"></paper-icon-button>
+
+                                                <paper-icon-button data-id$="[[item._id]]" icon="schedule" hidden="[[!is_search(item.worker)]]" on-click="schedule"></paper-icon-button>
+
+                                                <paper-icon-button data-id$="[[item._id]]" icon="refresh" on-click="refresh"></paper-icon-button>
 
                                                 <paper-icon-button data-id$="[[item._id]]" icon="close" on-click="remove_project" style="margin-right: 8px;"></paper-icon-button>
                                             </div>
@@ -178,7 +178,9 @@
                                             </div>
 
                                             <template as="torrent" is="dom-repeat" items="[[item.torrent]]">
-                                                <inbox-item item$="[[torrent]]"></inbox-item>
+                                                <template if="[[torrent.url]]" is="dom-if">
+                                                    <inbox-item item$="[[torrent]]"></inbox-item>
+                                                </template>
                                             </template>
                                         </template>
                                     </template>
@@ -194,7 +196,7 @@
 
         <paper-fab class="menu-b" id="fab" icon="add" on-click="add_project"></paper-fab>
 
-        <paper-dialog id="user_prompt" style="max-width: 320px;">
+        <paper-dialog id="user_prompt" style="width: 320px;">
             <div class="layout vertical">
                 <div style="border-bottom: 2px solid #888; margin: 8px 0; padding: 4px 0;">alerter</div>
 
@@ -228,7 +230,7 @@
             </div>
         </paper-dialog>
 
-        <paper-dialog id="remove_prompt" style="max-width: 320px;">
+        <paper-dialog id="remove_prompt" style="width: 320px;">
             <div>Are you sure to delete this item ?</div>
 
             <div class="buttons">
@@ -243,7 +245,7 @@
             </div>
         </paper-dialog>
 
-        <paper-dialog id="schedule_prompt" style="max-width: 320px;">
+        <paper-dialog id="schedule_prompt" style="width: 320px;">
             <div>Are you sure to schedule this item ?</div>
 
             <div class="buttons">
@@ -259,8 +261,8 @@
         </paper-dialog>
 
         <modal-wrapper id="torrent_prompt">
-            <div class="center-center fit horizontal layout" on-click="torrent_prompt_close" style="background: rgba(0, 0, 0, 0.4); padding: 24px; z-index: 1;">
-                <div class="layout vertical" style="height: 100%; max-width: 320px;">
+            <div class="center-center fit horizontal layout" on-click="torrent_prompt_close" style="padding: 24px; z-index: 1;">
+                <div class="layout vertical" style="height: 100%; width: 320px;">
                     <div class="flex white" style="overflow: auto; padding: 24px;">
                         <iron-selector activate-event="click" id="link" on-click="link" selected-attribute="selected">
                             <template is="dom-repeat" items="[[torrent_prompt.link]]">
@@ -446,8 +448,6 @@
 
                         _this.project = _.clone(_this.project);
                     }
-
-                    subscribe_torrent();
                 },
 
                 changed: function(row, old) {
@@ -475,10 +475,6 @@
                         _this.project[index] = _.clone(_this.project[index]);
                         _this.project = _.clone(_this.project);
                     }
-
-                    if (old.torrent.length < row.torrent.length) {
-                        subscribe_torrent();
-                    }
                 },
 
                 removed: function(old) {
@@ -502,9 +498,9 @@
                         }).indexOf(row._id);
 
                         if (-1 < index) {
-                            _this.project[A].torrent[index] = _.clone($.extend(true, _this.project[A].torrent[index], row)); // row;
+                            _this.project[A].torrent[index] = _.clone($.extend(true, _this.project[A].torrent[index], row));
 
-                            _this.project[A].torrent = _.sortBy(_this.project[A].torrent, "time").reverse();
+                            _this.project[A].torrent = _.clone(_this.project[A].torrent);
                             _this.project[A] = _.clone(_this.project[A]);
                             _this.project = _.clone(_this.project);
                         }
@@ -573,6 +569,20 @@
             this.$.remove_prompt.open();
         },
 
+        remove_torrent: function() {
+            $("inbox-item.iron-selected").addClass("undo");
+
+            document.querySelector("#polymer_toast").undo = {
+                torrent: _.map(this.torrent_selected, function(A) {
+                    return A._id;
+                })
+            };
+
+            document.querySelector("#polymer_toast").toast(this.torrent_selected.length + " torrent removed");
+
+            this.clear_torrent_selection();
+        },
+
         return_class: function(text) {
             return polymer_color(text ? text : "#");
         },
@@ -593,8 +603,22 @@
             return moment(time).fromNow();
         },
 
+        return_torrent_count: function(torrent) {
+            var A = _.countBy(torrent, function(item) {
+                return item.url ? "YES" : "NO";
+            });
+
+            return (A.NO ? A.YES + " / " : "") + torrent.length;
+        },
+
         return_torrent_description: function(item) {
             return (item.size ? item.size : "#") + " | " + (item.leech ? item.leech + "L" : "#") + " / " + (item.seed ? item.seed + "S" : "#");
+        },
+
+        schedule: function(e) {
+            this.$.schedule_prompt.dataset.id = Polymer.dom(e).localTarget.dataset.id;
+
+            this.$.schedule_prompt.open();
         },
 
         schedule_ok: function(e) {
@@ -617,12 +641,6 @@
             }
 
             this.$.schedule_prompt.close();
-        },
-
-        schedule_project: function(e) {
-            this.$.schedule_prompt.dataset.id = Polymer.dom(e).localTarget.dataset.id;
-
-            this.$.schedule_prompt.open();
         },
 
         search_bar: function() {
@@ -671,6 +689,14 @@
             } else {
                 document.querySelector("#polymer_toast").toast("internet/user required");
             }
+        },
+
+        sort: function(e) {
+            var A = Polymer.dom(e).localTarget.dataset.index;
+
+            this.project[A].torrent = _.sortBy(this.project[A].torrent, "time").reverse();
+            this.project[A] = _.clone(this.project[A]);
+            this.project = _.clone(this.project);
         },
 
         torrent_prompt_close: function() {

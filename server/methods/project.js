@@ -86,18 +86,34 @@ Meteor.methods({
 
         check(id, String);
 
-        if (_project.findOne({
-                _id: id,
-                user: user._id
-            })) {
-            return _project.update({
-                _id: id,
+        var row = _project.findOne({
+            _id: id,
+            user: user._id
+        });
+
+        if (row) {
+            _torrent.update({
+                _id: {
+                    $in: row.torrent
+                },
                 user: user._id
             }, {
                 $pull: {
                     user: user._id
                 }
-            }) + " item removed";
+            }, {
+                multi: true
+            });
+
+            _project.update({
+                _id: row._id
+            }, {
+                $pull: {
+                    user: user._id
+                }
+            });
+
+            return "1 keyword removed";
         } else return "notFound";
     },
 
@@ -113,14 +129,16 @@ Meteor.methods({
                 _id: id,
                 user: user._id
             })) {
-            return _project.update({
+            _project.update({
                 _id: id,
                 user: user._id
             }, {
                 $set: {
                     worker: "schedule"
                 }
-            }) + " item moved to scheduler";
+            });
+
+            return "1 item moved to scheduler";
         } else return "notFound";
     }
 
