@@ -23,3 +23,14 @@ Meteor.publish("torrent", function() {
         }
     });
 });
+
+Meteor.publish("worker", function() {
+    return _worker.find({
+        status: "",
+        user: this.userId
+    }, {
+        fields: {
+            user: false
+        }
+    });
+});

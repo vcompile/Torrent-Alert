@@ -15,11 +15,6 @@
         padding: 0;
     }
     
-    paper-progress {
-        --paper-progress-active-color: var(--paper-light-blue-500);
-        --paper-progress-secondary-color: var(--paper-light-blue-100);
-    }
-    
     paper-toggle-button {
         --paper-toggle-button-checked-bar-color: var(--paper-green-500);
         --paper-toggle-button-checked-button-color: var(--paper-green-500);
@@ -174,7 +169,7 @@
                                             </div>
 
                                             <div style="padding: 0 4px;">
-                                                <paper-progress data-progress$="[[item._id]]" hidden style="width: 100%;"></paper-progress>
+                                                <paper-progress data-id$="[[item._id]]" hidden id="project_progress" style="width: 100%;"></paper-progress>
                                             </div>
 
                                             <template as="torrent" is="dom-repeat" items="[[item.torrent]]">
@@ -356,6 +351,17 @@
                 type: String,
                 value: ""
             },
+            project: {
+                type: Array,
+                value: function() {
+                    return [];
+                }
+            },
+            proxy: {
+                observer: "proxy_change",
+                type: Boolean,
+                value: false
+            },
             torrent_prompt: {
                 type: Object,
                 value: function() {
@@ -367,17 +373,6 @@
                 value: function() {
                     return [];
                 }
-            },
-            project: {
-                type: Array,
-                value: function() {
-                    return [];
-                }
-            },
-            proxy: {
-                observer: "proxy_change",
-                type: Boolean,
-                value: false
             },
             user: {
                 type: Object,
@@ -412,16 +407,6 @@
                     // _this.proxy = document.querySelector("#proxy").value;
                 }
             });
-
-            // _worker.find().observe({
-            //     added: function() {
-            //         project_progress();
-            //     },
-
-            //     removed: function(old) {
-            //         project_progress();
-            //     }
-            // });
 
             _project.find().observe({
                 added: function(row) {
@@ -539,6 +524,45 @@
                     }
                 }
             });
+        },
+
+        refresh: function(e) {
+            var _this = this;
+
+            if (Meteor.status().connected) {
+                Meteor.call("refresh", Polymer.dom(e).localTarget.dataset.id, function(error, response) {
+                    if (error) {
+                        document.querySelector("#polymer_toast").toast(error.reason);
+                    } else {
+                        var index = _.map(_this.project, function(A) {
+                            return A._id;
+                        }).indexOf(response._id);
+
+                        if (-1 < index) {
+                            for (var A = 0; A < response.torrent.length; A++) {
+                                var item = _torrent.findOne({
+                                    _id: response.torrent[A]
+                                });
+
+                                response.torrent[A] = (item ? item : {
+                                    _id: response.torrent[A]
+                                });
+
+                                response.torrent[A].project = {
+                                    _id: response._id
+                                };
+                            }
+
+                            _this.project[index] = response;
+
+                            _this.project[index] = _.clone(_this.project[index]);
+                            _this.project = _.clone(_this.project);
+                        }
+                    }
+                });
+            } else {
+                document.querySelector("#polymer_toast").toast("internet/user required");
+            }
         },
 
         remove_ok: function(e) {
