@@ -25,6 +25,12 @@ project_progress = function() {
     });
 };
 
+project_save = function() {
+    if (document.querySelector("#layout_inbox")) {
+        document.querySelector("#torrent_db").value = document.querySelector("#layout_inbox").project;
+    }
+};
+
 Template.inbox.rendered = function() {
     _worker.find().observe({
         added: function(row) {
@@ -34,5 +40,9 @@ Template.inbox.rendered = function() {
         removed: function(old) {
             project_progress();
         }
+    });
+
+    $(window).on("beforeunload", function() {
+        project_save();
     });
 };

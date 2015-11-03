@@ -86,6 +86,8 @@
     </style>
 
     <template>
+        <iron-localstorage name="proxy" on-iron-localstorage-load-empty="initialize_proxy" value="{{proxy}}"></iron-localstorage>
+
         <paper-drawer-panel id="drawer">
             <paper-header-panel drawer>
                 <div class="fit layout vertical">
@@ -299,6 +301,10 @@
             this.torrent_selected = [];
         },
 
+        initialize_proxy: function() {
+            this.proxy = false;
+        },
+
         is_search: function(worker) {
             return (worker == "search")
         },
@@ -333,15 +339,6 @@
             "torrent_selected_change(torrent_selected.splices)"
         ],
 
-        torrent_selected_change: function(change) {
-            this.$.main_toolbar_title.textContent = (this.torrent_selected.length ? this.torrent_selected.length : "TorrentAlert");
-
-            this.$.main_toolbar.toggleClass("grey-500", this.torrent_selected.length);
-            this.$.main_toolbar.toggleClass("selection", this.torrent_selected.length);
-
-            this.$.fab.toggleClass("move-down", this.torrent_selected.length);
-        },
-
         project_selected: function(menu_opt, project_opt) {
             return (menu_opt == "" ? true : menu_opt == project_opt);
         },
@@ -358,7 +355,6 @@
                 }
             },
             proxy: {
-                observer: "proxy_change",
                 type: Boolean,
                 value: false
             },
@@ -382,12 +378,6 @@
             }
         },
 
-        proxy_change: function(A, Z) {
-            if (typeof(Z) != "undefined") {
-                document.querySelector("#proxy").value = this.proxy;
-            }
-        },
-
         ready: function() {
             var _this = this;
 
@@ -402,9 +392,8 @@
             });
 
             Tracker.autorun(function() {
-                if (Session.equals("polymer-ready", 2)) {
-                    // _this.project = document.querySelector("#torrent_db").value
-                    // _this.proxy = document.querySelector("#proxy").value;
+                if (Session.equals("torrent_db", "exists")) {
+                    _this.project = document.querySelector("#torrent_db").value;
                 }
             });
 
@@ -735,6 +724,15 @@
             } else {
                 document.querySelector("#polymer_toast").toast("under processing");
             }
+        },
+
+        torrent_selected_change: function(change) {
+            this.$.main_toolbar_title.textContent = (this.torrent_selected.length ? this.torrent_selected.length : "TorrentAlert");
+
+            this.$.main_toolbar.toggleClass("grey-500", this.torrent_selected.length);
+            this.$.main_toolbar.toggleClass("selection", this.torrent_selected.length);
+
+            this.$.fab.toggleClass("move-down", this.torrent_selected.length);
         },
 
         user_prompt: function() {
