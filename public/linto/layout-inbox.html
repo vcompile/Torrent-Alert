@@ -16,8 +16,8 @@
     }
     
     paper-progress {
-        --paper-progress-active-color: var(--paper-light-blue-500);
-        --paper-progress-secondary-color: var(--paper-light-blue-100);
+        --paper-progress-active-color: var(--paper-red-500);
+        --paper-progress-secondary-color: var(--paper-red-100);
     }
     
     paper-toggle-button {
@@ -174,7 +174,7 @@
                                             </div>
 
                                             <div style="padding: 0 4px;">
-                                                <paper-progress data-progress$="[[item._id]]" hidden style="width: 100%;"></paper-progress>
+                                                <paper-progress data-id$="[[item._id]]" hidden id="project_progress" style="width: 100%;"></paper-progress>
                                             </div>
 
                                             <template as="torrent" is="dom-repeat" items="[[item.torrent]]">
@@ -356,6 +356,17 @@
                 type: String,
                 value: ""
             },
+            project: {
+                type: Array,
+                value: function() {
+                    return [];
+                }
+            },
+            proxy: {
+                observer: "proxy_change",
+                type: Boolean,
+                value: false
+            },
             torrent_prompt: {
                 type: Object,
                 value: function() {
@@ -367,17 +378,6 @@
                 value: function() {
                     return [];
                 }
-            },
-            project: {
-                type: Array,
-                value: function() {
-                    return [];
-                }
-            },
-            proxy: {
-                observer: "proxy_change",
-                type: Boolean,
-                value: false
             },
             user: {
                 type: Object,
@@ -412,16 +412,6 @@
                     // _this.proxy = document.querySelector("#proxy").value;
                 }
             });
-
-            // _worker.find().observe({
-            //     added: function() {
-            //         project_progress();
-            //     },
-
-            //     removed: function(old) {
-            //         project_progress();
-            //     }
-            // });
 
             _project.find().observe({
                 added: function(row) {

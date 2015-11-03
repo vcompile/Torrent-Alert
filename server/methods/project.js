@@ -48,7 +48,8 @@ Meteor.methods({
                         project: row._id,
                         status: "",
                         time_insert: moment().format(),
-                        type: input.worker
+                        type: input.worker,
+                        user: row.user
                     });
                 }
 
@@ -69,7 +70,8 @@ Meteor.methods({
                         project: input._id,
                         status: "",
                         time_insert: moment().format(),
-                        type: input.worker
+                        type: input.worker,
+                        user: input.user
                     });
                 }
 
