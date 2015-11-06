@@ -4,6 +4,14 @@ Meteor.setInterval(function() {
             worker: "schedule"
         }).fetch().forEach(function(item) {
             if (6 < moment.duration(moment().diff(moment(item.time))).asHours()) {
+                _project.update({
+                    _id: item._id
+                }, {
+                    $set: {
+                        time: moment().format()
+                    }
+                });
+
                 if (!_worker.findOne({
                         project: item._id,
                         status: "",
@@ -17,14 +25,6 @@ Meteor.setInterval(function() {
                         user: item.user
                     });
                 }
-
-                _project.update({
-                    _id: item._id
-                }, {
-                    $set: {
-                        time: moment().format()
-                    }
-                });
             }
         });
     }).run();
