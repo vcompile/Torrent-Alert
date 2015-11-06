@@ -24,7 +24,7 @@ Meteor.methods({
         if (row) {
             Accounts.sendEnrollmentEmail(row._id, email);
 
-            return "enrollAccount URL sent @ email";
+            return "enrollAccount url sent @ email";
         } else throw new Meteor.Error(422, "userNotFound");
     },
 
@@ -63,7 +63,7 @@ Meteor.methods({
 
         Accounts.sendEnrollmentEmail(_id);
 
-        return "enrollAccount URL sent @ email";
+        return "enrollAccount url sent @ email";
     }
 
 });

@@ -128,6 +128,8 @@
                     } else {
                         document.querySelector("#polymer_toast").toast("internet/user required");
                     }
+                } else {
+                    this.$.progress.hidden = true;
                 }
             }, 4000);
         },

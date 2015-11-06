@@ -458,6 +458,8 @@
 
                     if (-1 < index) {
                         _this.project.splice(index, 1);
+
+                        _this.project = _.clone(_this.project);
                     }
                 }
             });
@@ -504,6 +506,7 @@
                         if (-1 < index) {
                             _this.project[A].torrent.splice(index, 1);
 
+                            _this.project[A].torrent = _.clone(_this.project[A].torrent);
                             _this.project[A] = _.clone(_this.project[A]);
                             _this.project = _.clone(_this.project);
                         }
