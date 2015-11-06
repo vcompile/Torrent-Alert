@@ -13,6 +13,14 @@ Meteor.methods({
         });
 
         if (row) {
+            _project.update({
+                _id: row._id
+            }, {
+                $set: {
+                    time: moment().format()
+                }
+            });
+
             if (!_worker.findOne({
                     project: row._id,
                     status: "",

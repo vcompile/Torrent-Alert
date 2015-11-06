@@ -2,6 +2,7 @@ accounts-google
 accounts-password
 blaze-html-templates    # Compile .html files into Meteor Blaze views
 check
+crosswalk
 http
 jquery                  # Helpful client-side library
 meteor-base             # Packages every Meteor app needs to have
@@ -15,5 +16,6 @@ tracker                 # Meteor's client-side reactive programming library
 hedcet:cordova-google-plus-native-sign-in
 meteorhacks:npm
 momentjs:moment
+raix:push
 
 npm-container
