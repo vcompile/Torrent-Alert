@@ -22987,10 +22987,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             if (Meteor.status().connected) {
                 var _this = this;
 
-                document.querySelector("#load_awesome").open();
+                document.querySelector("#load_awesome").active = true;
 
                 Meteor.logout(function(error) {
-                    document.querySelector("#load_awesome").close();
+                    document.querySelector("#load_awesome").active = false;
 
                     if (error) {
                         document.querySelector("#polymer_toast").toast(error.reason);
@@ -23077,15 +23077,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <script>
     Polymer({
 
-        close: function() {
-            this.active = false;
-        },
-
         is: "load-awesome",
-
-        open: function() {
-            this.active = true;
-        },
 
         properties: {
             active: {
@@ -23702,13 +23694,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         google: function() {
             if (Meteor.status().connected) {
                 if (Meteor.isCordova) {
-                    document.querySelector("#load_awesome").open();
+                    document.querySelector("#load_awesome").active = true;
 
                     Meteor.cordova_g_plus({
                         cordova_g_plus: true,
                         profile: ["email", "email_verified", "gender", "locale", "name", "picture", "sub"]
                     }, function(error) {
-                        document.querySelector("#load_awesome").close();
+                        document.querySelector("#load_awesome").active = false;
 
                         if (error) {
                             document.querySelector("#polymer_toast").toast(error);
@@ -23763,10 +23755,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 var valid_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
 
                 if (valid_email.test(this.email)) {
-                    document.querySelector("#load_awesome").open();
+                    document.querySelector("#load_awesome").active = true;
 
                     Meteor.call("sendEnrollmentEmail", this.email, function(error, res) {
-                        document.querySelector("#load_awesome").close();
+                        document.querySelector("#load_awesome").active = false;
 
                         if (error) {
                             document.querySelector("#polymer_toast").toast(error.reason);
@@ -23797,12 +23789,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 var valid_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
 
                 if (valid_email.test(this.email)) {
-                    document.querySelector("#load_awesome").open();
+                    document.querySelector("#load_awesome").active = true;
 
                     Accounts.forgotPassword({
                         email: this.email
                     }, function(error) {
-                        document.querySelector("#load_awesome").close();
+                        document.querySelector("#load_awesome").active = false;
 
                         if (error) {
                             document.querySelector("#polymer_toast").toast(error.reason);
@@ -23833,10 +23825,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
                 if (valid_email.test(this.email)) {
                     if (6 <= this.password.length) {
-                        document.querySelector("#load_awesome").open();
+                        document.querySelector("#load_awesome").active = true;
 
                         Meteor.loginWithPassword(this.email, this.password, function(error) {
-                            document.querySelector("#load_awesome").close();
+                            document.querySelector("#load_awesome").active = false;
 
                             if (error) {
                                 document.querySelector("#polymer_toast").toast(error.reason);
@@ -23867,10 +23859,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 var valid_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
 
                 if (valid_email.test(this.email)) {
-                    document.querySelector("#load_awesome").open();
+                    document.querySelector("#load_awesome").active = true;
 
                     Meteor.call("signUp", this.email, function(error, res) {
-                        document.querySelector("#load_awesome").close();
+                        document.querySelector("#load_awesome").active = false;
 
                         if (error) {
                             document.querySelector("#polymer_toast").toast(error.reason);

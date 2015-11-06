@@ -2,7 +2,6 @@ accounts-google
 accounts-password
 blaze-html-templates    # Compile .html files into Meteor Blaze views
 check
-crosswalk
 http
 jquery                  # Helpful client-side library
 meteor-base             # Packages every Meteor app needs to have
