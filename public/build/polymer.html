@@ -21947,20 +21947,20 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     Polymer({
 
         add_project: function() {
-            this.keyword = decodeURIComponent(this.keyword).trim();
-            var keywordArray = (this.keyword.split("/").filter(Boolean).reverse()[0] || "").trim().split(/\?[fq]=/g);
+            if (Meteor.status().connected) {
+                this.keyword = decodeURIComponent(this.keyword).trim();
+                var keywordArray = (this.keyword.split("/").filter(Boolean).reverse()[0] || "").trim().split(/\?[fq]=/g);
 
-            if (this.keyword.length) {
-                var row = {
-                    keyword: (1 < keywordArray.length ? keywordArray[1] : keywordArray[0]),
-                    leech: parseInt(this.leech),
-                    seed: parseInt(this.seed),
-                    url: (1 < keywordArray.length ? keywordArray[0] : "search"),
-                    within: parseInt(this.within),
-                    worker: "schedule"
-                };
+                if (this.keyword.length) {
+                    var row = {
+                        keyword: (1 < keywordArray.length ? keywordArray[1] : keywordArray[0]),
+                        leech: parseInt(this.leech),
+                        seed: parseInt(this.seed),
+                        url: (1 < keywordArray.length ? keywordArray[0] : "search"),
+                        within: parseInt(this.within),
+                        worker: "schedule"
+                    };
 
-                if (Meteor.status().connected) {
                     Meteor.call("insert_project", row, function(error, response) {
                         if (error) {
                             document.querySelector("#polymer_toast").toast((error.reason == "userNotFound") ? "internet/user required" : error.reason);
@@ -21976,19 +21976,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             }
                         }
                     });
+
+                    this.toggle();
                 } else {
-                    document.querySelector("#polymer_toast").toast("internet/user required");
+                    document.querySelector("#polymer_toast").toast("empty keyword");
                 }
 
-                this.toggle();
+                this.keyword = "";
+                this.leech = 1;
+                this.seed = 1;
+                this.within = 6;
             } else {
-                document.querySelector("#polymer_toast").toast("empty keyword");
+                document.querySelector("#polymer_toast").toast("server connection required");
             }
-
-            this.keyword = "";
-            this.leech = 1;
-            this.seed = 1;
-            this.within = 6;
         },
 
         date_picker_close: function() {
@@ -22213,15 +22213,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <script>
     Polymer({
 
-        _time: moment().format("x"),
-
-        is: "exit-controller",
-
         exit: function() {
             if (Meteor.isCordova) {
                 navigator.app.exitApp();
             }
         },
+
+        is: "exit-controller",
 
         time: function(time) {
             if ((parseInt(time) - parseInt(this._time)) < 1000) {
@@ -22229,7 +22227,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
 
             this._time = moment().format("x");
-        }
+        },
+
+        _time: moment().format("x")
 
     });
     </script>
@@ -22684,9 +22684,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             });
 
             Tracker.autorun(function() {
-                if (Meteor.user()) {
-                    _this.user = Meteor.user();
-                }
+                _this.user = (Meteor.user() ? Meteor.user() : {});
             });
 
             Tracker.autorun(function() {
@@ -22814,9 +22812,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         },
 
         refresh: function(e) {
-            var _this = this;
-
             if (Meteor.status().connected) {
+                var _this = this;
+
                 Meteor.call("refresh", Polymer.dom(e).localTarget.dataset.id, function(error, response) {
                     if (error) {
                         document.querySelector("#polymer_toast").toast(error.reason);
@@ -22848,14 +22846,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     }
                 });
             } else {
-                document.querySelector("#polymer_toast").toast("internet/user required");
+                document.querySelector("#polymer_toast").toast("server connection required");
             }
         },
 
         remove_ok: function(e) {
-            var _this = this;
-
             if (Meteor.status().connected) {
+                var _this = this;
+
                 Meteor.call("remove_project", _this.$.remove_prompt.dataset.id, function(error, response) {
                     if (error) {
                         document.querySelector("#polymer_toast").toast(error.reason);
@@ -22868,7 +22866,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     }
                 });
             } else {
-                document.querySelector("#polymer_toast").toast("internet/user required");
+                document.querySelector("#polymer_toast").toast("server connection required");
             }
 
             this.$.remove_prompt.close();
@@ -22933,9 +22931,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         },
 
         schedule_ok: function(e) {
-            var _this = this;
-
             if (Meteor.status().connected) {
+                var _this = this;
+
                 Meteor.call("schedule_project", _this.$.schedule_prompt.dataset.id, function(error, response) {
                     if (error) {
                         document.querySelector("#polymer_toast").toast(error.reason);
@@ -22948,7 +22946,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     }
                 });
             } else {
-                document.querySelector("#polymer_toast").toast("internet/user required");
+                document.querySelector("#polymer_toast").toast("server connection required");
             }
 
             this.$.schedule_prompt.close();
@@ -22985,10 +22983,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         },
 
         sign_out: function() {
-            var _this = this;
-
             if (Meteor.status().connected) {
+                var _this = this;
+
+                document.querySelector("#load_awesome").open();
+
                 Meteor.logout(function(error) {
+                    document.querySelector("#load_awesome").close();
+
                     if (error) {
                         document.querySelector("#polymer_toast").toast(error.reason);
                     } else {
@@ -22998,8 +23000,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     }
                 });
             } else {
-                document.querySelector("#polymer_toast").toast("internet/user required");
+                document.querySelector("#polymer_toast").toast("server connection required");
             }
+
+            document.querySelector('#user_prompt').close();
         },
 
         sort: function(e) {
@@ -23072,7 +23076,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <script>
     Polymer({
 
+        close: function() {
+            this.active = false;
+        },
+
         is: "load-awesome",
+
+        open: function() {
+            this.active = true;
+        },
 
         properties: {
             active: {
@@ -23081,14 +23093,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 type: Boolean,
                 value: false
             },
-        },
-
-        ready: function() {
-            var _this = this;
-
-            Tracker.autorun(function() {
-                _this.active = Meteor.loggingIn();
-            });
         },
 
         toggle: function() {
@@ -23172,7 +23176,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             Tracker.autorun(function() {
                 if (Meteor.status().connected) {
-                    if (_this.$.toast.text != "server connected") {
+                    if (_this.$.toast.text != "" && _this.$.toast.text != "server connected") {
                         _this.toast("server connected");
                     }
                 } else {
@@ -23203,7 +23207,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         if (Meteor.status().connected) {
                             Meteor.call("remove_torrent", this.undo, function() {});
                         } else {
-                            document.querySelector("#polymer_toast").toast("internet/user required");
+                            document.querySelector("#polymer_toast").toast("server connection required");
                         }
 
                         this.undo = {};
@@ -23275,19 +23279,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     Polymer({
 
         add_project: function(e, d) {
-            var keyword = Polymer.dom(e).localTarget.textContent.trim();
+            if (Meteor.status().connected) {
+                var keyword = Polymer.dom(e).localTarget.textContent.trim();
 
-            if (keyword.length) {
-                var row = {
-                    keyword: keyword,
-                    leech: 1,
-                    seed: 1,
-                    url: "search",
-                    within: 6,
-                    worker: "search"
-                };
+                if (keyword.length) {
+                    var row = {
+                        keyword: keyword,
+                        leech: 1,
+                        seed: 1,
+                        url: "search",
+                        within: 6,
+                        worker: "search"
+                    };
 
-                if (Meteor.status().connected) {
                     Meteor.call("insert_project", row, function(error, response) {
                         if (error) {
                             document.querySelector("#polymer_toast").toast((error.reason == "userNotFound") ? "internet/user required" : error.reason);
@@ -23303,13 +23307,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             }
                         }
                     });
-                } else {
-                    document.querySelector("#polymer_toast").toast("internet/user required");
-                }
 
-                this.toggle();
+                    this.toggle();
+                } else {
+                    document.querySelector("#polymer_toast").toast("empty keyword");
+                }
             } else {
-                document.querySelector("#polymer_toast").toast("empty keyword");
+                document.querySelector("#polymer_toast").toast("server connection required");
             }
         },
 
@@ -23335,9 +23339,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             this.debounce("search", function() {
                 if (this.$.input.value.trim().length) {
-                    var _this = this;
-
                     if (Meteor.status().connected) {
+                        var _this = this;
+
                         Meteor.call("search", this.$.input.value.trim(), function(error, response) {
                             _this.$.progress.hidden = true;
 
@@ -23346,7 +23350,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             }
                         });
                     } else {
-                        document.querySelector("#polymer_toast").toast("internet/user required");
+                        document.querySelector("#polymer_toast").toast("server connection required");
                     }
                 } else {
                     this.$.progress.hidden = true;
@@ -23695,32 +23699,34 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         },
 
         google: function() {
-            var _this = this;
+            if (Meteor.status().connected) {
+                if (Meteor.isCordova) {
+                    document.querySelector("#load_awesome").open();
 
-            if (Meteor.isCordova) {
-                document.querySelector("#load_awesome").toggle();
-
-                Meteor.cordova_g_plus({
-                    cordova_g_plus: true,
-                    profile: ["email", "email_verified", "gender", "locale", "name", "picture", "sub"]
-                }, function(error) {
-                    if (error) {
-                        document.querySelector("#load_awesome").toggle();
-
-                        document.querySelector("#polymer_toast").toast(error);
-                    }
-                });
-            } else {
-                if (Accounts.loginServicesConfigured()) {
-                    Meteor.loginWithGoogle({
-                        requestOfflineToken: true,
-                        requestPermissions: ["email", "profile"]
+                    Meteor.cordova_g_plus({
+                        cordova_g_plus: true,
+                        profile: ["email", "email_verified", "gender", "locale", "name", "picture", "sub"]
                     }, function(error) {
+                        document.querySelector("#load_awesome").close();
+
                         if (error) {
-                            document.querySelector("#polymer_toast").toast("error code - " + Accounts.LoginCancelledError.numericError);
+                            document.querySelector("#polymer_toast").toast(error);
                         }
                     });
+                } else {
+                    if (Accounts.loginServicesConfigured()) {
+                        Meteor.loginWithGoogle({
+                            requestOfflineToken: true,
+                            requestPermissions: ["email", "profile"]
+                        }, function(error) {
+                            if (error) {
+                                document.querySelector("#polymer_toast").toast("errorNo - " + Accounts.LoginCancelledError.numericError);
+                            }
+                        });
+                    }
                 }
+            } else {
+                document.querySelector("#polymer_toast").toast("server connection required");
             }
         },
 
@@ -23752,22 +23758,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         },
 
         resend_enrollment_email_submit: function() {
-            var valid_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
+            if (Meteor.status().connected) {
+                var valid_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
 
-            if (valid_email.test(this.email)) {
-                document.querySelector("#load_awesome").toggle();
+                if (valid_email.test(this.email)) {
+                    document.querySelector("#load_awesome").open();
 
-                Meteor.call("sendEnrollmentEmail", this.email, function(error, res) {
-                    document.querySelector("#load_awesome").toggle();
+                    Meteor.call("sendEnrollmentEmail", this.email, function(error, res) {
+                        document.querySelector("#load_awesome").close();
 
-                    if (error) {
-                        document.querySelector("#polymer_toast").toast(error.reason);
-                    } else {
-                        document.querySelector("#polymer_toast").toast(res);
-                    }
-                });
+                        if (error) {
+                            document.querySelector("#polymer_toast").toast(error.reason);
+                        } else {
+                            document.querySelector("#polymer_toast").toast(res);
+                        }
+                    });
+                } else {
+                    document.querySelector("#polymer_toast").toast("invalid email");
+                }
             } else {
-                document.querySelector("#polymer_toast").toast("invalid email");
+                document.querySelector("#polymer_toast").toast("server connection required");
             }
         },
 
@@ -23782,20 +23792,28 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         },
 
         reset_password_submit: function() {
-            var valid_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
+            if (Meteor.status().connected) {
+                var valid_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
 
-            if (valid_email.test(this.email)) {
-                Accounts.forgotPassword({
-                    email: this.email
-                }, function(error) {
-                    if (error) {
-                        document.querySelector("#polymer_toast").toast(error.reason);
-                    } else {
-                        document.querySelector("#polymer_toast").toast("reset password URL sent @ email");
-                    }
-                });
+                if (valid_email.test(this.email)) {
+                    document.querySelector("#load_awesome").open();
+
+                    Accounts.forgotPassword({
+                        email: this.email
+                    }, function(error) {
+                        document.querySelector("#load_awesome").close();
+
+                        if (error) {
+                            document.querySelector("#polymer_toast").toast(error.reason);
+                        } else {
+                            document.querySelector("#polymer_toast").toast("reset password url sent @ email");
+                        }
+                    });
+                } else {
+                    document.querySelector("#polymer_toast").toast("invalid email");
+                }
             } else {
-                document.querySelector("#polymer_toast").toast("invalid email");
+                document.querySelector("#polymer_toast").toast("server connection required");
             }
         },
 
@@ -23809,20 +23827,28 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         },
 
         "sign_in_submit": function() {
-            var valid_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
+            if (Meteor.status().connected) {
+                var valid_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
 
-            if (valid_email.test(this.email)) {
-                if (6 <= this.password.length) {
-                    Meteor.loginWithPassword(this.email, this.password, function(error) {
-                        if (error) {
-                            document.querySelector("#polymer_toast").toast(error.reason);
-                        }
-                    });
+                if (valid_email.test(this.email)) {
+                    if (6 <= this.password.length) {
+                        document.querySelector("#load_awesome").open();
+
+                        Meteor.loginWithPassword(this.email, this.password, function(error) {
+                            document.querySelector("#load_awesome").close();
+
+                            if (error) {
+                                document.querySelector("#polymer_toast").toast(error.reason);
+                            }
+                        });
+                    } else {
+                        document.querySelector("#polymer_toast").toast("min password length is 6");
+                    }
                 } else {
-                    document.querySelector("#polymer_toast").toast("min password length is 6");
+                    document.querySelector("#polymer_toast").toast("invalid email");
                 }
             } else {
-                document.querySelector("#polymer_toast").toast("invalid email");
+                document.querySelector("#polymer_toast").toast("server connection required");
             }
         },
 
@@ -23836,22 +23862,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         },
 
         sign_up_submit: function() {
-            var valid_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
+            if (Meteor.status().connected) {
+                var valid_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
 
-            if (valid_email.test(this.email)) {
-                document.querySelector("#load_awesome").toggle();
+                if (valid_email.test(this.email)) {
+                    document.querySelector("#load_awesome").open();
 
-                Meteor.call("signUp", this.email, function(error, res) {
-                    document.querySelector("#load_awesome").toggle();
+                    Meteor.call("signUp", this.email, function(error, res) {
+                        document.querySelector("#load_awesome").close();
 
-                    if (error) {
-                        document.querySelector("#polymer_toast").toast(error.reason);
-                    } else {
-                        document.querySelector("#polymer_toast").toast(res);
-                    }
-                });
+                        if (error) {
+                            document.querySelector("#polymer_toast").toast(error.reason);
+                        } else {
+                            document.querySelector("#polymer_toast").toast(res);
+                        }
+                    });
+                } else {
+                    document.querySelector("#polymer_toast").toast("invalid email");
+                }
             } else {
-                document.querySelector("#polymer_toast").toast("invalid email");
+                document.querySelector("#polymer_toast").toast("server connection required");
             }
         },
 
