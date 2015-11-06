@@ -23704,6 +23704,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
                         if (error) {
                             document.querySelector("#polymer_toast").toast(error);
+                        } else {
+                            Session.set("route", "inbox");
                         }
                     });
                 } else {
@@ -23714,6 +23716,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         }, function(error) {
                             if (error) {
                                 document.querySelector("#polymer_toast").toast("errorNo - " + Accounts.LoginCancelledError.numericError);
+                            } else {
+                                Session.set("route", "inbox");
                             }
                         });
                     }
@@ -23832,6 +23836,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
                             if (error) {
                                 document.querySelector("#polymer_toast").toast(error.reason);
+                            } else {
+                                Session.set("route", "inbox");
                             }
                         });
                     } else {
