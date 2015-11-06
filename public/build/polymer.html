@@ -22634,8 +22634,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         },
 
         observers: [
+            "project_change(project.splices)",
             "torrent_selected_change(torrent_selected.splices)"
         ],
+
+        project_change: function(change) {
+            this.$.main_page.selected = (this.project.length ? 1 : 0);
+        },
 
         project_selected: function(menu_opt, project_opt) {
             return (menu_opt == "" ? true : menu_opt == project_opt);
@@ -22678,10 +22683,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         ready: function() {
             var _this = this;
-
-            Tracker.autorun(function() {
-                _this.$.main_page.selected = (_project.find().count() ? 1 : 0);
-            });
 
             Tracker.autorun(function() {
                 _this.user = (Meteor.user() ? Meteor.user() : {});
