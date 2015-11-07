@@ -22245,7 +22245,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             <div class="flex layout vertical" style="padding: 16px; padding-left: 8px;">
                 <div style="color: #757575; font-size: 14px; line-height: 20px;">[[return_description(item)]]</div>
-                <div style="font-size: 16px; line-height: 24px; text-align: justify; text-justify: newspaper;">[[item.title]]</div>
+                <div style="font-size: 16px; line-height: 24px;">[[item.title]]</div>
                 <div style="color: #757575; font-size: 14px; line-height: 20px; text-align: right;">[[return_time(item.time)]]</div>
             </div>
         </div>
@@ -22578,7 +22578,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     <div class="cursor-p layout vertical" style="background: #EEE; padding: 24px;">
                         <div style="color: #757575; font-size: 14px; line-height: 20px;">[[return_torrent_description(torrent_prompt)]]</div>
 
-                        <div style=" text-align: justify; text-justify: newspaper;"><span style="font-size: 16px; line-height: 24px;">[[torrent_prompt.title]]</span>&nbsp;&nbsp;<span class$="[[return_class(torrent_prompt.category)]]" style="font-size: 14px; line-height: 20px; padding-left: 4px; padding-right: 4px;">[[torrent_prompt.category]]</span>&nbsp;&nbsp;</div>
+                        <div><span style="font-size: 16px; line-height: 24px;">[[torrent_prompt.title]]</span>&nbsp;&nbsp;<span class$="[[return_class(torrent_prompt.category)]]" style="font-size: 14px; line-height: 20px; padding-left: 4px; padding-right: 4px;">[[torrent_prompt.category]]</span>&nbsp;&nbsp;</div>
                     </div>
                 </div>
             </div>
@@ -23258,7 +23258,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     <template is="dom-repeat" items="[[list]]">
                         <div class="bordered cursor-p horizontal layout white" on-click="add_project">
                             <iron-icon icon="chevron-right" style="padding: 16px; padding-right: 8px;"></iron-icon>
-                            <div class="flex" style="font-size: 16px; line-height: 24px; padding: 16px; padding-left: 8px; text-align: justify; text-justify: newspaper;">[[item]]</div>
+                            <div class="flex" style="font-size: 16px; line-height: 24px; padding: 16px; padding-left: 8px;">[[item]]</div>
                         </div>
                     </template>
 
