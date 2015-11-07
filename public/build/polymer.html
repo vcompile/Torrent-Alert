@@ -22238,7 +22238,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <dom-module id="inbox-item" assetpath="linto/">
 
     <template>
-        <div class="bordered cursor-p horizontal hover justified layout white" on-click="click" style="border">
+        <div class="bordered cursor-p horizontal hover justified layout white" on-click="click">
             <div style="padding: 16px; padding-right: 8px;">
                 <selectable-icon icon_class$="[[return_class(item.category)]]" icon_text$="[[return_text(item.link.length)]]" id="selectable_icon" selected$="[[selected]]"></selectable-icon>
             </div>
@@ -22407,10 +22407,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         </div>
                     </template>
 
-                    <div class="flex">
+                    <div class="flex" style="overflow: auto;">
                         <iron-selector activate-event="click" id="menu_opt" on-iron-select="menu_opt" selected-attribute="selected">
                             <template is="dom-repeat" items="[[project]]">
-                                <div class="cursor-p horizontal hover justified layout menu-li relative" data-id$="[[item._id]]" style="border">
+                                <div class="cursor-p horizontal hover justified layout menu-li relative" data-id$="[[item._id]]">
                                     <div style="padding: 16px; padding-right: 8px;">
                                         <selectable-icon icon_class$="[[return_class(item.keyword)]]" icon_text$="[[return_icon_text(item.keyword)]]"></selectable-icon>
                                     </div>
@@ -22429,7 +22429,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         </iron-selector>
                     </div>
 
-                    <div class="cursor-p menu-li" onclick="window.open('http://vcompile.com/torrentz')" style="padding: 16px;">About TorrentAlert</div>
+                    <div class="cursor-p menu-li white" onclick="window.open('http://vcompile.com/torrentz')" style="padding: 16px; z-index: 1;">About TorrentAlert</div>
                 </div>
             </paper-header-panel>
 
