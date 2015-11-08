@@ -11725,8 +11725,6 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 </script>
 
 
-
-
 <script>
   (function() {
     'use strict';
@@ -16147,146 +16145,6 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
 
 })();
 </script>
-<dom-module id="paper-badge" assetpath="bower_components/paper-badge/">
-  <template>
-    <style>
-      :host {
-        display: block;
-        position: absolute;
-        outline: none;
-      }
-
-      #badge {
-        @apply(--paper-font-common-base);
-        font-weight: 600;
-        font-size: 12px;
-        border-radius: 50%;
-        margin-left: var(--paper-badge-margin-left, 0px);
-        margin-bottom: var(--paper-badge-margin-bottom, 0px);
-        width: var(--paper-badge-width, 22px);
-        height: var(--paper-badge-height, 22px);
-        background-color: var(--paper-badge-background, --accent-color);
-        opacity: var(--paper-badge-opacity, 1.0);
-        color: var(--paper-badge-text-color, white);
-        @apply(--layout);
-        @apply(--layout-center-center);
-
-        @apply(--paper-badge);
-      }
-    </style>
-
-    <div id="badge">{{label}}</div>
-  </template>
-
-  <script>
-    Polymer({
-      is: 'paper-badge',
-
-      hostAttributes: {
-        tabindex: '0',
-        role: 'status'
-      },
-
-      behaviors: [
-        Polymer.IronResizableBehavior
-      ],
-
-      listeners: {
-        'iron-resize': 'updatePosition'
-      },
-
-      properties: {
-        /**
-         * The id of the element that the badge is anchored to. This element
-         * must be a sibling of the badge.
-         */
-        for: {
-          type: String,
-          observer: '_forChanged'
-        },
-
-        /**
-         * The label displayed in the badge. The label is centered, and ideally
-         * should have very few characters.
-         */
-        label: {
-          type: String,
-          observer: '_labelChanged'
-        }
-      },
-
-      attached: function() {
-        this._updateTarget();
-      },
-
-      _forChanged: function() {
-        // The first time the property is set is before the badge is attached,
-        // which means we're not ready to position it yet.
-        if (!this.isAttached) {
-          return;
-        }
-        this._updateTarget();
-      },
-
-      _labelChanged: function() {
-        this.setAttribute('aria-label', this.label);
-      },
-
-      _updateTarget: function() {
-        this._target = this.target;
-        this.async(this.notifyResize, 1);
-      },
-
-      /**
-       * Returns the target element that this badge is anchored to. It is
-       * either the element given by the `for` attribute, or the immediate parent
-       * of the badge.
-       */
-      get target () {
-        var parentNode = Polymer.dom(this).parentNode;
-        // If the parentNode is a document fragment, then we need to use the host.
-        var ownerRoot = Polymer.dom(this).getOwnerRoot();
-        var target;
-
-        if (this.for) {
-          target = Polymer.dom(ownerRoot).querySelector('#' + this.for);
-        } else {
-          target = parentNode.nodeType == Node.DOCUMENT_FRAGMENT_NODE ?
-              ownerRoot.host : parentNode;
-        }
-
-        return target;
-      },
-
-      /**
-       * Repositions the badge relative to its anchor element. This is called
-       * automatically when the badge is attached or an `iron-resize` event is
-       * fired (for exmaple if the window has resized, or your target is a
-       * custom element that implements IronResizableBehavior).
-       *
-       * You should call this in all other cases when the achor's position
-       * might have changed (for example, if it's visibility has changed, or
-       * you've manually done a page re-layout).
-       */
-      updatePosition: function() {
-        if (!this._target)
-          return;
-
-        if (!this.offsetParent)
-          return;
-
-        var parentRect = this.offsetParent.getBoundingClientRect();
-        var targetRect = this._target.getBoundingClientRect();
-        var thisRect = this.getBoundingClientRect();
-
-        this.style.left = targetRect.left - parentRect.left +
-            (targetRect.width - thisRect.width / 2) + 'px';
-        this.style.top = targetRect.top - parentRect.top -
-            (thisRect.height / 2) + 'px';
-      }
-    })
-  </script>
-</dom-module>
 <dom-module id="paper-material" assetpath="bower_components/paper-material/">
   <template>
     <style>
@@ -22429,7 +22287,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         </iron-selector>
                     </div>
 
-                    <div class="cursor-p menu-li white" onclick="window.open('http://vcompile.com/torrentz')" style="padding: 16px; z-index: 1;">About TorrentAlert</div>
+                    <div class="cursor-p menu-li white" onclick="window.open('http://vcompile.com/torrentz', '_system')" style="padding: 16px; z-index: 1;">About TorrentAlert</div>
                 </div>
             </paper-header-panel>
 
@@ -22985,21 +22843,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         sign_out: function() {
             if (Meteor.status().connected) {
-                var _this = this;
-
-                document.querySelector("#load_awesome").active = true;
+                this.project = [];
 
                 Meteor.logout(function(error) {
-                    document.querySelector("#load_awesome").active = false;
-
                     if (error) {
-                        document.querySelector("#polymer_toast").toast(error.reason);
-                    } else {
-                        _this.project = [];
-
-                        Session.set("route", "user_check");
+                        console.log(error);
                     }
                 });
+
+                Session.set("route", "user_check");
             } else {
                 document.querySelector("#polymer_toast").toast("server connection required");
             }

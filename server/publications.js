@@ -18,6 +18,7 @@ Meteor.publish("torrent", function() {
         fields: {
             user: false
         },
+        limit: 400,
         sort: {
             time: -1
         }

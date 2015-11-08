@@ -99,6 +99,9 @@ Meteor.methods({
             }, {
                 $pull: {
                     user: user._id
+                },
+                $set: {
+                    worker: "search"
                 }
             });
 

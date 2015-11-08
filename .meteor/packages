@@ -13,6 +13,7 @@ standard-minifiers      # JS/CSS minifiers run for production mode
 tracker                 # Meteor's client-side reactive programming library
 
 hedcet:cordova-google-plus-native-sign-in
+meteorhacks:kadira
 meteorhacks:npm
 momentjs:moment
 raix:push
