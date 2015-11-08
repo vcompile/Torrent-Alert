@@ -121,16 +121,21 @@ Meteor.methods({
                 _id: id,
                 user: user._id
             })) {
-            _project.update({
-                _id: id,
-                user: user._id
-            }, {
-                $set: {
+            if (_project.find({
+                    user: user._id,
                     worker: "schedule"
-                }
-            });
+                }).count() < 4) {
+                _project.update({
+                    _id: id,
+                    user: user._id
+                }, {
+                    $set: {
+                        worker: "schedule"
+                    }
+                });
 
-            return "1 item moved to scheduler";
+                return "quota limit reached";
+            } else return "1 item moved to scheduler";
         } else return "notFound";
     }
 
