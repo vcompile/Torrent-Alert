@@ -1,1 +1,8 @@
+#File
+
 *.DS_Store
+config.push.json
+
+#Folder
+
+server/ignore
