@@ -1,0 +1,94 @@
+<dom-module id="selectable-icon">
+
+    <style>
+    .icon {
+        background: #EEE;
+        border-radius: 50%;
+        color: black;
+        height: 40px;
+        overflow: hidden;
+        transition: transform 400ms ease-in-out;
+        width: 40px;
+        will-change: transform;
+    }
+    
+    img,
+    .letter {
+        border-radius: inherit;
+        font-size: 1.15em;
+        height: 100%;
+        text-transform: uppercase;
+        transition: opacity 200ms ease-in-out 200ms;
+        width: 100%;
+        will-change: opacity;
+    }
+    
+    iron-icon {
+        left: 20%;
+        position: absolute!important;
+        opacity: 0;
+        top: 20%;
+        transform: rotate3d(0, 1, 0, 180deg) scale(0);
+        transition: transform 200ms ease-in-out 200ms;
+        will-change: opacity;
+    }
+    
+    :host([selected]) .icon {
+        transform: rotate3d(0, 1, 0, -180deg);
+    }
+    
+    :host([selected]) img,
+    :host([selected]) .letter {
+        opacity: 0;
+    }
+    
+    :host([selected]) iron-icon {
+        transform: rotate3d(0, 1, 0, -180deg) scale(1);
+        opacity: 1;
+    }
+    </style>
+
+    <template>
+        <div class="icon">
+            <template if="[[icon_img_src]]" is="dom-if">
+                <img class$="[[icon_class]]" src$="[[icon_img_src]]">
+            </template>
+
+            <span class$="[[icon_text_class('center-center horizontal layout letter', icon_class)]]" hidden$="[[icon_img_src]]">[[icon_text]]</span>
+
+            <iron-icon icon="check"></iron-icon>
+        </div>
+    </template>
+
+    <script>
+    Polymer({
+
+        is: "selectable-icon",
+
+        properties: {
+            icon_class: {
+                type: String,
+                value: null
+            },
+            icon_img_src: {
+                type: String,
+                value: null
+            },
+            icon_text: {
+                type: String,
+                value: null
+            },
+            selected: {
+                type: Boolean,
+                value: false
+            }
+        },
+
+        icon_text_class: function(A, Z) {
+            return (A ? A + " " : "") + (Z ? Z : "");
+        }
+
+    });
+    </script>
+
+</dom-module>
