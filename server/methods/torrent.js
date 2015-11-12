@@ -16,8 +16,8 @@ Meteor.methods({
             },
             user: user._id
         }, {
-            $pull: {
-                user: user._id
+            $addToSet: {
+                user_removed: user._id
             }
         }, {
             multi: true

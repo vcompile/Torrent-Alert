@@ -13,12 +13,15 @@ Meteor.publish("project", function() {
 
 Meteor.publish("torrent", function() {
     return _torrent.find({
-        user: this.userId
+        user: this.userId,
+        user_removed: {
+            $ne: this.userId
+        }
     }, {
         fields: {
-            user: false
+            user: false,
+            user_removed: false
         },
-        limit: 400,
         sort: {
             time: -1
         }

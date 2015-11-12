@@ -19244,6 +19244,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         content: '';
         background: currentColor;
         opacity: var(--dark-divider-opacity);
+        pointer-events: none;
 
         @apply(--paper-item-focused-before);
       }
@@ -22327,7 +22328,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                                             </div>
 
                                             <div style="padding: 0 4px;">
-                                                <paper-progress data-id$="[[item._id]]" hidden="" id="project_progress" style="width: 100%;"></paper-progress>
+                                                <paper-progress class="project_progress" data-id$="[[item._id]]" hidden="" style="width: 100%;"></paper-progress>
                                             </div>
 
                                             <template as="torrent" is="dom-repeat" items="[[item.torrent]]">
@@ -22668,6 +22669,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     }
                 }
             });
+
+            if (Meteor.isCordova) {
+                _splash.release();
+            }
         },
 
         refresh: function(e) {
@@ -23047,10 +23052,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     document.querySelector(".menu-b").translate3d(0, "-" + ($("#toast #label").height() + 48) + "px", 0);
                 } else {
                     if (this.undo.torrent) {
-                        $("inbox-item.undo").remove();
-
                         if (Meteor.status().connected) {
-                            Meteor.call("remove_torrent", this.undo, function() {});
+                            Meteor.call("remove_torrent", this.undo, function(error) {
+                                if (error) {
+                                    console.log(error);
+                                } else {
+                                    $("inbox-item.undo").removeClass("undo");
+                                }
+                            });
                         } else {
                             document.querySelector("#polymer_toast").toast("server connection required");
                         }
@@ -23593,6 +23602,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             selected: {
                 type: Number,
                 value: 0
+            }
+        },
+
+        ready: function() {
+            if (Meteor.isCordova) {
+                _splash.release();
             }
         },
 

@@ -1,5 +1,5 @@
 project_progress = function() {
-    $("#project_progress").attr("hidden", true);
+    $(".project_progress").attr("hidden", true);
 
     var A = {};
 
@@ -13,8 +13,8 @@ project_progress = function() {
         });
 
         if (project) {
-            if (document.querySelector('#project_progress[data-id="' + key + '"]')) {
-                var project_progress = document.querySelector('#project_progress[data-id="' + key + '"]');
+            if (document.querySelector('.project_progress[data-id="' + key + '"]')) {
+                var project_progress = document.querySelector('.project_progress[data-id="' + key + '"]');
 
                 project_progress.hidden = false;
 
