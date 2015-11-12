@@ -1,0 +1,92 @@
+<dom-module id="card-route">
+
+    <style>
+    :host {
+        background: transparent!important;
+    }
+    </style>
+
+    <template>
+
+        <div class$="[[get_ripple_class(ripple_class)]]" id="animator" style="opacity: 0;"></div>
+
+        <div id="container">
+            <content select="div"></content>
+        </div>
+
+    </template>
+
+    <script>
+    Polymer({
+
+        behaviors: [
+            Polymer.NeonSharedElementAnimatableBehavior
+        ],
+
+        get_ripple_class: function(ripple_class) {
+            return "fit " + ripple_class;
+        },
+
+        is: "card-route",
+
+        properties: {
+            animationConfig: {
+                type: Object,
+                value: function() {
+                    return {
+                        'entry': [{
+                            name: 'ripple-animation',
+                            id: 'ripple',
+                            toPage: this
+                        }, {
+                            name: 'fade-out-animation',
+                            node: this.$.animator,
+                            timing: {
+                                delay: 200
+                            }
+                        }, {
+                            name: 'fade-in-animation',
+                            node: this.$.container,
+                            timing: {
+                                delay: 100
+                            }
+                        }],
+
+                        'exit': [{
+                            name: 'opaque-animation',
+                            node: this.$.animator
+                        }, {
+                            name: 'fade-out-animation',
+                            node: this.$.container,
+                            timing: {
+                                duration: 200
+                            }
+                        }, {
+                            name: 'reverse-ripple-animation',
+                            id: 'reverse-ripple',
+                            fromPage: this
+                        }]
+                    };
+                }
+            },
+
+            ripple_class: {
+                type: String,
+                value: "white"
+            },
+
+            sharedElements: {
+                type: Object,
+                value: function() {
+                    return {
+                        "ripple": this.$.animator,
+                        "reverse-ripple": this.$.animator
+                    };
+                }
+            }
+        }
+
+    });
+    </script>
+
+</dom-module>

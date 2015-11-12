@@ -19,7 +19,7 @@ project_progress = function() {
                 project_progress.hidden = false;
 
                 project_progress.max = project.torrent.length;
-                project_progress.value = project.torrent.length - value;
+                project_progress.value = Math.abs(project.torrent.length - value);
             }
         }
     });

@@ -1,0 +1,449 @@
+<dom-module id="user-check">
+
+    <style>
+    gold-email-input.color-white {
+        --paper-input-container-color: white;
+        --paper-input-container-focus-color: #FFEB3B;
+        --paper-input-container-invalid-color: #F44336;
+        --paper-input-container-input-color: white;
+    }
+    
+    paper-button {
+        margin: 0;
+        min-width: 50%;
+        padding: 16px;
+    }
+    
+    .page-body {
+        overflow: auto;
+        padding: 24px;
+    }
+    
+    .page-title {
+        border-bottom: 2px solid #EEE;
+    }
+    
+    .page-title paper-icon-button {
+        margin-right: 16px;
+    }
+    
+    .page-title > div {
+        padding: 16px;
+    }
+    
+    .swiper-circle {
+        border: 2px solid #0097A7;
+        border-radius: 50%;
+        margin-left: 4px;
+        margin-right: 4px;
+        padding: 4px;
+    }
+    
+    .swiper-img {
+        background-position: top;
+        background-size: cover;
+    }
+    </style>
+
+    <template>
+        <neon-animated-pages class="fit" selected="[[selected]]">
+            <card-router id="router">
+                <div class="center-justified cyan-500 fit horizontal layout">
+                    <div class="layout li vertical">
+                        <neon-animated-pages class="flex" id="swiper" on-tap="swiper_tap" selected="3">
+                            <neon-animatable class="cyan-500 layout vertical">
+                                <div class="center-justified horizontal layout" style="padding: 32px 16px;">
+                                    <div>Torrent Sharing, offline support, etc</div>
+                                </div>
+
+                                <div class="flex layout swiper-img vertical" style="background-image:url(/img/0.png);">
+                                    <div class="flex"></div>
+                                    <div class="center-justified horizontal layout" style="padding: 32px 16px;">
+                                        <div class="swiper-circle"></div>
+                                        <div class="swiper-circle cyan-500"></div>
+                                        <div class="swiper-circle cyan-500"></div>
+                                        <div class="swiper-circle cyan-500"></div>
+                                    </div>
+                                </div>
+                            </neon-animatable>
+
+                            <neon-animatable class="cyan-500 layout vertical">
+                                <div class="center-justified horizontal layout" style="padding: 32px 16px;">
+                                    <div>100+ site indexing &amp; inbuilt proxy</div>
+                                </div>
+
+                                <div class="flex layout swiper-img vertical" style="background-image:url(/img/1.png);">
+                                    <div class="flex"></div>
+                                    <div class="center-justified horizontal layout" style="padding: 32px 16px;">
+                                        <div class="swiper-circle cyan-500"></div>
+                                        <div class="swiper-circle"></div>
+                                        <div class="swiper-circle cyan-500"></div>
+                                        <div class="swiper-circle cyan-500"></div>
+                                    </div>
+                                </div>
+                            </neon-animatable>
+
+                            <neon-animatable class="cyan-500 layout vertical">
+                                <div class="center-justified horizontal layout" style="padding: 32px 16px;">
+                                    <div>SemanticSearch in V2</div>
+                                </div>
+
+                                <div class="flex layout swiper-img vertical" style="background-image:url(/img/2.png);">
+                                    <div class="flex"></div>
+                                    <div class="center-justified horizontal layout" style="padding: 32px 16px;">
+                                        <div class="swiper-circle cyan-500"></div>
+                                        <div class="swiper-circle cyan-500"></div>
+                                        <div class="swiper-circle"></div>
+                                        <div class="swiper-circle cyan-500"></div>
+                                    </div>
+                                </div>
+                            </neon-animatable>
+
+                            <neon-animatable class="cyan-500 layout vertical">
+                                <div class="center-justified horizontal layout" style="padding: 32px 16px;">
+                                    <div>Flexible Scheduler (96/day)</div>
+                                </div>
+
+                                <div class="flex layout swiper-img vertical" style="background-image:url(/img/3.png);">
+                                    <div class="flex"></div>
+                                    <div class="center-justified horizontal layout" style="padding: 32px 16px;">
+                                        <div class="swiper-circle cyan-500"></div>
+                                        <div class="swiper-circle cyan-500"></div>
+                                        <div class="swiper-circle cyan-500"></div>
+                                        <div class="swiper-circle"></div>
+                                    </div>
+                                </div>
+                            </neon-animatable>
+                        </neon-animated-pages>
+
+                        <div class="horizontal layout">
+                            <div class="cursor-p flex white" on-click="sign_in" style="padding: 16px; text-align: center;">SIGN IN</div>
+                            <div class="cursor-p flex cyan-700" on-click="sign_up" style="padding: 16px; text-align: center;">SIGN UP</div>
+                        </div>
+                    </div>
+                </div>
+            </card-router>
+
+            <card-route ripple_class="white">
+                <div class="fit center-justified horizontal layout white">
+                    <div class="layout li vertical">
+                        <div class="center horizontal justified layout page-title">
+                            <div class="cursor-d etc flex">SIGN IN</div>
+                            <paper-icon-button icon="close" on-click="back"></paper-icon-button>
+                        </div>
+
+                        <div class="flex layout page-body vertical">
+                            <gold-email-input auto-validate label="email" required value="{{email}}"></gold-email-input>
+                            <paper-input auto-validate label="password" required type="password" value="{{password}}"></paper-input>
+
+                            <br>
+
+                            <div class="end-justified horizontal layout">
+                                <paper-button class="blue-500" on-click="sign_in_submit">submit</paper-button>
+                            </div>
+
+                            <br>
+
+                            <div class="horizontal layout">
+                                <img class="cursor-p" disabled src="/img/fb.png" style="opacity: 0.2;">
+                                <img class="cursor-p" on-click="google" src="/img/google-plus.png">
+                                <img class="cursor-p" disabled src="/img/twitter.png" style="opacity: 0.2;">
+                            </div>
+                        </div>
+
+                        <div class="cursor-p" on-click="reset_password" style="padding: 16px;">reset password</div>
+                    </div>
+                </div>
+            </card-route>
+
+            <card-route ripple_class="white">
+                <div class="fit center-justified horizontal layout white">
+                    <div class="layout li vertical">
+                        <div class="center horizontal justified layout page-title">
+                            <div class="cursor-d etc flex">reset password</div>
+                            <paper-icon-button icon="close" on-click="back"></paper-icon-button>
+                        </div>
+
+                        <div class="flex layout page-body vertical">
+                            <gold-email-input auto-validate label="email" required value="{{email}}"></gold-email-input>
+
+                            <br>
+
+                            <div class="end-justified horizontal layout">
+                                <paper-button class="blue-500" on-click="reset_password_submit">submit</paper-button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </card-route>
+
+            <card-route ripple_class="cyan-700">
+                <div class="fit center-justified cyan-700 horizontal layout">
+                    <div class="layout li vertical">
+                        <div class="center horizontal justified layout page-title" style="border-bottom: 2px solid #006064;">
+                            <div class="cursor-d etc flex">SIGN UP</div>
+                            <paper-icon-button icon="close" on-click="back"></paper-icon-button>
+                        </div>
+
+                        <div class="flex layout page-body vertical">
+                            <gold-email-input auto-validate class="color-white" label="email" required value="{{email}}"></gold-email-input>
+
+                            <br>
+
+                            <div class="end-justified horizontal layout">
+                                <paper-button class="cyan-900" on-click="sign_up_submit">submit</paper-button>
+                            </div>
+                        </div>
+
+                        <div class="cursor-p" on-click="resend_enrollment_email" style="padding: 16px;">resend enrollment-email</div>
+                    </div>
+                </div>
+            </card-route>
+
+            <card-route ripple_class="cyan-700">
+                <div class="fit center-justified cyan-700 horizontal layout">
+                    <div class="layout li vertical">
+                        <div class="center horizontal justified layout page-title" style="border-bottom: 2px solid #006064;">
+                            <div class="cursor-d etc flex">resend enrollment-email</div>
+                            <paper-icon-button icon="close" on-click="back"></paper-icon-button>
+                        </div>
+
+                        <div class="flex layout page-body vertical">
+                            <gold-email-input auto-validate class="color-white" label="email" required value="{{email}}"></gold-email-input>
+
+                            <br>
+
+                            <div class="end-justified horizontal layout">
+                                <paper-button class="cyan-900" on-click="resend_enrollment_email_submit">submit</paper-button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </card-route>
+        </neon-animated-pages>
+    </template>
+
+    <script>
+    Polymer({
+
+        back: function() {
+            this.selected = 0;
+        },
+
+        google: function() {
+            if (Meteor.status().connected) {
+                if (Meteor.isCordova) {
+                    document.querySelector("#load_awesome").active = true;
+
+                    Meteor.cordova_g_plus({
+                        cordova_g_plus: true,
+                        profile: ["email", "email_verified", "gender", "locale", "name", "picture", "sub"]
+                    }, function(error) {
+                        document.querySelector("#load_awesome").active = false;
+
+                        if (error) {
+                            document.querySelector("#polymer_toast").toast(error);
+                        } else {
+                            Session.set("route", "inbox");
+                        }
+                    });
+                } else {
+                    if (Accounts.loginServicesConfigured()) {
+                        Meteor.loginWithGoogle({
+                            requestOfflineToken: true,
+                            requestPermissions: ["email", "profile"]
+                        }, function(error) {
+                            if (error) {
+                                document.querySelector("#polymer_toast").toast("errorNo - " + Accounts.LoginCancelledError.numericError);
+                            } else {
+                                Session.set("route", "inbox");
+                            }
+                        });
+                    }
+                }
+            } else {
+                document.querySelector("#polymer_toast").toast("server connection required");
+            }
+        },
+
+        is: "user-check",
+
+        properties: {
+            email: {
+                type: String,
+                value: "linto@vcompile.com"
+            },
+            password: {
+                type: String,
+                value: "password"
+            },
+            selected: {
+                type: Number,
+                value: 0
+            }
+        },
+
+        ready: function() {
+            if (Meteor.isCordova) {
+                _splash.release();
+            }
+        },
+
+        resend_enrollment_email: function() {
+            this.selected = 0;
+
+            var _this = this;
+
+            Meteor.setTimeout(function() {
+                _this.selected = 4;
+            }, 800);
+        },
+
+        resend_enrollment_email_submit: function() {
+            if (Meteor.status().connected) {
+                var valid_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
+
+                if (valid_email.test(this.email)) {
+                    document.querySelector("#load_awesome").active = true;
+
+                    Meteor.call("sendEnrollmentEmail", this.email, function(error, res) {
+                        document.querySelector("#load_awesome").active = false;
+
+                        if (error) {
+                            document.querySelector("#polymer_toast").toast(error.reason);
+                        } else {
+                            document.querySelector("#polymer_toast").toast(res);
+                        }
+                    });
+                } else {
+                    document.querySelector("#polymer_toast").toast("invalid email");
+                }
+            } else {
+                document.querySelector("#polymer_toast").toast("server connection required");
+            }
+        },
+
+        reset_password: function() {
+            this.selected = 0;
+
+            var _this = this;
+
+            Meteor.setTimeout(function() {
+                _this.selected = 2;
+            }, 800);
+        },
+
+        reset_password_submit: function() {
+            if (Meteor.status().connected) {
+                var valid_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
+
+                if (valid_email.test(this.email)) {
+                    document.querySelector("#load_awesome").active = true;
+
+                    Accounts.forgotPassword({
+                        email: this.email
+                    }, function(error) {
+                        document.querySelector("#load_awesome").active = false;
+
+                        if (error) {
+                            document.querySelector("#polymer_toast").toast(error.reason);
+                        } else {
+                            document.querySelector("#polymer_toast").toast("reset password url sent @ email");
+                        }
+                    });
+                } else {
+                    document.querySelector("#polymer_toast").toast("invalid email");
+                }
+            } else {
+                document.querySelector("#polymer_toast").toast("server connection required");
+            }
+        },
+
+        sign_in: function(e) {
+            this.$.router.sharedElements = {
+                'ripple': e.target,
+                'reverse-ripple': e.target
+            };
+
+            this.selected = 1;
+        },
+
+        "sign_in_submit": function() {
+            if (Meteor.status().connected) {
+                var valid_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
+
+                if (valid_email.test(this.email)) {
+                    if (6 <= this.password.length) {
+                        document.querySelector("#load_awesome").active = true;
+
+                        Meteor.loginWithPassword(this.email, this.password, function(error) {
+                            document.querySelector("#load_awesome").active = false;
+
+                            if (error) {
+                                document.querySelector("#polymer_toast").toast(error.reason);
+                            } else {
+                                Session.set("route", "inbox");
+                            }
+                        });
+                    } else {
+                        document.querySelector("#polymer_toast").toast("min password length is 6");
+                    }
+                } else {
+                    document.querySelector("#polymer_toast").toast("invalid email");
+                }
+            } else {
+                document.querySelector("#polymer_toast").toast("server connection required");
+            }
+        },
+
+        sign_up: function(e) {
+            this.$.router.sharedElements = {
+                'ripple': e.target,
+                'reverse-ripple': e.target
+            };
+
+            this.selected = 3;
+        },
+
+        sign_up_submit: function() {
+            if (Meteor.status().connected) {
+                var valid_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
+
+                if (valid_email.test(this.email)) {
+                    document.querySelector("#load_awesome").active = true;
+
+                    Meteor.call("signUp", this.email, function(error, res) {
+                        document.querySelector("#load_awesome").active = false;
+
+                        if (error) {
+                            document.querySelector("#polymer_toast").toast(error.reason);
+                        } else {
+                            document.querySelector("#polymer_toast").toast(res);
+                        }
+                    });
+                } else {
+                    document.querySelector("#polymer_toast").toast("invalid email");
+                }
+            } else {
+                document.querySelector("#polymer_toast").toast("server connection required");
+            }
+        },
+
+        swiper_tap: function(e, d) {
+            var swiper = document.querySelector("#swiper");
+
+            if (d.x < $(window).width() / 2) {
+                if (0 < swiper.selected && swiper.selected <= 3) {
+                    swiper.selected = parseInt(swiper.selected) - 1;
+                }
+            } else {
+                if (0 <= swiper.selected && swiper.selected < 3) {
+                    swiper.selected = parseInt(swiper.selected) + 1;
+                }
+            }
+        }
+
+    });
+    </script>
+
+</dom-module>

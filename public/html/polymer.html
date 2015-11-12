@@ -22849,6 +22849,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         sign_out: function() {
             if (Meteor.status().connected) {
                 this.project = [];
+                document.querySelector("#torrent_db").value = [];
 
                 Meteor.logout(function(error) {
                     if (error) {
