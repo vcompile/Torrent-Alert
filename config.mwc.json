@@ -1,0 +1,4 @@
+{
+    "append": ["index.html"],
+    "vulcanize": ["polymer.import.html"]
+}

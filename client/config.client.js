@@ -1,4 +1,8 @@
+_splash = null;
+
 if (Meteor.isCordova) {
+    _splash = LaunchScreen.hold();
+
     document.addEventListener("deviceready", function() {
         document.addEventListener("backbutton", backbutton, false);
         document.addEventListener("pause", pause, false);
@@ -33,4 +37,8 @@ if (Meteor.isCordova) {
     function pause() {
         project_save();
     }
+} else {
+    $(window).on("beforeunload", function() {
+        project_save();
+    });
 }

@@ -12,8 +12,8 @@ Template.controller_linto.helpers({
     }
 });
 
-Template.controller_linto.rendered = function() {
-    document.addEventListener("WebComponentsReady", function() {
-        Session.set("project_count_local", (document.querySelector("#torrent_db").value ? document.querySelector("#torrent_db").value.length : 0));
-    });
-};
+// Template.controller_linto.rendered = function() {
+//     document.addEventListener("WebComponentsReady", function() {
+//         Session.set("project_count_local", (document.querySelector("#torrent_db").value ? document.querySelector("#torrent_db").value.length : 0));
+//     });
+// };
