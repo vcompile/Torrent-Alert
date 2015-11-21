@@ -1,0 +1,153 @@
+<html>
+
+<body>
+
+    <style>
+    .white {
+        background: white!important;
+        color: black!important;
+    }
+    /*google*/
+    
+    .red-500 {
+        background-color: #F44336!important;
+        color: white!important;
+    }
+    
+    .pink-500 {
+        background-color: #E91E63!important;
+        color: white!important;
+    }
+    
+    .purple-500 {
+        background-color: #9C27B0!important;
+        color: white!important;
+    }
+    
+    .deep-purple-500 {
+        background-color: #673AB7!important;
+        color: white!important;
+    }
+    
+    .indigo-500 {
+        background-color: #3F51B5!important;
+        color: white!important;
+    }
+    
+    .blue-500 {
+        background-color: #2196F3!important;
+        color: white!important;
+    }
+    
+    .light-blue-500 {
+        background-color: #03A9F4!important;
+        color: white!important;
+    }
+    
+    .cyan-500 {
+        background-color: #00BCD4!important;
+        color: white!important;
+    }
+    
+    .cyan-700 {
+        background: #0097A7!important;
+        color: white!important;
+    }
+    
+    .cyan-900 {
+        background: #006064!important;
+        color: white!important;
+    }
+    
+    .teal-500 {
+        background-color: #009688!important;
+        color: white!important;
+    }
+    
+    .green-500 {
+        background-color: #4CAF50!important;
+        color: white!important;
+    }
+    
+    .light-green-500 {
+        background-color: #8BC34A!important;
+        color: white!important;
+    }
+    
+    .lime-500 {
+        background-color: #CDDC39!important;
+        color: black!important;
+    }
+    
+    .yellow-500 {
+        background-color: #FFEB3B!important;
+        color: black!important;
+    }
+    
+    .amber-500 {
+        background-color: #FFC107!important;
+        color: black!important;
+    }
+    
+    .orange-500 {
+        background-color: #FF9800!important;
+        color: black!important;
+    }
+    
+    .deep-orange-500 {
+        background-color: #FF5722!important;
+        color: white!important;
+    }
+    
+    .brown-500 {
+        background-color: #795548!important;
+        color: white!important;
+    }
+    
+    .grey-500 {
+        background-color: #9E9E9E!important;
+        color: white!important;
+    }
+    
+    .blue-grey-500 {
+        background-color: #607D8B!important;
+        color: white!important;
+    }
+    </style>
+
+    <script>
+    polymer_color_class = ["red-500", "pink-500", "purple-500", "deep-purple-500", "indigo-500", "blue-500", "light-blue-500", "cyan-500", "teal-500", "green-500", "light-green-500", "lime-500", "yellow-500", "amber-500", "orange-500", "deep-orange-500", "brown-500", /* "grey-500", */ "blue-grey-500"];
+
+    polymer_color_db = {};
+    polymer_color_local = {};
+
+    polymer_color = function(key, save) {
+        if (key) {
+            key = key.replace(/[^0-9a-zA-Z]/g, "");
+
+            if (key.length) {
+                if (polymer_color_db[key]) {
+                    return polymer_color_db[key];
+                } else {
+                    if (polymer_color_local[key]) {
+                        return polymer_color_local[key];
+                    } else {
+                        var A = polymer_color_class[Math.floor(Math.random() * polymer_color_class.length)];
+
+                        if (save) {
+                            polymer_color_db[key] = A;
+                        } else {
+                            polymer_color_local[key] = A;
+                        }
+
+                        return A;
+                    }
+                }
+            } else return "";
+        } else return "";
+    };
+    </script>
+
+</body>
+
+</html>

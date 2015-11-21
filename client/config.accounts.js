@@ -5,7 +5,9 @@ Accounts.onEnrollmentLink(function(token, done) {
         Meteor.logout();
     }
 
-    Session.set("password_token", token);
+    FlowRouter.go("/set-password", {}, {
+        "password-token": token
+    });
 
     _done = done;
 });
@@ -15,7 +17,9 @@ Accounts.onResetPasswordLink(function(token, done) {
         Meteor.logout();
     }
 
-    Session.set("password_token", token);
+    FlowRouter.go("/set-password", {}, {
+        "password-token": token
+    });
 
     _done = done;
 });
