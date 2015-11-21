@@ -23878,6 +23878,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
         },
 
+        ready: function() {
+            if (Meteor.isCordova) {
+                _splash.release();
+            }
+        },
+
         set_password_submit: function(e) {
             if (6 <= this.password.length) {
                 if (this.password == this.retype_password) {

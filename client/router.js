@@ -60,7 +60,17 @@ FlowRouter.route("/set-password", {
     name: "set-password"
 });
 
-FlowRouter.route("/inbox", {
+var inbox = FlowRouter.group({
+    name: "inbox",
+    prefix: "/inbox",
+    triggersEnter: [function(context, redirect) {
+        if (!Meteor.user()) {
+            redirect("/");
+        }
+    }]
+});
+
+inbox.route("/", {
     action: function(p, q) {
         mwcLayout.render("main", {
             body: "layout-inbox"
