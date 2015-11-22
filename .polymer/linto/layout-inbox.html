@@ -304,7 +304,7 @@
             });
 
             Tracker.autorun(function() {
-                if (0 < Session.get("project_count_local")) {
+                if ((document.querySelector("#torrent_db").value || []).length) {
                     _this.project = document.querySelector("#torrent_db").value;
                 }
             });
@@ -704,7 +704,7 @@
             if (Meteor.status().connected) {
                 this.project = [];
 
-                FlowRouter.go("/sign-out");
+                FlowRouter.go("/inbox/sign-out");
             } else {
                 document.querySelector("#polymer_toast").toast("server connection required");
             }
@@ -725,7 +725,7 @@
         },
 
         torrent_prompt_open: function(item) {
-            if (_.has(item, "link")) {
+            if (_.has(item, "link") && item.link.length) {
                 this.torrent_prompt = item;
 
                 FlowRouter.setQueryParams({

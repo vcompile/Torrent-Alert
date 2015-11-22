@@ -6,12 +6,14 @@ document.addEventListener("WebComponentsReady", function() {
     });
 
     Tracker.autorun(function() {
-        if (Meteor.user()) {
-            if (!FlowRouter.current().route.group || FlowRouter.current().route.group.name != "inbox") {
+        if (Meteor.status().connected) {
+            if (Meteor.user() && (!FlowRouter.current().route.group || FlowRouter.current().route.group.name != "inbox")) {
                 FlowRouter.go("/inbox");
             }
         } else {
-
+            if ((document.querySelector("#torrent_db").value || []).length) {
+                FlowRouter.go("/inbox");
+            }
         }
     });
 });
@@ -65,8 +67,8 @@ FlowRouter.route("/", {
 
 FlowRouter.route("/set-password", {
     action: function(p, q) {
-        mwcLayout.render("main", {
-            body: "set-password"
+        mwcLayout.render("set-password", {
+            opt: "set-password"
         });
     },
     name: "set-password"
@@ -77,7 +79,9 @@ var inbox = FlowRouter.group({
     prefix: "/inbox",
     triggersEnter: [function(context, redirect) {
         if (!Meteor.user()) {
-            redirect("/");
+            if (!(document.querySelector("#torrent_db").value || []).length) {
+                redirect("/");
+            }
         }
     }]
 });
@@ -144,7 +148,7 @@ inbox.route("/sign-out", {
                 }
             });
 
-            redirect("/");
+            FlowRouter.go("/");
         } else {
             document.querySelector("#polymer_toast").toast("server connection required");
         }

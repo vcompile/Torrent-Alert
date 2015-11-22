@@ -9,7 +9,7 @@ mobile-experience
 mongo                   # The database Meteor supports right now
 random
 session                 # Client-side reactive dictionary for your app
-# standard-minifiers      # JS/CSS minifiers run for production mode
+standard-minifiers      # JS/CSS minifiers run for production mode
 # templating
 tracker                 # Meteor's client-side reactive programming library
 

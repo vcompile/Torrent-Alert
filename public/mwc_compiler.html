@@ -12796,10 +12796,10 @@ is separate from validation, and `allowed-pattern` does not affect how the input
     /**
      * Ensures this element contains a ripple effect. For startup efficiency
      * the ripple effect is dynamically on demand when needed.
-     * @param {!Event=} opt_triggeringEvent (optional) event that triggered the
+     * @param {!Event=} optTriggeringEvent (optional) event that triggered the
      * ripple.
      */
-    ensureRipple: function(opt_triggeringEvent) {
+    ensureRipple: function(optTriggeringEvent) {
       if (!this.hasRipple()) {
         this._ripple = this._createRipple();
         this._ripple.noink = this.noink;
@@ -12807,12 +12807,14 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         if (rippleContainer) {
           Polymer.dom(rippleContainer).appendChild(this._ripple);
         }
-        var domContainer = rippleContainer === this.shadyRoot ? this :
-          rippleContainer;
-        if (opt_triggeringEvent) {
-          var target = opt_triggeringEvent.target;
-          if (domContainer.contains(/** @type {Node} */(target))) {
-            this._ripple.uiDownAction(opt_triggeringEvent);
+        if (optTriggeringEvent) {
+          // Check if the event happened inside of the ripple container
+          // Fall back to host instead of the root because distributed text
+          // nodes are not valid event targets
+          var domContainer = Polymer.dom(this._rippleContainer || this);
+          var target = Polymer.dom(optTriggeringEvent).rootTarget;
+          if (domContainer.deepContains( /** @type {Node} */(target))) {
+            this._ripple.uiDownAction(optTriggeringEvent);
           }
         }
       }
@@ -22286,7 +22288,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
                                 document.querySelector("#main_toolbar").className = document.querySelector("#main_toolbar").className.replace(/ ?[a-z\-]+\-500/g, "") + " " + polymer_color(1 < keywordArray.length ? keywordArray[1] : keywordArray[0]);
 
-                                document.querySelector("#layout_inbox").menu_selected = response;
+                                document.querySelector("layout-inbox").menu_selected = response;
                             }
                         }
                     });
@@ -22918,7 +22920,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             });
 
             Tracker.autorun(function() {
-                if (0 < Session.get("project_count_local")) {
+                if ((document.querySelector("#torrent_db").value || []).length) {
                     _this.project = document.querySelector("#torrent_db").value;
                 }
             });
@@ -23318,7 +23320,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             if (Meteor.status().connected) {
                 this.project = [];
 
-                FlowRouter.go("/sign-out");
+                FlowRouter.go("/inbox/sign-out");
             } else {
                 document.querySelector("#polymer_toast").toast("server connection required");
             }
@@ -23339,7 +23341,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         },
 
         torrent_prompt_open: function(item) {
-            if (_.has(item, "link")) {
+            if (_.has(item, "link") && item.link.length) {
                 this.torrent_prompt = item;
 
                 FlowRouter.setQueryParams({
@@ -23615,7 +23617,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
                                 document.querySelector("#main_toolbar").className = document.querySelector("#main_toolbar").className.replace(/ ?[a-z\-]+\-500/g, "") + " " + polymer_color(keyword);
 
-                                document.querySelector("#layout_inbox").menu_selected = response;
+                                document.querySelector("layout-inbox").menu_selected = response;
                             }
                         }
                     });
@@ -23826,6 +23828,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <script>
     Polymer({
 
+        attached: function() {
+            if (Meteor.isCordova) {
+                _splash.release();
+            }
+        },
+
         back: function(route) {
             FlowRouter.go("/");
         },
@@ -23843,12 +23851,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             }
         },
 
-        ready: function() {
-            if (Meteor.isCordova) {
-                _splash.release();
-            }
-        },
-
         set_password_submit: function(e) {
             if (6 <= this.password.length) {
                 if (this.password == this.retype_password) {
@@ -23863,6 +23865,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                             if (typeof(_done) == "function") {
                                 _done();
                             }
+
+                            FlowRouter.go("/inbox");
                         }
                     });
                 } else {
@@ -24106,7 +24110,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     Polymer({
 
         attached: function() {
-            console.log("A");
             if (Meteor.isCordova) {
                 _splash.release();
             }
@@ -24309,4 +24312,4 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </script>
 
 </dom-module>
-</div></body></html>
+</div></body></html>        

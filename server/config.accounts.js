@@ -18,7 +18,7 @@ Meteor.methods({
         }
 
         var row = Meteor.users.findOne({
-            email: email
+            "profile.email": email
         });
 
         if (row) {

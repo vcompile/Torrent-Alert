@@ -16,6 +16,10 @@ if (Meteor.isCordova) {
         if (document.querySelector("#drawer")) {
             document.querySelector("#drawer").closeDrawer();
         }
+
+        FlowRouter.setQueryParams({
+            "route": null
+        });
     }
 
     function pause() {
