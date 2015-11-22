@@ -285,105 +285,18 @@
                 </div>
             </div>
         </modal-wrapper>
-
-        <add-project id="add_project"></add-project>
-        <search-bar id="search_bar"></search-bar>
     </template>
 
     <script>
     Polymer({
 
         add_project: function() {
-            this.$.add_project.toggle();
+            FlowRouter.setQueryParams({
+                "route": "add-project"
+            });
         },
 
-        clear_torrent_selection: function() {
-            this.torrent_selected = [];
-        },
-
-        initialize_proxy: function() {
-            this.proxy = false;
-        },
-
-        is_search: function(worker) {
-            return (worker == "search")
-        },
-
-        is: "layout-inbox",
-
-        link: function(e) {
-            e.stopPropagation();
-
-            this.async(function() {
-                window.open((this.proxy ? "http://proxy.vcompile.com/index.php?url=" + encodeURIComponent(document.querySelector("#link").selectedItem.dataset.link) : document.querySelector("#link").selectedItem.dataset.link), "_system");
-            }, 200);
-        },
-
-        menuToggle: function() {
-            if (this.$.drawer.narrow && $(this.$.drawer).width() <= parseInt(this.$.drawer.responsiveWidth)) {
-                this.$.drawer.togglePanel();
-            } else {
-                this.$.drawer.forceNarrow = !this.$.drawer.forceNarrow;
-            }
-        },
-
-        menu_opt: function(e, d) {
-            this.menuToggle();
-
-            this.$.main_toolbar.className = this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "") + " " + document.querySelector("#menu_opt .iron-selected selectable-icon").icon_class;
-
-            this.menu_selected = d.item.dataset.id;
-        },
-
-        observers: [
-            "project_change(project.splices)",
-            "torrent_selected_change(torrent_selected.splices)"
-        ],
-
-        project_change: function(change) {
-            this.$.main_page.selected = (this.project.length ? 1 : 0);
-        },
-
-        project_selected: function(menu_opt, project_opt) {
-            return (menu_opt == "" ? true : menu_opt == project_opt);
-        },
-
-        properties: {
-            menu_selected: {
-                type: String,
-                value: ""
-            },
-            project: {
-                type: Array,
-                value: function() {
-                    return [];
-                }
-            },
-            proxy: {
-                type: Boolean,
-                value: false
-            },
-            torrent_prompt: {
-                type: Object,
-                value: function() {
-                    return {};
-                }
-            },
-            torrent_selected: {
-                type: Array,
-                value: function() {
-                    return [];
-                }
-            },
-            user: {
-                type: Object,
-                value: function() {
-                    return {};
-                }
-            }
-        },
-
-        ready: function() {
+        attached: function() {
             var _this = this;
 
             Tracker.autorun(function() {
@@ -515,6 +428,92 @@
 
             if (Meteor.isCordova) {
                 _splash.release();
+            }
+        },
+
+        clear_torrent_selection: function() {
+            this.torrent_selected = [];
+        },
+
+        initialize_proxy: function() {
+            this.proxy = false;
+        },
+
+        is_search: function(worker) {
+            return (worker == "search")
+        },
+
+        is: "layout-inbox",
+
+        link: function(e) {
+            e.stopPropagation();
+
+            this.async(function() {
+                window.open((this.proxy ? "http://proxy.vcompile.com/index.php?url=" + encodeURIComponent(document.querySelector("#link").selectedItem.dataset.link) : document.querySelector("#link").selectedItem.dataset.link), "_system");
+            }, 200);
+        },
+
+        menuToggle: function() {
+            if (this.$.drawer.narrow && $(this.$.drawer).width() <= parseInt(this.$.drawer.responsiveWidth)) {
+                this.$.drawer.togglePanel();
+            } else {
+                this.$.drawer.forceNarrow = !this.$.drawer.forceNarrow;
+            }
+        },
+
+        menu_opt: function(e, d) {
+            this.menuToggle();
+
+            this.$.main_toolbar.className = this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "") + " " + document.querySelector("#menu_opt .iron-selected selectable-icon").icon_class;
+
+            this.menu_selected = d.item.dataset.id;
+        },
+
+        observers: [
+            "project_change(project.splices)",
+            "torrent_selected_change(torrent_selected.splices)"
+        ],
+
+        project_change: function(change) {
+            this.$.main_page.selected = (this.project.length ? 1 : 0);
+        },
+
+        project_selected: function(menu_opt, project_opt) {
+            return (menu_opt == "" ? true : menu_opt == project_opt);
+        },
+
+        properties: {
+            menu_selected: {
+                type: String,
+                value: ""
+            },
+            project: {
+                type: Array,
+                value: function() {
+                    return [];
+                }
+            },
+            proxy: {
+                type: Boolean,
+                value: false
+            },
+            torrent_prompt: {
+                type: Object,
+                value: function() {
+                    return {};
+                }
+            },
+            torrent_selected: {
+                type: Array,
+                value: function() {
+                    return [];
+                }
+            },
+            user: {
+                type: Object,
+                value: function() {
+                    return {};
+                }
             }
         },
 
@@ -660,7 +659,9 @@
         },
 
         search_bar: function() {
-            this.$.search_bar.toggle();
+            FlowRouter.setQueryParams({
+                "route": "search-bar"
+            });
         },
 
         share: function() {
@@ -692,20 +693,11 @@
         sign_out: function() {
             if (Meteor.status().connected) {
                 this.project = [];
-                document.querySelector("#torrent_db").value = [];
 
-                Meteor.logout(function(error) {
-                    if (error) {
-                        console.log(error);
-                    }
-                });
-
-                Session.set("route", "user_check");
+                FlowRouter.go("/sign-out");
             } else {
                 document.querySelector("#polymer_toast").toast("server connection required");
             }
-
-            document.querySelector('#user_prompt').close();
         },
 
         sort: function(e) {

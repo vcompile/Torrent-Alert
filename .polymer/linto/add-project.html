@@ -32,7 +32,7 @@
     <template>
         <paper-header-panel class="fit" style="background: white; z-index: 1;">
             <paper-toolbar>
-                <paper-icon-button icon="arrow-back" on-click="toggle"></paper-icon-button>
+                <paper-icon-button icon="arrow-back" on-click="back"></paper-icon-button>
                 <div class="title">scheduler</div>
             </paper-toolbar>
 
@@ -109,7 +109,7 @@
                         }
                     });
 
-                    this.toggle();
+                    this.active = false;
                 } else {
                     document.querySelector("#polymer_toast").toast("empty keyword");
                 }
@@ -121,6 +121,12 @@
             } else {
                 document.querySelector("#polymer_toast").toast("server connection required");
             }
+        },
+
+        back: function() {
+            FlowRouter.setQueryParams({
+                "route": null
+            });
         },
 
         date_picker_close: function() {
@@ -162,10 +168,6 @@
                 type: Number,
                 value: 6
             }
-        },
-
-        toggle: function() {
-            this.active = !this.active;
         }
 
     });

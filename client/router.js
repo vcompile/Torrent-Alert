@@ -1,7 +1,19 @@
 FlowRouter.wait();
 
 document.addEventListener("WebComponentsReady", function() {
-    FlowRouter.initialize();
+    FlowRouter.initialize({
+        // hashbang: true
+    });
+
+    Tracker.autorun(function() {
+        if (Meteor.user()) {
+            if (!FlowRouter.current().route.group || FlowRouter.current().route.group.name != "inbox") {
+                FlowRouter.go("/inbox");
+            }
+        } else {
+
+        }
+    });
 });
 
 FlowRouter.route("/", {
@@ -72,9 +84,49 @@ var inbox = FlowRouter.group({
 
 inbox.route("/", {
     action: function(p, q) {
-        mwcLayout.render("main", {
-            body: "layout-inbox"
+        mwcLayout.render("inbox", {
+            "add-project": "add-project",
+            "layout-inbox": "layout-inbox",
+            "search-bar": "search-bar"
         });
+
+        switch (FlowRouter.getQueryParam("route")) {
+            case "add-project":
+                document.querySelector("add-project").active = true;
+                break;
+
+            case "search-bar":
+                document.querySelector("search-bar").active = true;
+
+                Meteor.setTimeout(function() {
+                    document.querySelector("search-bar #input").focus();
+                }, 400);
+                break;
+
+            default:
+                document.querySelector("add-project").active = false;
+                document.querySelector("search-bar").active = false;
+                break;
+        }
     },
-    name: "inbox"
+    name: "layout-inbox"
+});
+
+inbox.route("/sign-out", {
+    action: function(p, q) {
+        if (Meteor.status().connected) {
+            document.querySelector("#torrent_db").value = [];
+
+            Meteor.logout(function(error) {
+                if (error) {
+                    console.log(error);
+                }
+            });
+
+            redirect("/");
+        } else {
+            document.querySelector("#polymer_toast").toast("server connection required");
+        }
+    },
+    name: "sign-out"
 });

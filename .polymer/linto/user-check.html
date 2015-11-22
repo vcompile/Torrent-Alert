@@ -226,6 +226,13 @@
     <script>
     Polymer({
 
+        attached: function() {
+            console.log("A");
+            if (Meteor.isCordova) {
+                _splash.release();
+            }
+        },
+
         back: function(route) {
             this.selected = 0;
 
@@ -249,8 +256,6 @@
 
                         if (error) {
                             document.querySelector("#polymer_toast").toast(error);
-                        } else {
-                            Session.set("route", "inbox");
                         }
                     });
                 } else {
@@ -261,8 +266,6 @@
                         }, function(error) {
                             if (error) {
                                 document.querySelector("#polymer_toast").toast("errorNo - " + Accounts.LoginCancelledError.numericError);
-                            } else {
-                                Session.set("route", "inbox");
                             }
                         });
                     }
@@ -286,12 +289,6 @@
             selected: {
                 type: Number,
                 value: 0
-            }
-        },
-
-        ready: function() {
-            if (Meteor.isCordova) {
-                _splash.release();
             }
         },
 
@@ -372,8 +369,6 @@
 
                             if (error) {
                                 document.querySelector("#polymer_toast").toast(error.reason);
-                            } else {
-                                Session.set("route", "inbox");
                             }
                         });
                     } else {

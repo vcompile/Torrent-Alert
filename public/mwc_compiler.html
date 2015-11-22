@@ -16346,38 +16346,6 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
 
         is: "mwc-layout",
 
-        observers: [
-            "optChange(opt.*)"
-        ],
-
-        optChange: function(change) {
-            var region = Object.keys(change.value);
-
-            for (var A = 0; A < region.length; A++) {
-                if (typeof(change.value[region[A]]) === "object") {
-                    var element = this.querySelectorAll('*[region="' + region[A] + '"]');
-
-                    for (Z = 0; Z < element.length; Z++) {
-                        element[Z].innerHTML = "";
-
-                        Polymer.dom(element[Z]).appendChild(change.value[region[A]]);
-                    }
-                } else {
-                    if (document.createElement(change.value[region[A]]).constructor !== HTMLElement) {
-                        var element = this.querySelectorAll('*[region="' + region[A] + '"]');
-
-                        for (Z = 0; Z < element.length; Z++) {
-                            element[Z].innerHTML = "";
-
-                            Polymer.dom(element[Z]).appendChild(document.createElement(change.value[region[A]]));
-                        }
-                    } else {
-                        console.log(change.value[region[A]] + " not registered");
-                    }
-                }
-            }
-        },
-
         properties: {
             active: {
                 notify: true,
@@ -16392,19 +16360,33 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
         },
 
         render: function(opt) {
-            this.opt = opt;
-        },
+            var region = Object.keys(opt);
 
-        rerender: function(region) {
             for (var A = 0; A < region.length; A++) {
-                var element = this.querySelectorAll('*[region="' + region[A] + '"]');
+                if (typeof(opt[region[A]]) === "object") {
+                    var element = this.querySelectorAll('*[region="' + region[A] + '"]');
 
-                for (Z = 0; Z < element.length; Z++) {
-                    Polymer.dom(element[Z]).firstChild.fire("rerender", {
-                        region: region[A]
-                    });
+                    for (Z = 0; Z < element.length; Z++) {
+                        element[Z].innerHTML = "";
+
+                        Polymer.dom(element[Z]).appendChild(opt[region[A]]);
+                    }
+                } else {
+                    if (document.createElement(opt[region[A]]).constructor !== HTMLElement) {
+                        var element = this.querySelectorAll('*[region="' + region[A] + '"]');
+
+                        for (Z = 0; Z < element.length; Z++) {
+                            element[Z].innerHTML = "";
+
+                            Polymer.dom(element[Z]).appendChild(document.createElement(opt[region[A]]));
+                        }
+                    } else {
+                        console.log(opt[region[A]] + " not registered");
+                    }
                 }
             }
+
+            this.opt = opt;
         }
 
     });
@@ -16420,35 +16402,20 @@ var PolymerLayout = function() {
 
 // layout[String]
 // opt[Object] one-level deep
-// plugIn[Array] placeholder
-// rerender[Array]
+// rerender[Boolean]
 
-PolymerLayout.prototype.render = function(layout, opt, plugIn, rerender) {
+PolymerLayout.prototype.render = function(layout, opt, rerender) {
     if (document.querySelector('mwc-layout[id="' + layout + '"]')) {
-        if (opt && Object.prototype.toString.call(opt) == "[object Object]") {
-            document.querySelector('mwc-layout[id="' + layout + '"]').render(opt, (Object.prototype.toString.call(plugIn) == "[object Array]" ? plugIn : []));
-        } else {
-            console.log("opt[object] required");
-        }
-
-        if (this.currentLayout != layout) {
+        if (this.currentLayout != layout || rerender) {
             if (this.currentLayout) {
                 document.querySelector('mwc-layout[id="' + this.currentLayout + '"]').active = false
             }
 
+            document.querySelector('mwc-layout[id="' + layout + '"]').render(Object.prototype.toString.call(opt) == "[object Object]" ? opt : {});
+
             document.querySelector('mwc-layout[id="' + layout + '"]').active = true;
 
             this.currentLayout = layout;
-        } else {
-            if (opt && Object.prototype.toString.call(opt) == "[object Object]") {
-                if (rerender && Object.prototype.toString.call(rerender) == "[object Array]") {
-                    document.querySelector('mwc-layout[id="' + layout + '"]').rerender(rerender);
-                } else {
-                    document.querySelector('mwc-layout[id="' + layout + '"]').rerender(Object.keys(opt));
-                }
-            } else {
-                console.log("opt[object] required");
-            }
         }
     }
 };
@@ -22247,7 +22214,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <template>
         <paper-header-panel class="fit" style="background: white; z-index: 1;">
             <paper-toolbar>
-                <paper-icon-button icon="arrow-back" on-click="toggle"></paper-icon-button>
+                <paper-icon-button icon="arrow-back" on-click="back"></paper-icon-button>
                 <div class="title">scheduler</div>
             </paper-toolbar>
 
@@ -22324,7 +22291,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         }
                     });
 
-                    this.toggle();
+                    this.active = false;
                 } else {
                     document.querySelector("#polymer_toast").toast("empty keyword");
                 }
@@ -22336,6 +22303,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             } else {
                 document.querySelector("#polymer_toast").toast("server connection required");
             }
+        },
+
+        back: function() {
+            FlowRouter.setQueryParams({
+                "route": null
+            });
         },
 
         date_picker_close: function() {
@@ -22377,10 +22350,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 type: Number,
                 value: 6
             }
-        },
-
-        toggle: function() {
-            this.active = !this.active;
         }
 
     });
@@ -22930,105 +22899,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 </div>
             </div>
         </modal-wrapper>
-
-        <add-project id="add_project"></add-project>
-        <search-bar id="search_bar"></search-bar>
     </template>
 
     <script>
     Polymer({
 
         add_project: function() {
-            this.$.add_project.toggle();
+            FlowRouter.setQueryParams({
+                "route": "add-project"
+            });
         },
 
-        clear_torrent_selection: function() {
-            this.torrent_selected = [];
-        },
-
-        initialize_proxy: function() {
-            this.proxy = false;
-        },
-
-        is_search: function(worker) {
-            return (worker == "search")
-        },
-
-        is: "layout-inbox",
-
-        link: function(e) {
-            e.stopPropagation();
-
-            this.async(function() {
-                window.open((this.proxy ? "http://proxy.vcompile.com/index.php?url=" + encodeURIComponent(document.querySelector("#link").selectedItem.dataset.link) : document.querySelector("#link").selectedItem.dataset.link), "_system");
-            }, 200);
-        },
-
-        menuToggle: function() {
-            if (this.$.drawer.narrow && $(this.$.drawer).width() <= parseInt(this.$.drawer.responsiveWidth)) {
-                this.$.drawer.togglePanel();
-            } else {
-                this.$.drawer.forceNarrow = !this.$.drawer.forceNarrow;
-            }
-        },
-
-        menu_opt: function(e, d) {
-            this.menuToggle();
-
-            this.$.main_toolbar.className = this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "") + " " + document.querySelector("#menu_opt .iron-selected selectable-icon").icon_class;
-
-            this.menu_selected = d.item.dataset.id;
-        },
-
-        observers: [
-            "project_change(project.splices)",
-            "torrent_selected_change(torrent_selected.splices)"
-        ],
-
-        project_change: function(change) {
-            this.$.main_page.selected = (this.project.length ? 1 : 0);
-        },
-
-        project_selected: function(menu_opt, project_opt) {
-            return (menu_opt == "" ? true : menu_opt == project_opt);
-        },
-
-        properties: {
-            menu_selected: {
-                type: String,
-                value: ""
-            },
-            project: {
-                type: Array,
-                value: function() {
-                    return [];
-                }
-            },
-            proxy: {
-                type: Boolean,
-                value: false
-            },
-            torrent_prompt: {
-                type: Object,
-                value: function() {
-                    return {};
-                }
-            },
-            torrent_selected: {
-                type: Array,
-                value: function() {
-                    return [];
-                }
-            },
-            user: {
-                type: Object,
-                value: function() {
-                    return {};
-                }
-            }
-        },
-
-        ready: function() {
+        attached: function() {
             var _this = this;
 
             Tracker.autorun(function() {
@@ -23160,6 +23042,92 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             if (Meteor.isCordova) {
                 _splash.release();
+            }
+        },
+
+        clear_torrent_selection: function() {
+            this.torrent_selected = [];
+        },
+
+        initialize_proxy: function() {
+            this.proxy = false;
+        },
+
+        is_search: function(worker) {
+            return (worker == "search")
+        },
+
+        is: "layout-inbox",
+
+        link: function(e) {
+            e.stopPropagation();
+
+            this.async(function() {
+                window.open((this.proxy ? "http://proxy.vcompile.com/index.php?url=" + encodeURIComponent(document.querySelector("#link").selectedItem.dataset.link) : document.querySelector("#link").selectedItem.dataset.link), "_system");
+            }, 200);
+        },
+
+        menuToggle: function() {
+            if (this.$.drawer.narrow && $(this.$.drawer).width() <= parseInt(this.$.drawer.responsiveWidth)) {
+                this.$.drawer.togglePanel();
+            } else {
+                this.$.drawer.forceNarrow = !this.$.drawer.forceNarrow;
+            }
+        },
+
+        menu_opt: function(e, d) {
+            this.menuToggle();
+
+            this.$.main_toolbar.className = this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "") + " " + document.querySelector("#menu_opt .iron-selected selectable-icon").icon_class;
+
+            this.menu_selected = d.item.dataset.id;
+        },
+
+        observers: [
+            "project_change(project.splices)",
+            "torrent_selected_change(torrent_selected.splices)"
+        ],
+
+        project_change: function(change) {
+            this.$.main_page.selected = (this.project.length ? 1 : 0);
+        },
+
+        project_selected: function(menu_opt, project_opt) {
+            return (menu_opt == "" ? true : menu_opt == project_opt);
+        },
+
+        properties: {
+            menu_selected: {
+                type: String,
+                value: ""
+            },
+            project: {
+                type: Array,
+                value: function() {
+                    return [];
+                }
+            },
+            proxy: {
+                type: Boolean,
+                value: false
+            },
+            torrent_prompt: {
+                type: Object,
+                value: function() {
+                    return {};
+                }
+            },
+            torrent_selected: {
+                type: Array,
+                value: function() {
+                    return [];
+                }
+            },
+            user: {
+                type: Object,
+                value: function() {
+                    return {};
+                }
             }
         },
 
@@ -23305,7 +23273,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         },
 
         search_bar: function() {
-            this.$.search_bar.toggle();
+            FlowRouter.setQueryParams({
+                "route": "search-bar"
+            });
         },
 
         share: function() {
@@ -23337,20 +23307,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         sign_out: function() {
             if (Meteor.status().connected) {
                 this.project = [];
-                document.querySelector("#torrent_db").value = [];
 
-                Meteor.logout(function(error) {
-                    if (error) {
-                        console.log(error);
-                    }
-                });
-
-                Session.set("route", "user_check");
+                FlowRouter.go("/sign-out");
             } else {
                 document.querySelector("#polymer_toast").toast("server connection required");
             }
-
-            document.querySelector('#user_prompt').close();
         },
 
         sort: function(e) {
@@ -23597,7 +23558,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <template>
         <paper-header-panel class="fit" style="background: rgba(255, 255, 255, 0.5); z-index: 1;">
             <paper-toolbar>
-                <paper-icon-button icon="arrow-back" on-click="toggle"></paper-icon-button>
+                <paper-icon-button icon="arrow-back" on-click="back"></paper-icon-button>
                 <input class="flex" id="input" on-keyup="search" placeholder="search">
             </paper-toolbar>
 
@@ -23651,13 +23612,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         }
                     });
 
-                    this.toggle();
+                    this.active = false;
                 } else {
                     document.querySelector("#polymer_toast").toast("empty keyword");
                 }
             } else {
                 document.querySelector("#polymer_toast").toast("server connection required");
             }
+        },
+
+        back: function() {
+            FlowRouter.setQueryParams({
+                "route": null
+            });
         },
 
         is: "search-bar",
@@ -23699,16 +23666,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     this.$.progress.hidden = true;
                 }
             }, 1000);
-        },
-
-        toggle: function() {
-            this.active = !this.active;
-
-            if (this.active) {
-                this.async(function() {
-                    this.$.input.focus();
-                }, 400);
-            }
         }
 
     });
@@ -24140,6 +24097,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <script>
     Polymer({
 
+        attached: function() {
+            console.log("A");
+            if (Meteor.isCordova) {
+                _splash.release();
+            }
+        },
+
         back: function(route) {
             this.selected = 0;
 
@@ -24163,8 +24127,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
                         if (error) {
                             document.querySelector("#polymer_toast").toast(error);
-                        } else {
-                            Session.set("route", "inbox");
                         }
                     });
                 } else {
@@ -24175,8 +24137,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         }, function(error) {
                             if (error) {
                                 document.querySelector("#polymer_toast").toast("errorNo - " + Accounts.LoginCancelledError.numericError);
-                            } else {
-                                Session.set("route", "inbox");
                             }
                         });
                     }
@@ -24200,12 +24160,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             selected: {
                 type: Number,
                 value: 0
-            }
-        },
-
-        ready: function() {
-            if (Meteor.isCordova) {
-                _splash.release();
             }
         },
 
@@ -24286,8 +24240,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
                             if (error) {
                                 document.querySelector("#polymer_toast").toast(error.reason);
-                            } else {
-                                Session.set("route", "inbox");
                             }
                         });
                     } else {

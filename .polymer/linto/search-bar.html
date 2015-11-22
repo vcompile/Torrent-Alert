@@ -30,7 +30,7 @@
     <template>
         <paper-header-panel class="fit" style="background: rgba(255, 255, 255, 0.5); z-index: 1;">
             <paper-toolbar>
-                <paper-icon-button icon="arrow-back" on-click="toggle"></paper-icon-button>
+                <paper-icon-button icon="arrow-back" on-click="back"></paper-icon-button>
                 <input class="flex" id="input" on-keyup="search" placeholder="search">
             </paper-toolbar>
 
@@ -84,13 +84,19 @@
                         }
                     });
 
-                    this.toggle();
+                    this.active = false;
                 } else {
                     document.querySelector("#polymer_toast").toast("empty keyword");
                 }
             } else {
                 document.querySelector("#polymer_toast").toast("server connection required");
             }
+        },
+
+        back: function() {
+            FlowRouter.setQueryParams({
+                "route": null
+            });
         },
 
         is: "search-bar",
@@ -132,16 +138,6 @@
                     this.$.progress.hidden = true;
                 }
             }, 1000);
-        },
-
-        toggle: function() {
-            this.active = !this.active;
-
-            if (this.active) {
-                this.async(function() {
-                    this.$.input.focus();
-                }, 400);
-            }
         }
 
     });
