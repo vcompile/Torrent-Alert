@@ -95,6 +95,14 @@ inbox.route("/", {
                 document.querySelector("add-project").active = true;
                 break;
 
+            case "remove-prompt":
+                document.querySelector("#remove_prompt").open();
+                break;
+
+            case "schedule-prompt":
+                document.querySelector("#schedule_prompt").open();
+                break;
+
             case "search-bar":
                 document.querySelector("search-bar").active = true;
 
@@ -103,9 +111,22 @@ inbox.route("/", {
                 }, 400);
                 break;
 
+            case "torrent-prompt":
+                document.querySelector("#torrent_prompt").active = true;
+                break;
+
+            case "user-prompt":
+                document.querySelector("#user_prompt").open();
+                break;
+
             default:
                 document.querySelector("add-project").active = false;
                 document.querySelector("search-bar").active = false;
+                document.querySelector("#torrent_prompt").active = false;
+
+                document.querySelector("#remove_prompt").close();
+                document.querySelector("#schedule_prompt").close();
+                document.querySelector("#user_prompt").close();
                 break;
         }
     },

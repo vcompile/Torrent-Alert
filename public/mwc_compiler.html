@@ -22574,7 +22574,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             if (Polymer.dom(e).localTarget.id != "selectable_icon") {
                 e.stopPropagation();
 
-                document.querySelector("#layout_inbox").torrent_prompt_open(this.item);
+                document.querySelector("layout-inbox").torrent_prompt_open(this.item);
             }
         },
 
@@ -22807,7 +22807,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
         <paper-fab class="menu-b" id="fab" icon="add" on-click="add_project"></paper-fab>
 
-        <paper-dialog id="user_prompt" style="width: 320px;" with-backdrop="">
+        <paper-dialog id="user_prompt" on-iron-overlay-closed="prompt_closed" style="width: 320px;" with-backdrop="">
             <div class="layout vertical">
                 <div style="border-bottom: 2px solid #888; margin: 8px 0; padding: 4px 0;">alerter</div>
 
@@ -22841,7 +22841,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             </div>
         </paper-dialog>
 
-        <paper-dialog id="remove_prompt" style="width: 320px;" with-backdrop="">
+        <paper-dialog id="remove_prompt" on-iron-overlay-closed="prompt_closed" style="width: 320px;" with-backdrop="">
             <div>Are you sure to delete this item ?</div>
 
             <div class="buttons">
@@ -22856,7 +22856,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             </div>
         </paper-dialog>
 
-        <paper-dialog id="schedule_prompt" style="width: 320px;" with-backdrop="">
+        <paper-dialog id="schedule_prompt" on-iron-overlay-closed="prompt_closed" style="width: 320px;" with-backdrop="">
             <div>Are you sure to schedule this item ?</div>
 
             <div class="buttons">
@@ -23096,6 +23096,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             return (menu_opt == "" ? true : menu_opt == project_opt);
         },
 
+        prompt_closed: function() {
+            FlowRouter.setQueryParams({
+                "route": null
+            });
+        },
+
         properties: {
             menu_selected: {
                 type: String,
@@ -23195,7 +23201,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         remove_project: function(e) {
             this.$.remove_prompt.dataset.id = Polymer.dom(e).localTarget.dataset.id;
 
-            this.$.remove_prompt.open();
+            FlowRouter.setQueryParams({
+                "route": "remove-prompt"
+            });
         },
 
         remove_torrent: function() {
@@ -23247,7 +23255,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         schedule: function(e) {
             this.$.schedule_prompt.dataset.id = Polymer.dom(e).localTarget.dataset.id;
 
-            this.$.schedule_prompt.open();
+            FlowRouter.setQueryParams({
+                "route": "schedule-prompt"
+            });
         },
 
         schedule_ok: function(e) {
@@ -23323,14 +23333,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         },
 
         torrent_prompt_close: function() {
-            this.$.torrent_prompt.toggle();
+            FlowRouter.setQueryParams({
+                "route": null
+            });
         },
 
         torrent_prompt_open: function(item) {
             if (_.has(item, "link")) {
                 this.torrent_prompt = item;
 
-                this.$.torrent_prompt.toggle();
+                FlowRouter.setQueryParams({
+                    "route": "torrent-prompt"
+                });
             } else {
                 document.querySelector("#polymer_toast").toast("under processing");
             }
@@ -23346,11 +23360,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         },
 
         user_prompt: function() {
-            this.menuToggle();
-
-            this.async(function() {
-                this.$.user_prompt.open();
-            }, 400);
+            FlowRouter.setQueryParams({
+                "route": "user-prompt"
+            });
         }
 
     });
@@ -23431,10 +23443,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 type: Boolean,
                 value: false
             }
-        },
-
-        toggle: function() {
-            this.active = !this.active;
         }
 
     });

@@ -1,1 +1,0 @@
-// document.addEventListener("WebComponentsReady", function() {});

@@ -193,7 +193,7 @@
 
         <paper-fab class="menu-b" id="fab" icon="add" on-click="add_project"></paper-fab>
 
-        <paper-dialog id="user_prompt" style="width: 320px;" with-backdrop>
+        <paper-dialog id="user_prompt" on-iron-overlay-closed="prompt_closed" style="width: 320px;" with-backdrop>
             <div class="layout vertical">
                 <div style="border-bottom: 2px solid #888; margin: 8px 0; padding: 4px 0;">alerter</div>
 
@@ -227,7 +227,7 @@
             </div>
         </paper-dialog>
 
-        <paper-dialog id="remove_prompt" style="width: 320px;" with-backdrop>
+        <paper-dialog id="remove_prompt" on-iron-overlay-closed="prompt_closed" style="width: 320px;" with-backdrop>
             <div>Are you sure to delete this item ?</div>
 
             <div class="buttons">
@@ -242,7 +242,7 @@
             </div>
         </paper-dialog>
 
-        <paper-dialog id="schedule_prompt" style="width: 320px;" with-backdrop>
+        <paper-dialog id="schedule_prompt" on-iron-overlay-closed="prompt_closed" style="width: 320px;" with-backdrop>
             <div>Are you sure to schedule this item ?</div>
 
             <div class="buttons">
@@ -482,6 +482,12 @@
             return (menu_opt == "" ? true : menu_opt == project_opt);
         },
 
+        prompt_closed: function() {
+            FlowRouter.setQueryParams({
+                "route": null
+            });
+        },
+
         properties: {
             menu_selected: {
                 type: String,
@@ -581,7 +587,9 @@
         remove_project: function(e) {
             this.$.remove_prompt.dataset.id = Polymer.dom(e).localTarget.dataset.id;
 
-            this.$.remove_prompt.open();
+            FlowRouter.setQueryParams({
+                "route": "remove-prompt"
+            });
         },
 
         remove_torrent: function() {
@@ -633,7 +641,9 @@
         schedule: function(e) {
             this.$.schedule_prompt.dataset.id = Polymer.dom(e).localTarget.dataset.id;
 
-            this.$.schedule_prompt.open();
+            FlowRouter.setQueryParams({
+                "route": "schedule-prompt"
+            });
         },
 
         schedule_ok: function(e) {
@@ -709,14 +719,18 @@
         },
 
         torrent_prompt_close: function() {
-            this.$.torrent_prompt.toggle();
+            FlowRouter.setQueryParams({
+                "route": null
+            });
         },
 
         torrent_prompt_open: function(item) {
             if (_.has(item, "link")) {
                 this.torrent_prompt = item;
 
-                this.$.torrent_prompt.toggle();
+                FlowRouter.setQueryParams({
+                    "route": "torrent-prompt"
+                });
             } else {
                 document.querySelector("#polymer_toast").toast("under processing");
             }
@@ -732,11 +746,9 @@
         },
 
         user_prompt: function() {
-            this.menuToggle();
-
-            this.async(function() {
-                this.$.user_prompt.open();
-            }, 400);
+            FlowRouter.setQueryParams({
+                "route": "user-prompt"
+            });
         }
 
     });
