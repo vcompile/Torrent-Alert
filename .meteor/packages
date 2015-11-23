@@ -15,7 +15,7 @@ tracker                 # Meteor's client-side reactive programming library
 
 hedcet:cordova-google-plus-native-sign-in
 kadira:flow-router
-# meteorhacks:kadira
+meteorhacks:kadira
 meteorhacks:npm
 momentjs:moment
 mwc:compiler

@@ -78,9 +78,13 @@ var inbox = FlowRouter.group({
     name: "inbox",
     prefix: "/inbox",
     triggersEnter: [function(context, redirect) {
-        if (!Meteor.user()) {
+        if (Meteor.status().connected) {
+            if (!Meteor.user()) {
+                FlowRouter.go("/");
+            }
+        } else {
             if (!(document.querySelector("#torrent_db").value || []).length) {
-                redirect("/");
+                FlowRouter.go("/");
             }
         }
     }]
