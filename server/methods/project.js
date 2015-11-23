@@ -134,8 +134,8 @@ Meteor.methods({
                     }
                 });
 
-                return "quota limit reached";
-            } else return "1 item moved to scheduler";
+                return "1 item moved to scheduler";
+            } else return "quota limit reached";
         } else return "notFound";
     }
 

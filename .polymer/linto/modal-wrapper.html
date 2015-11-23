@@ -1,0 +1,34 @@
+<dom-module id="modal-wrapper">
+
+    <style>
+    :host {
+        display: none;
+    }
+    
+    :host([active]) {
+        display: block;
+    }
+    </style>
+
+    <template>
+        <content select="div"></content>
+    </template>
+
+    <script>
+    Polymer({
+
+        is: "modal-wrapper",
+
+        properties: {
+            active: {
+                notify: true,
+                reflectToAttribute: true,
+                type: Boolean,
+                value: false
+            }
+        }
+
+    });
+    </script>
+
+</dom-module>

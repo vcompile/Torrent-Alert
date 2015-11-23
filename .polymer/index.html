@@ -1,0 +1,108 @@
+<html>
+
+<head>
+
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+
+    <title>TorrentAlert</title>
+    <link href="img/icon.png" rel="shortcut icon">
+
+    <script src="bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+
+    <link href="bower_components/load-awesome/css/line-scale-pulse-out-rapid.min.css" rel="stylesheet">
+
+    <link href="img/0.png" rel="prefetch">
+    <link href="img/1.png" rel="prefetch">
+    <link href="img/2.png" rel="prefetch">
+    <link href="img/3.png" rel="prefetch">
+
+</head>
+
+<body>
+
+    <iron-localstorage id="torrent_db" name="torrent_db" value="[]"></iron-localstorage>
+
+    <style>
+    * {
+        outline: none;
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+    }
+    
+    html,
+    body {
+        background: #EEE;
+        font-family: 'RobotoDraft', sans-serif;
+        overflow: hidden;
+    }
+    
+    .bordered {
+        border: 1px solid #EEE;
+        border-width: 2px 4px;
+    }
+    
+    .cursor-d {
+        cursor: default;
+    }
+    
+    .cursor-p {
+        cursor: pointer;
+    }
+    
+    .etc {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    .hover:hover {
+        background: #EEE;
+    }
+    
+    .iron-selected {
+        background: #EEE;
+    }
+    
+    .li {
+        width: 480px;
+    }
+    
+    @media (max-width: 480px) {
+        .li {
+            width: 100%;
+        }
+    }
+    
+    @media (min-width: 480px) {
+        .li {
+            width: 480px;
+        }
+    }
+    
+    .relative {
+        position: relative;
+    }
+    </style>
+
+    <exit-controller id="exit_controller"></exit-controller>
+    <load-awesome id="load_awesome"></load-awesome>
+    <polymer-toast id="polymer_toast"></polymer-toast>
+
+    <mwc-layout id="inbox">
+        <div region="add-project"></div>
+        <div region="layout-inbox"></div>
+        <div region="search-bar"></div>
+    </mwc-layout>
+
+    <mwc-layout id="main">
+        <div region="body"></div>
+    </mwc-layout>
+
+    <mwc-layout id="set-password">
+        <div region="opt"></div>
+    </mwc-layout>
+
+</body>
+
+</html>

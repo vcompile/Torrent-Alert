@@ -1,0 +1,176 @@
+<dom-module id="add-project">
+
+    <style>
+    :host {
+        display: none;
+    }
+    
+    :host([active]) {
+        display: block;
+    }
+    
+    paper-button {
+        margin: 0;
+        min-width: 50%;
+        padding: 16px;
+    }
+    
+    paper-toolbar {
+        --paper-toolbar-background: white;
+        --paper-toolbar-color: black;
+    }
+    
+    paper-toolbar paper-icon-button {
+        margin: 0!important;
+    }
+    
+    paper-toolbar .title {
+        padding: 0 12px;
+    }
+    </style>
+
+    <template>
+        <paper-header-panel class="fit" style="background: white; z-index: 1;">
+            <paper-toolbar>
+                <paper-icon-button icon="arrow-back" on-click="back"></paper-icon-button>
+                <div class="title">scheduler</div>
+            </paper-toolbar>
+
+            <div class="center-justified horizontal layout">
+                <div class="li" style="padding: 24px;">
+                    <paper-input auto-validate label="keyword" required value="{{keyword}}"></paper-input>
+
+                    <br>
+
+                    <div class="center horizontal justified layout">
+                        <div class="cursor-d flex" style="text-align: right;">min leech count</div>
+                        <paper-slider class="flex" editable max="1000" min="1" value="{{leech}}"></paper-slider>
+                    </div>
+                    <div class="center horizontal justified layout">
+                        <div class="cursor-d flex" style="text-align: right;">min seed count</div>
+                        <paper-slider class="flex" editable max="1000" min="1" value="{{seed}}"></paper-slider>
+                    </div>
+
+                    <br>
+
+                    <div class="end-justified horizontal layout">
+                        <div class="cursor-d" on-click="date_picker_open">within <span style="border-bottom: 2px solid #AAA;">[[within]]</span> month</div>
+                    </div>
+                    <br>
+
+                    <div class="end-justified horizontal layout">
+                        <paper-button class="blue-500" on-click="add_project">submit</paper-button>
+                    </div>
+                </div>
+            </div>
+        </paper-header-panel>
+
+        <paper-dialog class="paper-date-picker-dialog" id="date_picker" modal on-iron-overlay-closed="date_picker_close">
+            <paper-date-picker id="date"></paper-date-picker>
+
+            <div class="buttons">
+                <paper-button dialog-dismiss>cancel</paper-button>
+                <paper-button dialog-confirm>ok</paper-button>
+            </div>
+        </paper-dialog>
+    </template>
+
+    <script>
+    Polymer({
+
+        add_project: function() {
+            if (Meteor.status().connected) {
+                this.keyword = decodeURIComponent(this.keyword).trim();
+                var keywordArray = (this.keyword.split("/").filter(Boolean).reverse()[0] || "").trim().split(/\?[fq]=/g);
+
+                if (this.keyword.length) {
+                    var row = {
+                        keyword: (1 < keywordArray.length ? keywordArray[1] : keywordArray[0]),
+                        leech: parseInt(this.leech),
+                        seed: parseInt(this.seed),
+                        url: (1 < keywordArray.length ? keywordArray[0] : "search"),
+                        within: parseInt(this.within),
+                        worker: "schedule"
+                    };
+
+                    Meteor.call("insert_project", row, function(error, response) {
+                        if (error) {
+                            document.querySelector("#polymer_toast").toast((error.reason == "userNotFound") ? "internet/user required" : error.reason);
+                        } else {
+                            if (response == "") {
+                                document.querySelector("#polymer_toast").toast("quota limit reached");
+                            } else {
+                                document.querySelector("#polymer_toast").toast("i keyword added");
+
+                                document.querySelector("#main_toolbar").className = document.querySelector("#main_toolbar").className.replace(/ ?[a-z\-]+\-500/g, "") + " " + polymer_color(1 < keywordArray.length ? keywordArray[1] : keywordArray[0]);
+
+                                document.querySelector("layout-inbox").menu_selected = response;
+                            }
+                        }
+                    });
+
+                    this.active = false;
+                } else {
+                    document.querySelector("#polymer_toast").toast("empty keyword");
+                }
+
+                this.keyword = "";
+                this.leech = 1;
+                this.seed = 1;
+                this.within = 6;
+            } else {
+                document.querySelector("#polymer_toast").toast("server connection required");
+            }
+        },
+
+        back: function() {
+            FlowRouter.setQueryParams({
+                "route": null
+            });
+        },
+
+        date_picker_close: function() {
+            if (this.$.date.date) {
+                var A = Math.ceil(moment.duration(moment().diff(moment(this.$.date.date))).asMonths());
+
+                if (0 < A && A < 48) {
+                    this.within = A;
+                }
+            }
+        },
+
+        date_picker_open: function() {
+            this.$.date_picker.open();
+        },
+
+        is: "add-project",
+
+        properties: {
+            active: {
+                notify: true,
+                reflectToAttribute: true,
+                type: Boolean,
+                value: false
+            },
+            input: {
+                type: String,
+                value: ""
+            },
+            leech: {
+                type: Number,
+                value: 1
+            },
+            seed: {
+                type: Number,
+                value: 1
+            },
+            within: {
+                type: Number,
+                value: 6
+            }
+        }
+
+    });
+    </script>
+
+</dom-module>
