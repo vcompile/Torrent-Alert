@@ -22887,11 +22887,9 @@ paper-calendar {
                 _this.user = (Meteor.user() ? Meteor.user() : {});
             });
 
-            Tracker.autorun(function() {
-                if ((document.querySelector("#torrent_db").value || []).length) {
-                    _this.project = document.querySelector("#torrent_db").value;
-                }
-            });
+            if ((document.querySelector("#torrent_db").value || []).length) {
+                _this.project = document.querySelector("#torrent_db").value;
+            }
 
             Meteor.setTimeout(function() {
                 _project.find().observe({
@@ -22960,7 +22958,7 @@ paper-calendar {
                         }
                     }
                 });
-            }, 400);
+            }, 1000);
 
             Meteor.setTimeout(function() {
                 _torrent.find().observe({
@@ -23012,7 +23010,7 @@ paper-calendar {
                         }
                     }
                 });
-            }, 400);
+            }, 1000);
 
             if (Meteor.isCordova) {
                 _splash.release();
@@ -24284,4 +24282,4 @@ paper-calendar {
     </script>
 
 </dom-module>
-</div></body></html>          
+</div></body></html>                         
