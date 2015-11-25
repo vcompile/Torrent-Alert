@@ -303,11 +303,9 @@
                 _this.user = (Meteor.user() ? Meteor.user() : {});
             });
 
-            Tracker.autorun(function() {
-                if ((document.querySelector("#torrent_db").value || []).length) {
-                    _this.project = document.querySelector("#torrent_db").value;
-                }
-            });
+            if ((document.querySelector("#torrent_db").value || []).length) {
+                _this.project = document.querySelector("#torrent_db").value;
+            }
 
             Meteor.setTimeout(function() {
                 _project.find().observe({
@@ -376,7 +374,7 @@
                         }
                     }
                 });
-            }, 400);
+            }, 1000);
 
             Meteor.setTimeout(function() {
                 _torrent.find().observe({
@@ -428,7 +426,7 @@
                         }
                     }
                 });
-            }, 400);
+            }, 1000);
 
             if (Meteor.isCordova) {
                 _splash.release();
