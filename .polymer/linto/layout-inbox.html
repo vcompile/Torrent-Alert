@@ -309,122 +309,126 @@
                 }
             });
 
-            _project.find().observe({
-                added: function(row) {
-                    var item = _.find(_this.project, function(A) {
-                        return (row._id === A._id);
-                    });
+            Meteor.setTimeout(function() {
+                _project.find().observe({
+                    added: function(row) {
+                        var item = _.find(_this.project, function(A) {
+                            return (row._id === A._id);
+                        });
 
-                    if (!item) {
-                        for (var A = 0; A < row.torrent.length; A++) {
-                            var item = _torrent.findOne({
-                                _id: row.torrent[A]
-                            });
+                        if (!item) {
+                            for (var A = 0; A < row.torrent.length; A++) {
+                                var item = _torrent.findOne({
+                                    _id: row.torrent[A]
+                                });
 
-                            row.torrent[A] = (item ? item : {
-                                _id: row.torrent[A]
-                            });
+                                row.torrent[A] = (item ? item : {
+                                    _id: row.torrent[A]
+                                });
 
-                            row.torrent[A].project = {
-                                _id: row._id
-                            };
+                                row.torrent[A].project = {
+                                    _id: row._id
+                                };
+                            }
+
+                            _this.project.unshift(row);
+
+                            _this.project = _.clone(_this.project);
                         }
+                    },
 
-                        _this.project.unshift(row);
-
-                        _this.project = _.clone(_this.project);
-                    }
-                },
-
-                changed: function(row, old) {
-                    var index = _.map(_this.project, function(A) {
-                        return A._id;
-                    }).indexOf(row._id);
-
-                    if (-1 < index) {
-                        for (var A = 0; A < row.torrent.length; A++) {
-                            var item = _torrent.findOne({
-                                _id: row.torrent[A]
-                            });
-
-                            row.torrent[A] = (item ? item : {
-                                _id: row.torrent[A]
-                            });
-
-                            row.torrent[A].project = {
-                                _id: row._id
-                            };
-                        }
-
-                        _this.project[index] = _.clone($.extend(true, _this.project[index], row));
-
-                        _this.project[index] = _.clone(_this.project[index]);
-                        _this.project = _.clone(_this.project);
-                    }
-                },
-
-                removed: function(old) {
-                    var index = _.map(_this.project, function(A) {
-                        return A._id;
-                    }).indexOf(old._id);
-
-                    if (-1 < index) {
-                        _this.project.splice(index, 1);
-
-                        _this.project = _.clone(_this.project);
-                    }
-                }
-            });
-
-            _torrent.find().observe({
-                added: function(row) {
-                    for (var A = 0; A < _this.project.length; A++) {
-                        var index = _.map(_this.project[A].torrent, function(item) {
-                            return item._id;
+                    changed: function(row, old) {
+                        var index = _.map(_this.project, function(A) {
+                            return A._id;
                         }).indexOf(row._id);
 
                         if (-1 < index) {
-                            _this.project[A].torrent[index] = _.clone($.extend(true, _this.project[A].torrent[index], row));
+                            for (var A = 0; A < row.torrent.length; A++) {
+                                var item = _torrent.findOne({
+                                    _id: row.torrent[A]
+                                });
 
-                            _this.project[A].torrent = _.clone(_this.project[A].torrent);
-                            _this.project[A] = _.clone(_this.project[A]);
+                                row.torrent[A] = (item ? item : {
+                                    _id: row.torrent[A]
+                                });
+
+                                row.torrent[A].project = {
+                                    _id: row._id
+                                };
+                            }
+
+                            _this.project[index] = _.clone($.extend(true, _this.project[index], row));
+
+                            _this.project[index] = _.clone(_this.project[index]);
                             _this.project = _.clone(_this.project);
                         }
-                    }
-                },
+                    },
 
-                changed: function(row, old) {
-                    for (var A = 0; A < _this.project.length; A++) {
-                        var index = _.map(_this.project[A].torrent, function(item) {
-                            return item._id;
-                        }).indexOf(row._id);
-
-                        if (-1 < index) {
-                            _this.project[A].torrent[index] = _.clone($.extend(true, _this.project[A].torrent[index], row));
-
-                            _this.project[A].torrent = _.clone(_this.project[A].torrent);
-                            _this.project[A] = _.clone(_this.project[A]);
-                            _this.project = _.clone(_this.project);
-                        }
-                    }
-                },
-
-                removed: function(old) {
-                    for (var A = 0; A < _this.project.length; A++) {
-                        var index = _.map(_this.project[A].torrent, function(item) {
-                            return item._id;
+                    removed: function(old) {
+                        var index = _.map(_this.project, function(A) {
+                            return A._id;
                         }).indexOf(old._id);
 
                         if (-1 < index) {
-                            _this.project[A].torrent.splice(index, 1);
+                            _this.project.splice(index, 1);
 
-                            _this.project[A].torrent = _.clone(_this.project[A].torrent);
-                            _this.project[A] = _.clone(_this.project[A]);
                             _this.project = _.clone(_this.project);
                         }
                     }
-                }
-            });
+                });
+            }, 400);
+
+            Meteor.setTimeout(function() {
+                _torrent.find().observe({
+                    added: function(row) {
+                        for (var A = 0; A < _this.project.length; A++) {
+                            var index = _.map(_this.project[A].torrent, function(item) {
+                                return item._id;
+                            }).indexOf(row._id);
+
+                            if (-1 < index) {
+                                _this.project[A].torrent[index] = _.clone($.extend(true, _this.project[A].torrent[index], row));
+
+                                _this.project[A].torrent = _.clone(_this.project[A].torrent);
+                                _this.project[A] = _.clone(_this.project[A]);
+                                _this.project = _.clone(_this.project);
+                            }
+                        }
+                    },
+
+                    changed: function(row, old) {
+                        for (var A = 0; A < _this.project.length; A++) {
+                            var index = _.map(_this.project[A].torrent, function(item) {
+                                return item._id;
+                            }).indexOf(row._id);
+
+                            if (-1 < index) {
+                                _this.project[A].torrent[index] = _.clone($.extend(true, _this.project[A].torrent[index], row));
+
+                                _this.project[A].torrent = _.clone(_this.project[A].torrent);
+                                _this.project[A] = _.clone(_this.project[A]);
+                                _this.project = _.clone(_this.project);
+                            }
+                        }
+                    },
+
+                    removed: function(old) {
+                        for (var A = 0; A < _this.project.length; A++) {
+                            var index = _.map(_this.project[A].torrent, function(item) {
+                                return item._id;
+                            }).indexOf(old._id);
+
+                            if (-1 < index) {
+                                _this.project[A].torrent.splice(index, 1);
+
+                                _this.project[A].torrent = _.clone(_this.project[A].torrent);
+                                _this.project[A] = _.clone(_this.project[A]);
+                                _this.project = _.clone(_this.project);
+                            }
+                        }
+                    }
+                });
+            }, 400);
 
             if (Meteor.isCordova) {
                 _splash.release();
