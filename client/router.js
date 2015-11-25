@@ -27,8 +27,8 @@ FlowRouter.route("/", {
         switch (FlowRouter.getQueryParam("route")) {
             case "sign-in":
                 document.querySelector("#router").sharedElements = {
-                    'ripple': document.querySelector("user-check"),
-                    'reverse-ripple': document.querySelector("user-check")
+                    'ripple': document.querySelector("#sign-in"),
+                    'reverse-ripple': document.querySelector("#sign-in")
                 };
 
                 document.querySelector("user-check").selected = 1;
@@ -36,8 +36,8 @@ FlowRouter.route("/", {
 
             case "reset-password":
                 document.querySelector("#router").sharedElements = {
-                    'ripple': document.querySelector("user-check"),
-                    'reverse-ripple': document.querySelector("user-check")
+                    'ripple': document.querySelector("#sign-in"),
+                    'reverse-ripple': document.querySelector("#sign-in")
                 };
 
                 document.querySelector("user-check").selected = 2;
@@ -45,8 +45,8 @@ FlowRouter.route("/", {
 
             case "sign-up":
                 document.querySelector("#router").sharedElements = {
-                    'ripple': document.querySelector("user-check"),
-                    'reverse-ripple': document.querySelector("user-check")
+                    'ripple': document.querySelector("#sign-up"),
+                    'reverse-ripple': document.querySelector("#sign-up")
                 };
 
                 document.querySelector("user-check").selected = 3;
@@ -54,8 +54,8 @@ FlowRouter.route("/", {
 
             case "resend-enrollment-email":
                 document.querySelector("#router").sharedElements = {
-                    'ripple': document.querySelector("user-check"),
-                    'reverse-ripple': document.querySelector("user-check")
+                    'ripple': document.querySelector("#sign-up"),
+                    'reverse-ripple': document.querySelector("#sign-up")
                 };
 
                 document.querySelector("user-check").selected = 4;

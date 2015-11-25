@@ -8666,7 +8666,7 @@ this.fire('dom-change');
     --layout-fullbleed: {
       margin: 0;
       height: 100vh;
-    }
+    };
 
     /* fixed position */
 
@@ -12110,46 +12110,10 @@ is separate from validation, and `allowed-pattern` does not affect how the input
      * Values taken from: http://www.w3.org/TR/2007/WD-DOM-Level-3-Events-20071221/keyset.html#KeySet-Set
      */
     var KEY_IDENTIFIER = {
+      'U+0008': 'backspace',
       'U+0009': 'tab',
       'U+001B': 'esc',
       'U+0020': 'space',
-      'U+002A': '*',
-      'U+0030': '0',
-      'U+0031': '1',
-      'U+0032': '2',
-      'U+0033': '3',
-      'U+0034': '4',
-      'U+0035': '5',
-      'U+0036': '6',
-      'U+0037': '7',
-      'U+0038': '8',
-      'U+0039': '9',
-      'U+0041': 'a',
-      'U+0042': 'b',
-      'U+0043': 'c',
-      'U+0044': 'd',
-      'U+0045': 'e',
-      'U+0046': 'f',
-      'U+0047': 'g',
-      'U+0048': 'h',
-      'U+0049': 'i',
-      'U+004A': 'j',
-      'U+004B': 'k',
-      'U+004C': 'l',
-      'U+004D': 'm',
-      'U+004E': 'n',
-      'U+004F': 'o',
-      'U+0050': 'p',
-      'U+0051': 'q',
-      'U+0052': 'r',
-      'U+0053': 's',
-      'U+0054': 't',
-      'U+0055': 'u',
-      'U+0056': 'v',
-      'U+0057': 'w',
-      'U+0058': 'x',
-      'U+0059': 'y',
-      'U+005A': 'z',
       'U+007F': 'del'
     };
 
@@ -12161,6 +12125,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
      * Values from: https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent.keyCode#Value_of_keyCode
      */
     var KEY_CODE = {
+      8: 'backspace',
       9: 'tab',
       13: 'enter',
       27: 'esc',
@@ -12190,16 +12155,6 @@ is separate from validation, and `allowed-pattern` does not affect how the input
     };
 
     /**
-     * KeyboardEvent.key is mostly represented by printable character made by
-     * the keyboard, with unprintable keys labeled nicely.
-     *
-     * However, on OS X, Alt+char can make a Unicode character that follows an
-     * Apple-specific mapping. In this case, we
-     * fall back to .keyCode.
-     */
-    var KEY_CHAR = /[a-z0-9*]/;
-
-    /**
      * Matches a keyIdentifier string.
      */
     var IDENT_CHAR = /U\+/;
@@ -12219,14 +12174,12 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       var validKey = '';
       if (key) {
         var lKey = key.toLowerCase();
-        if (lKey.length == 1) {
-          if (KEY_CHAR.test(lKey)) {
-            validKey = lKey;
-          }
+        if (lKey === ' ' || SPACE_KEY.test(lKey)) {
+          validKey = 'space';
+        } else if (lKey.length == 1) {
+          validKey = lKey;
         } else if (ARROW_KEY.test(lKey)) {
           validKey = lKey.replace('arrow', '');
-        } else if (SPACE_KEY.test(lKey)) {
-          validKey = 'space';
         } else if (lKey == 'multiply') {
           // numpad '*' can map to Multiply on IE/Windows
           validKey = '*';
@@ -12240,8 +12193,11 @@ is separate from validation, and `allowed-pattern` does not affect how the input
     function transformKeyIdentifier(keyIdent) {
       var validKey = '';
       if (keyIdent) {
-        if (IDENT_CHAR.test(keyIdent)) {
+        if (keyIdent in KEY_IDENTIFIER) {
           validKey = KEY_IDENTIFIER[keyIdent];
+        } else if (IDENT_CHAR.test(keyIdent)) {
+          keyIdent = parseInt(keyIdent.replace('U+', '0x'), 16);
+          validKey = String.fromCharCode(keyIdent).toLowerCase();
         } else {
           validKey = keyIdent.toLowerCase();
         }
@@ -12281,15 +12237,24 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         transformKey(keyEvent.detail.key) || '';
     }
 
-    function keyComboMatchesEvent(keyCombo, keyEvent) {
-      return normalizedKeyForEvent(keyEvent) === keyCombo.key &&
-        !!keyEvent.shiftKey === !!keyCombo.shiftKey &&
-        !!keyEvent.ctrlKey === !!keyCombo.ctrlKey &&
-        !!keyEvent.altKey === !!keyCombo.altKey &&
-        !!keyEvent.metaKey === !!keyCombo.metaKey;
+    function keyComboMatchesEvent(keyCombo, event, eventKey) {
+      return eventKey === keyCombo.key &&
+        (!keyCombo.hasModifiers || (
+          !!event.shiftKey === !!keyCombo.shiftKey &&
+          !!event.ctrlKey === !!keyCombo.ctrlKey &&
+          !!event.altKey === !!keyCombo.altKey &&
+          !!event.metaKey === !!keyCombo.metaKey)
+        );
     }
 
     function parseKeyComboString(keyComboString) {
+      if (keyComboString.length === 1) {
+        return {
+          combo: keyComboString,
+          key: keyComboString,
+          event: 'keydown'
+        };
+      }
       return keyComboString.split('+').reduce(function(parsedKeyCombo, keyComboPart) {
         var eventParts = keyComboPart.split(':');
         var keyName = eventParts[0];
@@ -12297,6 +12262,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
         if (keyName in MODIFIER_KEYS) {
           parsedKeyCombo[MODIFIER_KEYS[keyName]] = true;
+          parsedKeyCombo.hasModifiers = true;
         } else {
           parsedKeyCombo.key = keyName;
           parsedKeyCombo.event = event || 'keydown';
@@ -12309,11 +12275,10 @@ is separate from validation, and `allowed-pattern` does not affect how the input
     }
 
     function parseEventString(eventString) {
-      return eventString.split(' ').map(function(keyComboString) {
+      return eventString.trim().split(' ').map(function(keyComboString) {
         return parseKeyComboString(keyComboString);
       });
     }
-
 
     /**
      * `Polymer.IronA11yKeysBehavior` provides a normalized interface for processing
@@ -12410,14 +12375,12 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
       keyboardEventMatchesKeys: function(event, eventString) {
         var keyCombos = parseEventString(eventString);
-        var index;
-
-        for (index = 0; index < keyCombos.length; ++index) {
-          if (keyComboMatchesEvent(keyCombos[index], event)) {
+        var eventKey = normalizedKeyForEvent(event);
+        for (var i = 0; i < keyCombos.length; ++i) {
+          if (keyComboMatchesEvent(keyCombos[i], event, eventKey)) {
             return true;
           }
         }
-
         return false;
       },
 
@@ -12444,6 +12407,15 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
         for (var eventString in this._imperativeKeyBindings) {
           this._addKeyBinding(eventString, this._imperativeKeyBindings[eventString]);
+        }
+
+        // Give precedence to combos with modifiers to be checked first.
+        for (var eventName in this._keyBindings) {
+          this._keyBindings[eventName].sort(function (kb1, kb2) {
+            var b1 = kb1[0].hasModifiers;
+            var b2 = kb2[0].hasModifiers;
+            return (b1 === b2) ? 0 : b1 ? -1 : 1;
+          })
         }
       },
 
@@ -12500,14 +12472,23 @@ is separate from validation, and `allowed-pattern` does not affect how the input
           event.stopPropagation();
         }
 
-        keyBindings.forEach(function(keyBinding) {
-          var keyCombo = keyBinding[0];
-          var handlerName = keyBinding[1];
+        // if event has been already prevented, don't do anything
+        if (event.defaultPrevented) {
+          return;
+        }
 
-          if (!event.defaultPrevented && keyComboMatchesEvent(keyCombo, event)) {
+        var eventKey = normalizedKeyForEvent(event);
+        for (var i = 0; i < keyBindings.length; i++) {
+          var keyCombo = keyBindings[i][0];
+          var handlerName = keyBindings[i][1];
+          if (keyComboMatchesEvent(keyCombo, event, eventKey)) {
             this._triggerKeyHandler(keyCombo, handlerName, event);
+            // exit the loop if eventDefault was prevented
+            if (event.defaultPrevented) {
+              return;
+            }
           }
-        }, this);
+        }
       },
 
       _triggerKeyHandler: function(keyCombo, handlerName, keyboardEvent) {
@@ -13333,74 +13314,60 @@ CSS properties               | Action
 </script>
 <script>
 
-  Polymer.IronOverlayManager = {
+  Polymer.IronOverlayManager = (function() {
 
-    _overlays: [],
-
-    // iframes have a default z-index of 100, so this default should be at least
-    // that.
-    _minimumZ: 101,
-
-    _backdrops: [],
-
-    _applyOverlayZ: function(overlay, aboveZ) {
-      this._setZ(overlay, aboveZ + 2);
-    },
-
-    _setZ: function(element, z) {
-      element.style.zIndex = z;
-    },
+    var overlays = [];
+    var DEFAULT_Z = 10;
+    var backdrops = [];
 
     // track overlays for z-index and focus managemant
-    addOverlay: function(overlay) {
-      var minimumZ = Math.max(this.currentOverlayZ(), this._minimumZ);
-      this._overlays.push(overlay);
-      var newZ = this.currentOverlayZ();
-      if (newZ <= minimumZ) {
-        this._applyOverlayZ(overlay, minimumZ);
+    function addOverlay(overlay) {
+      var z0 = currentOverlayZ();
+      overlays.push(overlay);
+      var z1 = currentOverlayZ();
+      if (z1 <= z0) {
+        applyOverlayZ(overlay, z0);
       }
-    },
+    }
 
-    removeOverlay: function(overlay) {
-      var i = this._overlays.indexOf(overlay);
+    function removeOverlay(overlay) {
+      var i = overlays.indexOf(overlay);
       if (i >= 0) {
-        this._overlays.splice(i, 1);
-        this._setZ(overlay, '');
+        overlays.splice(i, 1);
+        setZ(overlay, '');
       }
-    },
+    }
 
-    currentOverlay: function() {
-      var i = this._overlays.length - 1;
-      while (this._overlays[i] && !this._overlays[i].opened) {
+    function applyOverlayZ(overlay, aboveZ) {
+      setZ(overlay, aboveZ + 2);
+    }
+
+    function setZ(element, z) {
+      element.style.zIndex = z;
+    }
+
+    function currentOverlay() {
+      var i = overlays.length - 1;
+      while (overlays[i] && !overlays[i].opened) {
         --i;
       }
-      return this._overlays[i];
-    },
+      return overlays[i];
+    }
 
-    currentOverlayZ: function() {
-      var z = this._minimumZ;
-      var current = this.currentOverlay();
+    function currentOverlayZ() {
+      var z;
+      var current = currentOverlay();
       if (current) {
         var z1 = window.getComputedStyle(current).zIndex;
         if (!isNaN(z1)) {
           z = Number(z1);
         }
       }
-      return z;
-    },
+      return z || DEFAULT_Z;
+    }
 
-    /**
-     * Ensures that the minimum z-index of new overlays is at least `minimumZ`.
-     * This does not effect the z-index of any existing overlays.
-     *
-     * @param {number} minimumZ
-     */
-    ensureMinimumZ: function(minimumZ) {
-      this._minimumZ = Math.max(this._minimumZ, minimumZ);
-    },
-
-    focusOverlay: function() {
-      var current = this.currentOverlay();
+    function focusOverlay() {
+      var current = currentOverlay();
       // We have to be careful to focus the next overlay _after_ any current
       // transitions are complete (due to the state being toggled prior to the
       // transition). Otherwise, we risk infinite recursion when a transitioning
@@ -13412,26 +13379,36 @@ CSS properties               | Action
       if (current && !current.transitioning) {
         current._applyFocus();
       }
-    },
+    }
 
-    trackBackdrop: function(element) {
+    function trackBackdrop(element) {
       // backdrops contains the overlays with a backdrop that are currently
       // visible
       if (element.opened) {
-        this._backdrops.push(element);
+        backdrops.push(element);
       } else {
-        var index = this._backdrops.indexOf(element);
+        var index = backdrops.indexOf(element);
         if (index >= 0) {
-          this._backdrops.splice(index, 1);
+          backdrops.splice(index, 1);
         }
       }
-    },
-
-    getBackdrops: function() {
-      return this._backdrops;
     }
 
-  };
+    function getBackdrops() {
+      return backdrops;
+    }
+
+    return {
+      addOverlay: addOverlay,
+      removeOverlay: removeOverlay,
+      currentOverlay: currentOverlay,
+      currentOverlayZ: currentOverlayZ,
+      focusOverlay: focusOverlay,
+      trackBackdrop: trackBackdrop,
+      getBackdrops: getBackdrops
+    };
+
+  })();
 
 </script>
 
@@ -13853,12 +13830,6 @@ context. You should place this element as a child of `<body>` whenever possible.
 /**
  * Fired after the `iron-overlay` opens.
  * @event iron-overlay-opened
- */
-
-/**
- * Fired when the `iron-overlay` is canceled, but before it is closed.
- * Cancel the event to prevent the `iron-overlay` from closing.
- * @event iron-overlay-canceled
  */
 
 /**
@@ -14880,6 +14851,7 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
 
 };
 </script>
+
 
 
 
@@ -18522,7 +18494,7 @@ paper-calendar {
     <iron-media-query id="mq" on-query-matches-changed="_onQueryMatchesChanged" query="[[_computeMediaQuery(forceNarrow, responsiveWidth)]]">
     </iron-media-query>
 
-    <iron-selector attr-for-selected="id" class$="[[_computeIronSelectorClass(narrow, transition, dragging, rightDrawer, peeking)]]" activate-event="" selected="[[selected]]">
+    <iron-selector attr-for-selected="id" class$="[[_computeIronSelectorClass(narrow, _transition, dragging, rightDrawer, peeking)]]" activate-event="" selected="[[selected]]">
 
       <div id="main" style$="[[_computeMainStyle(narrow, rightDrawer, drawerWidth)]]" on-transitionend="_onMainTransitionEnd">
         <content select="[main]"></content>
@@ -18730,7 +18702,7 @@ paper-calendar {
           /**
            * Whether the transition is enabled.
            */
-          transition: {
+          _transition: {
             type: Boolean,
             value: false
           },
@@ -18782,7 +18754,7 @@ paper-calendar {
         ready: function() {
           // Avoid transition at the beginning e.g. page loads and enable
           // transitions only after the element is rendered and ready.
-          this.transition = true;
+          this._transition = true;
         },
 
         _onMainTransitionEnd: function (e) {
@@ -18933,7 +18905,7 @@ paper-calendar {
 
             if (this.dragging) {
               this.width = this.$.drawer.offsetWidth;
-              this.transition = false;
+              this._transition = false;
             }
           }
         },
@@ -18969,7 +18941,7 @@ paper-calendar {
             var xDirection = event.detail.dx > 0;
 
             this._setDragging(false);
-            this.transition = true;
+            this._transition = true;
             sharedPanel = null;
             this._moveDrawer(null);
 
@@ -19107,131 +19079,120 @@ paper-calendar {
   });
 </script>
 <dom-module id="paper-header-panel" assetpath="/bower_components/paper-header-panel/">
-
-  <style>
-/**
-@license
-Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE
-The complete set of authors may be found at http://polymer.github.io/AUTHORS
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS
-Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS
-*/
-
-:host {
-  --paper-header-panel-shadow: {
-    height: 6px;
-    bottom: -6px;
-    box-shadow: inset 0px 5px 6px -3px rgba(0, 0, 0, 0.4);
-  };
-
-  @apply(--layout-vertical);
-
-  position: relative;
-  height: 100%;
-}
-
-#mainContainer {
-  @apply(--layout-flex);
-
-  position: relative;
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-}
-
-#mainPanel {
-  @apply(--layout-vertical);
-  @apply(--layout-flex);
-
-  position: relative;
-}
-
-/*
- * mode: scroll
- */
-:host([mode=scroll]) #mainContainer {
-  @apply(--paper-header-panel-scroll-container);
-
-  overflow: visible;
-}
-
-:host([mode=scroll]) {
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-}
-
-/*
- * mode: cover
- */
-:host([mode=cover]) #mainContainer {
-  @apply(--paper-header-panel-cover-container);
-
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-}
-
-:host([mode=cover]) #mainPanel {
-  position: static;
-}
-
-/*
- * mode: standard
- */
-:host([mode=standard]) #mainContainer {
-  @apply(--paper-header-panel-standard-container);
-}
-
-/*
- * mode: seamed
- */
-:host([mode=seamed]) #mainContainer {
-  @apply(--paper-header-panel-seamed-container);
-}
-
-
-/*
- * mode: waterfall
- */
-:host([mode=waterfall]) #mainContainer {
-  @apply(--paper-header-panel-waterfall-container);
-}
-
-/*
- * mode: waterfall-tall
- */
-:host([mode=waterfall-tall]) #mainContainer {
-  @apply(--paper-header-panel-waterfall-tall-container);
-}
-
-#dropShadow {
-  @apply(--paper-header-panel-shadow);
-
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 6px;
-  pointer-events: none;
-
-  -webkit-transition: opacity 0.5s;
-  transition: opacity 0.5s;
-
-  opacity: 0;
-}
-
-#dropShadow.has-shadow {
-  opacity: 1;
-}
-
-</style>
-
   <template>
+    <style>
+      :host {
+        --paper-header-panel-shadow: {
+          height: 6px;
+          bottom: -6px;
+          box-shadow: inset 0px 5px 6px -3px rgba(0, 0, 0, 0.4);
+        };
+
+        @apply(--layout-vertical);
+
+        position: relative;
+        height: 100%;
+      }
+
+      #mainContainer {
+        @apply(--layout-flex);
+
+        position: relative;
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      #mainPanel {
+        @apply(--layout-vertical);
+        @apply(--layout-flex);
+
+        position: relative;
+        min-height: 0;
+      }
+
+      /*
+       * mode: scroll
+       */
+      :host([mode=scroll]) #mainContainer {
+        @apply(--paper-header-panel-scroll-container);
+
+        overflow: visible;
+      }
+
+      :host([mode=scroll]) {
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /*
+       * mode: cover
+       */
+      :host([mode=cover]) #mainContainer {
+        @apply(--paper-header-panel-cover-container);
+
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+      }
+
+      :host([mode=cover]) #mainPanel {
+        position: static;
+      }
+
+      /*
+       * mode: standard
+       */
+      :host([mode=standard]) #mainContainer {
+        @apply(--paper-header-panel-standard-container);
+      }
+
+      /*
+       * mode: seamed
+       */
+      :host([mode=seamed]) #mainContainer {
+        @apply(--paper-header-panel-seamed-container);
+      }
+
+
+      /*
+       * mode: waterfall
+       */
+      :host([mode=waterfall]) #mainContainer {
+        @apply(--paper-header-panel-waterfall-container);
+      }
+
+      /*
+       * mode: waterfall-tall
+       */
+      :host([mode=waterfall-tall]) #mainContainer {
+        @apply(--paper-header-panel-waterfall-tall-container);
+      }
+
+      #dropShadow {
+        @apply(--paper-header-panel-shadow);
+
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 6px;
+        pointer-events: none;
+
+        -webkit-transition: opacity 0.5s;
+        transition: opacity 0.5s;
+
+        opacity: 0;
+      }
+
+      #dropShadow.has-shadow {
+        opacity: 1;
+      }
+    </style>
+
     <content id="headerContent" select="paper-toolbar, .paper-header"></content>
 
     <div id="mainPanel">
@@ -19242,259 +19203,245 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </div>
   </template>
 
-</dom-module>
+  <script>
+    (function() {
+      'use strict';
 
-<script>
+      var SHADOW_WHEN_SCROLLING = 1;
+      var SHADOW_ALWAYS = 2;
+      var MODE_CONFIGS = {
+        outerScroll: {
+          'scroll': true
+        },
 
-  (function() {
+        shadowMode: {
+          'standard': SHADOW_ALWAYS,
+          'waterfall': SHADOW_WHEN_SCROLLING,
+          'waterfall-tall': SHADOW_WHEN_SCROLLING
+        },
 
-    'use strict';
+        tallMode: {
+          'waterfall-tall': true
+        }
+      };
 
-    var SHADOW_WHEN_SCROLLING = 1;
-    var SHADOW_ALWAYS = 2;
-
-
-    var MODE_CONFIGS = {
-
-      outerScroll: {
-        'scroll': true
-      },
-
-      shadowMode: {
-        'standard': SHADOW_ALWAYS,
-        'waterfall': SHADOW_WHEN_SCROLLING,
-        'waterfall-tall': SHADOW_WHEN_SCROLLING
-      },
-
-      tallMode: {
-        'waterfall-tall': true
-      }
-    };
-
-    Polymer({
-
-      is: 'paper-header-panel',
-
-      /**
-       * Fired when the content has been scrolled.  `event.detail.target` returns
-       * the scrollable element which you can use to access scroll info such as
-       * `scrollTop`.
-       *
-       *     <paper-header-panel on-content-scroll="scrollHandler">
-       *       ...
-       *     </paper-header-panel>
-       *
-       *
-       *     scrollHandler: function(event) {
-       *       var scroller = event.detail.target;
-       *       console.log(scroller.scrollTop);
-       *     }
-       *
-       * @event content-scroll
-       */
-
-      properties: {
+      Polymer({
+        is: 'paper-header-panel',
 
         /**
-         * Controls header and scrolling behavior. Options are
-         * `standard`, `seamed`, `waterfall`, `waterfall-tall`, `scroll` and
-         * `cover`. Default is `standard`.
+         * Fired when the content has been scrolled.  `event.detail.target` returns
+         * the scrollable element which you can use to access scroll info such as
+         * `scrollTop`.
          *
-         * `standard`: The header is a step above the panel. The header will consume the
-         * panel at the point of entry, preventing it from passing through to the
-         * opposite side.
-         *
-         * `seamed`: The header is presented as seamed with the panel.
-         *
-         * `waterfall`: Similar to standard mode, but header is initially presented as
-         * seamed with panel, but then separates to form the step.
-         *
-         * `waterfall-tall`: The header is initially taller (`tall` class is added to
-         * the header).  As the user scrolls, the header separates (forming an edge)
-         * while condensing (`tall` class is removed from the header).
-         *
-         * `scroll`: The header keeps its seam with the panel, and is pushed off screen.
-         *
-         * `cover`: The panel covers the whole `paper-header-panel` including the
-         * header. This allows user to style the panel in such a way that the panel is
-         * partially covering the header.
-         *
-         *     <paper-header-panel mode="cover">
-         *       <paper-toolbar class="tall">
-         *         <core-icon-button icon="menu"></core-icon-button>
-         *       </paper-toolbar>
-         *       <div class="content"></div>
+         *     <paper-header-panel on-content-scroll="scrollHandler">
+         *       ...
          *     </paper-header-panel>
+         *
+         *
+         *     scrollHandler: function(event) {
+         *       var scroller = event.detail.target;
+         *       console.log(scroller.scrollTop);
+         *     }
+         *
+         * @event content-scroll
          */
-        mode: {
-          type: String,
-          value: 'standard',
-          observer: '_modeChanged',
-          reflectToAttribute: true
-        },
 
-        /**
-         * If true, the drop-shadow is always shown no matter what mode is set to.
-         */
-        shadow: {
-          type: Boolean,
-          value: false
-        },
+        properties: {
+          /**
+           * Controls header and scrolling behavior. Options are
+           * `standard`, `seamed`, `waterfall`, `waterfall-tall`, `scroll` and
+           * `cover`. Default is `standard`.
+           *
+           * `standard`: The header is a step above the panel. The header will consume the
+           * panel at the point of entry, preventing it from passing through to the
+           * opposite side.
+           *
+           * `seamed`: The header is presented as seamed with the panel.
+           *
+           * `waterfall`: Similar to standard mode, but header is initially presented as
+           * seamed with panel, but then separates to form the step.
+           *
+           * `waterfall-tall`: The header is initially taller (`tall` class is added to
+           * the header).  As the user scrolls, the header separates (forming an edge)
+           * while condensing (`tall` class is removed from the header).
+           *
+           * `scroll`: The header keeps its seam with the panel, and is pushed off screen.
+           *
+           * `cover`: The panel covers the whole `paper-header-panel` including the
+           * header. This allows user to style the panel in such a way that the panel is
+           * partially covering the header.
+           *
+           *     <paper-header-panel mode="cover">
+           *       <paper-toolbar class="tall">
+           *         <paper-icon-button icon="menu"></paper-icon-button>
+           *       </paper-toolbar>
+           *       <div class="content"></div>
+           *     </paper-header-panel>
+           */
+          mode: {
+            type: String,
+            value: 'standard',
+            observer: '_modeChanged',
+            reflectToAttribute: true
+          },
 
-        /**
-         * The class used in waterfall-tall mode.  Change this if the header
-         * accepts a different class for toggling height, e.g. "medium-tall"
-         */
-        tallClass: {
-          type: String,
-          value: 'tall'
-        },
+          /**
+           * If true, the drop-shadow is always shown no matter what mode is set to.
+           */
+          shadow: {
+            type: Boolean,
+            value: false
+          },
 
-        /**
-         * If true, the scroller is at the top
-         */
-        atTop: {
-          type: Boolean,
-          value: true,
-          readOnly: true
-        }
-      },
+          /**
+           * The class used in waterfall-tall mode.  Change this if the header
+           * accepts a different class for toggling height, e.g. "medium-tall"
+           */
+          tallClass: {
+            type: String,
+            value: 'tall'
+          },
 
-      observers: [
-        '_computeDropShadowHidden(atTop, mode, shadow)'
-      ],
-
-      ready: function() {
-        this.scrollHandler = this._scroll.bind(this);
-        this._addListener();
-
-        // Run `scroll` logic once to initialze class names, etc.
-        this._keepScrollingState();
-      },
-
-      detached: function() {
-        this._removeListener();
-      },
-
-      /**
-       * Returns the header element
-       *
-       * @property header
-       * @type Object
-       */
-      get header() {
-        return Polymer.dom(this.$.headerContent).getDistributedNodes()[0];
-      },
-
-      /**
-       * Returns the scrollable element.
-       *
-       * @property scroller
-       * @type Object
-       */
-      get scroller() {
-        return this._getScrollerForMode(this.mode);
-      },
-
-      /**
-       * Returns true if the scroller has a visible shadow.
-       *
-       * @property visibleShadow
-       * @type Boolean
-       */
-      get visibleShadow() {
-        return this.$.dropShadow.classList.contains('has-shadow');
-      },
-
-      _computeDropShadowHidden: function(atTop, mode, shadow) {
-
-        var shadowMode = MODE_CONFIGS.shadowMode[mode];
-
-        if (this.shadow) {
-          this.toggleClass('has-shadow', true, this.$.dropShadow);
-
-        } else if (shadowMode === SHADOW_ALWAYS) {
-          this.toggleClass('has-shadow', true, this.$.dropShadow);
-
-        } else if (shadowMode === SHADOW_WHEN_SCROLLING && !atTop) {
-          this.toggleClass('has-shadow', true, this.$.dropShadow);
-
-        } else {
-          this.toggleClass('has-shadow', false, this.$.dropShadow);
-
-        }
-      },
-
-      _computeMainContainerClass: function(mode) {
-        // TODO:  It will be useful to have a utility for classes
-        // e.g. Polymer.Utils.classes({ foo: true });
-
-        var classes = {};
-
-        classes['flex'] = mode !== 'cover';
-
-        return Object.keys(classes).filter(
-          function(className) {
-            return classes[className];
-          }).join(' ');
-      },
-
-      _addListener: function() {
-        this.scroller.addEventListener('scroll', this.scrollHandler, false);
-      },
-
-      _removeListener: function() {
-        this.scroller.removeEventListener('scroll', this.scrollHandler);
-      },
-
-      _modeChanged: function(newMode, oldMode) {
-        var configs = MODE_CONFIGS;
-        var header = this.header;
-        var animateDuration = 200;
-
-        if (header) {
-          // in tallMode it may add tallClass to the header; so do the cleanup
-          // when mode is changed from tallMode to not tallMode
-          if (configs.tallMode[oldMode] && !configs.tallMode[newMode]) {
-            header.classList.remove(this.tallClass);
-            this.async(function() {
-              header.classList.remove('animate');
-            }, animateDuration);
-          } else {
-            header.classList.toggle('animate', configs.tallMode[newMode]);
+          /**
+           * If true, the scroller is at the top
+           */
+          atTop: {
+            type: Boolean,
+            value: true,
+            readOnly: true
           }
+        },
+
+        observers: [
+          '_computeDropShadowHidden(atTop, mode, shadow)'
+        ],
+
+        ready: function() {
+          this.scrollHandler = this._scroll.bind(this);
+        },
+        
+        attached: function() {
+          this._addListener();
+          // Run `scroll` logic once to initialze class names, etc.
+          this._keepScrollingState();
+        },
+
+        detached: function() {
+          this._removeListener();
+        },
+
+        /**
+         * Returns the header element
+         *
+         * @property header
+         * @type Object
+         */
+        get header() {
+          return Polymer.dom(this.$.headerContent).getDistributedNodes()[0];
+        },
+
+        /**
+         * Returns the scrollable element.
+         *
+         * @property scroller
+         * @type Object
+         */
+        get scroller() {
+          return this._getScrollerForMode(this.mode);
+        },
+
+        /**
+         * Returns true if the scroller has a visible shadow.
+         *
+         * @property visibleShadow
+         * @type Boolean
+         */
+        get visibleShadow() {
+          return this.$.dropShadow.classList.contains('has-shadow');
+        },
+
+        _computeDropShadowHidden: function(atTop, mode, shadow) {
+          var shadowMode = MODE_CONFIGS.shadowMode[mode];
+
+          if (this.shadow) {
+            this.toggleClass('has-shadow', true, this.$.dropShadow);
+          } else if (shadowMode === SHADOW_ALWAYS) {
+            this.toggleClass('has-shadow', true, this.$.dropShadow);
+          } else if (shadowMode === SHADOW_WHEN_SCROLLING && !atTop) {
+            this.toggleClass('has-shadow', true, this.$.dropShadow);
+          } else {
+            this.toggleClass('has-shadow', false, this.$.dropShadow);
+          }
+        },
+
+        _computeMainContainerClass: function(mode) {
+          // TODO:  It will be useful to have a utility for classes
+          // e.g. Polymer.Utils.classes({ foo: true });
+
+          var classes = {};
+
+          classes['flex'] = mode !== 'cover';
+
+          return Object.keys(classes).filter(
+            function(className) {
+              return classes[className];
+            }).join(' ');
+        },
+
+        _addListener: function() {
+          this.scroller.addEventListener('scroll', this.scrollHandler, false);
+        },
+
+        _removeListener: function() {
+          this.scroller.removeEventListener('scroll', this.scrollHandler);
+        },
+
+        _modeChanged: function(newMode, oldMode) {
+          var configs = MODE_CONFIGS;
+          var header = this.header;
+          var animateDuration = 200;
+
+          if (header) {
+            // in tallMode it may add tallClass to the header; so do the cleanup
+            // when mode is changed from tallMode to not tallMode
+            if (configs.tallMode[oldMode] && !configs.tallMode[newMode]) {
+              header.classList.remove(this.tallClass);
+              this.async(function() {
+                header.classList.remove('animate');
+              }, animateDuration);
+            } else {
+              header.classList.toggle('animate', configs.tallMode[newMode]);
+            }
+          }
+          this._keepScrollingState();
+        },
+
+        _keepScrollingState: function() {
+          var main = this.scroller;
+          var header = this.header;
+
+          this._setAtTop(main.scrollTop === 0);
+
+          if (header && this.tallClass && MODE_CONFIGS.tallMode[this.mode]) {
+            this.toggleClass(this.tallClass, this.atTop ||
+                header.classList.contains(this.tallClass) &&
+                main.scrollHeight < this.offsetHeight, header);
+          }
+        },
+
+        _scroll: function() {
+          this._keepScrollingState();
+          this.fire('content-scroll', {target: this.scroller}, {bubbles: false});
+        },
+
+        _getScrollerForMode: function(mode) {
+          return MODE_CONFIGS.outerScroll[mode] ?
+              this : this.$.mainContainer;
         }
-        this._keepScrollingState();
-      },
-
-      _keepScrollingState: function() {
-        var main = this.scroller;
-        var header = this.header;
-
-        this._setAtTop(main.scrollTop === 0);
-
-        if (header && this.tallClass && MODE_CONFIGS.tallMode[this.mode]) {
-          this.toggleClass(this.tallClass, this.atTop ||
-              header.classList.contains(this.tallClass) &&
-              main.scrollHeight < this.offsetHeight, header);
-        }
-      },
-
-      _scroll: function() {
-        this._keepScrollingState();
-        this.fire('content-scroll', {target: this.scroller}, {bubbles: false});
-      },
-
-      _getScrollerForMode: function(mode) {
-        return MODE_CONFIGS.outerScroll[mode] ?
-            this : this.$.mainContainer;
-      }
-
-    });
-
-  })();
-
-</script>
+      });
+    })();
+  </script>
+</dom-module>
 <dom-module id="paper-icon-button" assetpath="/bower_components/paper-icon-button/">
   <template strip-whitespace="">
     <style>
@@ -21559,147 +21506,168 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </script>
 </dom-module>
 <dom-module id="paper-toast" assetpath="/bower_components/paper-toast/">
-  <style>
-    :host {
-      display: inline-block;
-      position: fixed;
-
-      background: #323232;
-      color: #f1f1f1;
-      min-height: 48px;
-      min-width: 288px;
-      padding: 16px 24px 12px;
-      box-sizing: border-box;
-      box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
-      border-radius: 2px;
-      bottom: 12px;
-      left: 12px;
-      font-size: 14px;
-      cursor: default;
-
-      -webkit-transition: visibility 0.3s, -webkit-transform 0.3s;
-      transition: visibility 0.3s, transform 0.3s;
-
-      -webkit-transform: translateY(100px);
-      transform: translateY(100px);
-
-      visibility: hidden;
-    }
-
-    :host(.capsule) {
-      border-radius: 24px;
-    }
-
-    :host(.fit-bottom) {
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      min-width: 0;
-      border-radius: 0;
-    }
-
-    :host(.paper-toast-open){
-      visibility: visible;
-
-      -webkit-transform: translateY(0px);
-      transform: translateY(0px);
-    }
-  </style>
   <template>
+    <style>
+      :host {
+        display: block;
+        position: fixed;
+
+        background: #323232;
+        color: #f1f1f1;
+        min-height: 48px;
+        min-width: 288px;
+        padding: 16px 24px 12px;
+        box-sizing: border-box;
+        box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
+        border-radius: 2px;
+        left: 0;
+        margin: 12px;
+        font-size: 14px;
+        cursor: default;
+        -webkit-transition: visibility 0.3s, -webkit-transform 0.3s, opacity 0.3s;
+        transition: visibility 0.3s, transform 0.3s, opacity 0.3s;
+
+        visibility: hidden;
+        bottom: -100px;
+        opacity: 0;
+        -webkit-transform: translateY(0px);
+        transform: translateY(0px);
+      }
+
+      :host(.capsule) {
+        border-radius: 24px;
+      }
+
+      :host(.fit-bottom) {
+        width: 100%;
+        min-width: 0;
+        border-radius: 0;
+        margin: 0;
+      }
+
+      :host(.paper-toast-open) {
+        visibility: visible;
+        opacity: 1;
+        -webkit-transform: translateY(-100px);
+        transform: translateY(-100px);
+      }
+    </style>
+
     <span id="label">{{text}}</span>
     <content></content>
   </template>
+
+  <script>
+    (function() {
+      var PaperToast = Polymer({
+        is: 'paper-toast',
+
+        behaviors: [
+          Polymer.IronOverlayBehavior
+        ],
+
+        properties: {
+          /**
+           * The duration in milliseconds to show the toast.
+           */
+          duration: {
+            type: Number,
+            value: 3000
+          },
+
+          /**
+           * The text to display in the toast.
+           */
+          text: {
+            type: String,
+            value: ''
+          },
+
+          /**
+           * Set to false to enable closing of the toast by clicking outside it.
+           */
+          noCancelOnOutsideClick: {
+            type: Boolean,
+            value: true
+          },
+        },
+
+        get visible() {
+          console.warn('`visible` is deprecated, use `opened` instead');
+          return this.opened;
+        },
+
+        created: function() {
+          Polymer.IronA11yAnnouncer.requestAvailability();
+        },
+
+        /**
+         * Show the toast.
+         * @method show
+         */
+        show: function() {
+          this.open();
+        },
+
+        /**
+         * Hide the toast
+         */
+        hide: function() {
+          this.close();
+        },
+
+        /**
+         * Overridden from `IronOverlayBehavior`.
+         * Called when the value of `opened` changes.
+         */
+        _openedChanged: function() {
+          if (this.opened) {
+            if (PaperToast.currentToast && PaperToast.currentToast !== this) {
+              PaperToast.currentToast.close();
+            }
+            PaperToast.currentToast = this;
+            this.fire('iron-announce', {
+              text: this.text
+            });
+            // auto-close if duration is a positive finite number
+            if (this.duration > 0 && this.duration !== Infinity) {
+              this.debounce('close', this.close, this.duration);
+            }
+          } else if (PaperToast.currentToast === this) {
+            PaperToast.currentToast = null;
+          }
+          Polymer.IronOverlayBehaviorImpl._openedChanged.apply(this, arguments);
+        },
+
+        /**
+         * Overridden from `IronOverlayBehavior`.
+         */
+        _renderOpened: function() {
+          this.classList.add('paper-toast-open');
+        },
+        /**
+         * Overridden from `IronOverlayBehavior`.
+         */
+        _renderClosed: function() {
+          this.classList.remove('paper-toast-open');
+        },
+
+        /**
+         * Overridden from `IronOverlayBehavior`.
+         * iron-fit-behavior will set the inline style position: static, which
+         * causes the toast to be rendered incorrectly when opened by default.
+         */
+        _onIronResize: function(){
+          Polymer.IronOverlayBehaviorImpl._onIronResize.apply(this, arguments);
+          if (this.opened) {
+            // Make sure there is no inline style for position.
+            this.style.position = '';
+          }
+        }
+      });
+    })();
+  </script>
 </dom-module>
-<script>
-(function() {
-
-  var PaperToast = Polymer({
-    is: 'paper-toast',
-
-    properties: {
-      /**
-       * The duration in milliseconds to show the toast.
-       */
-      duration: {
-        type: Number,
-        value: 3000
-      },
-
-      /**
-       * The text to display in the toast.
-       */
-      text: {
-        type: String,
-        value: ""
-      },
-
-      /**
-       * True if the toast is currently visible.
-       */
-      visible: {
-        type: Boolean,
-        readOnly: true,
-        value: false,
-        observer: '_visibleChanged'
-      }
-    },
-
-    created: function() {
-      Polymer.IronA11yAnnouncer.requestAvailability();
-    },
-
-    ready: function() {
-      this.async(function() {
-        this.hide();
-      });
-    },
-
-    /**
-     * Show the toast.
-     * @method show
-     */
-    show: function() {
-      if (PaperToast.currentToast) {
-        PaperToast.currentToast.hide();
-      }
-      PaperToast.currentToast = this;
-      this.removeAttribute('aria-hidden');
-      this._setVisible(true);
-      this.fire('iron-announce', {
-        text: this.text
-      });
-      this.debounce('hide', this.hide, this.duration);
-    },
-
-    /**
-     * Hide the toast
-     */
-    hide: function() {
-      this.setAttribute('aria-hidden', 'true');
-      this._setVisible(false);
-    },
-
-    /**
-     * Toggle the opened state of the toast.
-     * @method toggle
-     */
-    toggle: function() {
-      if (!this.visible) {
-        this.show();
-      } else {
-        this.hide();
-      }
-    },
-
-    _visibleChanged: function(visible) {
-      this.toggleClass('paper-toast-open', visible);
-    }
-  });
-
-  PaperToast.currentToast = null;
-
-})();
-</script>
 <dom-module id="paper-toggle-button" assetpath="/bower_components/paper-toggle-button/">
   <template strip-whitespace="">
 
@@ -22925,122 +22893,126 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 }
             });
 
-            _project.find().observe({
-                added: function(row) {
-                    var item = _.find(_this.project, function(A) {
-                        return (row._id === A._id);
-                    });
+            Meteor.setTimeout(function() {
+                _project.find().observe({
+                    added: function(row) {
+                        var item = _.find(_this.project, function(A) {
+                            return (row._id === A._id);
+                        });
 
-                    if (!item) {
-                        for (var A = 0; A < row.torrent.length; A++) {
-                            var item = _torrent.findOne({
-                                _id: row.torrent[A]
-                            });
+                        if (!item) {
+                            for (var A = 0; A < row.torrent.length; A++) {
+                                var item = _torrent.findOne({
+                                    _id: row.torrent[A]
+                                });
 
-                            row.torrent[A] = (item ? item : {
-                                _id: row.torrent[A]
-                            });
+                                row.torrent[A] = (item ? item : {
+                                    _id: row.torrent[A]
+                                });
 
-                            row.torrent[A].project = {
-                                _id: row._id
-                            };
+                                row.torrent[A].project = {
+                                    _id: row._id
+                                };
+                            }
+
+                            _this.project.unshift(row);
+
+                            _this.project = _.clone(_this.project);
                         }
+                    },
 
-                        _this.project.unshift(row);
-
-                        _this.project = _.clone(_this.project);
-                    }
-                },
-
-                changed: function(row, old) {
-                    var index = _.map(_this.project, function(A) {
-                        return A._id;
-                    }).indexOf(row._id);
-
-                    if (-1 < index) {
-                        for (var A = 0; A < row.torrent.length; A++) {
-                            var item = _torrent.findOne({
-                                _id: row.torrent[A]
-                            });
-
-                            row.torrent[A] = (item ? item : {
-                                _id: row.torrent[A]
-                            });
-
-                            row.torrent[A].project = {
-                                _id: row._id
-                            };
-                        }
-
-                        _this.project[index] = _.clone($.extend(true, _this.project[index], row));
-
-                        _this.project[index] = _.clone(_this.project[index]);
-                        _this.project = _.clone(_this.project);
-                    }
-                },
-
-                removed: function(old) {
-                    var index = _.map(_this.project, function(A) {
-                        return A._id;
-                    }).indexOf(old._id);
-
-                    if (-1 < index) {
-                        _this.project.splice(index, 1);
-
-                        _this.project = _.clone(_this.project);
-                    }
-                }
-            });
-
-            _torrent.find().observe({
-                added: function(row) {
-                    for (var A = 0; A < _this.project.length; A++) {
-                        var index = _.map(_this.project[A].torrent, function(item) {
-                            return item._id;
+                    changed: function(row, old) {
+                        var index = _.map(_this.project, function(A) {
+                            return A._id;
                         }).indexOf(row._id);
 
                         if (-1 < index) {
-                            _this.project[A].torrent[index] = _.clone($.extend(true, _this.project[A].torrent[index], row));
+                            for (var A = 0; A < row.torrent.length; A++) {
+                                var item = _torrent.findOne({
+                                    _id: row.torrent[A]
+                                });
 
-                            _this.project[A].torrent = _.clone(_this.project[A].torrent);
-                            _this.project[A] = _.clone(_this.project[A]);
+                                row.torrent[A] = (item ? item : {
+                                    _id: row.torrent[A]
+                                });
+
+                                row.torrent[A].project = {
+                                    _id: row._id
+                                };
+                            }
+
+                            _this.project[index] = _.clone($.extend(true, _this.project[index], row));
+
+                            _this.project[index] = _.clone(_this.project[index]);
                             _this.project = _.clone(_this.project);
                         }
-                    }
-                },
+                    },
 
-                changed: function(row, old) {
-                    for (var A = 0; A < _this.project.length; A++) {
-                        var index = _.map(_this.project[A].torrent, function(item) {
-                            return item._id;
-                        }).indexOf(row._id);
-
-                        if (-1 < index) {
-                            _this.project[A].torrent[index] = _.clone($.extend(true, _this.project[A].torrent[index], row));
-
-                            _this.project[A].torrent = _.clone(_this.project[A].torrent);
-                            _this.project[A] = _.clone(_this.project[A]);
-                            _this.project = _.clone(_this.project);
-                        }
-                    }
-                },
-
-                removed: function(old) {
-                    for (var A = 0; A < _this.project.length; A++) {
-                        var index = _.map(_this.project[A].torrent, function(item) {
-                            return item._id;
+                    removed: function(old) {
+                        var index = _.map(_this.project, function(A) {
+                            return A._id;
                         }).indexOf(old._id);
 
                         if (-1 < index) {
-                            _this.project[A].torrent.splice(index, 1);
+                            _this.project.splice(index, 1);
 
-                            _this.project[A].torrent = _.clone(_this.project[A].torrent);
-                            _this.project[A] = _.clone(_this.project[A]);
                             _this.project = _.clone(_this.project);
                         }
                     }
-                }
-            });
+                });
+            }, 400);
+
+            Meteor.setTimeout(function() {
+                _torrent.find().observe({
+                    added: function(row) {
+                        for (var A = 0; A < _this.project.length; A++) {
+                            var index = _.map(_this.project[A].torrent, function(item) {
+                                return item._id;
+                            }).indexOf(row._id);
+
+                            if (-1 < index) {
+                                _this.project[A].torrent[index] = _.clone($.extend(true, _this.project[A].torrent[index], row));
+
+                                _this.project[A].torrent = _.clone(_this.project[A].torrent);
+                                _this.project[A] = _.clone(_this.project[A]);
+                                _this.project = _.clone(_this.project);
+                            }
+                        }
+                    },
+
+                    changed: function(row, old) {
+                        for (var A = 0; A < _this.project.length; A++) {
+                            var index = _.map(_this.project[A].torrent, function(item) {
+                                return item._id;
+                            }).indexOf(row._id);
+
+                            if (-1 < index) {
+                                _this.project[A].torrent[index] = _.clone($.extend(true, _this.project[A].torrent[index], row));
+
+                                _this.project[A].torrent = _.clone(_this.project[A].torrent);
+                                _this.project[A] = _.clone(_this.project[A]);
+                                _this.project = _.clone(_this.project);
+                            }
+                        }
+                    },
+
+                    removed: function(old) {
+                        for (var A = 0; A < _this.project.length; A++) {
+                            var index = _.map(_this.project[A].torrent, function(item) {
+                                return item._id;
+                            }).indexOf(old._id);
+
+                            if (-1 < index) {
+                                _this.project[A].torrent.splice(index, 1);
+
+                                _this.project[A].torrent = _.clone(_this.project[A].torrent);
+                                _this.project[A] = _.clone(_this.project[A]);
+                                _this.project = _.clone(_this.project);
+                            }
+                        }
+                    }
+                });
+            }, 400);
 
             if (Meteor.isCordova) {
                 _splash.release();
@@ -24000,8 +23972,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                         </neon-animated-pages>
 
                         <div class="horizontal layout">
-                            <div class="cursor-p flex white" on-click="sign_in" style="padding: 16px; text-align: center;">SIGN IN</div>
-                            <div class="cursor-p flex cyan-700" on-click="sign_up" style="padding: 16px; text-align: center;">SIGN UP</div>
+                            <div class="cursor-p flex white" id="sign-in" on-click="sign_in" style="padding: 16px; text-align: center;">SIGN IN</div>
+                            <div class="cursor-p flex cyan-700" id="sign-up" on-click="sign_up" style="padding: 16px; text-align: center;">SIGN UP</div>
                         </div>
                     </div>
                 </div>
@@ -24312,4 +24284,4 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </script>
 
 </dom-module>
-</div></body></html>
+</div></body></html>          
