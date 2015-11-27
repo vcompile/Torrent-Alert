@@ -8,7 +8,7 @@ Meteor.methods({
 
         check(input, String);
 
-        var response = HTTP.call("GET", "http://do.vcompile.com/proxy/get.php", {
+        var response = HTTP.call("GET", "http://proxy.vcompile.com/get.php", {
             params: {
                 url: "https://torrentz.eu/suggestions.php?q=" + input
             },

@@ -55,7 +55,7 @@
 
         transition: function() {
             if (document.querySelector(".menu-b")) {
-                if (this.$.toast.visible) {
+                if (this.$.toast.opened) {
                     document.querySelector(".menu-b").translate3d(0, "-" + ($("#toast #label").height() + 48) + "px", 0);
                 } else {
                     if (this.undo.torrent) {
