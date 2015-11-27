@@ -303,9 +303,11 @@
                 _this.user = (Meteor.user() ? Meteor.user() : {});
             });
 
-            if ((document.querySelector("#torrent_db").value || []).length) {
-                _this.project = document.querySelector("#torrent_db").value;
-            }
+            Meteor.setTimeout(function() {
+                if ((document.querySelector("#torrent_db").value || []).length) {
+                    _this.project = document.querySelector("#torrent_db").value;
+                }
+            }, 1000);
 
             Meteor.setTimeout(function() {
                 _project.find().observe({
@@ -426,7 +428,7 @@
                         }
                     }
                 });
-            }, 1000);
+            }, 1000 * 4);
 
             if (Meteor.isCordova) {
                 _splash.release();
@@ -612,12 +614,12 @@
             return polymer_color(text ? text : "#");
         },
 
-        return_project_description: function(item) {
-            return (item.worker == "schedule" ? item.within + "M | " + item.leech + "L / " + item.seed + "S" : moment(item.time).format("MMM DD ddd hh:mm A"));
-        },
-
         return_icon_text: function(text) {
             return (isNaN(text.charAt(0)) ? text.charAt(0) : "#");
+        },
+
+        return_project_description: function(item) {
+            return (item.worker == "schedule" ? item.within + "M | " + item.leech + "L / " + item.seed + "S" : moment(item.time).format("MMM DD ddd hh:mm A"));
         },
 
         return_text: function(text) {
@@ -625,7 +627,7 @@
         },
 
         return_time: function(time) {
-            return moment(time).fromNow();
+            return (moment(time).isValid() ? moment(time).fromNow() : "#");
         },
 
         return_torrent_count: function(torrent) {
