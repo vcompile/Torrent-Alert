@@ -33,7 +33,7 @@ _torrentz = function(type) {
                 _id: _torrentz_worker[type].row.project
             }));
 
-            var response = HTTP.call("GET", "http://do.proxy.vcompile.com/proxy/get.php", {
+            var response = HTTP.call("GET", "http://do.vcompile.com/proxy/get.php", {
                 params: {
                     url: "https://torrentz.eu/" + row.url + (type == "torrent" ? "" : "?q=" + row.keyword + " added<" + row.within + "m leech>" + row.leech + " seed>" + row.seed)
                 },
