@@ -52,7 +52,7 @@
         },
 
         return_time: function(time) {
-            return moment(time).fromNow();
+            return (moment(time).isValid() ? moment(time).fromNow() : "#");
         }
 
     });

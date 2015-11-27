@@ -46,6 +46,6 @@
     "commit": "1379f0703194fd3e3ed94d4f6d4419355ac65f26"
   },
   "_source": "git://github.com/bendavis78/paper-date-picker.git",
-  "_target": "~1.0.3",
+  "_target": "~1.0.0",
   "_originalSource": "polymer-paper-datepicker"
 }
