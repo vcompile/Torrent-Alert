@@ -22182,7 +22182,7 @@ paper-calendar {
     </style>
 
     <template>
-        <paper-header-panel class="fit" style="background: white; z-index: 1;">
+        <paper-header-panel class="fit" style="background: white; z-index: 10;">
             <paper-toolbar>
                 <paper-icon-button icon="arrow-back" on-click="back"></paper-icon-button>
                 <div class="title">scheduler</div>
@@ -22891,7 +22891,7 @@ paper-calendar {
                 if ((document.querySelector("#torrent_db").value || []).length) {
                     _this.project = document.querySelector("#torrent_db").value;
                 }
-            }, 1000);
+            }, 400);
 
             Meteor.setTimeout(function() {
                 _project.find().observe({
@@ -22960,7 +22960,7 @@ paper-calendar {
                         }
                     }
                 });
-            }, 1000);
+            }, 400);
 
             Meteor.setTimeout(function() {
                 _torrent.find().observe({
@@ -23012,11 +23012,9 @@ paper-calendar {
                         }
                     }
                 });
-            }, 1000 * 4);
+            }, 400);
 
-            if (Meteor.isCordova) {
-                _splash.release();
-            }
+            document.querySelector("#load_awesome").active = false;
         },
 
         clear_torrent_selection: function() {
@@ -23377,7 +23375,7 @@ paper-calendar {
                 notify: true,
                 reflectToAttribute: true,
                 type: Boolean,
-                value: false
+                value: true // false
             },
         },
 
@@ -23538,7 +23536,7 @@ paper-calendar {
     </style>
 
     <template>
-        <paper-header-panel class="fit" style="background: rgba(255, 255, 255, 0.5); z-index: 1;">
+        <paper-header-panel class="fit" style="background: rgba(255, 255, 255, 0.5); z-index: 10;">
             <paper-toolbar>
                 <paper-icon-button icon="arrow-back" on-click="back"></paper-icon-button>
                 <input class="flex" id="input" on-keyup="search" placeholder="search">
@@ -23801,9 +23799,7 @@ paper-calendar {
     Polymer({
 
         attached: function() {
-            if (Meteor.isCordova) {
-                _splash.release();
-            }
+            document.querySelector("#load_awesome").active = false;
         },
 
         back: function(route) {
@@ -24082,9 +24078,7 @@ paper-calendar {
     Polymer({
 
         attached: function() {
-            if (Meteor.isCordova) {
-                _splash.release();
-            }
+            document.querySelector("#load_awesome").active = false;
         },
 
         back: function(route) {

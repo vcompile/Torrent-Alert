@@ -1,6 +1,10 @@
 FlowRouter.wait();
 
 document.addEventListener("WebComponentsReady", function() {
+    if (Meteor.isCordova) {
+        _splash.release();
+    }
+
     FlowRouter.initialize({
         // hashbang: true
     });
@@ -104,11 +108,23 @@ inbox.route("/", {
                 break;
 
             case "remove-prompt":
-                document.querySelector("#remove_prompt").open();
+                if (document.querySelector("#remove_prompt").dataset.id) {
+                    document.querySelector("#remove_prompt").open();
+                } else {
+                    FlowRouter.setQueryParams({
+                        "route": null
+                    });
+                }
                 break;
 
             case "schedule-prompt":
-                document.querySelector("#schedule_prompt").open();
+                if (document.querySelector("#schedule_prompt").dataset.id) {
+                    document.querySelector("#schedule_prompt").open();
+                } else {
+                    FlowRouter.setQueryParams({
+                        "route": null
+                    });
+                }
                 break;
 
             case "search-bar":
@@ -120,11 +136,23 @@ inbox.route("/", {
                 break;
 
             case "torrent-prompt":
-                document.querySelector("#torrent_prompt").active = true;
+                if (_.has(document.querySelector("layout-inbox").torrent_prompt, "_id")) {
+                    document.querySelector("#torrent_prompt").active = true;
+                } else {
+                    FlowRouter.setQueryParams({
+                        "route": null
+                    });
+                }
                 break;
 
             case "user-prompt":
-                document.querySelector("#user_prompt").open();
+                if (Meteor.user()) {
+                    document.querySelector("#user_prompt").open();
+                } else {
+                    FlowRouter.setQueryParams({
+                        "route": null
+                    });
+                }
                 break;
 
             default:

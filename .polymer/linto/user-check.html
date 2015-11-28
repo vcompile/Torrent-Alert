@@ -227,9 +227,7 @@
     Polymer({
 
         attached: function() {
-            if (Meteor.isCordova) {
-                _splash.release();
-            }
+            document.querySelector("#load_awesome").active = false;
         },
 
         back: function(route) {
