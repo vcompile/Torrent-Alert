@@ -22261,7 +22261,7 @@ paper-calendar {
                         }
                     });
 
-                    this.active = false;
+                    this.back();
                 } else {
                     document.querySelector("#polymer_toast").toast("empty keyword");
                 }
@@ -22575,7 +22575,7 @@ paper-calendar {
         },
 
         return_time: function(time) {
-            return moment(time).fromNow();
+            return (moment(time).isValid() ? moment(time).fromNow() : "#");
         }
 
     });
@@ -23198,12 +23198,12 @@ paper-calendar {
             return polymer_color(text ? text : "#");
         },
 
-        return_project_description: function(item) {
-            return (item.worker == "schedule" ? item.within + "M | " + item.leech + "L / " + item.seed + "S" : moment(item.time).format("MMM DD ddd hh:mm A"));
-        },
-
         return_icon_text: function(text) {
             return (isNaN(text.charAt(0)) ? text.charAt(0) : "#");
+        },
+
+        return_project_description: function(item) {
+            return (item.worker == "schedule" ? item.within + "M | " + item.leech + "L / " + item.seed + "S" : moment(item.time).format("MMM DD ddd hh:mm A"));
         },
 
         return_text: function(text) {
@@ -23211,7 +23211,7 @@ paper-calendar {
         },
 
         return_time: function(time) {
-            return moment(time).fromNow();
+            return (moment(time).isValid() ? moment(time).fromNow() : "#");
         },
 
         return_torrent_count: function(torrent) {
@@ -23480,7 +23480,7 @@ paper-calendar {
 
         transition: function() {
             if (document.querySelector(".menu-b")) {
-                if (this.$.toast.visible) {
+                if (this.$.toast.opened) {
                     document.querySelector(".menu-b").translate3d(0, "-" + ($("#toast #label").height() + 48) + "px", 0);
                 } else {
                     if (this.undo.torrent) {
@@ -23594,7 +23594,7 @@ paper-calendar {
                         }
                     });
 
-                    this.active = false;
+                    this.back();
                 } else {
                     document.querySelector("#polymer_toast").toast("empty keyword");
                 }
