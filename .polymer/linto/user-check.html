@@ -50,17 +50,18 @@
             <card-router id="router">
                 <div class="center-justified cyan-500 fit horizontal layout">
                     <div class="layout li vertical">
-                        <neon-animated-pages class="flex" id="swiper" on-up="swiper_up" selected="1">
+                        <neon-animated-pages class="flex" id="swiper" on-up="swiper_up" selected="2">
                             <neon-animatable class="cyan-500 layout vertical">
                                 <div class="center-justified horizontal layout" style="padding: 32px 16px;">
                                     <div>Torrent Sharing, offline support, etc</div>
                                 </div>
 
                                 <div class="flex layout swiper-img vertical" style="background-image:url(/img/0.png);">
-                                    <div class="flex"></div>
+                                    <div class="flex">
+                                        <div class="center-justified horizontal layout" style="color: black; padding: 32px 16px;">loading ..</div>
+                                    </div>
                                     <div class="center-justified horizontal layout" style="padding: 32px 16px;">
                                         <div class="swiper-circle"></div>
-                                        <div class="swiper-circle cyan-500"></div>
                                         <div class="swiper-circle cyan-500"></div>
                                         <div class="swiper-circle cyan-500"></div>
                                     </div>
@@ -73,11 +74,12 @@
                                 </div>
 
                                 <div class="flex layout swiper-img vertical" style="background-image:url(/img/1.png);">
-                                    <div class="flex"></div>
+                                    <div class="flex">
+                                        <div class="center-justified horizontal layout" style="color: black; padding: 32px 16px;">loading ..</div>
+                                    </div>
                                     <div class="center-justified horizontal layout" style="padding: 32px 16px;">
                                         <div class="swiper-circle cyan-500"></div>
                                         <div class="swiper-circle"></div>
-                                        <div class="swiper-circle cyan-500"></div>
                                         <div class="swiper-circle cyan-500"></div>
                                     </div>
                                 </div>
@@ -89,25 +91,10 @@
                                 </div>
 
                                 <div class="flex layout swiper-img vertical" style="background-image:url(/img/2.png);">
-                                    <div class="flex"></div>
-                                    <div class="center-justified horizontal layout" style="padding: 32px 16px;">
-                                        <div class="swiper-circle cyan-500"></div>
-                                        <div class="swiper-circle cyan-500"></div>
-                                        <div class="swiper-circle"></div>
-                                        <div class="swiper-circle cyan-500"></div>
+                                    <div class="flex">
+                                        <div class="center-justified horizontal layout" style="color: black; padding: 32px 16px;">loading ..</div>
                                     </div>
-                                </div>
-                            </neon-animatable>
-
-                            <neon-animatable class="cyan-500 layout vertical">
-                                <div class="center-justified horizontal layout" style="padding: 32px 16px;">
-                                    <div>Flexible Scheduler (96/day)</div>
-                                </div>
-
-                                <div class="flex layout swiper-img vertical" style="background-image:url(/img/3.png);">
-                                    <div class="flex"></div>
                                     <div class="center-justified horizontal layout" style="padding: 32px 16px;">
-                                        <div class="swiper-circle cyan-500"></div>
                                         <div class="swiper-circle cyan-500"></div>
                                         <div class="swiper-circle cyan-500"></div>
                                         <div class="swiper-circle"></div>
@@ -156,27 +143,6 @@
                 </div>
             </card-route>
 
-            <card-route ripple_class="white">
-                <div class="fit center-justified horizontal layout white">
-                    <div class="layout li vertical">
-                        <div class="center horizontal justified layout page-title">
-                            <div class="cursor-d etc flex">reset password</div>
-                            <paper-icon-button icon="close" on-click="back"></paper-icon-button>
-                        </div>
-
-                        <div class="flex layout page-body vertical">
-                            <gold-email-input auto-validate label="email" required value="{{email}}"></gold-email-input>
-
-                            <br>
-
-                            <div class="end-justified horizontal layout">
-                                <paper-button class="blue-500" on-click="reset_password_submit">submit</paper-button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </card-route>
-
             <card-route ripple_class="cyan-700">
                 <div class="fit center-justified cyan-700 horizontal layout">
                     <div class="layout li vertical">
@@ -199,28 +165,17 @@
                     </div>
                 </div>
             </card-route>
-
-            <card-route ripple_class="cyan-700">
-                <div class="fit center-justified cyan-700 horizontal layout">
-                    <div class="layout li vertical">
-                        <div class="center horizontal justified layout page-title" style="border-bottom: 2px solid #006064;">
-                            <div class="cursor-d etc flex">resend enrollment-email</div>
-                            <paper-icon-button icon="close" on-click="back"></paper-icon-button>
-                        </div>
-
-                        <div class="flex layout page-body vertical">
-                            <gold-email-input auto-validate class="color-white" label="email" required value="{{email}}"></gold-email-input>
-
-                            <br>
-
-                            <div class="end-justified horizontal layout">
-                                <paper-button class="cyan-900" on-click="resend_enrollment_email_submit">submit</paper-button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </card-route>
         </neon-animated-pages>
+
+        <paper-dialog id="request_prompt" style="width: 320px;" with-backdrop>
+            <div class="layout vertical">
+                <gold-email-input auto-validate label="email" required value="{{email}}"></gold-email-input>
+
+                <div class="end-justified horizontal layout">
+                    <paper-button class="blue-500" on-click="request_submit" style="margin: 8px 0; width: 50%;">submit</paper-button>
+                </div>
+            </div>
+        </paper-dialog>
     </template>
 
     <script>
@@ -230,12 +185,12 @@
             document.querySelector("#load_awesome").active = false;
         },
 
-        back: function(route) {
+        back: function() {
             this.selected = 0;
 
             Meteor.setTimeout(function() {
                 FlowRouter.setQueryParams({
-                    "route": (typeof(route) == "string" ? route : null)
+                    "route": null
                 });
             }, 400);
         },
@@ -289,62 +244,58 @@
             }
         },
 
-        resend_enrollment_email: function() {
-            this.back("resend-enrollment-email");
-        },
-
-        resend_enrollment_email_submit: function() {
+        request_submit: function() {
             if (Meteor.status().connected) {
                 var valid_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
 
                 if (valid_email.test(this.email)) {
-                    document.querySelector("#load_awesome").active = true;
+                    switch (this.selected) {
+                        case 1:
+                            document.querySelector("#load_awesome").active = true;
 
-                    Meteor.call("sendEnrollmentEmail", this.email, function(error, res) {
-                        document.querySelector("#load_awesome").active = false;
+                            Accounts.forgotPassword({
+                                email: this.email
+                            }, function(error) {
+                                document.querySelector("#load_awesome").active = false;
 
-                        if (error) {
-                            document.querySelector("#polymer_toast").toast(error.reason);
-                        } else {
-                            document.querySelector("#polymer_toast").toast(res);
-                        }
-                    });
+                                if (error) {
+                                    document.querySelector("#polymer_toast").toast(error.reason);
+                                } else {
+                                    document.querySelector("#polymer_toast").toast("reset password url sent @ email");
+                                }
+                            });
+                            break;
+
+                        case 2:
+                            document.querySelector("#load_awesome").active = true;
+
+                            Meteor.call("sendEnrollmentEmail", this.email, function(error, res) {
+                                document.querySelector("#load_awesome").active = false;
+
+                                if (error) {
+                                    document.querySelector("#polymer_toast").toast(error.reason);
+                                } else {
+                                    document.querySelector("#polymer_toast").toast(res);
+                                }
+                            });
+                            break;
+                    }
                 } else {
                     document.querySelector("#polymer_toast").toast("invalid email");
                 }
             } else {
                 document.querySelector("#polymer_toast").toast("server connection required");
             }
+
+            this.$.request_prompt.close();
+        },
+
+        resend_enrollment_email: function() {
+            this.$.request_prompt.open();
         },
 
         reset_password: function() {
-            this.back("reset-password");
-        },
-
-        reset_password_submit: function() {
-            if (Meteor.status().connected) {
-                var valid_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
-
-                if (valid_email.test(this.email)) {
-                    document.querySelector("#load_awesome").active = true;
-
-                    Accounts.forgotPassword({
-                        email: this.email
-                    }, function(error) {
-                        document.querySelector("#load_awesome").active = false;
-
-                        if (error) {
-                            document.querySelector("#polymer_toast").toast(error.reason);
-                        } else {
-                            document.querySelector("#polymer_toast").toast("reset password url sent @ email");
-                        }
-                    });
-                } else {
-                    document.querySelector("#polymer_toast").toast("invalid email");
-                }
-            } else {
-                document.querySelector("#polymer_toast").toast("server connection required");
-            }
+            this.$.request_prompt.open();
         },
 
         sign_in: function() {
@@ -413,12 +364,12 @@
             var swiper = document.querySelector("#swiper");
 
             if (d.x < $(window).width() / 2) {
-                if (0 < swiper.selected && swiper.selected <= 3) {
-                    swiper.selected = parseInt(swiper.selected) - 1;
+                if (0 <= swiper.selected && swiper.selected < 2) {
+                    swiper.selected = parseInt(swiper.selected) + 1;
                 }
             } else {
-                if (0 <= swiper.selected && swiper.selected < 3) {
-                    swiper.selected = parseInt(swiper.selected) + 1;
+                if (0 < swiper.selected && swiper.selected <= 2) {
+                    swiper.selected = parseInt(swiper.selected) - 1;
                 }
             }
         }

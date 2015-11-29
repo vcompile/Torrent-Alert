@@ -1,10 +1,6 @@
 FlowRouter.wait();
 
 document.addEventListener("WebComponentsReady", function() {
-    if (Meteor.isCordova) {
-        _splash.release();
-    }
-
     FlowRouter.initialize({
         // hashbang: true
     });
@@ -38,31 +34,13 @@ FlowRouter.route("/", {
                 document.querySelector("user-check").selected = 1;
                 break;
 
-            case "reset-password":
-                document.querySelector("#router").sharedElements = {
-                    'ripple': document.querySelector("#sign-in"),
-                    'reverse-ripple': document.querySelector("#sign-in")
-                };
-
-                document.querySelector("user-check").selected = 2;
-                break;
-
             case "sign-up":
                 document.querySelector("#router").sharedElements = {
                     'ripple': document.querySelector("#sign-up"),
                     'reverse-ripple': document.querySelector("#sign-up")
                 };
 
-                document.querySelector("user-check").selected = 3;
-                break;
-
-            case "resend-enrollment-email":
-                document.querySelector("#router").sharedElements = {
-                    'ripple': document.querySelector("#sign-up"),
-                    'reverse-ripple': document.querySelector("#sign-up")
-                };
-
-                document.querySelector("user-check").selected = 4;
+                document.querySelector("user-check").selected = 2;
                 break;
         }
     },
