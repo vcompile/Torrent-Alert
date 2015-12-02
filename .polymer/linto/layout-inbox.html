@@ -138,7 +138,7 @@
             <paper-header-panel main>
                 <paper-toolbar id="main_toolbar">
                     <paper-icon-button class="selection-visible" icon="arrow-back" on-click="clear_torrent_selection"></paper-icon-button>
-                    <paper-icon-button class="selection-hidden" icon="menu" on-click="menuToggle"></paper-icon-button>
+                    <paper-icon-button class="selection-hidden" icon="menu" paper-drawer-toggle></paper-icon-button>
 
                     <div class="title" id="main_toolbar_title">TorrentAlert</div>
 
@@ -193,7 +193,7 @@
 
         <paper-fab class="menu-b" id="fab" icon="add" on-click="add_project"></paper-fab>
 
-        <paper-dialog id="user_prompt" on-iron-overlay-closed="prompt_closed" style="width: 320px;" with-backdrop>
+        <paper-dialog id="user_prompt" style="width: 320px;" with-backdrop>
             <div class="layout vertical">
                 <div style="border-bottom: 2px solid #888; margin: 8px 0; padding: 4px 0;">alerter</div>
 
@@ -227,7 +227,7 @@
             </div>
         </paper-dialog>
 
-        <paper-dialog id="remove_prompt" on-iron-overlay-closed="prompt_closed" style="width: 320px;" with-backdrop>
+        <paper-dialog id="remove_prompt" style="width: 320px;" with-backdrop>
             <div>Are you sure to delete this item ?</div>
 
             <div class="buttons">
@@ -242,7 +242,7 @@
             </div>
         </paper-dialog>
 
-        <paper-dialog id="schedule_prompt" on-iron-overlay-closed="prompt_closed" style="width: 320px;" with-backdrop>
+        <paper-dialog id="schedule_prompt" style="width: 320px;" with-backdrop>
             <div>Are you sure to schedule this item ?</div>
 
             <div class="buttons">
@@ -297,17 +297,13 @@
         },
 
         attached: function() {
+            this.user = (Meteor.user() ? Meteor.user() : {});
+
+            if (document.querySelector("#torrent_db").value.length) {
+                this.project = document.querySelector("#torrent_db").value;
+            }
+
             var _this = this;
-
-            Tracker.autorun(function() {
-                _this.user = (Meteor.user() ? Meteor.user() : {});
-            });
-
-            Meteor.setTimeout(function() {
-                if ((document.querySelector("#torrent_db").value || []).length) {
-                    _this.project = document.querySelector("#torrent_db").value;
-                }
-            }, 1000);
 
             Meteor.setTimeout(function() {
                 _project.find().observe({
@@ -428,9 +424,7 @@
                         }
                     }
                 });
-            }, 1000 * 4);
-
-            document.querySelector("#load_awesome").active = false;
+            }, 1000);
         },
 
         clear_torrent_selection: function() {
@@ -455,16 +449,8 @@
             }, 200);
         },
 
-        menuToggle: function() {
-            if (this.$.drawer.narrow && $(this.$.drawer).width() <= parseInt(this.$.drawer.responsiveWidth)) {
-                this.$.drawer.togglePanel();
-            } else {
-                this.$.drawer.forceNarrow = !this.$.drawer.forceNarrow;
-            }
-        },
-
         menu_opt: function(e, d) {
-            this.menuToggle();
+            this.$.drawer.closeDrawer();
 
             this.$.main_toolbar.className = this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "") + " " + document.querySelector("#menu_opt .iron-selected selectable-icon").icon_class;
 
@@ -482,12 +468,6 @@
 
         project_selected: function(menu_opt, project_opt) {
             return (menu_opt == "" ? true : menu_opt == project_opt);
-        },
-
-        prompt_closed: function() {
-            FlowRouter.setQueryParams({
-                "route": null
-            });
         },
 
         properties: {
@@ -588,10 +568,7 @@
 
         remove_project: function(e) {
             this.$.remove_prompt.dataset.id = Polymer.dom(e).localTarget.dataset.id;
-
-            FlowRouter.setQueryParams({
-                "route": "remove-prompt"
-            });
+            this.$.remove_prompt.open();
         },
 
         remove_torrent: function() {
@@ -642,10 +619,7 @@
 
         schedule: function(e) {
             this.$.schedule_prompt.dataset.id = Polymer.dom(e).localTarget.dataset.id;
-
-            FlowRouter.setQueryParams({
-                "route": "schedule-prompt"
-            });
+            this.$.schedule_prompt.open();
         },
 
         schedule_ok: function(e) {
@@ -748,9 +722,7 @@
         },
 
         user_prompt: function() {
-            FlowRouter.setQueryParams({
-                "route": "user-prompt"
-            });
+            this.$.user_prompt.open();
         }
 
     });

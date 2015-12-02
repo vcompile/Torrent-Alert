@@ -8415,10 +8415,7 @@ this.fire('dom-change');
     };
 
     --layout-horizontal: {
-      /* @apply(--layout); */
-      display: -ms-flexbox;
-      display: -webkit-flex;
-      display: flex;
+      @apply(--layout);
 
       -ms-flex-direction: row;
       -webkit-flex-direction: row;
@@ -8426,16 +8423,15 @@ this.fire('dom-change');
     };
 
     --layout-horizontal-reverse: {
+      @apply(--layout);
+
       -ms-flex-direction: row-reverse;
       -webkit-flex-direction: row-reverse;
       flex-direction: row-reverse;
     };
 
     --layout-vertical: {
-      /* @apply(--layout); */
-      display: -ms-flexbox;
-      display: -webkit-flex;
-      display: flex;
+      @apply(--layout);
 
       -ms-flex-direction: column;
       -webkit-flex-direction: column;
@@ -8443,6 +8439,8 @@ this.fire('dom-change');
     };
 
     --layout-vertical-reverse: {
+      @apply(--layout);
+
       -ms-flex-direction: column-reverse;
       -webkit-flex-direction: column-reverse;
       flex-direction: column-reverse;
@@ -8599,13 +8597,8 @@ this.fire('dom-change');
     };
 
     --layout-center-center: {
-      /* @apply(--layout-center --layout-center-justified); */
-      -ms-flex-align: center;
-      -webkit-align-items: center;
-      align-items: center;
-      -ms-flex-pack: center;
-      -webkit-justify-content: center;
-      justify-content: center;
+      @apply(--layout-center);
+      @apply(--layout-center-justified);
     };
 
     /* self alignment */
@@ -13314,60 +13307,74 @@ CSS properties               | Action
 </script>
 <script>
 
-  Polymer.IronOverlayManager = (function() {
+  Polymer.IronOverlayManager = {
 
-    var overlays = [];
-    var DEFAULT_Z = 10;
-    var backdrops = [];
+    _overlays: [],
+
+    // iframes have a default z-index of 100, so this default should be at least
+    // that.
+    _minimumZ: 101,
+
+    _backdrops: [],
+
+    _applyOverlayZ: function(overlay, aboveZ) {
+      this._setZ(overlay, aboveZ + 2);
+    },
+
+    _setZ: function(element, z) {
+      element.style.zIndex = z;
+    },
 
     // track overlays for z-index and focus managemant
-    function addOverlay(overlay) {
-      var z0 = currentOverlayZ();
-      overlays.push(overlay);
-      var z1 = currentOverlayZ();
-      if (z1 <= z0) {
-        applyOverlayZ(overlay, z0);
+    addOverlay: function(overlay) {
+      var minimumZ = Math.max(this.currentOverlayZ(), this._minimumZ);
+      this._overlays.push(overlay);
+      var newZ = this.currentOverlayZ();
+      if (newZ <= minimumZ) {
+        this._applyOverlayZ(overlay, minimumZ);
       }
-    }
+    },
 
-    function removeOverlay(overlay) {
-      var i = overlays.indexOf(overlay);
+    removeOverlay: function(overlay) {
+      var i = this._overlays.indexOf(overlay);
       if (i >= 0) {
-        overlays.splice(i, 1);
-        setZ(overlay, '');
+        this._overlays.splice(i, 1);
+        this._setZ(overlay, '');
       }
-    }
+    },
 
-    function applyOverlayZ(overlay, aboveZ) {
-      setZ(overlay, aboveZ + 2);
-    }
-
-    function setZ(element, z) {
-      element.style.zIndex = z;
-    }
-
-    function currentOverlay() {
-      var i = overlays.length - 1;
-      while (overlays[i] && !overlays[i].opened) {
+    currentOverlay: function() {
+      var i = this._overlays.length - 1;
+      while (this._overlays[i] && !this._overlays[i].opened) {
         --i;
       }
-      return overlays[i];
-    }
+      return this._overlays[i];
+    },
 
-    function currentOverlayZ() {
-      var z;
-      var current = currentOverlay();
+    currentOverlayZ: function() {
+      var z = this._minimumZ;
+      var current = this.currentOverlay();
       if (current) {
         var z1 = window.getComputedStyle(current).zIndex;
         if (!isNaN(z1)) {
           z = Number(z1);
         }
       }
-      return z || DEFAULT_Z;
-    }
+      return z;
+    },
 
-    function focusOverlay() {
-      var current = currentOverlay();
+    /**
+     * Ensures that the minimum z-index of new overlays is at least `minimumZ`.
+     * This does not effect the z-index of any existing overlays.
+     *
+     * @param {number} minimumZ
+     */
+    ensureMinimumZ: function(minimumZ) {
+      this._minimumZ = Math.max(this._minimumZ, minimumZ);
+    },
+
+    focusOverlay: function() {
+      var current = this.currentOverlay();
       // We have to be careful to focus the next overlay _after_ any current
       // transitions are complete (due to the state being toggled prior to the
       // transition). Otherwise, we risk infinite recursion when a transitioning
@@ -13379,36 +13386,26 @@ CSS properties               | Action
       if (current && !current.transitioning) {
         current._applyFocus();
       }
-    }
+    },
 
-    function trackBackdrop(element) {
+    trackBackdrop: function(element) {
       // backdrops contains the overlays with a backdrop that are currently
       // visible
       if (element.opened) {
-        backdrops.push(element);
+        this._backdrops.push(element);
       } else {
-        var index = backdrops.indexOf(element);
+        var index = this._backdrops.indexOf(element);
         if (index >= 0) {
-          backdrops.splice(index, 1);
+          this._backdrops.splice(index, 1);
         }
       }
+    },
+
+    getBackdrops: function() {
+      return this._backdrops;
     }
 
-    function getBackdrops() {
-      return backdrops;
-    }
-
-    return {
-      addOverlay: addOverlay,
-      removeOverlay: removeOverlay,
-      currentOverlay: currentOverlay,
-      currentOverlayZ: currentOverlayZ,
-      focusOverlay: focusOverlay,
-      trackBackdrop: trackBackdrop,
-      getBackdrops: getBackdrops
-    };
-
-  })();
+  };
 
 </script>
 
@@ -13830,6 +13827,12 @@ context. You should place this element as a child of `<body>` whenever possible.
 /**
  * Fired after the `iron-overlay` opens.
  * @event iron-overlay-opened
+ */
+
+/**
+ * Fired when the `iron-overlay` is canceled, but before it is closed.
+ * Cancel the event to prevent the `iron-overlay` from closing.
+ * @event iron-overlay-canceled
  */
 
 /**
@@ -21511,9 +21514,8 @@ paper-calendar {
       :host {
         display: block;
         position: fixed;
-
-        background: #323232;
-        color: #f1f1f1;
+        background-color: var(--paper-toast-background-color, #323232);
+        color: var(--paper-toast-color, #f1f1f1);
         min-height: 48px;
         min-width: 288px;
         padding: 16px 24px 12px;
@@ -21521,17 +21523,16 @@ paper-calendar {
         box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
         border-radius: 2px;
         left: 0;
+        bottom: 0;
         margin: 12px;
         font-size: 14px;
         cursor: default;
         -webkit-transition: visibility 0.3s, -webkit-transform 0.3s, opacity 0.3s;
         transition: visibility 0.3s, transform 0.3s, opacity 0.3s;
-
         visibility: hidden;
-        bottom: -100px;
         opacity: 0;
-        -webkit-transform: translateY(0px);
-        transform: translateY(0px);
+        -webkit-transform: translateY(100px);
+        transform: translateY(100px);
       }
 
       :host(.capsule) {
@@ -21548,8 +21549,8 @@ paper-calendar {
       :host(.paper-toast-open) {
         visibility: visible;
         opacity: 1;
-        -webkit-transform: translateY(-100px);
-        transform: translateY(-100px);
+        -webkit-transform: translateY(0px);
+        transform: translateY(0px);
       }
     </style>
 
@@ -21559,7 +21560,10 @@ paper-calendar {
 
   <script>
     (function() {
-      var PaperToast = Polymer({
+      // Keeps track of the toast currently opened.
+      var currentToast = null;
+
+      Polymer({
         is: 'paper-toast',
 
         behaviors: [
@@ -21569,6 +21573,8 @@ paper-calendar {
         properties: {
           /**
            * The duration in milliseconds to show the toast.
+           * Set to `0`, a negative number, or `Infinity`, to disable the
+           * toast auto-closing.
            */
           duration: {
             type: Number,
@@ -21584,6 +21590,7 @@ paper-calendar {
           },
 
           /**
+           * Overridden from `IronOverlayBehavior`.
            * Set to false to enable closing of the toast by clicking outside it.
            */
           noCancelOnOutsideClick: {
@@ -21592,9 +21599,22 @@ paper-calendar {
           },
         },
 
+        /**
+         * Read-only. Deprecated. Use `opened` from `IronOverlayBehavior`.
+         * @property visible
+         * @deprecated
+         */
         get visible() {
           console.warn('`visible` is deprecated, use `opened` instead');
           return this.opened;
+        },
+
+        /**
+         * Read-only. Can auto-close if duration is a positive finite number.
+         * @property _canAutoClose
+         */
+        get _canAutoClose() {
+          return this.duration > 0 && this.duration !== Infinity;
         },
 
         created: function() {
@@ -21602,15 +21622,14 @@ paper-calendar {
         },
 
         /**
-         * Show the toast.
-         * @method show
+         * Show the toast. Same as `open()` from `IronOverlayBehavior`.
          */
         show: function() {
           this.open();
         },
 
         /**
-         * Hide the toast
+         * Hide the toast. Same as `close()` from `IronOverlayBehavior`.
          */
         hide: function() {
           this.close();
@@ -21622,19 +21641,18 @@ paper-calendar {
          */
         _openedChanged: function() {
           if (this.opened) {
-            if (PaperToast.currentToast && PaperToast.currentToast !== this) {
-              PaperToast.currentToast.close();
+            if (currentToast && currentToast !== this) {
+              currentToast.close();
             }
-            PaperToast.currentToast = this;
+            currentToast = this;
             this.fire('iron-announce', {
               text: this.text
             });
-            // auto-close if duration is a positive finite number
-            if (this.duration > 0 && this.duration !== Infinity) {
+            if (this._canAutoClose) {
               this.debounce('close', this.close, this.duration);
             }
-          } else if (PaperToast.currentToast === this) {
-            PaperToast.currentToast = null;
+          } else if (currentToast === this) {
+            currentToast = null;
           }
           Polymer.IronOverlayBehaviorImpl._openedChanged.apply(this, arguments);
         },
@@ -21645,6 +21663,7 @@ paper-calendar {
         _renderOpened: function() {
           this.classList.add('paper-toast-open');
         },
+
         /**
          * Overridden from `IronOverlayBehavior`.
          */
@@ -21657,13 +21676,21 @@ paper-calendar {
          * iron-fit-behavior will set the inline style position: static, which
          * causes the toast to be rendered incorrectly when opened by default.
          */
-        _onIronResize: function(){
+        _onIronResize: function() {
           Polymer.IronOverlayBehaviorImpl._onIronResize.apply(this, arguments);
           if (this.opened) {
             // Make sure there is no inline style for position.
             this.style.position = '';
           }
         }
+
+        /**
+         * Fired when `paper-toast` is opened.
+         *
+         * @event 'iron-announce'
+         * @param {Object} detail
+         * @param {String} detail.text The text that will be announced.
+         */
       });
     })();
   </script>
@@ -22722,7 +22749,7 @@ paper-calendar {
             <paper-header-panel main="">
                 <paper-toolbar id="main_toolbar">
                     <paper-icon-button class="selection-visible" icon="arrow-back" on-click="clear_torrent_selection"></paper-icon-button>
-                    <paper-icon-button class="selection-hidden" icon="menu" on-click="menuToggle"></paper-icon-button>
+                    <paper-icon-button class="selection-hidden" icon="menu" paper-drawer-toggle=""></paper-icon-button>
 
                     <div class="title" id="main_toolbar_title">TorrentAlert</div>
 
@@ -22777,7 +22804,7 @@ paper-calendar {
 
         <paper-fab class="menu-b" id="fab" icon="add" on-click="add_project"></paper-fab>
 
-        <paper-dialog id="user_prompt" on-iron-overlay-closed="prompt_closed" style="width: 320px;" with-backdrop="">
+        <paper-dialog id="user_prompt" style="width: 320px;" with-backdrop="">
             <div class="layout vertical">
                 <div style="border-bottom: 2px solid #888; margin: 8px 0; padding: 4px 0;">alerter</div>
 
@@ -22811,7 +22838,7 @@ paper-calendar {
             </div>
         </paper-dialog>
 
-        <paper-dialog id="remove_prompt" on-iron-overlay-closed="prompt_closed" style="width: 320px;" with-backdrop="">
+        <paper-dialog id="remove_prompt" style="width: 320px;" with-backdrop="">
             <div>Are you sure to delete this item ?</div>
 
             <div class="buttons">
@@ -22826,7 +22853,7 @@ paper-calendar {
             </div>
         </paper-dialog>
 
-        <paper-dialog id="schedule_prompt" on-iron-overlay-closed="prompt_closed" style="width: 320px;" with-backdrop="">
+        <paper-dialog id="schedule_prompt" style="width: 320px;" with-backdrop="">
             <div>Are you sure to schedule this item ?</div>
 
             <div class="buttons">
@@ -22881,17 +22908,13 @@ paper-calendar {
         },
 
         attached: function() {
+            this.user = (Meteor.user() ? Meteor.user() : {});
+
+            if (document.querySelector("#torrent_db").value.length) {
+                this.project = document.querySelector("#torrent_db").value;
+            }
+
             var _this = this;
-
-            Tracker.autorun(function() {
-                _this.user = (Meteor.user() ? Meteor.user() : {});
-            });
-
-            Meteor.setTimeout(function() {
-                if ((document.querySelector("#torrent_db").value || []).length) {
-                    _this.project = document.querySelector("#torrent_db").value;
-                }
-            }, 1000);
 
             Meteor.setTimeout(function() {
                 _project.find().observe({
@@ -23012,9 +23035,7 @@ paper-calendar {
                         }
                     }
                 });
-            }, 1000 * 4);
-
-            document.querySelector("#load_awesome").active = false;
+            }, 1000);
         },
 
         clear_torrent_selection: function() {
@@ -23039,16 +23060,8 @@ paper-calendar {
             }, 200);
         },
 
-        menuToggle: function() {
-            if (this.$.drawer.narrow && $(this.$.drawer).width() <= parseInt(this.$.drawer.responsiveWidth)) {
-                this.$.drawer.togglePanel();
-            } else {
-                this.$.drawer.forceNarrow = !this.$.drawer.forceNarrow;
-            }
-        },
-
         menu_opt: function(e, d) {
-            this.menuToggle();
+            this.$.drawer.closeDrawer();
 
             this.$.main_toolbar.className = this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "") + " " + document.querySelector("#menu_opt .iron-selected selectable-icon").icon_class;
 
@@ -23066,12 +23079,6 @@ paper-calendar {
 
         project_selected: function(menu_opt, project_opt) {
             return (menu_opt == "" ? true : menu_opt == project_opt);
-        },
-
-        prompt_closed: function() {
-            FlowRouter.setQueryParams({
-                "route": null
-            });
         },
 
         properties: {
@@ -23172,10 +23179,7 @@ paper-calendar {
 
         remove_project: function(e) {
             this.$.remove_prompt.dataset.id = Polymer.dom(e).localTarget.dataset.id;
-
-            FlowRouter.setQueryParams({
-                "route": "remove-prompt"
-            });
+            this.$.remove_prompt.open();
         },
 
         remove_torrent: function() {
@@ -23226,10 +23230,7 @@ paper-calendar {
 
         schedule: function(e) {
             this.$.schedule_prompt.dataset.id = Polymer.dom(e).localTarget.dataset.id;
-
-            FlowRouter.setQueryParams({
-                "route": "schedule-prompt"
-            });
+            this.$.schedule_prompt.open();
         },
 
         schedule_ok: function(e) {
@@ -23332,9 +23333,7 @@ paper-calendar {
         },
 
         user_prompt: function() {
-            FlowRouter.setQueryParams({
-                "route": "user-prompt"
-            });
+            this.$.user_prompt.open();
         }
 
     });
@@ -23798,10 +23797,6 @@ paper-calendar {
     <script>
     Polymer({
 
-        attached: function() {
-            document.querySelector("#load_awesome").active = false;
-        },
-
         back: function(route) {
             FlowRouter.go("/");
         },
@@ -23908,9 +23903,7 @@ paper-calendar {
                                 </div>
 
                                 <div class="flex layout swiper-img vertical" style="background-image:url(&quot;/img/0.png&quot;);">
-                                    <div class="flex">
-                                        <div class="center-justified horizontal layout" style="color: black; padding: 32px 16px;">loading ..</div>
-                                    </div>
+                                    <div class="flex"></div>
                                     <div class="center-justified horizontal layout" style="padding: 32px 16px;">
                                         <div class="swiper-circle"></div>
                                         <div class="swiper-circle cyan-500"></div>
@@ -23925,9 +23918,7 @@ paper-calendar {
                                 </div>
 
                                 <div class="flex layout swiper-img vertical" style="background-image:url(&quot;/img/1.png&quot;);">
-                                    <div class="flex">
-                                        <div class="center-justified horizontal layout" style="color: black; padding: 32px 16px;">loading ..</div>
-                                    </div>
+                                    <div class="flex"></div>
                                     <div class="center-justified horizontal layout" style="padding: 32px 16px;">
                                         <div class="swiper-circle cyan-500"></div>
                                         <div class="swiper-circle"></div>
@@ -23940,11 +23931,8 @@ paper-calendar {
                                 <div class="center-justified horizontal layout" style="padding: 32px 16px;">
                                     <div>SemanticSearch in V2</div>
                                 </div>
-
                                 <div class="flex layout swiper-img vertical" style="background-image:url(&quot;/img/2.png&quot;);">
-                                    <div class="flex">
-                                        <div class="center-justified horizontal layout" style="color: black; padding: 32px 16px;">loading ..</div>
-                                    </div>
+                                    <div class="flex"></div>
                                     <div class="center-justified horizontal layout" style="padding: 32px 16px;">
                                         <div class="swiper-circle cyan-500"></div>
                                         <div class="swiper-circle cyan-500"></div>
@@ -24031,10 +24019,6 @@ paper-calendar {
 
     <script>
     Polymer({
-
-        attached: function() {
-            document.querySelector("#load_awesome").active = false;
-        },
 
         back: function() {
             this.selected = 0;

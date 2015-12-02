@@ -5,17 +5,21 @@ document.addEventListener("WebComponentsReady", function() {
         // hashbang: true
     });
 
-    Tracker.autorun(function() {
-        if (Meteor.status().connected) {
-            if (Meteor.user() && (!FlowRouter.current().route.group || FlowRouter.current().route.group.name != "inbox")) {
-                FlowRouter.go("/inbox");
+    Meteor.setTimeout(function() {
+        document.querySelector("#load_awesome").active = false;
+
+        Tracker.autorun(function() {
+            if (Meteor.status().connected) {
+                if (Meteor.user()) {
+                    FlowRouter.go("/inbox");
+                }
+            } else {
+                if (document.querySelector("#torrent_db").value.length) {
+                    FlowRouter.go("/inbox");
+                }
             }
-        } else {
-            if ((document.querySelector("#torrent_db").value || []).length) {
-                FlowRouter.go("/inbox");
-            }
-        }
-    });
+        });
+    }, 1000 * 4);
 });
 
 FlowRouter.route("/", {
@@ -65,7 +69,7 @@ var inbox = FlowRouter.group({
                 FlowRouter.go("/");
             }
         } else {
-            if (!(document.querySelector("#torrent_db").value || []).length) {
+            if (!document.querySelector("#torrent_db").value.length) {
                 FlowRouter.go("/");
             }
         }
@@ -83,26 +87,6 @@ inbox.route("/", {
         switch (FlowRouter.getQueryParam("route")) {
             case "add-project":
                 document.querySelector("add-project").active = true;
-                break;
-
-            case "remove-prompt":
-                if (document.querySelector("#remove_prompt").dataset.id) {
-                    document.querySelector("#remove_prompt").open();
-                } else {
-                    FlowRouter.setQueryParams({
-                        "route": null
-                    });
-                }
-                break;
-
-            case "schedule-prompt":
-                if (document.querySelector("#schedule_prompt").dataset.id) {
-                    document.querySelector("#schedule_prompt").open();
-                } else {
-                    FlowRouter.setQueryParams({
-                        "route": null
-                    });
-                }
                 break;
 
             case "search-bar":
@@ -123,24 +107,10 @@ inbox.route("/", {
                 }
                 break;
 
-            case "user-prompt":
-                if (Meteor.user()) {
-                    document.querySelector("#user_prompt").open();
-                } else {
-                    FlowRouter.setQueryParams({
-                        "route": null
-                    });
-                }
-                break;
-
             default:
                 document.querySelector("add-project").active = false;
                 document.querySelector("search-bar").active = false;
                 document.querySelector("#torrent_prompt").active = false;
-
-                document.querySelector("#remove_prompt").close();
-                document.querySelector("#schedule_prompt").close();
-                document.querySelector("#user_prompt").close();
                 break;
         }
     },
