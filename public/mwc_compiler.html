@@ -22575,7 +22575,10 @@ paper-calendar {
 
                 if (_.has(this.item, "link") && this.item.link.length) {
                     document.querySelector("torrent-view").torrent = this.item;
-                    document.querySelector("torrent-view").active = true;
+
+                    FlowRouter.setQueryParams({
+                        "route": "torrent-view"
+                    });
                 } else {
                     document.querySelector("#polymer_toast").toast("under processing");
                 }
@@ -22797,9 +22800,9 @@ paper-calendar {
                                     </template>
                                 </template>
                             </iron-selector>
-
-                            <div style="min-height: 80px;"></div>
                         </div>
+
+                        <div style="min-height: 80px;"></div>
                     </neon-animatable>
                 </neon-animated-pages>
             </paper-header-panel>
@@ -23004,7 +23007,7 @@ paper-calendar {
                         }
                     }
                 });
-            }, 1000);
+            }, 1000 * 4);
         },
 
         clear_torrent_selection: function() {
@@ -23519,25 +23522,25 @@ paper-calendar {
         search: function() {
             this.$.progress.hidden = false;
 
-            this.debounce("search", function() {
-                if (this.$.input.value.trim().length) {
-                    if (Meteor.status().connected) {
-                        var _this = this;
+            // this.debounce("search", function() {
+            if (this.$.input.value.trim().length) {
+                if (Meteor.status().connected) {
+                    var _this = this;
 
-                        Meteor.call("search", this.$.input.value.trim(), function(error, response) {
-                            _this.$.progress.hidden = true;
+                    Meteor.call("search", this.$.input.value.trim(), function(error, response) {
+                        _this.$.progress.hidden = true;
 
-                            if (!error) {
-                                _this.list = response;
-                            }
-                        });
-                    } else {
-                        document.querySelector("#polymer_toast").toast("server connection required");
-                    }
+                        if (!error) {
+                            _this.list = response;
+                        }
+                    });
                 } else {
-                    this.$.progress.hidden = true;
+                    document.querySelector("#polymer_toast").toast("server connection required");
                 }
-            }, 1000);
+            } else {
+                this.$.progress.hidden = true;
+            }
+            // }, 1000);
         }
 
     });
@@ -23802,7 +23805,9 @@ paper-calendar {
     Polymer({
 
         back: function() {
-            this.active = false;
+            FlowRouter.setQueryParams({
+                "route": null
+            });
         },
 
         click: function(e) {

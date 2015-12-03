@@ -98,19 +98,20 @@ inbox.route("/", {
                 }, 400);
                 break;
 
-                // case "torrent-prompt":
-                //     if (_.has(document.querySelector("layout-inbox").torrent_prompt, "_id")) {
-                //         document.querySelector("#torrent_prompt").active = true;
-                //     } else {
-                //         FlowRouter.setQueryParams({
-                //             "route": null
-                //         });
-                //     }
-                //     break;
+            case "torrent-view":
+                if (document.querySelector("torrent-view").torrent && _.has(document.querySelector("torrent-view").torrent, "_id")) {
+                    document.querySelector("torrent-view").active = true;
+                } else {
+                    FlowRouter.setQueryParams({
+                        "route": null
+                    });
+                }
+                break;
 
             default:
                 document.querySelector("add-project").active = false;
                 document.querySelector("search-bar").active = false;
+                document.querySelector("torrent-view").active = false;
                 break;
         }
     },

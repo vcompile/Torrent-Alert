@@ -63,7 +63,9 @@
     Polymer({
 
         back: function() {
-            this.active = false;
+            FlowRouter.setQueryParams({
+                "route": null
+            });
         },
 
         click: function(e) {
