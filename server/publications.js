@@ -5,6 +5,7 @@ Meteor.publish("project", function() {
         fields: {
             user: false
         },
+        limit: 10,
         sort: {
             time: -1
         }
@@ -22,6 +23,7 @@ Meteor.publish("torrent", function() {
             user: false,
             user_removed: false
         },
+        limit: 500,
         sort: {
             time: -1
         }
@@ -35,6 +37,10 @@ Meteor.publish("worker", function() {
     }, {
         fields: {
             user: false
+        },
+        limit: 100,
+        sort: {
+            time_insert: -1
         }
     });
 });
