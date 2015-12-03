@@ -34,20 +34,18 @@
                 <input class="flex" id="input" on-keyup="search" placeholder="search">
             </paper-toolbar>
 
-            <div class="center-justified horizontal layout">
-                <div class="li">
-                    <paper-progress hidden id="progress" indeterminate style="left: 0; position: fixed; width: 100%;"></paper-progress>
+            <paper-progress hidden id="progress" indeterminate style="left: 0; position: fixed; width: 100%;"></paper-progress>
 
-                    <template is="dom-repeat" items="[[list]]">
-                        <div class="bordered cursor-p horizontal layout white" on-click="add_project">
-                            <iron-icon icon="chevron-right" style="padding: 16px; padding-right: 8px;"></iron-icon>
-                            <div class="flex" style="font-size: 16px; line-height: 24px; padding: 16px; padding-left: 8px;">[[item]]</div>
-                        </div>
-                    </template>
-
-                    <div style="min-height: 80px;"></div>
+            <template is="dom-repeat" items="[[list]]">
+                <div class="center-justified horizontal layout">
+                    <div class="bordered cursor-p horizontal layout li white" on-click="add_project">
+                        <iron-icon icon="chevron-right" style="padding: 16px; padding-right: 8px;"></iron-icon>
+                        <div class="flex" style="font-size: 16px; line-height: 24px; padding: 16px; padding-left: 8px;">[[item]]</div>
+                    </div>
                 </div>
-            </div>
+            </template>
+
+            <div style="min-height: 80px;"></div>
         </paper-header-panel>
     </template>
 

@@ -49,11 +49,11 @@
         "linto/inbox-item.html",
         "linto/layout-inbox.html",
         "linto/load-awesome.html",
-        "linto/modal-wrapper.html",
         "linto/polymer-toast.html",
         "linto/search-bar.html",
         "linto/selectable-icon.html",
         "linto/set-password.html",
+        "linto/torrent-view.html",
         "linto/user-check.html"
     ],
     "root": ".polymer"

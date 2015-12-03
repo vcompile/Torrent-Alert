@@ -65,7 +65,7 @@ _torrentz = function(type) {
                             _id: row._id
                         }, {
                             $set: {
-                                link: _.sortBy(link, "time")
+                                link: _.sortBy(link, "time").reverse()
                             }
                         });
                     } else {

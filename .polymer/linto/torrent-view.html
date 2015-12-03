@@ -1,0 +1,118 @@
+<dom-module id="torrent-view">
+
+    <style>
+    :host {
+        display: none;
+    }
+    
+    :host([active]) {
+        display: block;
+    }
+    
+    paper-toggle-button {
+        --paper-toggle-button-checked-bar-color: var(--paper-green-500);
+        --paper-toggle-button-checked-button-color: var(--paper-green-500);
+        --paper-toggle-button-checked-ink-color: var(--paper-green-500);
+    }
+    </style>
+
+    <template>
+        <iron-localstorage name="proxy" on-iron-localstorage-load-empty="initialize_proxy" value="{{proxy}}"></iron-localstorage>
+
+        <div class="fit layout vertical" style="background: #EEE; overflow: auto; z-index: 10;">
+            <div class="center-justified horizontal layout">
+                <div class="cursor-p horizontal justified layout li">
+                    <div style="padding: 16px; padding-right: 8px;">
+                        <paper-icon-button icon="arrow-back" on-click="back"></paper-icon-button>
+                    </div>
+
+                    <div class="flex layout vertical" style="padding: 16px; padding-left: 8px;">
+                        <div style="color: #757575; font-size: 14px; line-height: 20px;">[[return_description(torrent)]]</div>
+
+                        <div><span style="font-size: 16px; line-height: 24px;">[[torrent.title]]</span>&nbsp;&nbsp;<span class$="[[return_class(torrent.category)]]" style="font-size: 14px; line-height: 20px; padding-left: 4px; padding-right: 4px;">[[torrent.category]]</span>&nbsp;&nbsp;</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="center-justified horizontal layout">
+                <iron-selector activate-event="click" class="li" id="link" on-click="click" selected-attribute="selected">
+                    <template is="dom-repeat" items="[[torrent.link]]">
+                        <div class="bordered cursor-p horizontal hover justified layout white" data-link$="[[item.url]]">
+                            <div style="padding: 16px; padding-right: 8px;">
+                                <selectable-icon icon_class$="[[return_class(item.text)]]" icon_text$="[[return_icon_text(item.text)]]"></selectable-icon>
+                            </div>
+
+                            <div class="flex layout vertical" style="padding: 16px; padding-left: 8px;">
+                                <div class="etc" style="font-size: 16px; line-height: 24px;">[[item.text]]</div>
+                                <div class="etc" style="color: #757575; font-size: 14px; line-height: 20px;">[[return_time(item.time)]]</div>
+                            </div>
+                        </div>
+                    </template>
+                </iron-selector>
+            </div>
+
+            <div class="center center-justified horizontal layout" style="min-height: 80px;">
+                <div class="li">
+                    <paper-toggle-button checked="{{proxy}}" style="padding: 16px;">enable proxy</paper-toggle-button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script>
+    Polymer({
+
+        back: function() {
+            this.active = false;
+        },
+
+        click: function(e) {
+            e.stopPropagation();
+
+            this.async(function() {
+                window.open((this.proxy ? "http://proxy.vcompile.com/index.php?url=" + encodeURIComponent(document.querySelector("#link").selectedItem.dataset.link) : document.querySelector("#link").selectedItem.dataset.link), "_system");
+            }, 200);
+        },
+
+        initialize_proxy: function() {
+            this.proxy = false;
+        },
+
+        is: "torrent-view",
+
+        properties: {
+            active: {
+                notify: true,
+                reflectToAttribute: true,
+                type: Boolean,
+                value: false
+            },
+            proxy: {
+                type: Boolean,
+                value: false
+            },
+            torrent: {
+                type: Object
+            }
+        },
+
+        return_class: function(text) {
+            return polymer_color(text ? text : "#");
+        },
+
+        return_description: function(item) {
+            return (item.size ? item.size : "#") + " | " + (item.leech ? item.leech + "L" : "#") + " / " + (item.seed ? item.seed + "S" : "#");
+        },
+
+        return_icon_text: function(text) {
+            return (isNaN(text.charAt(0)) ? text.charAt(0) : "#");
+        },
+
+        return_time: function(time) {
+            return (moment(time).isValid() ? moment(time).fromNow() : "#");
+        }
+
+    });
+    </script>
+
+</dom-module>

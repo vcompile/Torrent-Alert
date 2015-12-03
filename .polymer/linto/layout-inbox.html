@@ -86,8 +86,6 @@
     </style>
 
     <template>
-        <iron-localstorage name="proxy" on-iron-localstorage-load-empty="initialize_proxy" value="{{proxy}}"></iron-localstorage>
-
         <paper-drawer-panel id="drawer">
             <paper-header-panel drawer>
                 <div class="fit layout vertical">
@@ -154,37 +152,35 @@
 
                     <neon-animatable>
                         <div class="center-justified horizontal layout">
-                            <div class="li">
-                                <iron-selector activate-event="click" attr-for-selected="item" multi selectable="inbox-item" selected-attribute="selected" selected-values="{{torrent_selected}}">
-                                    <template is="dom-repeat" items="[[project]]">
-                                        <template if="[[project_selected(menu_selected, item._id)]]" is="dom-if">
-                                            <div class="bordered center horizontal justified layout">
-                                                <div class="flex" style="padding: 16px;">[[item.keyword]]</div>
+                            <iron-selector activate-event="click" attr-for-selected="item" multi selectable="inbox-item" selected-attribute="selected" selected-values="{{torrent_selected}}">
+                                <template is="dom-repeat" items="[[project]]">
+                                    <template if="[[project_selected(menu_selected, item._id)]]" is="dom-if">
+                                        <div class="bordered center horizontal justified layout li">
+                                            <div class="flex" style="padding: 16px;">[[item.keyword]]</div>
 
-                                                <paper-icon-button data-index$="[[index]]" icon="sort" on-click="sort"></paper-icon-button>
+                                            <paper-icon-button data-index$="[[index]]" icon="sort" on-click="sort"></paper-icon-button>
 
-                                                <paper-icon-button data-id$="[[item._id]]" icon="schedule" hidden="[[!is_search(item.worker)]]" on-click="schedule"></paper-icon-button>
+                                            <paper-icon-button data-id$="[[item._id]]" icon="schedule" hidden="[[!is_search(item.worker)]]" on-click="schedule"></paper-icon-button>
 
-                                                <paper-icon-button data-id$="[[item._id]]" icon="refresh" on-click="refresh"></paper-icon-button>
+                                            <paper-icon-button data-id$="[[item._id]]" icon="refresh" on-click="refresh"></paper-icon-button>
 
-                                                <paper-icon-button data-id$="[[item._id]]" icon="close" on-click="remove_project" style="margin-right: 8px;"></paper-icon-button>
-                                            </div>
+                                            <paper-icon-button data-id$="[[item._id]]" icon="close" on-click="remove_project" style="margin-right: 8px;"></paper-icon-button>
+                                        </div>
 
-                                            <div style="padding: 0 4px;">
-                                                <paper-progress class="project_progress" data-id$="[[item._id]]" hidden style="width: 100%;"></paper-progress>
-                                            </div>
+                                        <div class="li" style="padding: 0 4px;">
+                                            <paper-progress class="project_progress" data-id$="[[item._id]]" hidden style="width: 100%;"></paper-progress>
+                                        </div>
 
-                                            <template as="torrent" is="dom-repeat" items="[[item.torrent]]">
-                                                <template if="[[torrent.url]]" is="dom-if">
-                                                    <inbox-item item$="[[torrent]]"></inbox-item>
-                                                </template>
+                                        <template as="torrent" is="dom-repeat" items="[[item.torrent]]">
+                                            <template if="[[torrent.url]]" is="dom-if">
+                                                <inbox-item item$="[[torrent]]"></inbox-item>
                                             </template>
                                         </template>
                                     </template>
-                                </iron-selector>
+                                </template>
+                            </iron-selector>
 
-                                <div style="min-height: 80px;"></div>
-                            </div>
+                            <div style="min-height: 80px;"></div>
                         </div>
                     </neon-animatable>
                 </neon-animated-pages>
@@ -215,11 +211,6 @@
                 </div>
 
                 <div style="border-bottom: 2px solid #888; margin: 8px 0; padding: 4px 0;">user: <span>{{user.name}}</span></div>
-
-                <div class="center horizontal justified layout" style="padding: 8px 0;">
-                    <div>enable proxy</div>
-                    <paper-toggle-button checked="{{proxy}}"></paper-toggle-button>
-                </div>
 
                 <div class="end-justified horizontal layout">
                     <paper-button class="blue-500" on-click="sign_out" style="margin: 8px 0; width: 50%;">SIGN OUT</paper-button>
@@ -256,35 +247,6 @@
                 </paper-button>
             </div>
         </paper-dialog>
-
-        <modal-wrapper id="torrent_prompt">
-            <div class="center-center fit horizontal layout" on-click="torrent_prompt_close" style="background: rgba(0, 0, 0, 0.5); padding: 24px; padding-bottom: 48px; z-index: 1;">
-                <div class="layout vertical" style="height: 100%; width: 320px;">
-                    <div class="flex white" style="overflow: auto; padding: 24px;">
-                        <iron-selector activate-event="click" id="link" on-click="link" selected-attribute="selected">
-                            <template is="dom-repeat" items="[[torrent_prompt.link]]">
-                                <div class="cursor-p horizontal justified layout menu-li" data-link$="[[item.url]]">
-                                    <div style="padding: 16px; padding-right: 8px;">
-                                        <selectable-icon icon_class$="[[return_class(item.text)]]" icon_text$="[[return_icon_text(item.text)]]"></selectable-icon>
-                                    </div>
-
-                                    <div class="flex layout vertical" style="padding: 16px; padding-left: 8px;">
-                                        <div class="etc" style="font-size: 16px; line-height: 24px;">[[item.text]]</div>
-                                        <div class="etc" style="color: #757575; font-size: 14px; line-height: 20px;">[[return_time(item.time)]]</div>
-                                    </div>
-                                </div>
-                            </template>
-                        </iron-selector>
-                    </div>
-
-                    <div class="cursor-p layout vertical" style="background: #EEE; padding: 24px;">
-                        <div style="color: #757575; font-size: 14px; line-height: 20px;">[[return_torrent_description(torrent_prompt)]]</div>
-
-                        <div><span style="font-size: 16px; line-height: 24px;">[[torrent_prompt.title]]</span>&nbsp;&nbsp;<span class$="[[return_class(torrent_prompt.category)]]" style="font-size: 14px; line-height: 20px; padding-left: 4px; padding-right: 4px;">[[torrent_prompt.category]]</span>&nbsp;&nbsp;</div>
-                    </div>
-                </div>
-            </div>
-        </modal-wrapper>
     </template>
 
     <script>
@@ -431,23 +393,11 @@
             this.torrent_selected = [];
         },
 
-        initialize_proxy: function() {
-            this.proxy = false;
-        },
-
         is_search: function(worker) {
             return (worker == "search")
         },
 
         is: "layout-inbox",
-
-        link: function(e) {
-            e.stopPropagation();
-
-            this.async(function() {
-                window.open((this.proxy ? "http://proxy.vcompile.com/index.php?url=" + encodeURIComponent(document.querySelector("#link").selectedItem.dataset.link) : document.querySelector("#link").selectedItem.dataset.link), "_system");
-            }, 200);
-        },
 
         menu_opt: function(e, d) {
             this.$.drawer.closeDrawer();
@@ -479,16 +429,6 @@
                 type: Array,
                 value: function() {
                     return [];
-                }
-            },
-            proxy: {
-                type: Boolean,
-                value: false
-            },
-            torrent_prompt: {
-                type: Object,
-                value: function() {
-                    return {};
                 }
             },
             torrent_selected: {
@@ -692,24 +632,6 @@
             this.project[A].torrent = _.sortBy(this.project[A].torrent, "time").reverse();
             this.project[A] = _.clone(this.project[A]);
             this.project = _.clone(this.project);
-        },
-
-        torrent_prompt_close: function() {
-            FlowRouter.setQueryParams({
-                "route": null
-            });
-        },
-
-        torrent_prompt_open: function(item) {
-            if (_.has(item, "link") && item.link.length) {
-                this.torrent_prompt = item;
-
-                FlowRouter.setQueryParams({
-                    "route": "torrent-prompt"
-                });
-            } else {
-                document.querySelector("#polymer_toast").toast("under processing");
-            }
         },
 
         torrent_selected_change: function(change) {

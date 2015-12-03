@@ -1,7 +1,7 @@
 <dom-module id="inbox-item">
 
     <template>
-        <div class="bordered cursor-p horizontal hover justified layout white" on-click="click">
+        <div class="bordered cursor-p horizontal hover justified layout li white" on-click="click">
             <div style="padding: 16px; padding-right: 8px;">
                 <selectable-icon icon_class$="[[return_class(item.category)]]" icon_text$="[[return_text(item.link.length)]]" id="selectable_icon" selected$="[[selected]]"></selectable-icon>
             </div>
@@ -21,7 +21,12 @@
             if (Polymer.dom(e).localTarget.id != "selectable_icon") {
                 e.stopPropagation();
 
-                document.querySelector("layout-inbox").torrent_prompt_open(this.item);
+                if (_.has(this.item, "link") && this.item.link.length) {
+                    document.querySelector("torrent-view").torrent = this.item;
+                    document.querySelector("torrent-view").active = true;
+                } else {
+                    document.querySelector("#polymer_toast").toast("under processing");
+                }
             }
         },
 

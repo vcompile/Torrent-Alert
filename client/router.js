@@ -81,7 +81,8 @@ inbox.route("/", {
         mwcLayout.render("inbox", {
             "add-project": "add-project",
             "layout-inbox": "layout-inbox",
-            "search-bar": "search-bar"
+            "search-bar": "search-bar",
+            "torrent-view": "torrent-view"
         });
 
         switch (FlowRouter.getQueryParam("route")) {
@@ -97,20 +98,19 @@ inbox.route("/", {
                 }, 400);
                 break;
 
-            case "torrent-prompt":
-                if (_.has(document.querySelector("layout-inbox").torrent_prompt, "_id")) {
-                    document.querySelector("#torrent_prompt").active = true;
-                } else {
-                    FlowRouter.setQueryParams({
-                        "route": null
-                    });
-                }
-                break;
+                // case "torrent-prompt":
+                //     if (_.has(document.querySelector("layout-inbox").torrent_prompt, "_id")) {
+                //         document.querySelector("#torrent_prompt").active = true;
+                //     } else {
+                //         FlowRouter.setQueryParams({
+                //             "route": null
+                //         });
+                //     }
+                //     break;
 
             default:
                 document.querySelector("add-project").active = false;
                 document.querySelector("search-bar").active = false;
-                document.querySelector("#torrent_prompt").active = false;
                 break;
         }
     },
