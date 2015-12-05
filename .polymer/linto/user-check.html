@@ -193,7 +193,9 @@
                         cordova_g_plus: true,
                         profile: ["email", "email_verified", "gender", "locale", "name", "picture", "sub"]
                     }, function(error) {
-                        document.querySelector("#load_awesome").active = false;
+                        Meteor.setTimeout(function() {
+                            document.querySelector("#load_awesome").active = false;
+                        }, 1000 * 4);
 
                         if (error) {
                             document.querySelector("#polymer_toast").toast(error);
