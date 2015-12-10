@@ -22883,12 +22883,12 @@ paper-calendar {
 
                 <div style="border-bottom: 2px solid #888; margin: 8px 0; padding: 4px 0;">scheduler</div>
 
-                <div class="center horizontal justified layout">
-                    <div style="color: #757575;">schedule / day</div>
-                    <paper-slider disabled="" editable="" id="seeds" max="96" min="1" style="width: 100px;" value="4"></paper-slider>
+                <div class="center horizontal layout">
+                    <div class="flex" style="color: #757575;">schedule / day</div>
+                    <paper-slider disabled="" editable="" id="seeds" max="96" min="1" value="4"></paper-slider>
                 </div>
 
-                <div style="border-bottom: 2px solid #888; margin: 8px 0; padding: 4px 0;">user: <span>{{user.name}}</span></div>
+                <div style="border-bottom: 2px solid #888; margin: 8px 0; padding: 4px 0;">user: <span>[[user.profile.name]]</span></div>
 
                 <div class="end-justified horizontal layout">
                     <paper-button class="blue-500" on-click="sign_out" style="margin: 8px 0; width: 50%;">SIGN OUT</paper-button>
@@ -22968,7 +22968,6 @@ paper-calendar {
                             }
 
                             _this.project.unshift(row);
-
                             _this.project = _.clone(_this.project);
                         }
                     },
@@ -22993,8 +22992,7 @@ paper-calendar {
                                 };
                             }
 
-                            _this.project[index] = _.clone($.extend(true, _this.project[index], row));
-
+                            _this.project[index] = row; // _.clone($.extend(true, _this.project[index], row));
                             _this.project[index] = _.clone(_this.project[index]);
                             _this.project = _.clone(_this.project);
                         }
@@ -23007,7 +23005,6 @@ paper-calendar {
 
                         if (-1 < index) {
                             _this.project.splice(index, 1);
-
                             _this.project = _.clone(_this.project);
                         }
                     }
@@ -23024,7 +23021,6 @@ paper-calendar {
 
                             if (-1 < index) {
                                 _this.project[A].torrent[index] = _.clone($.extend(true, _this.project[A].torrent[index], row));
-
                                 _this.project[A].torrent = _.clone(_this.project[A].torrent);
                                 _this.project[A] = _.clone(_this.project[A]);
                                 _this.project = _.clone(_this.project);
@@ -23040,7 +23036,6 @@ paper-calendar {
 
                             if (-1 < index) {
                                 _this.project[A].torrent[index] = _.clone($.extend(true, _this.project[A].torrent[index], row));
-
                                 _this.project[A].torrent = _.clone(_this.project[A].torrent);
                                 _this.project[A] = _.clone(_this.project[A]);
                                 _this.project = _.clone(_this.project);
@@ -23056,7 +23051,6 @@ paper-calendar {
 
                             if (-1 < index) {
                                 _this.project[A].torrent.splice(index, 1);
-
                                 _this.project[A].torrent = _.clone(_this.project[A].torrent);
                                 _this.project[A] = _.clone(_this.project[A]);
                                 _this.project = _.clone(_this.project);
@@ -23310,6 +23304,8 @@ paper-calendar {
             this.project[A].torrent = _.sortBy(this.project[A].torrent, "time").reverse();
             this.project[A] = _.clone(this.project[A]);
             this.project = _.clone(this.project);
+
+            document.querySelector("#polymer_toast").toast("sorted by time");
         },
 
         torrent_selected_change: function(change) {
@@ -23970,7 +23966,7 @@ paper-calendar {
                         <neon-animated-pages class="flex" id="swiper" on-up="swiper_up" selected="2">
                             <neon-animatable class="cyan-500 layout vertical">
                                 <div class="center-justified horizontal layout" style="padding: 32px 16px;">
-                                    <div>Torrent Sharing, offline support, etc</div>
+                                    <div>Sharing, offline support, etc</div>
                                 </div>
 
                                 <div class="flex layout swiper-img vertical" style="background-image:url(&quot;/img/0.png&quot;);">
@@ -24042,9 +24038,9 @@ paper-calendar {
                             <br>
 
                             <div class="horizontal layout">
-                                <img class="cursor-p" disabled="" src="/img/fb.png" style="opacity: 0.2;">
+                                <img class="cursor-p" disabled="" src="/img/fb.png" style="opacity: 0.1;">
                                 <img class="cursor-p" on-click="google" src="/img/google-plus.png">
-                                <img class="cursor-p" disabled="" src="/img/twitter.png" style="opacity: 0.2;">
+                                <img class="cursor-p" disabled="" src="/img/twitter.png" style="opacity: 0.1;">
                             </div>
                         </div>
 

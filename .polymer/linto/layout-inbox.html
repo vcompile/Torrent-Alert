@@ -207,12 +207,12 @@
 
                 <div style="border-bottom: 2px solid #888; margin: 8px 0; padding: 4px 0;">scheduler</div>
 
-                <div class="center horizontal justified layout">
-                    <div style="color: #757575;">schedule / day</div>
-                    <paper-slider disabled editable id="seeds" max="96" min="1" style="width: 100px;" value="4"></paper-slider>
+                <div class="center horizontal layout">
+                    <div class="flex" style="color: #757575;">schedule / day</div>
+                    <paper-slider disabled editable id="seeds" max="96" min="1" value="4"></paper-slider>
                 </div>
 
-                <div style="border-bottom: 2px solid #888; margin: 8px 0; padding: 4px 0;">user: <span>{{user.name}}</span></div>
+                <div style="border-bottom: 2px solid #888; margin: 8px 0; padding: 4px 0;">user: <span>[[user.profile.name]]</span></div>
 
                 <div class="end-justified horizontal layout">
                     <paper-button class="blue-500" on-click="sign_out" style="margin: 8px 0; width: 50%;">SIGN OUT</paper-button>
@@ -292,7 +292,6 @@
                             }
 
                             _this.project.unshift(row);
-
                             _this.project = _.clone(_this.project);
                         }
                     },
@@ -317,8 +316,7 @@
                                 };
                             }
 
-                            _this.project[index] = _.clone($.extend(true, _this.project[index], row));
-
+                            _this.project[index] = row; // _.clone($.extend(true, _this.project[index], row));
                             _this.project[index] = _.clone(_this.project[index]);
                             _this.project = _.clone(_this.project);
                         }
@@ -331,7 +329,6 @@
 
                         if (-1 < index) {
                             _this.project.splice(index, 1);
-
                             _this.project = _.clone(_this.project);
                         }
                     }
@@ -348,7 +345,6 @@
 
                             if (-1 < index) {
                                 _this.project[A].torrent[index] = _.clone($.extend(true, _this.project[A].torrent[index], row));
-
                                 _this.project[A].torrent = _.clone(_this.project[A].torrent);
                                 _this.project[A] = _.clone(_this.project[A]);
                                 _this.project = _.clone(_this.project);
@@ -364,7 +360,6 @@
 
                             if (-1 < index) {
                                 _this.project[A].torrent[index] = _.clone($.extend(true, _this.project[A].torrent[index], row));
-
                                 _this.project[A].torrent = _.clone(_this.project[A].torrent);
                                 _this.project[A] = _.clone(_this.project[A]);
                                 _this.project = _.clone(_this.project);
@@ -380,7 +375,6 @@
 
                             if (-1 < index) {
                                 _this.project[A].torrent.splice(index, 1);
-
                                 _this.project[A].torrent = _.clone(_this.project[A].torrent);
                                 _this.project[A] = _.clone(_this.project[A]);
                                 _this.project = _.clone(_this.project);
@@ -634,6 +628,8 @@
             this.project[A].torrent = _.sortBy(this.project[A].torrent, "time").reverse();
             this.project[A] = _.clone(this.project[A]);
             this.project = _.clone(this.project);
+
+            document.querySelector("#polymer_toast").toast("sorted by time");
         },
 
         torrent_selected_change: function(change) {

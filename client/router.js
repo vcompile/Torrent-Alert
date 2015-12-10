@@ -19,7 +19,7 @@ document.addEventListener("WebComponentsReady", function() {
                 }
             }
         });
-    }, 1000 * 4);
+    }, 1000 * (Meteor.isCordova ? 16 : 4));
 });
 
 FlowRouter.route("/", {
