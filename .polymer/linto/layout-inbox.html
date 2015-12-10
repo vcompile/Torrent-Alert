@@ -133,60 +133,62 @@
                 </div>
             </paper-header-panel>
 
-            <paper-header-panel main>
-                <paper-toolbar id="main_toolbar">
-                    <paper-icon-button class="selection-visible" icon="arrow-back" on-click="clear_torrent_selection"></paper-icon-button>
-                    <paper-icon-button class="selection-hidden" icon="menu" paper-drawer-toggle></paper-icon-button>
+            <neon-animated-pages class="fit" id="main_page" main selected="1">
+                <neon-animatable class="center-center layout vertical">
+                    <div>empty</div>
+                </neon-animatable>
 
-                    <div class="title" id="main_toolbar_title">TorrentAlert</div>
+                <neon-animatable>
+                    <paper-header-panel>
+                        <paper-toolbar id="main_toolbar">
+                            <paper-icon-button class="selection-visible" icon="arrow-back" on-click="clear_torrent_selection"></paper-icon-button>
+                            <paper-icon-button class="selection-hidden" icon="menu" paper-drawer-toggle></paper-icon-button>
 
-                    <paper-icon-button class="selection-visible" icon="delete" on-click="remove_torrent"></paper-icon-button>
-                    <paper-icon-button class="selection-visible" icon="social:share" on-click="share"></paper-icon-button>
-                    <paper-icon-button class="selection-hidden" icon="search" on-click="search_bar"></paper-icon-button>
-                </paper-toolbar>
+                            <div class="title" id="main_toolbar_title">TorrentAlert</div>
 
-                <neon-animated-pages class="fit" id="main_page" selected="1">
-                    <neon-animatable class="center-center layout vertical">
-                        <div>empty</div>
-                    </neon-animatable>
+                            <paper-icon-button class="selection-visible" icon="delete" on-click="remove_torrent"></paper-icon-button>
+                            <paper-icon-button class="selection-visible" icon="social:share" on-click="share"></paper-icon-button>
+                            <paper-icon-button class="selection-hidden" icon="search" on-click="search_bar"></paper-icon-button>
+                        </paper-toolbar>
 
-                    <neon-animatable>
-                        <div class="center-justified horizontal layout">
-                            <div class="li">
-                                <iron-selector activate-event="click" attr-for-selected="item" multi selectable="inbox-item" selected-attribute="selected" selected-values="{{torrent_selected}}">
-                                    <template is="dom-repeat" items="[[project]]">
-                                        <template if="[[project_selected(menu_selected, item._id)]]" is="dom-if">
-                                            <div class="bordered center horizontal justified layout">
-                                                <div class="flex" style="padding: 16px;">[[item.keyword]]</div>
+                        <iron-selector activate-event="click" attr-for-selected="item" multi selectable="inbox-item" selected-attribute="selected" selected-values="{{torrent_selected}}">
+                            <template is="dom-repeat" items="[[project]]">
+                                <template if="[[project_selected(menu_selected, item._id)]]" is="dom-if">
+                                    <div class="center-justified horizontal layout">
+                                        <div class="bordered center horizontal justified layout li">
+                                            <div class="flex" style="line-height: 24px; padding: 16px;">[[item.keyword]]</div>
 
-                                                <paper-icon-button data-index$="[[index]]" icon="sort" on-click="sort"></paper-icon-button>
+                                            <paper-icon-button data-index$="[[index]]" icon="sort" on-click="sort"></paper-icon-button>
 
-                                                <paper-icon-button data-id$="[[item._id]]" icon="schedule" hidden="[[!is_search(item.worker)]]" on-click="schedule"></paper-icon-button>
+                                            <paper-icon-button data-id$="[[item._id]]" icon="schedule" hidden="[[!is_search(item.worker)]]" on-click="schedule"></paper-icon-button>
 
-                                                <paper-icon-button data-id$="[[item._id]]" icon="refresh" on-click="refresh"></paper-icon-button>
+                                            <paper-icon-button data-id$="[[item._id]]" icon="refresh" on-click="refresh"></paper-icon-button>
 
-                                                <paper-icon-button data-id$="[[item._id]]" icon="close" on-click="remove_project" style="margin-right: 8px;"></paper-icon-button>
-                                            </div>
+                                            <paper-icon-button data-id$="[[item._id]]" icon="close" on-click="remove_project" style="margin-right: 8px;"></paper-icon-button>
+                                        </div>
+                                    </div>
 
+                                    <div class="center-justified horizontal layout">
+                                        <div class="li">
                                             <div style="padding: 0 4px;">
                                                 <paper-progress class="project_progress" data-id$="[[item._id]]" hidden style="width: 100%;"></paper-progress>
                                             </div>
+                                        </div>
+                                    </div>
 
-                                            <template as="torrent" is="dom-repeat" items="[[item.torrent]]">
-                                                <template if="[[torrent.url]]" is="dom-if">
-                                                    <inbox-item item$="[[torrent]]"></inbox-item>
-                                                </template>
-                                            </template>
+                                    <template as="torrent" is="dom-repeat" items="[[item.torrent]]">
+                                        <template if="[[torrent.url]]" is="dom-if">
+                                            <inbox-item item$="[[torrent]]"></inbox-item>
                                         </template>
                                     </template>
-                                </iron-selector>
-                            </div>
-                        </div>
+                                </template>
+                            </template>
+                        </iron-selector>
 
                         <div style="min-height: 80px;"></div>
-                    </neon-animatable>
-                </neon-animated-pages>
-            </paper-header-panel>
+                    </paper-header-panel>
+                </neon-animatable>
+            </neon-animated-pages>
         </paper-drawer-panel>
 
         <paper-fab class="menu-b" id="fab" icon="add" on-click="add_project"></paper-fab>

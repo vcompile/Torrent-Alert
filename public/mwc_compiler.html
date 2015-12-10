@@ -7289,100 +7289,6 @@ this.fire('dom-change');
 }
 });</script>
 <script>
-
-  /**
-   * @demo demo/index.html
-   * @polymerBehavior
-   */
-  Polymer.IronControlState = {
-
-    properties: {
-
-      /**
-       * If true, the element currently has focus.
-       */
-      focused: {
-        type: Boolean,
-        value: false,
-        notify: true,
-        readOnly: true,
-        reflectToAttribute: true
-      },
-
-      /**
-       * If true, the user cannot interact with this element.
-       */
-      disabled: {
-        type: Boolean,
-        value: false,
-        notify: true,
-        observer: '_disabledChanged',
-        reflectToAttribute: true
-      },
-
-      _oldTabIndex: {
-        type: Number
-      },
-
-      _boundFocusBlurHandler: {
-        type: Function,
-        value: function() {
-          return this._focusBlurHandler.bind(this);
-        }
-      }
-
-    },
-
-    observers: [
-      '_changedControlState(focused, disabled)'
-    ],
-
-    ready: function() {
-      this.addEventListener('focus', this._boundFocusBlurHandler, true);
-      this.addEventListener('blur', this._boundFocusBlurHandler, true);
-    },
-
-    _focusBlurHandler: function(event) {
-      // NOTE(cdata):  if we are in ShadowDOM land, `event.target` will
-      // eventually become `this` due to retargeting; if we are not in
-      // ShadowDOM land, `event.target` will eventually become `this` due
-      // to the second conditional which fires a synthetic event (that is also
-      // handled). In either case, we can disregard `event.path`.
-
-      if (event.target === this) {
-        this._setFocused(event.type === 'focus');
-      } else if (!this.shadowRoot && !this.isLightDescendant(event.target)) {
-        this.fire(event.type, {sourceEvent: event}, {
-          node: this,
-          bubbles: event.bubbles,
-          cancelable: event.cancelable
-        });
-      }
-    },
-
-    _disabledChanged: function(disabled, old) {
-      this.setAttribute('aria-disabled', disabled ? 'true' : 'false');
-      this.style.pointerEvents = disabled ? 'none' : '';
-      if (disabled) {
-        this._oldTabIndex = this.tabIndex;
-        this.focused = false;
-        this.tabIndex = -1;
-      } else if (this._oldTabIndex !== undefined) {
-        this.tabIndex = this._oldTabIndex;
-      }
-    },
-
-    _changedControlState: function() {
-      // _controlStateChanged is abstract, follow-on behaviors may implement it
-      if (this._controlStateChanged) {
-        this._controlStateChanged();
-      }
-    }
-
-  };
-
-</script>
-<script>
   (function() {
     'use strict';
 
@@ -7792,6 +7698,99 @@ this.fire('dom-change');
 <script>
 
   /**
+   * @demo demo/index.html
+   * @polymerBehavior
+   */
+  Polymer.IronControlState = {
+
+    properties: {
+
+      /**
+       * If true, the element currently has focus.
+       */
+      focused: {
+        type: Boolean,
+        value: false,
+        notify: true,
+        readOnly: true,
+        reflectToAttribute: true
+      },
+
+      /**
+       * If true, the user cannot interact with this element.
+       */
+      disabled: {
+        type: Boolean,
+        value: false,
+        notify: true,
+        observer: '_disabledChanged',
+        reflectToAttribute: true
+      },
+
+      _oldTabIndex: {
+        type: Number
+      },
+
+      _boundFocusBlurHandler: {
+        type: Function,
+        value: function() {
+          return this._focusBlurHandler.bind(this);
+        }
+      }
+
+    },
+
+    observers: [
+      '_changedControlState(focused, disabled)'
+    ],
+
+    ready: function() {
+      this.addEventListener('focus', this._boundFocusBlurHandler, true);
+      this.addEventListener('blur', this._boundFocusBlurHandler, true);
+    },
+
+    _focusBlurHandler: function(event) {
+      // NOTE(cdata):  if we are in ShadowDOM land, `event.target` will
+      // eventually become `this` due to retargeting; if we are not in
+      // ShadowDOM land, `event.target` will eventually become `this` due
+      // to the second conditional which fires a synthetic event (that is also
+      // handled). In either case, we can disregard `event.path`.
+
+      if (event.target === this) {
+        this._setFocused(event.type === 'focus');
+      } else if (!this.shadowRoot && !this.isLightDescendant(event.target)) {
+        this.fire(event.type, {sourceEvent: event}, {
+          node: this,
+          bubbles: event.bubbles,
+          cancelable: event.cancelable
+        });
+      }
+    },
+
+    _disabledChanged: function(disabled, old) {
+      this.setAttribute('aria-disabled', disabled ? 'true' : 'false');
+      this.style.pointerEvents = disabled ? 'none' : '';
+      if (disabled) {
+        this._oldTabIndex = this.tabIndex;
+        this.focused = false;
+        this.tabIndex = -1;
+      } else if (this._oldTabIndex !== undefined) {
+        this.tabIndex = this._oldTabIndex;
+      }
+    },
+
+    _changedControlState: function() {
+      // _controlStateChanged is abstract, follow-on behaviors may implement it
+      if (this._controlStateChanged) {
+        this._controlStateChanged();
+      }
+    }
+
+  };
+
+</script>
+<script>
+  /**
    * Use `Polymer.PaperInputBehavior` to implement inputs with `<paper-input-container>`. This
    * behavior is implemented by `<paper-input>`. It exposes a number of properties from
    * `<paper-input-container>` and `<input is="iron-input">` and they should be bound in your
@@ -7802,7 +7801,6 @@ this.fire('dom-change');
    * @polymerBehavior Polymer.PaperInputBehavior
    */
   Polymer.PaperInputBehaviorImpl = {
-
     properties: {
       /**
        * Fired when the input changes due to user interaction.
@@ -8186,6 +8184,7 @@ this.fire('dom-change');
         this._shiftTabPressed = false;
       }, 1);
     },
+
     /**
      * If `autoValidate` is true, then validates the element.
      */
@@ -8266,7 +8265,6 @@ this.fire('dom-change');
         });
       }
     }
-
   };
 
   /** @polymerBehavior */
@@ -8275,8 +8273,311 @@ this.fire('dom-change');
     Polymer.IronA11yKeysBehavior,
     Polymer.PaperInputBehaviorImpl
   ];
-
 </script>
+
+
+<style>
+  /* IE 10 support for HTML5 hidden attr */
+  [hidden] {
+    display: none !important;
+  }
+</style>
+
+<style is="custom-style">
+  :root {
+
+    --layout: {
+      display: -ms-flexbox;
+      display: -webkit-flex;
+      display: flex;
+    };
+
+    --layout-inline: {
+      display: -ms-inline-flexbox;
+      display: -webkit-inline-flex;
+      display: inline-flex;
+    };
+
+    --layout-horizontal: {
+      @apply(--layout);
+
+      -ms-flex-direction: row;
+      -webkit-flex-direction: row;
+      flex-direction: row;
+    };
+
+    --layout-horizontal-reverse: {
+      @apply(--layout);
+
+      -ms-flex-direction: row-reverse;
+      -webkit-flex-direction: row-reverse;
+      flex-direction: row-reverse;
+    };
+
+    --layout-vertical: {
+      @apply(--layout);
+
+      -ms-flex-direction: column;
+      -webkit-flex-direction: column;
+      flex-direction: column;
+    };
+
+    --layout-vertical-reverse: {
+      @apply(--layout);
+
+      -ms-flex-direction: column-reverse;
+      -webkit-flex-direction: column-reverse;
+      flex-direction: column-reverse;
+    };
+
+    --layout-wrap: {
+      -ms-flex-wrap: wrap;
+      -webkit-flex-wrap: wrap;
+      flex-wrap: wrap;
+    };
+
+    --layout-wrap-reverse: {
+      -ms-flex-wrap: wrap-reverse;
+      -webkit-flex-wrap: wrap-reverse;
+      flex-wrap: wrap-reverse;
+    };
+
+    --layout-flex-auto: {
+      -ms-flex: 1 1 auto;
+      -webkit-flex: 1 1 auto;
+      flex: 1 1 auto;
+    };
+
+    --layout-flex-none: {
+      -ms-flex: none;
+      -webkit-flex: none;
+      flex: none;
+    };
+
+    --layout-flex: {
+      -ms-flex: 1 1 0.000000001px;
+      -webkit-flex: 1;
+      flex: 1;
+      -webkit-flex-basis: 0.000000001px;
+      flex-basis: 0.000000001px;
+    };
+
+    --layout-flex-2: {
+      -ms-flex: 2;
+      -webkit-flex: 2;
+      flex: 2;
+    };
+
+    --layout-flex-3: {
+      -ms-flex: 3;
+      -webkit-flex: 3;
+      flex: 3;
+    };
+
+    --layout-flex-4: {
+      -ms-flex: 4;
+      -webkit-flex: 4;
+      flex: 4;
+    };
+
+    --layout-flex-5: {
+      -ms-flex: 5;
+      -webkit-flex: 5;
+      flex: 5;
+    };
+
+    --layout-flex-6: {
+      -ms-flex: 6;
+      -webkit-flex: 6;
+      flex: 6;
+    };
+
+    --layout-flex-7: {
+      -ms-flex: 7;
+      -webkit-flex: 7;
+      flex: 7;
+    };
+
+    --layout-flex-8: {
+      -ms-flex: 8;
+      -webkit-flex: 8;
+      flex: 8;
+    };
+
+    --layout-flex-9: {
+      -ms-flex: 9;
+      -webkit-flex: 9;
+      flex: 9;
+    };
+
+    --layout-flex-10: {
+      -ms-flex: 10;
+      -webkit-flex: 10;
+      flex: 10;
+    };
+
+    --layout-flex-11: {
+      -ms-flex: 11;
+      -webkit-flex: 11;
+      flex: 11;
+    };
+
+    --layout-flex-12: {
+      -ms-flex: 12;
+      -webkit-flex: 12;
+      flex: 12;
+    };
+
+    /* alignment in cross axis */
+
+    --layout-start: {
+      -ms-flex-align: start;
+      -webkit-align-items: flex-start;
+      align-items: flex-start;
+    };
+
+    --layout-center: {
+      -ms-flex-align: center;
+      -webkit-align-items: center;
+      align-items: center;
+    };
+
+    --layout-end: {
+      -ms-flex-align: end;
+      -webkit-align-items: flex-end;
+      align-items: flex-end;
+    };
+
+    /* alignment in main axis */
+
+    --layout-start-justified: {
+      -ms-flex-pack: start;
+      -webkit-justify-content: flex-start;
+      justify-content: flex-start;
+    };
+
+    --layout-center-justified: {
+      -ms-flex-pack: center;
+      -webkit-justify-content: center;
+      justify-content: center;
+    };
+
+    --layout-end-justified: {
+      -ms-flex-pack: end;
+      -webkit-justify-content: flex-end;
+      justify-content: flex-end;
+    };
+
+    --layout-around-justified: {
+      -ms-flex-pack: around;
+      -webkit-justify-content: space-around;
+      justify-content: space-around;
+    };
+
+    --layout-justified: {
+      -ms-flex-pack: justify;
+      -webkit-justify-content: space-between;
+      justify-content: space-between;
+    };
+
+    --layout-center-center: {
+      @apply(--layout-center);
+      @apply(--layout-center-justified);
+    };
+
+    /* self alignment */
+
+    --layout-self-start: {
+      -ms-align-self: flex-start;
+      -webkit-align-self: flex-start;
+      align-self: flex-start;
+    };
+
+    --layout-self-center: {
+      -ms-align-self: center;
+      -webkit-align-self: center;
+      align-self: center;
+    };
+
+    --layout-self-end: {
+      -ms-align-self: flex-end;
+      -webkit-align-self: flex-end;
+      align-self: flex-end;
+    };
+
+    --layout-self-stretch: {
+      -ms-align-self: stretch;
+      -webkit-align-self: stretch;
+      align-self: stretch;
+    };
+
+    /*******************************
+              Other Layout
+    *******************************/
+
+    --layout-block: {
+      display: block;
+    };
+
+    --layout-invisible: {
+      visibility: hidden !important;
+    };
+
+    --layout-relative: {
+      position: relative;
+    };
+
+    --layout-fit: {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+    };
+
+    --layout-scroll: {
+      -webkit-overflow-scrolling: touch;
+      overflow: auto;
+    };
+
+    --layout-fullbleed: {
+      margin: 0;
+      height: 100vh;
+    };
+
+    /* fixed position */
+
+    --layout-fixed-top: {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+    };
+
+    --layout-fixed-right: {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+    };
+
+    --layout-fixed-bottom: {
+      position: fixed;
+      right: 0;
+      bottom: 0;
+      left: 0;
+    };
+
+    --layout-fixed-left: {
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+    };
+
+  }
+
+</style>
 <style is="custom-style">
 
   :root {
@@ -8602,6 +8903,33 @@ this.fire('dom-change');
 
   :root {
 
+    --dark-primary-color: #303f9f;
+
+    --default-primary-color: #3f51b5;
+
+    --light-primary-color: #c5cae9;
+
+    --text-primary-color: #ffffff;
+
+    --accent-color: #ff4081;
+
+    --primary-background-color: #ffffff;
+
+    --primary-text-color: #212121;
+
+    --secondary-text-color: #757575;
+
+    --disabled-text-color: #bdbdbd;
+
+    --divider-color: #e0e0e0;
+
+  }
+
+</style>
+<style is="custom-style">
+
+  :root {
+
     /* Shared Styles */
 
     /*
@@ -8814,337 +9142,7 @@ this.fire('dom-change');
   }
 
 </style>
-<style is="custom-style">
 
-  :root {
-
-    --dark-primary-color: #303f9f;
-
-    --default-primary-color: #3f51b5;
-
-    --light-primary-color: #c5cae9;
-
-    --text-primary-color: #ffffff;
-
-    --accent-color: #ff4081;
-
-    --primary-background-color: #ffffff;
-
-    --primary-text-color: #212121;
-
-    --secondary-text-color: #757575;
-
-    --disabled-text-color: #bdbdbd;
-
-    --divider-color: #e0e0e0;
-
-  }
-
-</style>
-
-
-<style>
-  /* IE 10 support for HTML5 hidden attr */
-  [hidden] {
-    display: none !important;
-  }
-</style>
-
-<style is="custom-style">
-  :root {
-
-    --layout: {
-      display: -ms-flexbox;
-      display: -webkit-flex;
-      display: flex;
-    };
-
-    --layout-inline: {
-      display: -ms-inline-flexbox;
-      display: -webkit-inline-flex;
-      display: inline-flex;
-    };
-
-    --layout-horizontal: {
-      @apply(--layout);
-
-      -ms-flex-direction: row;
-      -webkit-flex-direction: row;
-      flex-direction: row;
-    };
-
-    --layout-horizontal-reverse: {
-      @apply(--layout);
-
-      -ms-flex-direction: row-reverse;
-      -webkit-flex-direction: row-reverse;
-      flex-direction: row-reverse;
-    };
-
-    --layout-vertical: {
-      @apply(--layout);
-
-      -ms-flex-direction: column;
-      -webkit-flex-direction: column;
-      flex-direction: column;
-    };
-
-    --layout-vertical-reverse: {
-      @apply(--layout);
-
-      -ms-flex-direction: column-reverse;
-      -webkit-flex-direction: column-reverse;
-      flex-direction: column-reverse;
-    };
-
-    --layout-wrap: {
-      -ms-flex-wrap: wrap;
-      -webkit-flex-wrap: wrap;
-      flex-wrap: wrap;
-    };
-
-    --layout-wrap-reverse: {
-      -ms-flex-wrap: wrap-reverse;
-      -webkit-flex-wrap: wrap-reverse;
-      flex-wrap: wrap-reverse;
-    };
-
-    --layout-flex-auto: {
-      -ms-flex: 1 1 auto;
-      -webkit-flex: 1 1 auto;
-      flex: 1 1 auto;
-    };
-
-    --layout-flex-none: {
-      -ms-flex: none;
-      -webkit-flex: none;
-      flex: none;
-    };
-
-    --layout-flex: {
-      -ms-flex: 1 1 0.000000001px;
-      -webkit-flex: 1;
-      flex: 1;
-      -webkit-flex-basis: 0.000000001px;
-      flex-basis: 0.000000001px;
-    };
-
-    --layout-flex-2: {
-      -ms-flex: 2;
-      -webkit-flex: 2;
-      flex: 2;
-    };
-
-    --layout-flex-3: {
-      -ms-flex: 3;
-      -webkit-flex: 3;
-      flex: 3;
-    };
-
-    --layout-flex-4: {
-      -ms-flex: 4;
-      -webkit-flex: 4;
-      flex: 4;
-    };
-
-    --layout-flex-5: {
-      -ms-flex: 5;
-      -webkit-flex: 5;
-      flex: 5;
-    };
-
-    --layout-flex-6: {
-      -ms-flex: 6;
-      -webkit-flex: 6;
-      flex: 6;
-    };
-
-    --layout-flex-7: {
-      -ms-flex: 7;
-      -webkit-flex: 7;
-      flex: 7;
-    };
-
-    --layout-flex-8: {
-      -ms-flex: 8;
-      -webkit-flex: 8;
-      flex: 8;
-    };
-
-    --layout-flex-9: {
-      -ms-flex: 9;
-      -webkit-flex: 9;
-      flex: 9;
-    };
-
-    --layout-flex-10: {
-      -ms-flex: 10;
-      -webkit-flex: 10;
-      flex: 10;
-    };
-
-    --layout-flex-11: {
-      -ms-flex: 11;
-      -webkit-flex: 11;
-      flex: 11;
-    };
-
-    --layout-flex-12: {
-      -ms-flex: 12;
-      -webkit-flex: 12;
-      flex: 12;
-    };
-
-    /* alignment in cross axis */
-
-    --layout-start: {
-      -ms-flex-align: start;
-      -webkit-align-items: flex-start;
-      align-items: flex-start;
-    };
-
-    --layout-center: {
-      -ms-flex-align: center;
-      -webkit-align-items: center;
-      align-items: center;
-    };
-
-    --layout-end: {
-      -ms-flex-align: end;
-      -webkit-align-items: flex-end;
-      align-items: flex-end;
-    };
-
-    /* alignment in main axis */
-
-    --layout-start-justified: {
-      -ms-flex-pack: start;
-      -webkit-justify-content: flex-start;
-      justify-content: flex-start;
-    };
-
-    --layout-center-justified: {
-      -ms-flex-pack: center;
-      -webkit-justify-content: center;
-      justify-content: center;
-    };
-
-    --layout-end-justified: {
-      -ms-flex-pack: end;
-      -webkit-justify-content: flex-end;
-      justify-content: flex-end;
-    };
-
-    --layout-around-justified: {
-      -ms-flex-pack: around;
-      -webkit-justify-content: space-around;
-      justify-content: space-around;
-    };
-
-    --layout-justified: {
-      -ms-flex-pack: justify;
-      -webkit-justify-content: space-between;
-      justify-content: space-between;
-    };
-
-    --layout-center-center: {
-      @apply(--layout-center);
-      @apply(--layout-center-justified);
-    };
-
-    /* self alignment */
-
-    --layout-self-start: {
-      -ms-align-self: flex-start;
-      -webkit-align-self: flex-start;
-      align-self: flex-start;
-    };
-
-    --layout-self-center: {
-      -ms-align-self: center;
-      -webkit-align-self: center;
-      align-self: center;
-    };
-
-    --layout-self-end: {
-      -ms-align-self: flex-end;
-      -webkit-align-self: flex-end;
-      align-self: flex-end;
-    };
-
-    --layout-self-stretch: {
-      -ms-align-self: stretch;
-      -webkit-align-self: stretch;
-      align-self: stretch;
-    };
-
-    /*******************************
-              Other Layout
-    *******************************/
-
-    --layout-block: {
-      display: block;
-    };
-
-    --layout-invisible: {
-      visibility: hidden !important;
-    };
-
-    --layout-relative: {
-      position: relative;
-    };
-
-    --layout-fit: {
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      left: 0;
-    };
-
-    --layout-scroll: {
-      -webkit-overflow-scrolling: touch;
-      overflow: auto;
-    };
-
-    --layout-fullbleed: {
-      margin: 0;
-      height: 100vh;
-    };
-
-    /* fixed position */
-
-    --layout-fixed-top: {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-    };
-
-    --layout-fixed-right: {
-      position: fixed;
-      top: 0;
-      right: 0;
-      bottom: 0;
-    };
-
-    --layout-fixed-bottom: {
-      position: fixed;
-      right: 0;
-      bottom: 0;
-      left: 0;
-    };
-
-    --layout-fixed-left: {
-      position: fixed;
-      top: 0;
-      bottom: 0;
-      left: 0;
-    };
-
-  }
-
-</style>
 
 <script>
 
@@ -9181,6 +9179,7 @@ this.fire('dom-change');
   };
 
 </script>
+
 
 
 
@@ -12678,7 +12677,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
       // Ignore the event if this is coming from a focused light child, since that
       // element will deal with it.
-      if (this.isLightDescendant(target))
+      if (this.isLightDescendant(/** @type {Node} */(target)))
         return;
 
       keyboardEvent.preventDefault();
@@ -12695,7 +12694,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
       // Ignore the event if this is coming from a focused light child, since that
       // element will deal with it.
-      if (this.isLightDescendant(target))
+      if (this.isLightDescendant(/** @type {Node} */(target)))
         return;
 
       if (this.pressed) {
@@ -13581,7 +13580,6 @@ context. You should place this element as a child of `<body>` whenever possible.
     },
 
     listeners: {
-      'tap': '_onClick',
       'iron-resize': '_onIronResize'
     },
 
@@ -13603,6 +13601,10 @@ context. You should place this element as a child of `<body>` whenever possible.
 
     ready: function() {
       this._ensureSetup();
+    },
+
+    attached: function() {
+      // Call _openedChanged here so that position can be computed correctly.
       if (this._callOpenedWhenReady) {
         this._openedChanged();
       }
@@ -13834,20 +13836,10 @@ context. You should place this element as a child of `<body>` whenever possible.
     },
 
     _onCaptureClick: function(event) {
-      // attempt to close asynchronously and prevent the close of a tap event is immediately heard
-      // on target. This is because in shadow dom due to event retargetting event.target is not
-      // useful.
-      if (!this.noCancelOnOutsideClick && (this._manager.currentOverlay() == this)) {
-        this._cancelJob = this.async(function() {
-          this.cancel();
-        }, 10);
-      }
-    },
-
-    _onClick: function(event) {
-      if (this._cancelJob) {
-        this.cancelAsync(this._cancelJob);
-        this._cancelJob = null;
+      if (!this.noCancelOnOutsideClick &&
+          this._manager.currentOverlay() === this &&
+          Polymer.dom(event).path.indexOf(this) === -1) {
+        this.cancel();
       }
     },
 
@@ -13856,6 +13848,7 @@ context. You should place this element as a child of `<body>` whenever possible.
       if (!this.noCancelOnEscKey && (event.keyCode === ESC)) {
         this.cancel();
         event.stopPropagation();
+        event.stopImmediatePropagation();
       }
     },
 
@@ -14166,6 +14159,7 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
   ];
 
 </script>
+
 
 
 
@@ -15074,7 +15068,6 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
 
 </head><body><div hidden="" by-vulcanize=""><dom-module id="paper-input-container" assetpath="/bower_components/paper-input/">
   <template>
-
     <style>
       :host {
         display: block;
@@ -15103,15 +15096,14 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
       }
 
       .focused-line {
-        height: 2px;
         @apply(--layout-fit);
 
+        background: var(--paper-input-container-focus-color, --default-primary-color);
+        height: 2px;
         -webkit-transform-origin: center center;
         transform-origin: center center;
         -webkit-transform: scale3d(0,1,1);
         transform: scale3d(0,1,1);
-
-        background: var(--paper-input-container-focus-color, --default-primary-color);
 
         @apply(--paper-input-container-underline-focus);
       }
@@ -15127,7 +15119,6 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
 
       .underline.is-invalid .focused-line {
         background: var(--paper-input-container-invalid-color, --google-red-500);
-
         -webkit-transform: none;
         transform: none;
         -webkit-transition: -webkit-transform 0.25s;
@@ -15137,8 +15128,9 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
       }
 
       .unfocused-line {
-        height: 1px;
         @apply(--layout-fit);
+
+        height: 1px;
         background: var(--paper-input-container-color, --secondary-text-color);
 
         @apply(--paper-input-container-underline);
@@ -15158,9 +15150,10 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
       }
 
       .input-content {
-        position: relative;
         @apply(--layout-horizontal);
         @apply(--layout-center);
+
+        position: relative;
       }
 
       .input-content ::content label,
@@ -15183,7 +15176,6 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
         transform: translateY(-75%) scale(0.75);
         -webkit-transition: -webkit-transform 0.25s;
         transition: transform 0.25s;
-
         -webkit-transform-origin: left top;
         transform-origin: left top;
 
@@ -15192,6 +15184,7 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
         width: 133%;
 
         @apply(--paper-transition-easing);
+        @apply(--paper-input-container-label-floating);
       }
 
       :host-context([dir="rtl"]) .input-content.label-is-floating ::content label,
@@ -15282,6 +15275,7 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
       <div class="label-and-input-container" id="labelAndInputContainer">
         <content select=":not([add-on]):not([prefix]):not([suffix])"></content>
       </div>
+
       <content select="[suffix]"></content>
     </div>
 
@@ -15293,7 +15287,6 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
     <div class$="[[_computeAddOnContentClass(focused,invalid)]]">
       <content id="addOnContent" select="[add-on]"></content>
     </div>
-
   </template>
 </dom-module>
 
@@ -15579,7 +15572,6 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
 </script>
 <dom-module id="paper-input-error" assetpath="/bower_components/paper-input/">
   <template>
-
     <style>
       :host {
         display: inline-block;
@@ -15600,7 +15592,6 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
     </style>
 
     <content></content>
-
   </template>
 </dom-module>
 
@@ -17510,7 +17501,7 @@ mwcLayout = new PolymerLayout();
 
     _calculateElevation: function() {
       if (!this.raised) {
-        this.elevation = 0;
+        this._setElevation(0);
       } else {
         Polymer.PaperButtonBehaviorImpl._calculateElevation.apply(this);
       }
@@ -19610,7 +19601,6 @@ paper-calendar {
 </dom-module>
 <dom-module id="paper-input-char-counter" assetpath="/bower_components/paper-input/">
   <template>
-
     <style>
       :host {
         display: inline-block;
@@ -19626,7 +19616,6 @@ paper-calendar {
     </style>
 
     <span>[[_charCounterStr]]</span>
-
   </template>
 </dom-module>
 
@@ -19664,7 +19653,6 @@ paper-calendar {
 </script>
 <dom-module id="paper-input" assetpath="/bower_components/paper-input/">
   <template>
-
     <style>
       :host {
         display: block;
@@ -19706,7 +19694,6 @@ paper-calendar {
       </template>
 
     </paper-input-container>
-
   </template>
 </dom-module>
 
@@ -22608,15 +22595,17 @@ paper-calendar {
 <dom-module id="inbox-item" assetpath="/linto/">
 
     <template>
-        <div class="bordered cursor-p horizontal hover justified layout white" on-click="click">
-            <div style="padding: 16px; padding-right: 8px;">
-                <selectable-icon icon_class$="[[return_class(item.category)]]" icon_text$="[[return_text(item.link.length)]]" id="selectable_icon" selected$="[[selected]]"></selectable-icon>
-            </div>
+        <div class="center-justified horizontal layout">
+            <div class="bordered cursor-p horizontal hover justified layout li white" on-click="click">
+                <div style="padding: 16px; padding-right: 8px;">
+                    <selectable-icon icon_class$="[[return_class(item.category)]]" icon_text$="[[return_text(item.link.length)]]" id="selectable_icon" selected$="[[selected]]"></selectable-icon>
+                </div>
 
-            <div class="flex layout vertical" style="padding: 16px; padding-left: 8px;">
-                <div style="color: #757575; font-size: 14px; line-height: 20px;">[[return_description(item)]]</div>
-                <div style="font-size: 16px; line-height: 24px;">[[item.title]]</div>
-                <div style="color: #757575; font-size: 14px; line-height: 20px; text-align: right;">[[return_time(item.time)]]</div>
+                <div class="flex layout vertical" style="padding: 16px; padding-left: 8px;">
+                    <div style="color: #757575; font-size: 14px; line-height: 20px;">[[return_description(item)]]</div>
+                    <div style="font-size: 16px; line-height: 24px;">[[item.title]]</div>
+                    <div style="color: #757575; font-size: 14px; line-height: 20px; text-align: right;">[[return_time(item.time)]]</div>
+                </div>
             </div>
         </div>
     </template>
@@ -22809,60 +22798,62 @@ paper-calendar {
                 </div>
             </paper-header-panel>
 
-            <paper-header-panel main="">
-                <paper-toolbar id="main_toolbar">
-                    <paper-icon-button class="selection-visible" icon="arrow-back" on-click="clear_torrent_selection"></paper-icon-button>
-                    <paper-icon-button class="selection-hidden" icon="menu" paper-drawer-toggle=""></paper-icon-button>
+            <neon-animated-pages class="fit" id="main_page" main="" selected="1">
+                <neon-animatable class="center-center layout vertical">
+                    <div>empty</div>
+                </neon-animatable>
 
-                    <div class="title" id="main_toolbar_title">TorrentAlert</div>
+                <neon-animatable>
+                    <paper-header-panel>
+                        <paper-toolbar id="main_toolbar">
+                            <paper-icon-button class="selection-visible" icon="arrow-back" on-click="clear_torrent_selection"></paper-icon-button>
+                            <paper-icon-button class="selection-hidden" icon="menu" paper-drawer-toggle=""></paper-icon-button>
 
-                    <paper-icon-button class="selection-visible" icon="delete" on-click="remove_torrent"></paper-icon-button>
-                    <paper-icon-button class="selection-visible" icon="social:share" on-click="share"></paper-icon-button>
-                    <paper-icon-button class="selection-hidden" icon="search" on-click="search_bar"></paper-icon-button>
-                </paper-toolbar>
+                            <div class="title" id="main_toolbar_title">TorrentAlert</div>
 
-                <neon-animated-pages class="fit" id="main_page" selected="1">
-                    <neon-animatable class="center-center layout vertical">
-                        <div>empty</div>
-                    </neon-animatable>
+                            <paper-icon-button class="selection-visible" icon="delete" on-click="remove_torrent"></paper-icon-button>
+                            <paper-icon-button class="selection-visible" icon="social:share" on-click="share"></paper-icon-button>
+                            <paper-icon-button class="selection-hidden" icon="search" on-click="search_bar"></paper-icon-button>
+                        </paper-toolbar>
 
-                    <neon-animatable>
-                        <div class="center-justified horizontal layout">
-                            <div class="li">
-                                <iron-selector activate-event="click" attr-for-selected="item" multi="" selectable="inbox-item" selected-attribute="selected" selected-values="{{torrent_selected}}">
-                                    <template is="dom-repeat" items="[[project]]">
-                                        <template if="[[project_selected(menu_selected, item._id)]]" is="dom-if">
-                                            <div class="bordered center horizontal justified layout">
-                                                <div class="flex" style="padding: 16px;">[[item.keyword]]</div>
+                        <iron-selector activate-event="click" attr-for-selected="item" multi="" selectable="inbox-item" selected-attribute="selected" selected-values="{{torrent_selected}}">
+                            <template is="dom-repeat" items="[[project]]">
+                                <template if="[[project_selected(menu_selected, item._id)]]" is="dom-if">
+                                    <div class="center-justified horizontal layout">
+                                        <div class="bordered center horizontal justified layout li">
+                                            <div class="flex" style="line-height: 24px; padding: 16px;">[[item.keyword]]</div>
 
-                                                <paper-icon-button data-index$="[[index]]" icon="sort" on-click="sort"></paper-icon-button>
+                                            <paper-icon-button data-index$="[[index]]" icon="sort" on-click="sort"></paper-icon-button>
 
-                                                <paper-icon-button data-id$="[[item._id]]" icon="schedule" hidden="[[!is_search(item.worker)]]" on-click="schedule"></paper-icon-button>
+                                            <paper-icon-button data-id$="[[item._id]]" icon="schedule" hidden="[[!is_search(item.worker)]]" on-click="schedule"></paper-icon-button>
 
-                                                <paper-icon-button data-id$="[[item._id]]" icon="refresh" on-click="refresh"></paper-icon-button>
+                                            <paper-icon-button data-id$="[[item._id]]" icon="refresh" on-click="refresh"></paper-icon-button>
 
-                                                <paper-icon-button data-id$="[[item._id]]" icon="close" on-click="remove_project" style="margin-right: 8px;"></paper-icon-button>
-                                            </div>
+                                            <paper-icon-button data-id$="[[item._id]]" icon="close" on-click="remove_project" style="margin-right: 8px;"></paper-icon-button>
+                                        </div>
+                                    </div>
 
+                                    <div class="center-justified horizontal layout">
+                                        <div class="li">
                                             <div style="padding: 0 4px;">
                                                 <paper-progress class="project_progress" data-id$="[[item._id]]" hidden="" style="width: 100%;"></paper-progress>
                                             </div>
+                                        </div>
+                                    </div>
 
-                                            <template as="torrent" is="dom-repeat" items="[[item.torrent]]">
-                                                <template if="[[torrent.url]]" is="dom-if">
-                                                    <inbox-item item$="[[torrent]]"></inbox-item>
-                                                </template>
-                                            </template>
+                                    <template as="torrent" is="dom-repeat" items="[[item.torrent]]">
+                                        <template if="[[torrent.url]]" is="dom-if">
+                                            <inbox-item item$="[[torrent]]"></inbox-item>
                                         </template>
                                     </template>
-                                </iron-selector>
-                            </div>
-                        </div>
+                                </template>
+                            </template>
+                        </iron-selector>
 
                         <div style="min-height: 80px;"></div>
-                    </neon-animatable>
-                </neon-animated-pages>
-            </paper-header-panel>
+                    </paper-header-panel>
+                </neon-animatable>
+            </neon-animated-pages>
         </paper-drawer-panel>
 
         <paper-fab class="menu-b" id="fab" icon="add" on-click="add_project"></paper-fab>
