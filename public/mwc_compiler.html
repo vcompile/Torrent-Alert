@@ -22751,6 +22751,8 @@ paper-calendar {
     </style>
 
     <template>
+        <iron-localstorage name="trend" id="trend" on-iron-localstorage-load-empty="initialize_trend" value="{{trend}}"></iron-localstorage>
+
         <paper-drawer-panel id="drawer">
             <paper-header-panel drawer="">
                 <div class="fit layout vertical">
@@ -22828,11 +22830,9 @@ paper-calendar {
 
                             <div class="center-justified horizontal layout">
                                 <div class="horizontal layout li wrap" style="padding: 4px 12px;">
-                                    <div class="cursor-p grey-500" style="margin: 4px; padding: 8px;">2015 hindi movies</div>
-                                    <div class="cursor-p grey-500" style="margin: 4px; padding: 8px;">2015 movies</div>
-                                    <div class="cursor-p grey-500" style="margin: 4px; padding: 8px;">2015 tamil movies</div>
-                                    <div class="cursor-p grey-500" style="margin: 4px; padding: 8px;">2015 telugu movies</div>
-                                    <div class="cursor-p grey-500" style="margin: 4px; padding: 8px;">american horror story</div>
+                                    <template is="dom-repeat" items="[[trend.keyword]]">
+                                        <div class="cursor-p grey-500" on-click="trend_opt" style="margin: 4px; padding: 8px;">[[item]]</div>
+                                    </template>
                                 </div>
                             </div>
 
@@ -23075,32 +23075,48 @@ paper-calendar {
                     }
                 });
             }, 1000 * 4);
+
+            Meteor.setTimeout(function() {
+                if (12 < moment.duration(moment().diff(moment(_this.trend.time))).asHours() || !_this.trend.keyword.length) {
+                    Meteor.call("trend", function(error, response) {
+                        if (error) {
+                            document.querySelector("#polymer_toast").toast(error.reason);
+                        } else {
+                            if (response.length) {
+                                _this.trend = {
+                                    keyword: response,
+                                    time: moment().format()
+                                };
+                            }
+                        }
+                    });
+                }
+            }, 1000 * 4);
         },
 
         clear_torrent_selection: function() {
             this.torrent_selected = [];
         },
 
-        is_search: function(worker) {
-            return (worker == "search")
+        initialize_trend: function() {
+            this.trend = {
+                keyword: [],
+                time: moment().format()
+            };
         },
 
         is: "layout-inbox",
 
+        is_search: function(worker) {
+            return (worker == "search")
+        },
+
         menu_opt: function(e, d) {
             this.$.drawer.closeDrawer();
 
-            if (d.item.dataset.id == "trend") {
-                this.$.main_page.selected = 0;
+            this.$.main_toolbar.className = this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "") + (d.item.dataset.id == "trend" ? "" : " " + document.querySelector("#menu_opt .iron-selected selectable-icon").icon_class);
 
-                this.$.main_toolbar.className = this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "");
-            } else {
-                if (this.$.main_page.selected == 0) {
-                    this.$.main_page.selected = 1;
-                }
-
-                this.$.main_toolbar.className = this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "") + " " + document.querySelector("#menu_opt .iron-selected selectable-icon").icon_class;
-            }
+            this.$.main_page.selected = (d.item.dataset.id == "trend" ? 0 : 1);
 
             this.menu_selected = d.item.dataset.id;
         },
@@ -23137,6 +23153,15 @@ paper-calendar {
                 type: Array,
                 value: function() {
                     return [];
+                }
+            },
+            trend: {
+                type: Object,
+                value: function() {
+                    return {
+                        keyword: [],
+                        time: moment().format()
+                    };
                 }
             },
             user: {
@@ -23345,6 +23370,10 @@ paper-calendar {
             this.$.main_toolbar.toggleClass("selection", this.torrent_selected.length);
 
             this.$.fab.toggleClass("move-down", this.torrent_selected.length);
+        },
+
+        trend_opt: function(e) {
+            console.log(Polymer.dom(e).localTarget.textContent);
         },
 
         user_prompt: function() {
