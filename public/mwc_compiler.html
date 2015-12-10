@@ -22263,11 +22263,11 @@ paper-calendar {
 
                     <br>
 
-                    <div class="center horizontal justified layout">
+                    <div class="center horizontal layout">
                         <div class="cursor-d flex" style="text-align: right;">min leech count</div>
                         <paper-slider class="flex" editable="" max="1000" min="1" value="{{leech}}"></paper-slider>
                     </div>
-                    <div class="center horizontal justified layout">
+                    <div class="center horizontal layout">
                         <div class="cursor-d flex" style="text-align: right;">min seed count</div>
                         <paper-slider class="flex" editable="" max="1000" min="1" value="{{seed}}"></paper-slider>
                     </div>
@@ -22596,7 +22596,7 @@ paper-calendar {
 
     <template>
         <div class="center-justified horizontal layout">
-            <div class="bordered cursor-p horizontal hover justified layout li white" on-click="click">
+            <div class="bordered cursor-p horizontal hover layout li white" on-click="click">
                 <div style="padding: 16px; padding-right: 8px;">
                     <selectable-icon icon_class$="[[return_class(item.category)]]" icon_text$="[[return_text(item.link.length)]]" id="selectable_icon" selected$="[[selected]]"></selectable-icon>
                 </div>
@@ -22755,13 +22755,13 @@ paper-calendar {
             <paper-header-panel drawer="">
                 <div class="fit layout vertical">
                     <template if="[[user._id]]" is="dom-if">
-                        <div class="cursor-p horizontal hover justified layout menu-li relative" on-click="user_prompt" style="border">
+                        <div class="cursor-p horizontal hover layout menu-li relative" on-click="user_prompt" style="border">
                             <div style="padding: 16px; padding-right: 8px;">
                                 <selectable-icon icon_img_src$="[[user.profile.picture]]"></selectable-icon>
                             </div>
 
                             <div class="flex layout vertical" style="padding: 16px; padding-left: 8px;">
-                                <div class="horizontal justified layout">
+                                <div class="horizontal layout">
                                     <div class="etc flex self-center" style="font-size: 16px; line-height: 24px;">[[user.profile.name]]</div>
                                     <div class="self-start" style="color: #757575; font-size: 14px; line-height: 20px;">[[return_text(project.length)]]</div>
                                 </div>
@@ -22774,14 +22774,18 @@ paper-calendar {
 
                     <div class="flex" style="overflow: auto;">
                         <iron-selector activate-event="click" id="menu_opt" on-iron-select="menu_opt" selected-attribute="selected">
+                            <div class="cursor-p hover menu-li relative" data-id="trend" style="padding: 16px;">Trending Now
+                                <paper-ripple></paper-ripple>
+                            </div>
+
                             <template is="dom-repeat" items="[[project]]">
-                                <div class="cursor-p horizontal hover justified layout menu-li relative" data-id$="[[item._id]]">
+                                <div class="cursor-p horizontal hover layout menu-li relative" data-id$="[[item._id]]">
                                     <div style="padding: 16px; padding-right: 8px;">
                                         <selectable-icon icon_class$="[[return_class(item.keyword)]]" icon_text$="[[return_icon_text(item.keyword)]]"></selectable-icon>
                                     </div>
 
                                     <div class="flex layout vertical" style="padding: 16px; padding-left: 8px;">
-                                        <div class="horizontal justified layout">
+                                        <div class="horizontal layout">
                                             <div class="etc flex self-center" style="font-size: 16px; line-height: 24px;">[[item.keyword]]</div>
                                             <div class="self-start" style="color: #757575; font-size: 14px; line-height: 20px;">[[return_torrent_count(item.torrent)]]</div>
                                         </div>
@@ -22794,33 +22798,54 @@ paper-calendar {
                         </iron-selector>
                     </div>
 
-                    <div class="cursor-p menu-li white" onclick="window.open('http://vcompile.com/torrentz', '_system')" style="padding: 16px; z-index: 1;">About TorrentAlert</div>
+                    <div class="cursor-p menu-li relative white" onclick="window.open('http://vcompile.com/torrentz', '_system')" style="padding: 16px; z-index: 1;">About TorrentAlert
+                        <paper-ripple></paper-ripple>
+                    </div>
                 </div>
             </paper-header-panel>
 
-            <neon-animated-pages class="fit" id="main_page" main="" selected="1">
-                <neon-animatable class="center-center layout vertical">
-                    <div>empty</div>
-                </neon-animatable>
+            <paper-header-panel main="">
+                <paper-toolbar id="main_toolbar">
+                    <paper-icon-button class="selection-visible" icon="arrow-back" on-click="clear_torrent_selection"></paper-icon-button>
+                    <paper-icon-button icon="menu" paper-drawer-toggle=""></paper-icon-button>
 
-                <neon-animatable>
-                    <paper-header-panel>
-                        <paper-toolbar id="main_toolbar">
-                            <paper-icon-button class="selection-visible" icon="arrow-back" on-click="clear_torrent_selection"></paper-icon-button>
-                            <paper-icon-button class="selection-hidden" icon="menu" paper-drawer-toggle=""></paper-icon-button>
+                    <div class="title" id="main_toolbar_title">TorrentAlert</div>
 
-                            <div class="title" id="main_toolbar_title">TorrentAlert</div>
+                    <paper-icon-button class="selection-visible" icon="delete" on-click="remove_torrent"></paper-icon-button>
+                    <paper-icon-button class="selection-visible" icon="social:share" on-click="share"></paper-icon-button>
+                    <paper-icon-button class="selection-hidden" icon="search" on-click="search_bar"></paper-icon-button>
+                </paper-toolbar>
 
-                            <paper-icon-button class="selection-visible" icon="delete" on-click="remove_torrent"></paper-icon-button>
-                            <paper-icon-button class="selection-visible" icon="social:share" on-click="share"></paper-icon-button>
-                            <paper-icon-button class="selection-hidden" icon="search" on-click="search_bar"></paper-icon-button>
-                        </paper-toolbar>
+                <neon-animated-pages class="fit" id="main_page" selected="1">
+                    <neon-animatable>
+                        <paper-header-panel>
+                            <div class="center-justified horizontal layout">
+                                <div class="center cursor-d horizontal layout li" style="padding: 8px;">
+                                    <iron-icon icon="trending-up" style="padding: 8px;"></iron-icon>
+                                    <div style="border-bottom: 2px solid #AAA; line-height: 24px; padding: 8px;">Trending Now</div>
+                                </div>
+                            </div>
 
+                            <div class="center-justified horizontal layout">
+                                <div class="horizontal layout li wrap" style="padding: 4px 12px;">
+                                    <div class="cursor-p grey-500" style="margin: 4px; padding: 8px;">2015 hindi movies</div>
+                                    <div class="cursor-p grey-500" style="margin: 4px; padding: 8px;">2015 movies</div>
+                                    <div class="cursor-p grey-500" style="margin: 4px; padding: 8px;">2015 tamil movies</div>
+                                    <div class="cursor-p grey-500" style="margin: 4px; padding: 8px;">2015 telugu movies</div>
+                                    <div class="cursor-p grey-500" style="margin: 4px; padding: 8px;">american horror story</div>
+                                </div>
+                            </div>
+
+                            <div style="min-height: 80px;"></div>
+                        </paper-header-panel>
+                    </neon-animatable>
+
+                    <neon-animatable>
                         <iron-selector activate-event="click" attr-for-selected="item" multi="" selectable="inbox-item" selected-attribute="selected" selected-values="{{torrent_selected}}">
                             <template is="dom-repeat" items="[[project]]">
                                 <template if="[[project_selected(menu_selected, item._id)]]" is="dom-if">
                                     <div class="center-justified horizontal layout">
-                                        <div class="bordered center horizontal justified layout li">
+                                        <div class="bordered center horizontal layout li">
                                             <div class="flex" style="line-height: 24px; padding: 16px;">[[item.keyword]]</div>
 
                                             <paper-icon-button data-index$="[[index]]" icon="sort" on-click="sort"></paper-icon-button>
@@ -22851,9 +22876,9 @@ paper-calendar {
                         </iron-selector>
 
                         <div style="min-height: 80px;"></div>
-                    </paper-header-panel>
-                </neon-animatable>
-            </neon-animated-pages>
+                    </neon-animatable>
+                </neon-animated-pages>
+            </paper-header-panel>
         </paper-drawer-panel>
 
         <paper-fab class="menu-b" id="fab" icon="add" on-click="add_project"></paper-fab>
@@ -22930,7 +22955,7 @@ paper-calendar {
         attached: function() {
             this.user = (Meteor.user() ? Meteor.user() : {});
 
-            if (document.querySelector("#torrent_db").value.length) {
+            if ((document.querySelector("#torrent_db").value || []).length) {
                 this.project = document.querySelector("#torrent_db").value;
             }
 
@@ -23065,7 +23090,17 @@ paper-calendar {
         menu_opt: function(e, d) {
             this.$.drawer.closeDrawer();
 
-            this.$.main_toolbar.className = this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "") + " " + document.querySelector("#menu_opt .iron-selected selectable-icon").icon_class;
+            if (d.item.dataset.id == "trend") {
+                this.$.main_page.selected = 0;
+
+                this.$.main_toolbar.className = this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "");
+            } else {
+                if (this.$.main_page.selected == 0) {
+                    this.$.main_page.selected = 1;
+                }
+
+                this.$.main_toolbar.className = this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "") + " " + document.querySelector("#menu_opt .iron-selected selectable-icon").icon_class;
+            }
 
             this.menu_selected = d.item.dataset.id;
         },
@@ -23076,7 +23111,11 @@ paper-calendar {
         ],
 
         project_change: function(change) {
-            this.$.main_page.selected = (this.project.length ? 1 : 0);
+            this.debounce("project_change", function() {
+                if (this.menu_selected != "trend") {
+                    this.$.main_page.selected = (this.project.length ? 1 : 0);
+                }
+            }, 1000);
         },
 
         project_selected: function(menu_opt, project_opt) {
@@ -23213,7 +23252,7 @@ paper-calendar {
                 return item.url ? "YES" : "NO";
             });
 
-            return (A.YES && A.NO ? A.YES + " / " : "") + torrent.length;
+            return (A.YES && A.NO ? A.YES + " / " : "") + (torrent.length ? torrent.length : "#");
         },
 
         return_torrent_description: function(item) {
@@ -23329,7 +23368,7 @@ paper-calendar {
     </style>
 
     <template>
-        <div class="center-center fit layout vertical" style="background: black; opacity: 0.4; z-index: 10;">
+        <div class="center-center fit layout vertical" style="background: black; opacity: 0.4; z-index: 1000;">
             <div class="la-line-scale-pulse-out-rapid la-2x">
                 <div></div>
                 <div></div>
@@ -23365,7 +23404,7 @@ paper-calendar {
 <dom-module id="polymer-toast" assetpath="/linto/">
 
     <template>
-        <paper-toast class="cursor-d horizontal justified layout" duration="4000" id="toast" on-transitionend="transition" style="font-size: 16px; margin-right: 12px; padding: 16px; z-index: 1000;" text="">
+        <paper-toast class="cursor-d horizontal layout" duration="4000" id="toast" on-transitionend="transition" style="font-size: 16px; margin-right: 12px; padding: 16px; z-index: 1000;" text="">
             <div class="cursor-p self-start" hidden="[[!undo.torrent]]" on-click="clear_undo" style="color: #FFEB3B; margin-left: 8px;">UNDO</div>
         </paper-toast>
     </template>
@@ -23808,7 +23847,7 @@ paper-calendar {
         <div class="fit layout vertical" style="background: #EEE; overflow: auto; z-index: 10;">
             <div class="center-justified horizontal layout">
                 <div class="li">
-                    <div class="cursor-p horizontal justified layout">
+                    <div class="cursor-p horizontal layout">
                         <div style="padding: 16px; padding-right: 8px;">
                             <paper-icon-button icon="arrow-back" on-click="back"></paper-icon-button>
                         </div>
@@ -23822,7 +23861,7 @@ paper-calendar {
 
                     <iron-selector activate-event="click" id="link" on-click="click" selected-attribute="selected">
                         <template is="dom-repeat" items="[[torrent.link]]">
-                            <div class="bordered cursor-p horizontal hover justified layout white" data-link$="[[item.url]]">
+                            <div class="bordered cursor-p horizontal hover layout white" data-link$="[[item.url]]">
                                 <div style="padding: 16px; padding-right: 8px;">
                                     <selectable-icon icon_class$="[[return_class(item.text)]]" icon_text$="[[return_icon_text(item.text)]]"></selectable-icon>
                                 </div>
@@ -23928,7 +23967,7 @@ paper-calendar {
     }
     
     .page-title paper-icon-button {
-        margin-right: 16px;
+        margin-right: 8px;
     }
     
     .page-title > div {
@@ -24011,7 +24050,7 @@ paper-calendar {
             <card-route ripple_class="white">
                 <div class="fit center-justified horizontal layout white">
                     <div class="layout li vertical">
-                        <div class="center horizontal justified layout page-title">
+                        <div class="center horizontal layout page-title">
                             <div class="cursor-d etc flex">SIGN IN</div>
                             <paper-icon-button icon="close" on-click="back"></paper-icon-button>
                         </div>
@@ -24043,7 +24082,7 @@ paper-calendar {
             <card-route ripple_class="cyan-700">
                 <div class="fit center-justified cyan-700 horizontal layout">
                     <div class="layout li vertical">
-                        <div class="center horizontal justified layout page-title" style="border-bottom: 2px solid #006064;">
+                        <div class="center horizontal layout page-title" style="border-bottom: 2px solid #006064;">
                             <div class="cursor-d etc flex">SIGN UP</div>
                             <paper-icon-button icon="close" on-click="back"></paper-icon-button>
                         </div>

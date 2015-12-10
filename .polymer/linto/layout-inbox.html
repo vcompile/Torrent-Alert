@@ -90,13 +90,13 @@
             <paper-header-panel drawer>
                 <div class="fit layout vertical">
                     <template if="[[user._id]]" is="dom-if">
-                        <div class="cursor-p horizontal hover justified layout menu-li relative" on-click="user_prompt" style="border">
+                        <div class="cursor-p horizontal hover layout menu-li relative" on-click="user_prompt" style="border">
                             <div style="padding: 16px; padding-right: 8px;">
                                 <selectable-icon icon_img_src$="[[user.profile.picture]]"></selectable-icon>
                             </div>
 
                             <div class="flex layout vertical" style="padding: 16px; padding-left: 8px;">
-                                <div class="horizontal justified layout">
+                                <div class="horizontal layout">
                                     <div class="etc flex self-center" style="font-size: 16px; line-height: 24px;">[[user.profile.name]]</div>
                                     <div class="self-start" style="color: #757575; font-size: 14px; line-height: 20px;">[[return_text(project.length)]]</div>
                                 </div>
@@ -109,14 +109,18 @@
 
                     <div class="flex" style="overflow: auto;">
                         <iron-selector activate-event="click" id="menu_opt" on-iron-select="menu_opt" selected-attribute="selected">
+                            <div class="cursor-p hover menu-li relative" data-id="trend" style="padding: 16px;">Trending Now
+                                <paper-ripple></paper-ripple>
+                            </div>
+
                             <template is="dom-repeat" items="[[project]]">
-                                <div class="cursor-p horizontal hover justified layout menu-li relative" data-id$="[[item._id]]">
+                                <div class="cursor-p horizontal hover layout menu-li relative" data-id$="[[item._id]]">
                                     <div style="padding: 16px; padding-right: 8px;">
                                         <selectable-icon icon_class$="[[return_class(item.keyword)]]" icon_text$="[[return_icon_text(item.keyword)]]"></selectable-icon>
                                     </div>
 
                                     <div class="flex layout vertical" style="padding: 16px; padding-left: 8px;">
-                                        <div class="horizontal justified layout">
+                                        <div class="horizontal layout">
                                             <div class="etc flex self-center" style="font-size: 16px; line-height: 24px;">[[item.keyword]]</div>
                                             <div class="self-start" style="color: #757575; font-size: 14px; line-height: 20px;">[[return_torrent_count(item.torrent)]]</div>
                                         </div>
@@ -129,33 +133,54 @@
                         </iron-selector>
                     </div>
 
-                    <div class="cursor-p menu-li white" onclick="window.open('http://vcompile.com/torrentz', '_system')" style="padding: 16px; z-index: 1;">About TorrentAlert</div>
+                    <div class="cursor-p menu-li relative white" onclick="window.open('http://vcompile.com/torrentz', '_system')" style="padding: 16px; z-index: 1;">About TorrentAlert
+                        <paper-ripple></paper-ripple>
+                    </div>
                 </div>
             </paper-header-panel>
 
-            <neon-animated-pages class="fit" id="main_page" main selected="1">
-                <neon-animatable class="center-center layout vertical">
-                    <div>empty</div>
-                </neon-animatable>
+            <paper-header-panel main>
+                <paper-toolbar id="main_toolbar">
+                    <paper-icon-button class="selection-visible" icon="arrow-back" on-click="clear_torrent_selection"></paper-icon-button>
+                    <paper-icon-button icon="menu" paper-drawer-toggle></paper-icon-button>
 
-                <neon-animatable>
-                    <paper-header-panel>
-                        <paper-toolbar id="main_toolbar">
-                            <paper-icon-button class="selection-visible" icon="arrow-back" on-click="clear_torrent_selection"></paper-icon-button>
-                            <paper-icon-button class="selection-hidden" icon="menu" paper-drawer-toggle></paper-icon-button>
+                    <div class="title" id="main_toolbar_title">TorrentAlert</div>
 
-                            <div class="title" id="main_toolbar_title">TorrentAlert</div>
+                    <paper-icon-button class="selection-visible" icon="delete" on-click="remove_torrent"></paper-icon-button>
+                    <paper-icon-button class="selection-visible" icon="social:share" on-click="share"></paper-icon-button>
+                    <paper-icon-button class="selection-hidden" icon="search" on-click="search_bar"></paper-icon-button>
+                </paper-toolbar>
 
-                            <paper-icon-button class="selection-visible" icon="delete" on-click="remove_torrent"></paper-icon-button>
-                            <paper-icon-button class="selection-visible" icon="social:share" on-click="share"></paper-icon-button>
-                            <paper-icon-button class="selection-hidden" icon="search" on-click="search_bar"></paper-icon-button>
-                        </paper-toolbar>
+                <neon-animated-pages class="fit" id="main_page" selected="1">
+                    <neon-animatable>
+                        <paper-header-panel>
+                            <div class="center-justified horizontal layout">
+                                <div class="center cursor-d horizontal layout li" style="padding: 8px;">
+                                    <iron-icon icon="trending-up" style="padding: 8px;"></iron-icon>
+                                    <div style="border-bottom: 2px solid #AAA; line-height: 24px; padding: 8px;">Trending Now</div>
+                                </div>
+                            </div>
 
+                            <div class="center-justified horizontal layout">
+                                <div class="horizontal layout li wrap" style="padding: 4px 12px;">
+                                    <div class="cursor-p grey-500" style="margin: 4px; padding: 8px;">2015 hindi movies</div>
+                                    <div class="cursor-p grey-500" style="margin: 4px; padding: 8px;">2015 movies</div>
+                                    <div class="cursor-p grey-500" style="margin: 4px; padding: 8px;">2015 tamil movies</div>
+                                    <div class="cursor-p grey-500" style="margin: 4px; padding: 8px;">2015 telugu movies</div>
+                                    <div class="cursor-p grey-500" style="margin: 4px; padding: 8px;">american horror story</div>
+                                </div>
+                            </div>
+
+                            <div style="min-height: 80px;"></div>
+                        </paper-header-panel>
+                    </neon-animatable>
+
+                    <neon-animatable>
                         <iron-selector activate-event="click" attr-for-selected="item" multi selectable="inbox-item" selected-attribute="selected" selected-values="{{torrent_selected}}">
                             <template is="dom-repeat" items="[[project]]">
                                 <template if="[[project_selected(menu_selected, item._id)]]" is="dom-if">
                                     <div class="center-justified horizontal layout">
-                                        <div class="bordered center horizontal justified layout li">
+                                        <div class="bordered center horizontal layout li">
                                             <div class="flex" style="line-height: 24px; padding: 16px;">[[item.keyword]]</div>
 
                                             <paper-icon-button data-index$="[[index]]" icon="sort" on-click="sort"></paper-icon-button>
@@ -186,9 +211,9 @@
                         </iron-selector>
 
                         <div style="min-height: 80px;"></div>
-                    </paper-header-panel>
-                </neon-animatable>
-            </neon-animated-pages>
+                    </neon-animatable>
+                </neon-animated-pages>
+            </paper-header-panel>
         </paper-drawer-panel>
 
         <paper-fab class="menu-b" id="fab" icon="add" on-click="add_project"></paper-fab>
@@ -265,7 +290,7 @@
         attached: function() {
             this.user = (Meteor.user() ? Meteor.user() : {});
 
-            if (document.querySelector("#torrent_db").value.length) {
+            if ((document.querySelector("#torrent_db").value || []).length) {
                 this.project = document.querySelector("#torrent_db").value;
             }
 
@@ -400,7 +425,17 @@
         menu_opt: function(e, d) {
             this.$.drawer.closeDrawer();
 
-            this.$.main_toolbar.className = this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "") + " " + document.querySelector("#menu_opt .iron-selected selectable-icon").icon_class;
+            if (d.item.dataset.id == "trend") {
+                this.$.main_page.selected = 0;
+
+                this.$.main_toolbar.className = this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "");
+            } else {
+                if (this.$.main_page.selected == 0) {
+                    this.$.main_page.selected = 1;
+                }
+
+                this.$.main_toolbar.className = this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "") + " " + document.querySelector("#menu_opt .iron-selected selectable-icon").icon_class;
+            }
 
             this.menu_selected = d.item.dataset.id;
         },
@@ -411,7 +446,11 @@
         ],
 
         project_change: function(change) {
-            this.$.main_page.selected = (this.project.length ? 1 : 0);
+            this.debounce("project_change", function() {
+                if (this.menu_selected != "trend") {
+                    this.$.main_page.selected = (this.project.length ? 1 : 0);
+                }
+            }, 1000);
         },
 
         project_selected: function(menu_opt, project_opt) {
@@ -548,7 +587,7 @@
                 return item.url ? "YES" : "NO";
             });
 
-            return (A.YES && A.NO ? A.YES + " / " : "") + torrent.length;
+            return (A.YES && A.NO ? A.YES + " / " : "") + (torrent.length ? torrent.length : "#");
         },
 
         return_torrent_description: function(item) {

@@ -14,7 +14,7 @@ document.addEventListener("WebComponentsReady", function() {
                     FlowRouter.go("/inbox");
                 }
             } else {
-                if (document.querySelector("#torrent_db").value.length) {
+                if ((document.querySelector("#torrent_db").value || []).length) {
                     FlowRouter.go("/inbox");
                 }
             }
@@ -69,7 +69,7 @@ var inbox = FlowRouter.group({
                 FlowRouter.go("/");
             }
         } else {
-            if (!document.querySelector("#torrent_db").value.length) {
+            if (!(document.querySelector("#torrent_db").value || []).length) {
                 FlowRouter.go("/");
             }
         }
