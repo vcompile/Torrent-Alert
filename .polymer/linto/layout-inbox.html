@@ -92,7 +92,7 @@
             <paper-header-panel drawer>
                 <div class="fit layout vertical">
                     <template if="[[user._id]]" is="dom-if">
-                        <div class="cursor-p horizontal hover layout menu-li relative" on-click="user_prompt" style="border">
+                        <div class="cursor-p horizontal hover layout menu-li relative" on-click="user_prompt">
                             <div style="padding: 16px; padding-right: 8px;">
                                 <selectable-icon icon_img_src$="[[user.profile.picture]]"></selectable-icon>
                             </div>
@@ -111,7 +111,19 @@
 
                     <div class="flex" style="overflow: auto;">
                         <iron-selector activate-event="click" id="menu_opt" on-iron-select="menu_opt" selected-attribute="selected">
-                            <div class="cursor-p hover menu-li relative" data-id="trend" style="padding: 16px;">Trending Now
+                            <div class="cursor-p horizontal hover layout menu-li relative" data-id="trend">
+                                <div style="padding: 16px; padding-right: 8px;">
+                                    <selectable-icon icon_class="cyan-700" icon_text="T"></selectable-icon>
+                                </div>
+
+                                <div class="flex layout vertical" style="padding: 16px; padding-left: 8px;">
+                                    <div class="horizontal layout">
+                                        <div class="etc flex self-center" style="font-size: 16px; line-height: 24px;">Trending</div>
+                                        <div class="self-start" style="color: #757575; font-size: 14px; line-height: 20px;">[[return_text(trend.keyword.length)]]</div>
+                                    </div>
+                                    <div class="etc" style="color: #757575; font-size: 14px; line-height: 20px;">[[return_time_s(trend.time)]]</div>
+                                </div>
+
                                 <paper-ripple></paper-ripple>
                             </div>
 
@@ -159,14 +171,14 @@
                             <div class="center-justified horizontal layout">
                                 <div class="center cursor-d horizontal layout li" style="padding: 8px;">
                                     <iron-icon icon="trending-up" style="padding: 8px;"></iron-icon>
-                                    <div style="border-bottom: 2px solid #AAA; line-height: 24px; padding: 8px;">Trending Now</div>
+                                    <div style="border-bottom: 2px solid #AAA; line-height: 24px; padding: 8px;">Trending <span>[[return_text(trend.keyword.length)]]</span></div>
                                 </div>
                             </div>
 
                             <div class="center-justified horizontal layout">
                                 <div class="horizontal layout li wrap" style="padding: 4px 12px;">
                                     <template is="dom-repeat" items="[[trend.keyword]]">
-                                        <div class="cursor-p grey-500" on-click="trend_opt" style="margin: 4px; padding: 8px;">[[item]]</div>
+                                        <div class="cursor-p grey-500" on-click="trend_opt" style="margin: 4px; padding: 8px 16px;">[[item]]</div>
                                     </template>
                                 </div>
                             </div>
@@ -412,7 +424,7 @@
             }, 1000 * 4);
 
             Meteor.setTimeout(function() {
-                if (12 < moment.duration(moment().diff(moment(_this.trend.time))).asHours() || !_this.trend.keyword.length) {
+                if (6 < moment.duration(moment().diff(moment(_this.trend.time))).asHours() || !_this.trend.keyword.length) {
                     Meteor.call("trend", function(error, response) {
                         if (error) {
                             document.querySelector("#polymer_toast").toast(error.reason);
@@ -535,7 +547,6 @@
                             }
 
                             _this.project[index] = response;
-
                             _this.project[index] = _.clone(_this.project[index]);
                             _this.project = _.clone(_this.project);
                         }
@@ -605,6 +616,10 @@
 
         return_time: function(time) {
             return (moment(time).isValid() ? moment(time).fromNow() : "#");
+        },
+
+        return_time_s: function(time) {
+            return (moment(time).isValid() ? moment(time).format("MMM DD ddd hh:mm A") : "#");
         },
 
         return_torrent_count: function(torrent) {
@@ -708,7 +723,43 @@
         },
 
         trend_opt: function(e) {
-            console.log(Polymer.dom(e).localTarget.textContent);
+            if (Meteor.status().connected) {
+                var keyword = Polymer.dom(e).localTarget.textContent.trim();
+
+                if (keyword.length) {
+                    var _this = this,
+                        row = {
+                            keyword: keyword,
+                            leech: 1,
+                            seed: 1,
+                            url: "search",
+                            within: 6,
+                            worker: "search"
+                        };
+
+                    Meteor.call("insert_project", row, function(error, response) {
+                        if (error) {
+                            document.querySelector("#polymer_toast").toast((error.reason == "userNotFound") ? "internet/user required" : error.reason);
+                        } else {
+                            if (response == "") {
+                                document.querySelector("#polymer_toast").toast("unknown issue");
+                            } else {
+                                document.querySelector("#polymer_toast").toast("i keyword added");
+
+                                _this.$.main_toolbar.className = _this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "") + " " + polymer_color(keyword);
+
+                                _this.menu_selected = response;
+                            }
+                        }
+                    });
+
+                    _this.$.main_page.selected = 1;
+                } else {
+                    document.querySelector("#polymer_toast").toast("empty keyword");
+                }
+            } else {
+                document.querySelector("#polymer_toast").toast("server connection required");
+            }
         },
 
         user_prompt: function() {
