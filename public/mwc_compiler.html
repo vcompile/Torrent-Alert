@@ -22716,7 +22716,7 @@ paper-calendar {
                         <iron-selector activate-event="click" id="menu_opt" on-iron-select="menu_opt" selected-attribute="selected">
                             <div class="cursor-p horizontal hover layout menu-li relative" data-id="trend">
                                 <div style="padding: 16px; padding-right: 8px;">
-                                    <selectable-icon icon_class="cyan-700" icon_text="$"></selectable-icon>
+                                    <selectable-icon icon_class="cyan-700" icon_text="@"></selectable-icon>
                                 </div>
 
                                 <div class="flex layout vertical" style="padding: 16px; padding-left: 8px;">
@@ -22903,10 +22903,10 @@ paper-calendar {
         },
 
         attached: function() {
-            this.set("user", (Meteor.user() ? Meteor.user() : {}));
+            this.user = (Meteor.user() ? Meteor.user() : {});
 
             if ((document.querySelector("#torrent_db").value || []).length) {
-                this.set("project", document.querySelector("#torrent_db").value);
+                this.project = document.querySelector("#torrent_db").value;
             }
 
             var _this = this;
@@ -22918,10 +22918,10 @@ paper-calendar {
                             document.querySelector("#polymer_toast").toast(error.reason);
                         } else {
                             if (response.length) {
-                                _this.set("trend", {
+                                _this.trend = {
                                     keyword: response,
                                     time: moment().format()
-                                });
+                                };
                             }
                         }
                     });
@@ -22950,10 +22950,13 @@ paper-calendar {
                         }).indexOf(row._id);
 
                         if (index == -1) {
-                            _this.unshift("project", row);
+                            _this.project.unshift(row);
                         } else {
-                            _this.set("project." + index, row);
+                            // _this.project[index] = row;
+                            // _this.project[index] = _.clone(_this.project[index]);
                         }
+
+                        _this.project = _.clone(_this.project);
                     },
 
                     changed: function(row, old) {
@@ -22976,7 +22979,8 @@ paper-calendar {
                         }).indexOf(row._id);
 
                         if (-1 < index) {
-                            _this.set("project." + index, row);
+                            _this.project[index] = row;
+                            _this.project = _.clone(_this.project);
                         }
                     },
 
@@ -22986,7 +22990,8 @@ paper-calendar {
                         }).indexOf(old._id);
 
                         if (-1 < index) {
-                            _this.splice("project", index, 1);
+                            _this.project.splice(index, 1);
+                            _this.project = _.clone(_this.project);
                         }
                     }
                 });
@@ -23001,7 +23006,10 @@ paper-calendar {
                             }).indexOf(row._id);
 
                             if (-1 < index) {
-                                _this.set("project." + A + ".torrent." + index, $.extend(true, _this.project[A].torrent[index], row));
+                                _this.project[A].torrent[index] = _.clone($.extend(true, _this.project[A].torrent[index], row));
+                                _this.project[A].torrent = _.clone(_this.project[A].torrent);
+                                _this.project[A] = _.clone(_this.project[A]);
+                                _this.project = _.clone(_this.project);
                             }
                         }
                     },
@@ -23013,7 +23021,10 @@ paper-calendar {
                             }).indexOf(row._id);
 
                             if (-1 < index) {
-                                _this.set("project." + A + ".torrent." + index, $.extend(true, _this.project[A].torrent[index], row));
+                                _this.project[A].torrent[index] = _.clone($.extend(true, _this.project[A].torrent[index], row));
+                                _this.project[A].torrent = _.clone(_this.project[A].torrent);
+                                _this.project[A] = _.clone(_this.project[A]);
+                                _this.project = _.clone(_this.project);
                             }
                         }
                     },
@@ -23025,7 +23036,10 @@ paper-calendar {
                             }).indexOf(old._id);
 
                             if (-1 < index) {
-                                _this.splice("project." + A + ".torrent", index, 1);
+                                _this.project[A].torrent.splice(index, 1);
+                                _this.project[A].torrent = _.clone(_this.project[A].torrent);
+                                _this.project[A] = _.clone(_this.project[A]);
+                                _this.project = _.clone(_this.project);
                             }
                         }
                     }
@@ -23034,14 +23048,14 @@ paper-calendar {
         },
 
         clear_torrent_selection: function() {
-            this.set("torrent_selected", []);
+            this.torrent_selected = [];
         },
 
         initialize_trend: function() {
-            this.set("trend", {
+            this.trend = {
                 keyword: [],
                 time: moment().format()
-            });
+            };
         },
 
         is: "layout-inbox",
@@ -23138,7 +23152,8 @@ paper-calendar {
                                 };
                             }
 
-                            _this.set("project." + index, response);
+                            _this.project[index] = response;
+                            _this.project = _.clone(_this.project);
                         }
                     }
                 });
@@ -23296,7 +23311,9 @@ paper-calendar {
         sort: function(e) {
             var A = Polymer.dom(e).localTarget.dataset.index;
 
-            this.set("project." + A + ".torrent", _.sortBy(this.project[A].torrent, "time").reverse());
+            this.project[A].torrent = _.sortBy(this.project[A].torrent, "time").reverse();
+            this.project[A] = _.clone(this.project[A]);
+            this.project = _.clone(this.project);
 
             document.querySelector("#polymer_toast").toast("sorted by time");
         },
@@ -23418,7 +23435,7 @@ paper-calendar {
         clear_undo: function() {
             $("inbox-item.undo").removeClass("undo");
 
-            this.set("undo", {});
+            this.undo = {};
 
             this.$.toast.hide();
         },
@@ -23477,7 +23494,7 @@ paper-calendar {
                             document.querySelector("#polymer_toast").toast("server connection required");
                         }
 
-                        this.set("undo", {});
+                        this.undo = {};
                     }
 
                     document.querySelector(".menu-b").translate3d(0, 0, 0);
@@ -23617,7 +23634,7 @@ paper-calendar {
                         _this.$.progress.hidden = true;
 
                         if (!error) {
-                            _this.set("list", response);
+                            _this.list = response;
                         }
                     });
                 } else {
