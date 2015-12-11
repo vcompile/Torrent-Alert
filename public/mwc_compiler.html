@@ -1,13 +1,5 @@
 <html><head><meta charset="UTF-8"><!--
 @license
-Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
-This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE
-The complete set of authors may be found at http://polymer.github.io/AUTHORS
-The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS
-Code distributed by Google as part of the polymer project is also
-subject to an additional IP rights grant found at http://polymer.github.io/PATENTS
---><!--
-@license
 Copyright (c) 2014 The Polymer Project Authors. All rights reserved.
 This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
 The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
@@ -19539,6 +19531,10 @@ paper-calendar {
         cursor: auto;
         @apply(--paper-icon-button-disabled);
       }
+      
+      :host(:hover) { 
+        @apply(--paper-icon-button-hover);
+      }
 
       iron-icon {
         --iron-icon-width: 100%;
@@ -20278,11 +20274,14 @@ paper-calendar {
       margin-top: 20px;
     }
 
-    paper-material {
+    iron-dropdown {
+      @apply(--paper-menu-button-dropdown);
+    }
+
+    .dropdown-content {
       border-radius: 2px;
       background-color: var(--paper-menu-button-dropdown-background, --primary-background-color);
-
-      @apply(--paper-menu-button-dropdown);
+      @apply(--paper-menu-button-content);
     }
   </style>
   <template>
@@ -22487,67 +22486,6 @@ paper-calendar {
     </script>
 
 </dom-module>
-<dom-module id="card-router" assetpath="/linto/">
-
-    <style>
-    :host {
-        background: transparent!important;
-    }
-    </style>
-
-    <template>
-
-        <div id="container">
-            <content select="div"></content>
-        </div>
-
-    </template>
-
-    <script>
-    Polymer({
-
-        behaviors: [
-            Polymer.NeonSharedElementAnimatableBehavior
-        ],
-
-        is: "card-router",
-
-        properties: {
-            animationConfig: {
-                type: Object,
-                value: function() {
-                    return {
-                        "entry": [{
-                            id: "reverse-ripple",
-                            name: "reverse-ripple-animation",
-                            toPage: this
-                        }],
-
-                        "exit": [{
-                            name: "fade-out-animation",
-                            node: this.$.container,
-                            timing: {
-                                delay: 200,
-                                duration: 100
-                            }
-                        }, {
-                            fromPage: this,
-                            id: "ripple",
-                            name: "ripple-animation"
-                        }]
-                    };
-                }
-            },
-
-            sharedElements: {
-                type: Object
-            }
-        }
-
-    });
-    </script>
-
-</dom-module>
 <dom-module id="exit-controller" assetpath="/linto/">
 
     <template>
@@ -22751,7 +22689,7 @@ paper-calendar {
     </style>
 
     <template>
-        <iron-localstorage name="trend" id="trend" on-iron-localstorage-load-empty="initialize_trend" value="{{trend}}"></iron-localstorage>
+        <iron-localstorage name="trend" on-iron-localstorage-load-empty="initialize_trend" value="{{trend}}"></iron-localstorage>
 
         <paper-drawer-panel id="drawer">
             <paper-header-panel drawer="">
@@ -22821,7 +22759,7 @@ paper-calendar {
             <paper-header-panel main="">
                 <paper-toolbar id="main_toolbar">
                     <paper-icon-button class="selection-visible" icon="arrow-back" on-click="clear_torrent_selection"></paper-icon-button>
-                    <paper-icon-button icon="menu" paper-drawer-toggle=""></paper-icon-button>
+                    <paper-icon-button class="selection-hidden" icon="menu" paper-drawer-toggle=""></paper-icon-button>
 
                     <div class="title" id="main_toolbar_title">TorrentAlert</div>
 
@@ -22836,14 +22774,14 @@ paper-calendar {
                             <div class="center-justified horizontal layout">
                                 <div class="center cursor-d horizontal layout li" style="padding: 8px;">
                                     <iron-icon icon="trending-up" style="padding: 8px;"></iron-icon>
-                                    <div style="border-bottom: 2px solid #AAA; line-height: 24px; padding: 8px;">Trending <span>[[return_text(trend.keyword.length)]]</span></div>
+                                    <div style="border-bottom: 2px solid #AAA; line-height: 24px; padding: 8px;">Trending Top <span>[[return_text(trend.keyword.length)]]</span></div>
                                 </div>
                             </div>
 
                             <div class="center-justified horizontal layout">
                                 <div class="horizontal layout li wrap" style="padding: 4px 12px;">
                                     <template is="dom-repeat" items="[[trend.keyword]]">
-                                        <div class="cursor-p grey-500" on-click="trend_opt" style="margin: 4px; padding: 8px 16px;">[[item]]</div>
+                                        <div class="cursor-p grey-500" on-click="trend_opt" style="margin: 4px; padding: 8px 12px;">[[item]]</div>
                                     </template>
                                 </div>
                             </div>
@@ -22913,7 +22851,7 @@ paper-calendar {
 
                 <div class="center horizontal layout">
                     <div class="flex" style="color: #757575;">schedule / day</div>
-                    <paper-slider disabled="" editable="" id="seeds" max="96" min="1" value="4"></paper-slider>
+                    <paper-slider disabled="" editable="" id="seeds" max="96" min="1" style="max-width: 100px;" value="4"></paper-slider>
                 </div>
 
                 <div style="border-bottom: 2px solid #888; margin: 8px 0; padding: 4px 0;">user: <span>[[user.profile.name]]</span></div>
@@ -22965,64 +22903,80 @@ paper-calendar {
         },
 
         attached: function() {
-            this.user = (Meteor.user() ? Meteor.user() : {});
+            this.set("user", (Meteor.user() ? Meteor.user() : {}));
 
             if ((document.querySelector("#torrent_db").value || []).length) {
-                this.project = document.querySelector("#torrent_db").value;
+                this.set("project", document.querySelector("#torrent_db").value);
             }
 
             var _this = this;
 
             Meteor.setTimeout(function() {
+                if (6 < moment.duration(moment().diff(moment(_this.trend.time))).asHours() || !_this.trend.keyword.length) {
+                    Meteor.call("trend", function(error, response) {
+                        if (error) {
+                            document.querySelector("#polymer_toast").toast(error.reason);
+                        } else {
+                            if (response.length) {
+                                _this.set("trend", {
+                                    keyword: response,
+                                    time: moment().format()
+                                });
+                            }
+                        }
+                    });
+                }
+            }, 1000);
+
+            Meteor.setTimeout(function() {
                 _project.find().observe({
                     added: function(row) {
-                        var item = _.find(_this.project, function(A) {
-                            return (row._id === A._id);
-                        });
+                        for (var A = 0; A < row.torrent.length; A++) {
+                            var item = _torrent.findOne({
+                                _id: row.torrent[A]
+                            });
 
-                        if (!item) {
-                            for (var A = 0; A < row.torrent.length; A++) {
-                                var item = _torrent.findOne({
-                                    _id: row.torrent[A]
-                                });
+                            row.torrent[A] = (item ? item : {
+                                _id: row.torrent[A]
+                            });
 
-                                row.torrent[A] = (item ? item : {
-                                    _id: row.torrent[A]
-                                });
+                            row.torrent[A].project = {
+                                _id: row._id
+                            };
+                        }
 
-                                row.torrent[A].project = {
-                                    _id: row._id
-                                };
-                            }
+                        var index = _.map(_this.project, function(A) {
+                            return A._id;
+                        }).indexOf(row._id);
 
-                            _this.project.unshift(row);
-                            _this.project = _.clone(_this.project);
+                        if (index == -1) {
+                            _this.unshift("project", row);
+                        } else {
+                            _this.set("project." + index, row);
                         }
                     },
 
                     changed: function(row, old) {
+                        for (var A = 0; A < row.torrent.length; A++) {
+                            var item = _torrent.findOne({
+                                _id: row.torrent[A]
+                            });
+
+                            row.torrent[A] = (item ? item : {
+                                _id: row.torrent[A]
+                            });
+
+                            row.torrent[A].project = {
+                                _id: row._id
+                            };
+                        }
+
                         var index = _.map(_this.project, function(A) {
                             return A._id;
                         }).indexOf(row._id);
 
                         if (-1 < index) {
-                            for (var A = 0; A < row.torrent.length; A++) {
-                                var item = _torrent.findOne({
-                                    _id: row.torrent[A]
-                                });
-
-                                row.torrent[A] = (item ? item : {
-                                    _id: row.torrent[A]
-                                });
-
-                                row.torrent[A].project = {
-                                    _id: row._id
-                                };
-                            }
-
-                            _this.project[index] = row; // _.clone($.extend(true, _this.project[index], row));
-                            _this.project[index] = _.clone(_this.project[index]);
-                            _this.project = _.clone(_this.project);
+                            _this.set("project." + index, row);
                         }
                     },
 
@@ -23032,8 +22986,7 @@ paper-calendar {
                         }).indexOf(old._id);
 
                         if (-1 < index) {
-                            _this.project.splice(index, 1);
-                            _this.project = _.clone(_this.project);
+                            _this.splice("project", index, 1);
                         }
                     }
                 });
@@ -23048,10 +23001,7 @@ paper-calendar {
                             }).indexOf(row._id);
 
                             if (-1 < index) {
-                                _this.project[A].torrent[index] = _.clone($.extend(true, _this.project[A].torrent[index], row));
-                                _this.project[A].torrent = _.clone(_this.project[A].torrent);
-                                _this.project[A] = _.clone(_this.project[A]);
-                                _this.project = _.clone(_this.project);
+                                _this.set("project." + A + ".torrent." + index, $.extend(true, _this.project[A].torrent[index], row));
                             }
                         }
                     },
@@ -23063,10 +23013,7 @@ paper-calendar {
                             }).indexOf(row._id);
 
                             if (-1 < index) {
-                                _this.project[A].torrent[index] = _.clone($.extend(true, _this.project[A].torrent[index], row));
-                                _this.project[A].torrent = _.clone(_this.project[A].torrent);
-                                _this.project[A] = _.clone(_this.project[A]);
-                                _this.project = _.clone(_this.project);
+                                _this.set("project." + A + ".torrent." + index, $.extend(true, _this.project[A].torrent[index], row));
                             }
                         }
                     },
@@ -23078,43 +23025,23 @@ paper-calendar {
                             }).indexOf(old._id);
 
                             if (-1 < index) {
-                                _this.project[A].torrent.splice(index, 1);
-                                _this.project[A].torrent = _.clone(_this.project[A].torrent);
-                                _this.project[A] = _.clone(_this.project[A]);
-                                _this.project = _.clone(_this.project);
+                                _this.splice("project." + A + ".torrent", index, 1);
                             }
                         }
                     }
                 });
             }, 1000 * 4);
-
-            Meteor.setTimeout(function() {
-                if (6 < moment.duration(moment().diff(moment(_this.trend.time))).asHours() || !_this.trend.keyword.length) {
-                    Meteor.call("trend", function(error, response) {
-                        if (error) {
-                            document.querySelector("#polymer_toast").toast(error.reason);
-                        } else {
-                            if (response.length) {
-                                _this.trend = {
-                                    keyword: response,
-                                    time: moment().format()
-                                };
-                            }
-                        }
-                    });
-                }
-            }, 1000 * 4);
         },
 
         clear_torrent_selection: function() {
-            this.torrent_selected = [];
+            this.set("torrent_selected", []);
         },
 
         initialize_trend: function() {
-            this.trend = {
+            this.set("trend", {
                 keyword: [],
                 time: moment().format()
-            };
+            });
         },
 
         is: "layout-inbox",
@@ -23143,7 +23070,7 @@ paper-calendar {
                 if (this.menu_selected != "trend") {
                     this.$.main_page.selected = (this.project.length ? 1 : 0);
                 }
-            }, 1000);
+            }, 1000 * 4);
         },
 
         project_selected: function(menu_opt, project_opt) {
@@ -23211,9 +23138,7 @@ paper-calendar {
                                 };
                             }
 
-                            _this.project[index] = response;
-                            _this.project[index] = _.clone(_this.project[index]);
-                            _this.project = _.clone(_this.project);
+                            _this.set("project." + index, response);
                         }
                     }
                 });
@@ -23371,9 +23296,7 @@ paper-calendar {
         sort: function(e) {
             var A = Polymer.dom(e).localTarget.dataset.index;
 
-            this.project[A].torrent = _.sortBy(this.project[A].torrent, "time").reverse();
-            this.project[A] = _.clone(this.project[A]);
-            this.project = _.clone(this.project);
+            this.set("project." + A + ".torrent", _.sortBy(this.project[A].torrent, "time").reverse());
 
             document.querySelector("#polymer_toast").toast("sorted by time");
         },
@@ -23484,7 +23407,7 @@ paper-calendar {
 <dom-module id="polymer-toast" assetpath="/linto/">
 
     <template>
-        <paper-toast class="cursor-d horizontal layout" duration="4000" id="toast" on-transitionend="transition" style="font-size: 16px; margin-right: 12px; padding: 16px; z-index: 1000;" text="">
+        <paper-toast class="cursor-d horizontal justified layout" duration="4000" id="toast" on-transitionend="transition" style="font-size: 16px; margin-right: 12px; padding: 16px; z-index: 1000;" text="">
             <div class="cursor-p self-start" hidden="[[!undo.torrent]]" on-click="clear_undo" style="color: #FFEB3B; margin-left: 8px;">UNDO</div>
         </paper-toast>
     </template>
@@ -23495,7 +23418,7 @@ paper-calendar {
         clear_undo: function() {
             $("inbox-item.undo").removeClass("undo");
 
-            this.undo = {};
+            this.set("undo", {});
 
             this.$.toast.hide();
         },
@@ -23504,7 +23427,7 @@ paper-calendar {
 
         properties: {
             undo: {
-                type: Array,
+                type: Object,
                 value: function() {
                     return {};
                 }
@@ -23554,7 +23477,7 @@ paper-calendar {
                             document.querySelector("#polymer_toast").toast("server connection required");
                         }
 
-                        this.undo = {};
+                        this.set("undo", {});
                     }
 
                     document.querySelector(".menu-b").translate3d(0, 0, 0);
@@ -23694,7 +23617,7 @@ paper-calendar {
                         _this.$.progress.hidden = true;
 
                         if (!error) {
-                            _this.list = response;
+                            _this.set("list", response);
                         }
                     });
                 } else {
@@ -24053,82 +23976,14 @@ paper-calendar {
     .page-title > div {
         padding: 16px;
     }
-    
-    .swiper-circle {
-        border: 2px solid #0097A7;
-        border-radius: 50%;
-        margin-left: 4px;
-        margin-right: 4px;
-        padding: 4px;
-    }
-    
-    .swiper-img {
-        background-position: top;
-        background-size: cover;
-    }
     </style>
 
     <template>
         <neon-animated-pages class="fit" selected="[[selected]]">
-            <card-router id="router">
-                <div class="center-justified cyan-500 fit horizontal layout">
-                    <div class="layout li vertical">
-                        <neon-animated-pages class="flex" id="swiper" on-up="swiper_up" selected="2">
-                            <neon-animatable class="cyan-500 layout vertical">
-                                <div class="center-justified horizontal layout" style="padding: 32px 16px;">
-                                    <div>Sharing, offline support, etc</div>
-                                </div>
-
-                                <div class="flex layout swiper-img vertical" style="background-image:url(&quot;/img/0.png&quot;);">
-                                    <div class="flex"></div>
-                                    <div class="center-justified horizontal layout" style="padding: 32px 16px;">
-                                        <div class="swiper-circle"></div>
-                                        <div class="swiper-circle cyan-500"></div>
-                                        <div class="swiper-circle cyan-500"></div>
-                                    </div>
-                                </div>
-                            </neon-animatable>
-
-                            <neon-animatable class="cyan-500 layout vertical">
-                                <div class="center-justified horizontal layout" style="padding: 32px 16px;">
-                                    <div>100+ site indexing &amp; inbuilt proxy</div>
-                                </div>
-
-                                <div class="flex layout swiper-img vertical" style="background-image:url(&quot;/img/1.png&quot;);">
-                                    <div class="flex"></div>
-                                    <div class="center-justified horizontal layout" style="padding: 32px 16px;">
-                                        <div class="swiper-circle cyan-500"></div>
-                                        <div class="swiper-circle"></div>
-                                        <div class="swiper-circle cyan-500"></div>
-                                    </div>
-                                </div>
-                            </neon-animatable>
-
-                            <neon-animatable class="cyan-500 layout vertical">
-                                <div class="center-justified horizontal layout" style="padding: 32px 16px;">
-                                    <div>SemanticSearch in V2</div>
-                                </div>
-                                <div class="flex layout swiper-img vertical" style="background-image:url(&quot;/img/2.png&quot;);">
-                                    <div class="flex"></div>
-                                    <div class="center-justified horizontal layout" style="padding: 32px 16px;">
-                                        <div class="swiper-circle cyan-500"></div>
-                                        <div class="swiper-circle cyan-500"></div>
-                                        <div class="swiper-circle"></div>
-                                    </div>
-                                </div>
-                            </neon-animatable>
-                        </neon-animated-pages>
-
-                        <div class="horizontal layout">
-                            <div class="cursor-p flex white" id="sign-in" on-click="sign_in" style="padding: 16px; text-align: center;">SIGN IN</div>
-                            <div class="cursor-p flex cyan-700" id="sign-up" on-click="sign_up" style="padding: 16px; text-align: center;">SIGN UP</div>
-                        </div>
-                    </div>
-                </div>
-            </card-router>
+            <user-check-layout></user-check-layout>
 
             <card-route ripple_class="white">
-                <div class="fit center-justified horizontal layout white">
+                <div class="center-justified fit horizontal layout white">
                     <div class="layout li vertical">
                         <div class="center horizontal layout page-title">
                             <div class="cursor-d etc flex">SIGN IN</div>
@@ -24148,9 +24003,9 @@ paper-calendar {
                             <br>
 
                             <div class="horizontal layout">
-                                <img class="cursor-p" disabled="" src="/img/fb.png" style="opacity: 0.1;">
-                                <img class="cursor-p" on-click="google" src="/img/google-plus.png">
-                                <img class="cursor-p" disabled="" src="/img/twitter.png" style="opacity: 0.1;">
+                                <img class="cursor-p" disabled="" src="/img/fb.png" style="margin: 4px; opacity: 0.1;">
+                                <img class="cursor-p" on-click="google" src="/img/google-plus.png" style="margin: 4px;">
+                                <img class="cursor-p" disabled="" src="/img/twitter.png" style="margin: 4px; opacity: 0.1;">
                             </div>
                         </div>
 
@@ -24160,7 +24015,7 @@ paper-calendar {
             </card-route>
 
             <card-route ripple_class="cyan-700">
-                <div class="fit center-justified cyan-700 horizontal layout">
+                <div class="center-justified cyan-700 fit horizontal layout">
                     <div class="layout li vertical">
                         <div class="center horizontal layout page-title" style="border-bottom: 2px solid #006064;">
                             <div class="cursor-d etc flex">SIGN UP</div>
@@ -24312,12 +24167,6 @@ paper-calendar {
             this.$.request_prompt.open();
         },
 
-        sign_in: function() {
-            FlowRouter.setQueryParams({
-                "route": "sign-in"
-            });
-        },
-
         "sign_in_submit": function() {
             if (Meteor.status().connected) {
                 var valid_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
@@ -24344,12 +24193,6 @@ paper-calendar {
             }
         },
 
-        sign_up: function() {
-            FlowRouter.setQueryParams({
-                "route": "sign-up"
-            });
-        },
-
         sign_up_submit: function() {
             if (Meteor.status().connected) {
                 var valid_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
@@ -24372,18 +24215,156 @@ paper-calendar {
             } else {
                 document.querySelector("#polymer_toast").toast("server connection required");
             }
+        }
+
+    });
+    </script>
+
+</dom-module>
+<dom-module id="user-check-layout" assetpath="/linto/">
+
+    <style>
+    :host {
+        background: transparent!important;
+    }
+    
+    .swiper-circle {
+        border: 2px solid #0097A7;
+        border-radius: 50%;
+        margin-left: 4px;
+        margin-right: 4px;
+        padding: 4px;
+    }
+    
+    .swiper-img {
+        background-position: top;
+        background-size: cover;
+    }
+    </style>
+
+    <template>
+        <div class="center-justified cyan-500 fit horizontal layout" id="container">
+            <div class="layout li vertical">
+                <neon-animated-pages class="flex" on-up="swiper_up" selected="{{selected}}">
+                    <neon-animatable class="cyan-500 layout vertical">
+                        <div class="center-justified horizontal layout" style="padding: 32px 16px;">
+                            <div>Sharing, offline support, etc</div>
+                        </div>
+
+                        <div class="flex layout swiper-img vertical" style="background-image:url(&quot;/img/0.png&quot;);">
+                            <div class="flex"></div>
+                            <div class="center-justified horizontal layout" style="padding: 32px 16px;">
+                                <div class="swiper-circle"></div>
+                                <div class="swiper-circle cyan-500"></div>
+                                <div class="swiper-circle cyan-500"></div>
+                            </div>
+                        </div>
+                    </neon-animatable>
+
+                    <neon-animatable class="cyan-500 layout vertical">
+                        <div class="center-justified horizontal layout" style="padding: 32px 16px;">
+                            <div>100+ site indexing &amp; inbuilt proxy</div>
+                        </div>
+
+                        <div class="flex layout swiper-img vertical" style="background-image:url(&quot;/img/1.png&quot;);">
+                            <div class="flex"></div>
+                            <div class="center-justified horizontal layout" style="padding: 32px 16px;">
+                                <div class="swiper-circle cyan-500"></div>
+                                <div class="swiper-circle"></div>
+                                <div class="swiper-circle cyan-500"></div>
+                            </div>
+                        </div>
+                    </neon-animatable>
+
+                    <neon-animatable class="cyan-500 layout vertical">
+                        <div class="center-justified horizontal layout" style="padding: 32px 16px;">
+                            <div>SemanticSearch in V2</div>
+                        </div>
+                        <div class="flex layout swiper-img vertical" style="background-image:url(&quot;/img/2.png&quot;);">
+                            <div class="flex"></div>
+                            <div class="center-justified horizontal layout" style="padding: 32px 16px;">
+                                <div class="swiper-circle cyan-500"></div>
+                                <div class="swiper-circle cyan-500"></div>
+                                <div class="swiper-circle"></div>
+                            </div>
+                        </div>
+                    </neon-animatable>
+                </neon-animated-pages>
+
+                <div class="horizontal layout">
+                    <div class="cursor-p flex white" id="sign-in" on-click="sign_in" style="padding: 16px; text-align: center;">SIGN IN</div>
+                    <div class="cursor-p flex cyan-700" id="sign-up" on-click="sign_up" style="padding: 16px; text-align: center;">SIGN UP</div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script>
+    Polymer({
+
+        behaviors: [
+            Polymer.NeonSharedElementAnimatableBehavior
+        ],
+
+        is: "user-check-layout",
+
+        properties: {
+            animationConfig: {
+                type: Object,
+                value: function() {
+                    return {
+                        "entry": [{
+                            id: "reverse-ripple",
+                            name: "reverse-ripple-animation",
+                            toPage: this
+                        }],
+
+                        "exit": [{
+                            name: "fade-out-animation",
+                            node: this.$.container,
+                            timing: {
+                                delay: 200,
+                                duration: 100
+                            }
+                        }, {
+                            fromPage: this,
+                            id: "ripple",
+                            name: "ripple-animation"
+                        }]
+                    };
+                }
+            },
+
+            selected: {
+                type: Number,
+                value: 2
+            },
+
+            sharedElements: {
+                type: Object
+            }
+        },
+
+        sign_in: function() {
+            FlowRouter.setQueryParams({
+                "route": "sign-in"
+            });
+        },
+
+        sign_up: function() {
+            FlowRouter.setQueryParams({
+                "route": "sign-up"
+            });
         },
 
         swiper_up: function(e, d) {
-            var swiper = document.querySelector("#swiper");
-
             if (d.x < $(window).width() / 2) {
-                if (0 <= swiper.selected && swiper.selected < 2) {
-                    swiper.selected = parseInt(swiper.selected) + 1;
+                if (0 <= this.selected && this.selected < 2) {
+                    this.selected = parseInt(this.selected) + 1;
                 }
             } else {
-                if (0 < swiper.selected && swiper.selected <= 2) {
-                    swiper.selected = parseInt(swiper.selected) - 1;
+                if (0 < this.selected && this.selected <= 2) {
+                    this.selected = parseInt(this.selected) - 1;
                 }
             }
         }

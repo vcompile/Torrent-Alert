@@ -1,0 +1,152 @@
+<dom-module id="user-check-layout">
+
+    <style>
+    :host {
+        background: transparent!important;
+    }
+    
+    .swiper-circle {
+        border: 2px solid #0097A7;
+        border-radius: 50%;
+        margin-left: 4px;
+        margin-right: 4px;
+        padding: 4px;
+    }
+    
+    .swiper-img {
+        background-position: top;
+        background-size: cover;
+    }
+    </style>
+
+    <template>
+        <div class="center-justified cyan-500 fit horizontal layout" id="container">
+            <div class="layout li vertical">
+                <neon-animated-pages class="flex" on-up="swiper_up" selected="{{selected}}">
+                    <neon-animatable class="cyan-500 layout vertical">
+                        <div class="center-justified horizontal layout" style="padding: 32px 16px;">
+                            <div>Sharing, offline support, etc</div>
+                        </div>
+
+                        <div class="flex layout swiper-img vertical" style="background-image:url(/img/0.png);">
+                            <div class="flex"></div>
+                            <div class="center-justified horizontal layout" style="padding: 32px 16px;">
+                                <div class="swiper-circle"></div>
+                                <div class="swiper-circle cyan-500"></div>
+                                <div class="swiper-circle cyan-500"></div>
+                            </div>
+                        </div>
+                    </neon-animatable>
+
+                    <neon-animatable class="cyan-500 layout vertical">
+                        <div class="center-justified horizontal layout" style="padding: 32px 16px;">
+                            <div>100+ site indexing &amp; inbuilt proxy</div>
+                        </div>
+
+                        <div class="flex layout swiper-img vertical" style="background-image:url(/img/1.png);">
+                            <div class="flex"></div>
+                            <div class="center-justified horizontal layout" style="padding: 32px 16px;">
+                                <div class="swiper-circle cyan-500"></div>
+                                <div class="swiper-circle"></div>
+                                <div class="swiper-circle cyan-500"></div>
+                            </div>
+                        </div>
+                    </neon-animatable>
+
+                    <neon-animatable class="cyan-500 layout vertical">
+                        <div class="center-justified horizontal layout" style="padding: 32px 16px;">
+                            <div>SemanticSearch in V2</div>
+                        </div>
+                        <div class="flex layout swiper-img vertical" style="background-image:url(/img/2.png);">
+                            <div class="flex"></div>
+                            <div class="center-justified horizontal layout" style="padding: 32px 16px;">
+                                <div class="swiper-circle cyan-500"></div>
+                                <div class="swiper-circle cyan-500"></div>
+                                <div class="swiper-circle"></div>
+                            </div>
+                        </div>
+                    </neon-animatable>
+                </neon-animated-pages>
+
+                <div class="horizontal layout">
+                    <div class="cursor-p flex white" id="sign-in" on-click="sign_in" style="padding: 16px; text-align: center;">SIGN IN</div>
+                    <div class="cursor-p flex cyan-700" id="sign-up" on-click="sign_up" style="padding: 16px; text-align: center;">SIGN UP</div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script>
+    Polymer({
+
+        behaviors: [
+            Polymer.NeonSharedElementAnimatableBehavior
+        ],
+
+        is: "user-check-layout",
+
+        properties: {
+            animationConfig: {
+                type: Object,
+                value: function() {
+                    return {
+                        "entry": [{
+                            id: "reverse-ripple",
+                            name: "reverse-ripple-animation",
+                            toPage: this
+                        }],
+
+                        "exit": [{
+                            name: "fade-out-animation",
+                            node: this.$.container,
+                            timing: {
+                                delay: 200,
+                                duration: 100
+                            }
+                        }, {
+                            fromPage: this,
+                            id: "ripple",
+                            name: "ripple-animation"
+                        }]
+                    };
+                }
+            },
+
+            selected: {
+                type: Number,
+                value: 2
+            },
+
+            sharedElements: {
+                type: Object
+            }
+        },
+
+        sign_in: function() {
+            FlowRouter.setQueryParams({
+                "route": "sign-in"
+            });
+        },
+
+        sign_up: function() {
+            FlowRouter.setQueryParams({
+                "route": "sign-up"
+            });
+        },
+
+        swiper_up: function(e, d) {
+            if (d.x < $(window).width() / 2) {
+                if (0 <= this.selected && this.selected < 2) {
+                    this.selected = parseInt(this.selected) + 1;
+                }
+            } else {
+                if (0 < this.selected && this.selected <= 2) {
+                    this.selected = parseInt(this.selected) - 1;
+                }
+            }
+        }
+
+    });
+    </script>
+
+</dom-module>

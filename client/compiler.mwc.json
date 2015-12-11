@@ -44,7 +44,6 @@
 
         "linto/add-project.html",
         "linto/card-route.html",
-        "linto/card-router.html",
         "linto/exit-controller.html",
         "linto/inbox-item.html",
         "linto/layout-inbox.html",
@@ -54,7 +53,8 @@
         "linto/selectable-icon.html",
         "linto/set-password.html",
         "linto/torrent-view.html",
-        "linto/user-check.html"
+        "linto/user-check.html",
+        "linto/user-check-layout.html"
     ],
     "root": ".polymer"
 }

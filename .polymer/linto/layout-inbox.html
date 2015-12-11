@@ -86,7 +86,7 @@
     </style>
 
     <template>
-        <iron-localstorage name="trend" id="trend" on-iron-localstorage-load-empty="initialize_trend" value="{{trend}}"></iron-localstorage>
+        <iron-localstorage name="trend" on-iron-localstorage-load-empty="initialize_trend" value="{{trend}}"></iron-localstorage>
 
         <paper-drawer-panel id="drawer">
             <paper-header-panel drawer>
@@ -156,7 +156,7 @@
             <paper-header-panel main>
                 <paper-toolbar id="main_toolbar">
                     <paper-icon-button class="selection-visible" icon="arrow-back" on-click="clear_torrent_selection"></paper-icon-button>
-                    <paper-icon-button icon="menu" paper-drawer-toggle></paper-icon-button>
+                    <paper-icon-button class="selection-hidden" icon="menu" paper-drawer-toggle></paper-icon-button>
 
                     <div class="title" id="main_toolbar_title">TorrentAlert</div>
 
@@ -171,14 +171,14 @@
                             <div class="center-justified horizontal layout">
                                 <div class="center cursor-d horizontal layout li" style="padding: 8px;">
                                     <iron-icon icon="trending-up" style="padding: 8px;"></iron-icon>
-                                    <div style="border-bottom: 2px solid #AAA; line-height: 24px; padding: 8px;">Trending <span>[[return_text(trend.keyword.length)]]</span></div>
+                                    <div style="border-bottom: 2px solid #AAA; line-height: 24px; padding: 8px;">Trending Top <span>[[return_text(trend.keyword.length)]]</span></div>
                                 </div>
                             </div>
 
                             <div class="center-justified horizontal layout">
                                 <div class="horizontal layout li wrap" style="padding: 4px 12px;">
                                     <template is="dom-repeat" items="[[trend.keyword]]">
-                                        <div class="cursor-p grey-500" on-click="trend_opt" style="margin: 4px; padding: 8px 16px;">[[item]]</div>
+                                        <div class="cursor-p grey-500" on-click="trend_opt" style="margin: 4px; padding: 8px 12px;">[[item]]</div>
                                     </template>
                                 </div>
                             </div>
@@ -248,7 +248,7 @@
 
                 <div class="center horizontal layout">
                     <div class="flex" style="color: #757575;">schedule / day</div>
-                    <paper-slider disabled editable id="seeds" max="96" min="1" value="4"></paper-slider>
+                    <paper-slider disabled editable id="seeds" max="96" min="1" style="max-width: 100px;" value="4"></paper-slider>
                 </div>
 
                 <div style="border-bottom: 2px solid #888; margin: 8px 0; padding: 4px 0;">user: <span>[[user.profile.name]]</span></div>
@@ -300,64 +300,80 @@
         },
 
         attached: function() {
-            this.user = (Meteor.user() ? Meteor.user() : {});
+            this.set("user", (Meteor.user() ? Meteor.user() : {}));
 
             if ((document.querySelector("#torrent_db").value || []).length) {
-                this.project = document.querySelector("#torrent_db").value;
+                this.set("project", document.querySelector("#torrent_db").value);
             }
 
             var _this = this;
 
             Meteor.setTimeout(function() {
+                if (6 < moment.duration(moment().diff(moment(_this.trend.time))).asHours() || !_this.trend.keyword.length) {
+                    Meteor.call("trend", function(error, response) {
+                        if (error) {
+                            document.querySelector("#polymer_toast").toast(error.reason);
+                        } else {
+                            if (response.length) {
+                                _this.set("trend", {
+                                    keyword: response,
+                                    time: moment().format()
+                                });
+                            }
+                        }
+                    });
+                }
+            }, 1000);
+
+            Meteor.setTimeout(function() {
                 _project.find().observe({
                     added: function(row) {
-                        var item = _.find(_this.project, function(A) {
-                            return (row._id === A._id);
-                        });
+                        for (var A = 0; A < row.torrent.length; A++) {
+                            var item = _torrent.findOne({
+                                _id: row.torrent[A]
+                            });
 
-                        if (!item) {
-                            for (var A = 0; A < row.torrent.length; A++) {
-                                var item = _torrent.findOne({
-                                    _id: row.torrent[A]
-                                });
+                            row.torrent[A] = (item ? item : {
+                                _id: row.torrent[A]
+                            });
 
-                                row.torrent[A] = (item ? item : {
-                                    _id: row.torrent[A]
-                                });
+                            row.torrent[A].project = {
+                                _id: row._id
+                            };
+                        }
 
-                                row.torrent[A].project = {
-                                    _id: row._id
-                                };
-                            }
+                        var index = _.map(_this.project, function(A) {
+                            return A._id;
+                        }).indexOf(row._id);
 
-                            _this.project.unshift(row);
-                            _this.project = _.clone(_this.project);
+                        if (index == -1) {
+                            _this.unshift("project", row);
+                        } else {
+                            _this.set("project." + index, row);
                         }
                     },
 
                     changed: function(row, old) {
+                        for (var A = 0; A < row.torrent.length; A++) {
+                            var item = _torrent.findOne({
+                                _id: row.torrent[A]
+                            });
+
+                            row.torrent[A] = (item ? item : {
+                                _id: row.torrent[A]
+                            });
+
+                            row.torrent[A].project = {
+                                _id: row._id
+                            };
+                        }
+
                         var index = _.map(_this.project, function(A) {
                             return A._id;
                         }).indexOf(row._id);
 
                         if (-1 < index) {
-                            for (var A = 0; A < row.torrent.length; A++) {
-                                var item = _torrent.findOne({
-                                    _id: row.torrent[A]
-                                });
-
-                                row.torrent[A] = (item ? item : {
-                                    _id: row.torrent[A]
-                                });
-
-                                row.torrent[A].project = {
-                                    _id: row._id
-                                };
-                            }
-
-                            _this.project[index] = row; // _.clone($.extend(true, _this.project[index], row));
-                            _this.project[index] = _.clone(_this.project[index]);
-                            _this.project = _.clone(_this.project);
+                            _this.set("project." + index, row);
                         }
                     },
 
@@ -367,8 +383,7 @@
                         }).indexOf(old._id);
 
                         if (-1 < index) {
-                            _this.project.splice(index, 1);
-                            _this.project = _.clone(_this.project);
+                            _this.splice("project", index, 1);
                         }
                     }
                 });
@@ -383,10 +398,7 @@
                             }).indexOf(row._id);
 
                             if (-1 < index) {
-                                _this.project[A].torrent[index] = _.clone($.extend(true, _this.project[A].torrent[index], row));
-                                _this.project[A].torrent = _.clone(_this.project[A].torrent);
-                                _this.project[A] = _.clone(_this.project[A]);
-                                _this.project = _.clone(_this.project);
+                                _this.set("project." + A + ".torrent." + index, $.extend(true, _this.project[A].torrent[index], row));
                             }
                         }
                     },
@@ -398,10 +410,7 @@
                             }).indexOf(row._id);
 
                             if (-1 < index) {
-                                _this.project[A].torrent[index] = _.clone($.extend(true, _this.project[A].torrent[index], row));
-                                _this.project[A].torrent = _.clone(_this.project[A].torrent);
-                                _this.project[A] = _.clone(_this.project[A]);
-                                _this.project = _.clone(_this.project);
+                                _this.set("project." + A + ".torrent." + index, $.extend(true, _this.project[A].torrent[index], row));
                             }
                         }
                     },
@@ -413,43 +422,23 @@
                             }).indexOf(old._id);
 
                             if (-1 < index) {
-                                _this.project[A].torrent.splice(index, 1);
-                                _this.project[A].torrent = _.clone(_this.project[A].torrent);
-                                _this.project[A] = _.clone(_this.project[A]);
-                                _this.project = _.clone(_this.project);
+                                _this.splice("project." + A + ".torrent", index, 1);
                             }
                         }
                     }
                 });
             }, 1000 * 4);
-
-            Meteor.setTimeout(function() {
-                if (6 < moment.duration(moment().diff(moment(_this.trend.time))).asHours() || !_this.trend.keyword.length) {
-                    Meteor.call("trend", function(error, response) {
-                        if (error) {
-                            document.querySelector("#polymer_toast").toast(error.reason);
-                        } else {
-                            if (response.length) {
-                                _this.trend = {
-                                    keyword: response,
-                                    time: moment().format()
-                                };
-                            }
-                        }
-                    });
-                }
-            }, 1000 * 4);
         },
 
         clear_torrent_selection: function() {
-            this.torrent_selected = [];
+            this.set("torrent_selected", []);
         },
 
         initialize_trend: function() {
-            this.trend = {
+            this.set("trend", {
                 keyword: [],
                 time: moment().format()
-            };
+            });
         },
 
         is: "layout-inbox",
@@ -478,7 +467,7 @@
                 if (this.menu_selected != "trend") {
                     this.$.main_page.selected = (this.project.length ? 1 : 0);
                 }
-            }, 1000);
+            }, 1000 * 4);
         },
 
         project_selected: function(menu_opt, project_opt) {
@@ -546,9 +535,7 @@
                                 };
                             }
 
-                            _this.project[index] = response;
-                            _this.project[index] = _.clone(_this.project[index]);
-                            _this.project = _.clone(_this.project);
+                            _this.set("project." + index, response);
                         }
                     }
                 });
@@ -706,9 +693,7 @@
         sort: function(e) {
             var A = Polymer.dom(e).localTarget.dataset.index;
 
-            this.project[A].torrent = _.sortBy(this.project[A].torrent, "time").reverse();
-            this.project[A] = _.clone(this.project[A]);
-            this.project = _.clone(this.project);
+            this.set("project." + A + ".torrent", _.sortBy(this.project[A].torrent, "time").reverse());
 
             document.querySelector("#polymer_toast").toast("sorted by time");
         },

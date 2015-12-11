@@ -1,7 +1,7 @@
 <dom-module id="polymer-toast">
 
     <template>
-        <paper-toast class="cursor-d horizontal layout" duration="4000" id="toast" on-transitionend="transition" style="font-size: 16px; margin-right: 12px; padding: 16px; z-index: 1000;" text="">
+        <paper-toast class="cursor-d horizontal justified layout" duration="4000" id="toast" on-transitionend="transition" style="font-size: 16px; margin-right: 12px; padding: 16px; z-index: 1000;" text="">
             <div class="cursor-p self-start" hidden="[[!undo.torrent]]" on-click="clear_undo" style="color: #FFEB3B; margin-left: 8px;">UNDO</div>
         </paper-toast>
     </template>
@@ -12,7 +12,7 @@
         clear_undo: function() {
             $("inbox-item.undo").removeClass("undo");
 
-            this.undo = {};
+            this.set("undo", {});
 
             this.$.toast.hide();
         },
@@ -21,7 +21,7 @@
 
         properties: {
             undo: {
-                type: Array,
+                type: Object,
                 value: function() {
                     return {};
                 }
@@ -71,7 +71,7 @@
                             document.querySelector("#polymer_toast").toast("server connection required");
                         }
 
-                        this.undo = {};
+                        this.set("undo", {});
                     }
 
                     document.querySelector(".menu-b").translate3d(0, 0, 0);

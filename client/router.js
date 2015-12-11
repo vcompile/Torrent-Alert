@@ -6,7 +6,9 @@ document.addEventListener("WebComponentsReady", function() {
     });
 
     Meteor.setTimeout(function() {
-        document.querySelector("#load_awesome").active = false;
+        Meteor.setTimeout(function() {
+            document.querySelector("#load_awesome").active = false;
+        }, 1000 * (Meteor.isCordova ? 16 : 4));
 
         Tracker.autorun(function() {
             if (Meteor.status().connected) {
@@ -19,7 +21,7 @@ document.addEventListener("WebComponentsReady", function() {
                 }
             }
         });
-    }, 1000 * (Meteor.isCordova ? 16 : 4));
+    }, 1000);
 });
 
 FlowRouter.route("/", {
@@ -30,7 +32,7 @@ FlowRouter.route("/", {
 
         switch (FlowRouter.getQueryParam("route")) {
             case "sign-in":
-                document.querySelector("#router").sharedElements = {
+                document.querySelector("user-check-layout").sharedElements = {
                     'ripple': document.querySelector("#sign-in"),
                     'reverse-ripple': document.querySelector("#sign-in")
                 };
@@ -39,7 +41,7 @@ FlowRouter.route("/", {
                 break;
 
             case "sign-up":
-                document.querySelector("#router").sharedElements = {
+                document.querySelector("user-check-layout").sharedElements = {
                     'ripple': document.querySelector("#sign-up"),
                     'reverse-ripple': document.querySelector("#sign-up")
                 };

@@ -1,24 +1,26 @@
-if (Meteor.isCordova) {
-    document.addEventListener("deviceready", function() {
-        document.addEventListener("backbutton", backbutton, false);
-        document.addEventListener("pause", pause, false);
-    }, false);
+// browser
 
-    function backbutton() {
-        if (document.querySelector("#exit_controller")) {
-            document.querySelector("#exit_controller").time(moment().format("x"));
-        }
+window.onbeforeunload = function(e) {
+    project_save();
+};
 
-        FlowRouter.setQueryParams({
-            "route": null
-        });
+// cordova
+
+document.addEventListener("deviceready", function() {
+    document.addEventListener("backbutton", backbutton, false);
+    document.addEventListener("pause", pause, false);
+}, false);
+
+function backbutton() {
+    if (document.querySelector("#exit_controller")) {
+        document.querySelector("#exit_controller").time(moment().format("x"));
     }
 
-    function pause() {
-        project_save();
-    }
-} else {
-    $(window).on("beforeunload", function() {
-        project_save();
+    FlowRouter.setQueryParams({
+        "route": null
     });
+}
+
+function pause() {
+    project_save();
 }
