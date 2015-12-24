@@ -10,7 +10,7 @@ Meteor.methods({
 
         var response = HTTP.call("GET", "http://do.vcompile.com/proxy/get.php", {
             params: {
-                url: "https://torrentz.eu/suggestions.php?q=" + input
+                url: "https://torrentz-proxy.com/suggestions.php?q=" + input
             },
             timeout: 1000 * 60
         });

@@ -35,7 +35,7 @@ _torrentz = function(type) {
 
             var response = HTTP.call("GET", "http://do.vcompile.com/proxy/get.php", {
                 params: {
-                    url: "https://torrentz.eu/" + row.url + (type == "torrent" ? "" : "?q=" + row.keyword + " added<" + row.within + "m leech>" + row.leech + " seed>" + row.seed)
+                    url: "https://torrentz-proxy.com/" + row.url + (type == "torrent" ? "" : "?q=" + row.keyword + " added<" + row.within + "m leech>" + row.leech + " seed>" + row.seed)
                 },
                 timeout: 1000 * 60
             });

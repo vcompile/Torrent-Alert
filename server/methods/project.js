@@ -120,22 +120,44 @@ Meteor.methods({
 
         check(id, String);
 
-        if (_project.findOne({
-                _id: id,
-                user: user._id
-            })) {
+        var exists = _project.findOne({
+            _id: id,
+            user: user._id
+        });
+
+        if (exists) {
             if (_project.find({
                     user: user._id,
                     worker: "schedule"
                 }).count() < 4) {
-                _project.update({
-                    _id: id,
-                    user: user._id
-                }, {
-                    $set: {
-                        worker: "schedule"
-                    }
+                var schedule_exists = _project.findOne({
+                    keyword: exists.keyword,
+                    leech: exists.leech,
+                    seed: exists.seed,
+                    url: exists.url,
+                    user: user._id,
+                    within: exists.within,
+                    worker: "schedule"
                 });
+
+                if (schedule_exists) {
+                    _project.update({
+                        _id: schedule_exists._id,
+                    }, {
+                        $addToSet: {
+                            user: user._id
+                        },
+                    });
+                } else {
+                    _project.update({
+                        _id: id,
+                        user: user._id
+                    }, {
+                        $set: {
+                            worker: "schedule"
+                        }
+                    });
+                }
 
                 return "1 item moved to scheduler";
             } else return "quota limit reached";

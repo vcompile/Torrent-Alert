@@ -4,6 +4,22 @@ Meteor.setInterval(function() {
             worker: "schedule"
         }).fetch().forEach(function(item) {
             if (6 < moment.duration(moment().diff(moment(item.time))).asHours()) {
+                item.torrent.forEach(function(torrent_id) {
+                    var torrent = _torrent.findOne({
+                        _id: torrent_id
+                    });
+
+                    if (torrent && item.within < moment.duration(moment().diff(moment(torrent.time))).asMonths()) {
+                        _project.update({
+                            _id: item._id
+                        }, {
+                            $pull: {
+                                torrent: torrent_id
+                            }
+                        });
+                    }
+                });
+
                 _project.update({
                     _id: item._id
                 }, {
