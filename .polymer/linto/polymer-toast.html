@@ -12,7 +12,7 @@
         clear_undo: function() {
             $("inbox-item.undo").removeClass("undo");
 
-            this.undo = {};
+            this.set("undo", {});
 
             this.$.toast.hide();
         },
@@ -64,14 +64,14 @@
                                 if (error) {
                                     console.log(error);
                                 } else {
-                                    $("inbox-item.undo").removeClass("undo");
+                                    $("inbox-item.undo").remove();
                                 }
                             });
                         } else {
                             document.querySelector("#polymer_toast").toast("server connection required");
                         }
 
-                        this.undo = {};
+                        this.set("undo", {});
                     }
 
                     document.querySelector(".menu-b").translate3d(0, 0, 0);

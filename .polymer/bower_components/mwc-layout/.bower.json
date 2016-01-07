@@ -1,5 +1,8 @@
 {
   "description": "mwc layout engine",
+  "keywords": [
+    "web-components"
+  ],
   "main": [
     "mwc-layout.html"
   ],
@@ -8,13 +11,12 @@
     "type": "git",
     "url": "https://github.com/meteorwebcomponents/layout.git"
   },
-  "version": "1.1.7",
   "homepage": "https://github.com/meteorwebcomponents/layout",
-  "_release": "1.1.7",
+  "_release": "f82c1fe525",
   "_resolution": {
-    "type": "version",
-    "tag": "1.1.7",
-    "commit": "63032cf3bb4066b6753ef37c37fddf8c672e3484"
+    "type": "branch",
+    "branch": "master",
+    "commit": "f82c1fe525c518df6472000eecc814732a22231c"
   },
   "_source": "git://github.com/meteorwebcomponents/layout.git",
   "_target": "*",

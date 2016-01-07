@@ -1,41 +1,36 @@
-_torrentz_worker = {};
+_torrent_instance = {};
+_torrent_queue = {};
 
-_torrentz = function(type) {
-    if (!_.has(_torrentz_worker, type)) {
-        _torrentz_worker[type] = {
-            status: ""
+_torrentz_worker = function(worker_id) {
+    var worker = _worker.findOne({
+        _id: worker_id
+    });
+
+    if (worker) {
+        if (!_.has(_torrent_instance, worker.project)) {
+            _torrent_instance[worker.project] = "";
         }
+
+        _key_value(_torrent_queue, [worker.project, (worker.type == "torrent" ? worker.torrent : "#")], {
+            worker_id: worker._id
+        });
     }
 
-    if (_torrentz_worker[type].status == "") {
-        _torrentz_worker[type].status = moment().format();
+    if (_torrent_instance[worker.project] == "") {
+        _torrent_instance[worker.project] = "#";
 
-        while (_torrentz_worker[type].row = _worker.findOne({
-                status: "",
-                type: type
-            }, {
-                sort: {
-                    time_insert: -1
-                }
-            })) {
-            _worker.update({
-                _id: _torrentz_worker[type].row._id
-            }, {
-                $set: {
-                    status: "#",
-                    time_update: moment().format()
-                }
-            });
-
-            var row = (type == "torrent" ? _torrent.findOne({
-                _id: _torrentz_worker[type].row.torrent
-            }) : _project.findOne({
-                _id: _torrentz_worker[type].row.project
+        while (_.size(_torrent_queue[worker.project])) {
+            var key = _.keys(_torrent_queue[worker.project])[0];
+            console.log(key);
+            var row = (key == "#" ? _project.findOne({
+                _id: worker.project
+            }) : _torrent.findOne({
+                _id: key
             }));
 
             var response = HTTP.call("GET", "http://do.vcompile.com/proxy/get.php", {
                 params: {
-                    url: "https://torrentz-proxy.com/" + row.url + (type == "torrent" ? "" : "?q=" + row.keyword + " added<" + row.within + "m leech>" + row.leech + " seed>" + row.seed)
+                    url: "https://torrentz-proxy.com/" + row.url + (key == "#" ? "?q=" + row.keyword + " added<" + row.within + "m leech>" + row.leech + " seed>" + row.seed : "")
                 },
                 timeout: 1000 * 60
             });
@@ -44,31 +39,7 @@ _torrentz = function(type) {
                 if (80 < response.content.length) {
                     $ = Meteor.npmRequire("cheerio").load(response.content);
 
-                    if (type == "torrent") {
-                        var link = [];
-
-                        $(".download dl").each(function() {
-                            if ($(this).find("dt a").attr("href")) {
-                                var url = $(this).find("dt a").attr("href");
-
-                                if (url.substr(0, 4) == "http") {
-                                    link.push({
-                                        text: url.replace(/^http(s)?:\/\/(www\.)?/, '').split("/", 1).toString(),
-                                        time: ($(this).find("dd span").attr("title") ? moment($(this).find("dd span").attr("title").trim().replace(/\s+/g, " "), "ddd, DD MMM YYYY HH:mm:ss").format() : moment().format()),
-                                        url: url
-                                    });
-                                }
-                            }
-                        });
-
-                        _torrent.update({
-                            _id: row._id
-                        }, {
-                            $set: {
-                                link: _.sortBy(link, "time").reverse()
-                            }
-                        });
-                    } else {
+                    if (key == "#") {
                         $(".results dl").each(function() {
                             if ($(this).find("dt a").attr("href")) {
                                 var torrent = {};
@@ -94,12 +65,7 @@ _torrentz = function(type) {
                                                 $each: row.user
                                             }
                                         },
-                                        $set: {
-                                            category: torrent.category,
-                                            leech: torrent.leech,
-                                            seed: torrent.seed,
-                                            size: torrent.size
-                                        }
+                                        $set: torrent
                                     });
 
                                     if (!_worker.findOne({
@@ -154,7 +120,7 @@ _torrentz = function(type) {
                                     });
                                 }
 
-                                if (type == "schedule") {
+                                if (worker.type == "schedule") {
                                     row.user.forEach(function(A) {
                                         if (!_push.findOne({
                                                 project: row._id,
@@ -181,25 +147,54 @@ _torrentz = function(type) {
                                 }
                             }
                         });
+                    } else {
+                        var link = [];
+
+                        $(".download dl").each(function() {
+                            if ($(this).find("dt a").attr("href")) {
+                                var url = $(this).find("dt a").attr("href");
+
+                                if (url.substr(0, 4) == "http") {
+                                    link.push({
+                                        text: url.replace(/^http(s)?:\/\/(www\.)?/, '').split("/", 1).toString(),
+                                        time: ($(this).find("dd span").attr("title") ? moment($(this).find("dd span").attr("title").trim().replace(/\s+/g, " "), "ddd, DD MMM YYYY HH:mm:ss").format() : moment().format()),
+                                        url: url
+                                    });
+                                }
+                            }
+                        });
+
+                        _torrent.update({
+                            _id: row._id
+                        }, {
+                            $set: {
+                                link: _.sortBy(link, "time").reverse()
+                            }
+                        });
                     }
                 } else {
-                    console.log("80", _torrentz_worker[type], row, response);
+                    console.log("80", worker.type, row, response);
                 }
             } else {
-                console.log("200", _torrentz_worker[type], row, response);
+                console.log("200", worker.type, row, response);
             }
 
-            _worker.update({
-                _id: _torrentz_worker[type].row._id
-            }, {
+            _worker.update((key == "#" ? {
+                _id: _torrent_queue[worker.project][key].worker_id
+            } : {
+                project: worker.project,
+                torrent: key
+            }), {
                 $set: {
                     status: "200",
                     time_update: moment().format()
                 }
             });
+
+            delete _torrent_queue[worker.project][key];
         }
 
-        _torrentz_worker[type].status = "";
+        _torrent_instance[worker.project] = "";
     }
 };
 
@@ -211,7 +206,7 @@ _worker.find({
 }).observe({
     added: function(row) {
         Meteor.setTimeout(function() {
-            _torrentz(row.type);
+            _torrentz_worker(row._id);
         });
     }
 });

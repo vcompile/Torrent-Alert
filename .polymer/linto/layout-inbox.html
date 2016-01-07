@@ -195,8 +195,6 @@
                                         <div class="bordered center horizontal layout li">
                                             <div class="flex" style="line-height: 24px; padding: 16px;">[[item.keyword]]</div>
 
-                                            <paper-icon-button data-index$="[[index]]" icon="sort" on-click="sort"></paper-icon-button>
-
                                             <paper-icon-button data-id$="[[item._id]]" icon="schedule" hidden="[[!is_search(item.worker)]]" on-click="schedule"></paper-icon-button>
 
                                             <paper-icon-button data-id$="[[item._id]]" icon="refresh" on-click="refresh"></paper-icon-button>
@@ -213,16 +211,14 @@
                                         </div>
                                     </div>
 
-                                    <template as="torrent" is="dom-repeat" items="[[item.torrent]]">
-                                        <template if="[[torrent.url]]" is="dom-if">
-                                            <inbox-item item$="[[torrent]]"></inbox-item>
-                                        </template>
+                                    <template as="torrent" filter="filter_url" is="dom-repeat" items="[[item.torrent]]" sort="sort">
+                                        <inbox-item item$="[[torrent]]"></inbox-item>
                                     </template>
                                 </template>
                             </template>
                         </iron-selector>
 
-                        <div style="min-height: 80px;"></div>
+                        <div style="min-height: 88px;"></div>
                     </neon-animatable>
                 </neon-animated-pages>
             </paper-header-panel>
@@ -347,13 +343,8 @@
                         }).indexOf(row._id);
 
                         if (index == -1) {
-                            _this.project.unshift(row);
-                        } else {
-                            // _this.project[index] = row;
-                            // _this.project[index] = _.clone(_this.project[index]);
+                            _this.unshift("project", row);
                         }
-
-                        _this.project = _.clone(_this.project);
                     },
 
                     changed: function(row, old) {
@@ -376,8 +367,7 @@
                         }).indexOf(row._id);
 
                         if (-1 < index) {
-                            _this.project[index] = row;
-                            _this.project = _.clone(_this.project);
+                            _this.splice("project", index, 1, row);
                         }
                     },
 
@@ -387,8 +377,7 @@
                         }).indexOf(old._id);
 
                         if (-1 < index) {
-                            _this.project.splice(index, 1);
-                            _this.project = _.clone(_this.project);
+                            _this.splice("project", index, 1);
                         }
                     }
                 });
@@ -403,10 +392,7 @@
                             }).indexOf(row._id);
 
                             if (-1 < index) {
-                                _this.project[A].torrent[index] = _.clone($.extend(true, _this.project[A].torrent[index], row));
-                                _this.project[A].torrent = _.clone(_this.project[A].torrent);
-                                _this.project[A] = _.clone(_this.project[A]);
-                                _this.project = _.clone(_this.project);
+                                _this.set("project." + A + ".torrent." + index, $.extend(true, _this.project[A].torrent[index], row));
                             }
                         }
                     },
@@ -418,10 +404,7 @@
                             }).indexOf(row._id);
 
                             if (-1 < index) {
-                                _this.project[A].torrent[index] = _.clone($.extend(true, _this.project[A].torrent[index], row));
-                                _this.project[A].torrent = _.clone(_this.project[A].torrent);
-                                _this.project[A] = _.clone(_this.project[A]);
-                                _this.project = _.clone(_this.project);
+                                _this.set("project." + A + ".torrent." + index, $.extend(true, _this.project[A].torrent[index], row));
                             }
                         }
                     },
@@ -433,10 +416,7 @@
                             }).indexOf(old._id);
 
                             if (-1 < index) {
-                                _this.project[A].torrent.splice(index, 1);
-                                _this.project[A].torrent = _.clone(_this.project[A].torrent);
-                                _this.project[A] = _.clone(_this.project[A]);
-                                _this.project = _.clone(_this.project);
+                                _this.splice("project." + A + ".torrent", index, 1);
                             }
                         }
                     }
@@ -446,6 +426,10 @@
 
         clear_torrent_selection: function() {
             this.torrent_selected = [];
+        },
+
+        filter_url: function(torrent) {
+            return (torrent.url);
         },
 
         initialize_trend: function() {
@@ -481,7 +465,7 @@
                 if (this.menu_selected != "trend") {
                     this.$.main_page.selected = (this.project.length ? 1 : 0);
                 }
-            }, 1000 * 4);
+            }, 1000);
         },
 
         project_selected: function(menu_opt, project_opt) {
@@ -549,8 +533,7 @@
                                 };
                             }
 
-                            _this.project[index] = response;
-                            _this.project = _.clone(_this.project);
+                            _this.splice("project", index, 1, response);
                         }
                     }
                 });
@@ -676,8 +659,6 @@
                 if (this.torrent_selected[A].link.length) {
                     body += "\n\n" + (A + 1) + "\t\t" + this.torrent_selected[A].title + "\n\n";
 
-                    this.torrent_selected[A].link = _.sortBy(this.torrent_selected[A].link, "time");
-
                     for (var Z = 0; Z < this.torrent_selected[A].link.length; Z++) {
                         body += "\t\t" + (Z + 1) + "\t\t" + this.torrent_selected[A].link[Z].url + "\n\n";
                     }
@@ -705,14 +686,8 @@
             }
         },
 
-        sort: function(e) {
-            var A = Polymer.dom(e).localTarget.dataset.index;
-
-            this.project[A].torrent = _.sortBy(this.project[A].torrent, "time").reverse();
-            this.project[A] = _.clone(this.project[A]);
-            this.project = _.clone(this.project);
-
-            document.querySelector("#polymer_toast").toast("sorted by time");
+        sort: function(A, Z) {
+            return (parseInt(moment(Z.time).format("x")) - parseInt(moment(A.time).format("x")));
         },
 
         torrent_selected_change: function(change) {

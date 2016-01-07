@@ -12,7 +12,7 @@ document.addEventListener("WebComponentsReady", function() {
 
         Tracker.autorun(function() {
             if (Meteor.status().connected) {
-                if (Meteor.user()) {
+                if (Meteor.user() && FlowRouter.current().route.name != "layout-inbox") {
                     FlowRouter.go("/inbox");
                 }
             } else {

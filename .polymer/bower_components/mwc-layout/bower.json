@@ -1,5 +1,8 @@
 {
     "description": "mwc layout engine",
+    "keywords": [
+        "web-components"
+    ],
     "main": [
         "mwc-layout.html"
     ],
@@ -8,5 +11,5 @@
         "type": "git",
         "url": "https://github.com/meteorwebcomponents/layout.git"
     },
-    "version": "1.1.5"
+    "version": "1.1.7"
 }
