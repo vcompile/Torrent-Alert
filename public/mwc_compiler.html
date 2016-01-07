@@ -22861,9 +22861,9 @@ paper-calendar {
                                         <div class="bordered center horizontal layout li">
                                             <div class="flex" style="line-height: 24px; padding: 16px;">[[item.keyword]]</div>
 
-                                            <paper-icon-button data-id$="[[item._id]]" icon="schedule" hidden="[[!is_search(item.worker)]]" on-click="schedule"></paper-icon-button>
-
                                             <paper-icon-button data-id$="[[item._id]]" icon="refresh" on-click="refresh"></paper-icon-button>
+
+                                            <paper-icon-button data-id$="[[item._id]]" icon="alarm-add" hidden="[[!is_search(item.worker)]]" on-click="schedule"></paper-icon-button>
 
                                             <paper-icon-button data-id$="[[item._id]]" icon="close" on-click="remove_project" style="margin-right: 8px;"></paper-icon-button>
                                         </div>
@@ -24428,4 +24428,4 @@ paper-calendar {
     </script>
 
 </dom-module>
-</div></body></html>     
+</div></body></html>
