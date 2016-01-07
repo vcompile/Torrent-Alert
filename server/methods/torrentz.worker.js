@@ -21,7 +21,7 @@ _torrentz_worker = function(worker_id) {
 
         while (_.size(_torrent_queue[worker.project])) {
             var key = _.keys(_torrent_queue[worker.project])[0];
-            console.log(key);
+
             var row = (key == "#" ? _project.findOne({
                 _id: worker.project
             }) : _torrent.findOne({
