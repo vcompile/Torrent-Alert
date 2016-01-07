@@ -39,6 +39,11 @@
         color: white!important;
     }
     
+    .blue-900 {
+        background-color: #0D47A1!important;
+        color: white!important;
+    }
+    
     .light-blue-500 {
         background-color: #03A9F4!important;
         color: white!important;
@@ -116,12 +121,41 @@
     </style>
 
     <script>
-    polymer_color_class = ["red-500", "pink-500", "purple-500", "deep-purple-500", "indigo-500", "blue-500", "light-blue-500", "cyan-500", "teal-500", "green-500", "light-green-500", "lime-500", "yellow-500", "amber-500", "orange-500", "deep-orange-500", "brown-500", /* "grey-500", */ "blue-grey-500"];
+    polymer_color_class = [{
+        class: "blue-grey-500",
+        count: 0
+    }, {
+        class: "cyan-500",
+        count: 0
+    }, {
+        class: "deep-orange-500",
+        count: 0
+    }, {
+        class: "deep-purple-500",
+        count: 0
+    }, {
+        class: "green-500",
+        count: 0
+    }, {
+        class: "indigo-500",
+        count: 0
+    }, {
+        class: "light-blue-500",
+        count: 0
+    }, {
+        class: "purple-500",
+        count: 0
+    }, {
+        class: "red-500",
+        count: 0
+    }, {
+        class: "teal-500",
+        count: 0
+    }];
 
     polymer_color_db = {};
-    polymer_color_local = {};
 
-    polymer_color = function(key, save) {
+    polymer_color = function(key) {
         if (key) {
             key = key.replace(/[^0-9a-zA-Z]/g, "");
 
@@ -129,19 +163,12 @@
                 if (polymer_color_db[key]) {
                     return polymer_color_db[key];
                 } else {
-                    if (polymer_color_local[key]) {
-                        return polymer_color_local[key];
-                    } else {
-                        var A = polymer_color_class[Math.floor(Math.random() * polymer_color_class.length)];
+                    polymer_color_class = _.sortBy(polymer_color_class, "count");
 
-                        if (save) {
-                            polymer_color_db[key] = A;
-                        } else {
-                            polymer_color_local[key] = A;
-                        }
+                    polymer_color_db[key] = polymer_color_class[0].class;
+                    polymer_color_class[0].count += 1;
 
-                        return A;
-                    }
+                    return polymer_color_db[key];
                 }
             } else return "";
         } else return "";
