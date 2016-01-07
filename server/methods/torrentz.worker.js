@@ -189,6 +189,8 @@ _torrentz_worker = function(worker_id) {
                     status: "200",
                     time_update: moment().format()
                 }
+            }, {
+                multi: true
             });
 
             delete _torrent_queue[worker.project][key];
