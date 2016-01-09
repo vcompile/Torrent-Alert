@@ -2,7 +2,7 @@
 
     <template>
         <paper-toast class="cursor-d horizontal justified layout" duration="4000" id="toast" on-transitionend="transition" style="font-size: 16px; margin-right: 12px; padding: 16px; z-index: 1000;" text="">
-            <div class="cursor-p self-start" hidden="[[!undo.torrent]]" on-click="clear_undo" style="color: #FFEB3B; margin-left: 8px;">UNDO</div>
+            <div class="cursor-p self-start" hidden="{{!undo.torrent}}" on-click="clear_undo" style="color: #FFEB3B; margin-left: 8px;">UNDO</div>
         </paper-toast>
     </template>
 

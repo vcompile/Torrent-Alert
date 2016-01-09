@@ -8900,24 +8900,16 @@ this.fire('dom-change');
 
   :root {
     /*
-     * Light background theme
+     * You can use these generic variables in your elements for easy theming.
+     * For example, if all your elements use `--primary-text-color` as its main
+     * color, then switching from a light to a dark theme is just a matter of
+     * changing the value of `--primary-text-color` in your application.
      */
-    --light-theme-background-color: #ffffff;
-    --light-theme-base-color: #000000;
-    --light-theme-text-color: #212121;
-    --light-theme-secondary-color: #737373;  /* for secondary text and icons */
-    --light-theme-disabled-color: #9b9b9b;  /* disabled/hint text */
-    --light-theme-divider-color: #dbdbdb;
-
-    /*
-     * Dark background theme
-     */
-    --dark-theme-background-color: #212121;
-    --dark-theme-base-color: #ffffff;
-    --dark-theme-text-color: #ffffff;
-    --dark-theme-secondary-color: #bcbcbc;  /* for secondary text and icons */
-    --dark-theme-disabled-color: #646464;  /* disabled/hint text */
-    --dark-theme-divider-color: #3c3c3c;
+    --primary-text-color: var(--light-theme-text-color);
+    --primary-background-color: var(--light-theme-background-color);
+    --secondary-text-color: var(--light-theme-secondary-color);
+    --disabled-text-color: var(--light-theme-disabled-color);
+    --divider-color: var(--light-theme-divider-color);
 
     /*
      * Primary and accent colors. Also see color.html for more colors.
@@ -8931,15 +8923,31 @@ this.fire('dom-change');
     --dark-accent-color: #f50057;  /* --paper-pink-a400 */
 
     /*
+     * Material Design Light background theme
+     */
+    --light-theme-background-color: #ffffff;
+    --light-theme-base-color: #000000;
+    --light-theme-text-color: #212121;
+    --light-theme-secondary-color: #737373;  /* for secondary text and icons */
+    --light-theme-disabled-color: #9b9b9b;  /* disabled/hint text */
+    --light-theme-divider-color: #dbdbdb;
+
+    /*
+     * Material Design Dark background theme
+     */
+    --dark-theme-background-color: #212121;
+    --dark-theme-base-color: #ffffff;
+    --dark-theme-text-color: #ffffff;
+    --dark-theme-secondary-color: #bcbcbc;  /* for secondary text and icons */
+    --dark-theme-disabled-color: #646464;  /* disabled/hint text */
+    --dark-theme-divider-color: #3c3c3c;
+
+    /*
      * Deprecated values because of their confusing names.
      */
-    --primary-text-color: var(--light-theme-text-color);
     --text-primary-color: var(--dark-theme-text-color);
-    --primary-background-color: var(--light-theme-background-color);
-    --secondary-text-color: var(--light-theme-secondary-color);
-    --disabled-text-color:var(--light-theme-disabled-color);
-    --divider-color: var(--light-theme-divider-color);
     --default-primary-color: var(--primary-color);
+
   }
 
 </style>
@@ -11463,7 +11471,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
      * or a map of animation type to array of configuration objects.
      */
     getAnimationConfig: function(type) {
-      var map = [];
+      var map = {};
       var allConfigs = [];
       this._getAnimationConfigRecursive(type, map, allConfigs);
       // append the configurations saved in the map to the array
@@ -21814,6 +21822,8 @@ paper-calendar {
     <style>
       :host {
         display: inline-block;
+        @apply(--layout-horizontal);
+        @apply(--layout-center);
       }
 
       :host([disabled]) {
@@ -21901,11 +21911,13 @@ paper-calendar {
         position: relative;
         width: 36px;
         height: 14px;
+        /* The toggle button has an absolute position of -3px; The extra 1px
+        /* accounts for the toggle button shadow box. */
+        margin: 4px 1px;
       }
 
       .toggle-label {
         position: relative;
-        top: -2px;
         display: inline-block;
         vertical-align: middle;
         padding-left: var(--paper-toggle-button-label-spacing, 8px);
@@ -22335,7 +22347,7 @@ paper-calendar {
                     <br>
 
                     <div class="end-justified horizontal layout">
-                        <div class="cursor-p" on-click="date_picker_open">within <span style="border-bottom: 2px solid #AAA;">[[within]]</span> month</div>
+                        <div class="cursor-p" on-click="date_picker_open">within <span style="border-bottom: 2px solid #AAA;">{{within}}</span> month</div>
                     </div>
                     <br>
 
@@ -22599,13 +22611,13 @@ paper-calendar {
         <div class="center-justified horizontal layout">
             <div class="bordered cursor-p horizontal hover layout li white" on-click="click">
                 <div style="padding: 16px; padding-right: 8px;">
-                    <selectable-icon icon_class$="[[return_class(item.category)]]" icon_text$="[[return_text(item.link.length)]]" id="selectable_icon" selected$="[[selected]]"></selectable-icon>
+                    <selectable-icon icon_class$="{{return_class(item.category)}}" icon_text$="{{return_text(item.link.length)}}" id="selectable_icon" selected$="{{selected}}"></selectable-icon>
                 </div>
 
                 <div class="flex layout vertical" style="padding: 16px; padding-left: 8px;">
-                    <div style="color: #757575; font-size: 14px; line-height: 20px;">[[return_description(item)]]</div>
-                    <div style="font-size: 16px; line-height: 24px;">[[item.title]]</div>
-                    <div style="color: #757575; font-size: 14px; line-height: 20px; text-align: right;">[[return_time(item.time)]]</div>
+                    <div style="color: #757575; font-size: 14px; line-height: 20px;">{{return_description(item)}}</div>
+                    <div style="font-size: 16px; line-height: 24px;">{{item.title}}</div>
+                    <div style="color: #757575; font-size: 14px; line-height: 20px; text-align: right;">{{return_time(item.time)}}</div>
                 </div>
             </div>
         </div>
@@ -22634,7 +22646,10 @@ paper-calendar {
 
         properties: {
             item: {
-                type: Object
+                type: Object,
+                value: function() {
+                    return {};
+                }
             },
             selected: {
                 notify: true,
@@ -22757,18 +22772,18 @@ paper-calendar {
         <paper-drawer-panel id="drawer">
             <paper-header-panel drawer="">
                 <div class="fit layout vertical">
-                    <template if="[[user._id]]" is="dom-if">
+                    <template if="{{user._id}}" is="dom-if">
                         <div class="cursor-p horizontal hover layout menu-li relative" on-click="user_prompt">
                             <div style="padding: 16px; padding-right: 8px;">
-                                <selectable-icon icon_img_src$="[[user.profile.picture]]"></selectable-icon>
+                                <selectable-icon icon_img_src$="{{user.profile.picture}}"></selectable-icon>
                             </div>
 
                             <div class="flex layout vertical" style="padding: 16px; padding-left: 8px;">
                                 <div class="horizontal layout">
-                                    <div class="etc flex self-center" style="font-size: 16px; line-height: 24px;">[[user.profile.name]]</div>
-                                    <div class="self-start" style="color: #757575; font-size: 14px; line-height: 20px;">[[return_text(project.length)]]</div>
+                                    <div class="etc flex self-center" style="font-size: 16px; line-height: 24px;">{{user.profile.name}}</div>
+                                    <div class="self-start" style="color: #757575; font-size: 14px; line-height: 20px;">{{return_text(project.length)}}</div>
                                 </div>
-                                <div class="etc" style="color: #757575; font-size: 14px; line-height: 20px;">[[user.profile.email]]</div>
+                                <div class="etc" style="color: #757575; font-size: 14px; line-height: 20px;">{{user.profile.email}}</div>
                             </div>
 
                             <paper-ripple></paper-ripple>
@@ -22785,26 +22800,26 @@ paper-calendar {
                                 <div class="flex layout vertical" style="padding: 16px; padding-left: 8px;">
                                     <div class="horizontal layout">
                                         <div class="etc flex self-center" style="font-size: 16px; line-height: 24px;">Trending</div>
-                                        <div class="self-start" style="color: #757575; font-size: 14px; line-height: 20px;">[[return_text(trend.keyword.length)]]</div>
+                                        <div class="self-start" style="color: #757575; font-size: 14px; line-height: 20px;">{{return_text(trend.keyword.length)}}</div>
                                     </div>
-                                    <div class="etc" style="color: #757575; font-size: 14px; line-height: 20px;">[[return_time_s(trend.time)]]</div>
+                                    <div class="etc" style="color: #757575; font-size: 14px; line-height: 20px;">{{return_time_s(trend.time)}}</div>
                                 </div>
 
                                 <paper-ripple></paper-ripple>
                             </div>
 
-                            <template is="dom-repeat" items="[[project]]">
-                                <div class="cursor-p horizontal hover layout menu-li relative" data-id$="[[item._id]]">
+                            <template is="dom-repeat" items="{{project}}">
+                                <div class="cursor-p horizontal hover layout menu-li relative" data-id$="{{item._id}}">
                                     <div style="padding: 16px; padding-right: 8px;">
-                                        <selectable-icon icon_class$="[[return_class(item.keyword)]]" icon_text$="[[return_icon_text(item.keyword)]]"></selectable-icon>
+                                        <selectable-icon icon_class$="{{return_class(item.keyword)}}" icon_text$="{{return_icon_text(item.keyword)}}"></selectable-icon>
                                     </div>
 
                                     <div class="flex layout vertical" style="padding: 16px; padding-left: 8px;">
                                         <div class="horizontal layout">
-                                            <div class="etc flex self-center" style="font-size: 16px; line-height: 24px;">[[item.keyword]]</div>
-                                            <div class="self-start" style="color: #757575; font-size: 14px; line-height: 20px;">[[return_torrent_count(item.torrent)]]</div>
+                                            <div class="etc flex self-center" style="font-size: 16px; line-height: 24px;">{{item.keyword}}</div>
+                                            <div class="self-start" style="color: #757575; font-size: 14px; line-height: 20px;">{{return_torrent_count(item.torrent)}}</div>
                                         </div>
-                                        <div class="etc" style="color: #757575; font-size: 14px; line-height: 20px;">[[return_project_description(item)]]</div>
+                                        <div class="etc" style="color: #757575; font-size: 14px; line-height: 20px;">{{return_project_description(item)}}</div>
                                     </div>
 
                                     <paper-ripple></paper-ripple>
@@ -22837,14 +22852,14 @@ paper-calendar {
                             <div class="center-justified horizontal layout">
                                 <div class="center cursor-d horizontal layout li" style="padding: 8px;">
                                     <iron-icon icon="trending-up" style="padding: 8px;"></iron-icon>
-                                    <div style="border-bottom: 2px solid #AAA; line-height: 24px; padding: 8px;">Trending Top <span>[[return_text(trend.keyword.length)]]</span></div>
+                                    <div style="border-bottom: 2px solid #AAA; line-height: 24px; padding: 8px;">Trending Top <span>{{return_text(trend.keyword.length)}}</span></div>
                                 </div>
                             </div>
 
                             <div class="center-justified horizontal layout">
                                 <div class="horizontal layout li wrap" style="padding: 4px 12px;">
-                                    <template is="dom-repeat" items="[[trend.keyword]]">
-                                        <div class="cursor-p grey-500" on-click="trend_opt" style="margin: 4px; padding: 8px 12px;">[[item]]</div>
+                                    <template is="dom-repeat" items="{{trend.keyword}}">
+                                        <div class="cursor-p grey-500" on-click="trend_opt" style="margin: 4px; padding: 8px 12px;">{{item}}</div>
                                     </template>
                                 </div>
                             </div>
@@ -22855,30 +22870,30 @@ paper-calendar {
 
                     <neon-animatable>
                         <iron-selector activate-event="click" attr-for-selected="item" multi="" selectable="inbox-item" selected-attribute="selected" selected-values="{{torrent_selected}}">
-                            <template is="dom-repeat" items="[[project]]">
-                                <template if="[[project_selected(menu_selected, item._id)]]" is="dom-if">
+                            <template is="dom-repeat" items="{{project}}">
+                                <template if="{{project_selected(menu_selected, item._id)}}" is="dom-if">
                                     <div class="center-justified horizontal layout">
                                         <div class="bordered center horizontal layout li">
-                                            <div class="flex" style="line-height: 24px; padding: 16px;">[[item.keyword]]</div>
+                                            <div class="flex" style="line-height: 24px; padding: 16px;">{{item.keyword}}</div>
 
-                                            <paper-icon-button data-id$="[[item._id]]" icon="refresh" on-click="refresh"></paper-icon-button>
+                                            <paper-icon-button data-id$="{{item._id}}" icon="refresh" on-click="refresh"></paper-icon-button>
 
-                                            <paper-icon-button data-id$="[[item._id]]" icon="alarm-add" hidden="[[!is_search(item.worker)]]" on-click="schedule"></paper-icon-button>
+                                            <paper-icon-button data-id$="{{item._id}}" icon="alarm-add" hidden="{{!is_search(item.worker)}}" on-click="schedule"></paper-icon-button>
 
-                                            <paper-icon-button data-id$="[[item._id]]" icon="close" on-click="remove_project" style="margin-right: 8px;"></paper-icon-button>
+                                            <paper-icon-button data-id$="{{item._id}}" icon="close" on-click="remove_project" style="margin-right: 8px;"></paper-icon-button>
                                         </div>
                                     </div>
 
                                     <div class="center-justified horizontal layout">
                                         <div class="li">
                                             <div style="padding: 0 4px;">
-                                                <paper-progress class="project_progress" data-id$="[[item._id]]" hidden="" style="width: 100%;"></paper-progress>
+                                                <paper-progress class="project_progress" data-id$="{{item._id}}" hidden="" style="width: 100%;"></paper-progress>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <template as="torrent" filter="filter_url" is="dom-repeat" items="[[item.torrent]]" sort="sort">
-                                        <inbox-item item$="[[torrent]]"></inbox-item>
+                                    <template as="torrent" filter="filter_url" is="dom-repeat" items="{{item.torrent}}" sort="sort">
+                                        <inbox-item item$="{{torrent}}"></inbox-item>
                                     </template>
                                 </template>
                             </template>
@@ -22913,7 +22928,7 @@ paper-calendar {
                     <paper-slider disabled="" editable="" id="seeds" max="96" min="1" style="max-width: 100px;" value="4"></paper-slider>
                 </div>
 
-                <div style="border-bottom: 2px solid #888; margin: 8px 0; padding: 4px 0;">user: <span>[[user.profile.name]]</span></div>
+                <div style="border-bottom: 2px solid #888; margin: 8px 0; padding: 4px 0;">user: <span>{{user.profile.name}}</span></div>
 
                 <div class="end-justified horizontal layout">
                     <paper-button class="blue-500" on-click="sign_out" style="margin: 8px 0; width: 50%;">SIGN OUT</paper-button>
@@ -22989,58 +23004,18 @@ paper-calendar {
 
             Meteor.setTimeout(function() {
                 _project.find().observe({
-                    added: function(row) {
-                        for (var A = 0; A < row.torrent.length; A++) {
-                            var item = _torrent.findOne({
-                                _id: row.torrent[A]
-                            });
+                    added: function() {
+                        _this._updater();
+                    },
 
-                            row.torrent[A] = (item ? item : {
-                                _id: row.torrent[A]
-                            });
+                    changed: function() {
+                        _this._updater();
+                    },
 
-                            row.torrent[A].project = {
-                                _id: row._id
-                            };
-                        }
-
+                    removed: function(row) {
                         var index = _.map(_this.project, function(A) {
                             return A._id;
                         }).indexOf(row._id);
-
-                        if (index == -1) {
-                            _this.unshift("project", row);
-                        }
-                    },
-
-                    changed: function(row, old) {
-                        for (var A = 0; A < row.torrent.length; A++) {
-                            var item = _torrent.findOne({
-                                _id: row.torrent[A]
-                            });
-
-                            row.torrent[A] = (item ? item : {
-                                _id: row.torrent[A]
-                            });
-
-                            row.torrent[A].project = {
-                                _id: row._id
-                            };
-                        }
-
-                        var index = _.map(_this.project, function(A) {
-                            return A._id;
-                        }).indexOf(row._id);
-
-                        if (-1 < index) {
-                            _this.splice("project", index, 1, row);
-                        }
-                    },
-
-                    removed: function(old) {
-                        var index = _.map(_this.project, function(A) {
-                            return A._id;
-                        }).indexOf(old._id);
 
                         if (-1 < index) {
                             _this.splice("project", index, 1);
@@ -23051,35 +23026,19 @@ paper-calendar {
 
             Meteor.setTimeout(function() {
                 _torrent.find().observe({
-                    added: function(row) {
+                    added: function() {
+                        _this._updater();
+                    },
+
+                    changed: function(row) {
+                        _this._updater();
+                    },
+
+                    removed: function(row) {
                         for (var A = 0; A < _this.project.length; A++) {
                             var index = _.map(_this.project[A].torrent, function(item) {
                                 return item._id;
                             }).indexOf(row._id);
-
-                            if (-1 < index) {
-                                _this.set("project." + A + ".torrent." + index, $.extend(true, _this.project[A].torrent[index], row));
-                            }
-                        }
-                    },
-
-                    changed: function(row, old) {
-                        for (var A = 0; A < _this.project.length; A++) {
-                            var index = _.map(_this.project[A].torrent, function(item) {
-                                return item._id;
-                            }).indexOf(row._id);
-
-                            if (-1 < index) {
-                                _this.set("project." + A + ".torrent." + index, $.extend(true, _this.project[A].torrent[index], row));
-                            }
-                        }
-                    },
-
-                    removed: function(old) {
-                        for (var A = 0; A < _this.project.length; A++) {
-                            var index = _.map(_this.project[A].torrent, function(item) {
-                                return item._id;
-                            }).indexOf(old._id);
 
                             if (-1 < index) {
                                 _this.splice("project." + A + ".torrent", index, 1);
@@ -23407,6 +23366,38 @@ paper-calendar {
 
         user_prompt: function() {
             this.$.user_prompt.open();
+        },
+
+        _updater: function() {
+            this.debounce("_updater", function() {
+                var _this = this;
+
+                _project.find().forEach(function(row) {
+                    for (var A = 0; A < row.torrent.length; A++) {
+                        var item = _torrent.findOne({
+                            _id: row.torrent[A]
+                        });
+
+                        row.torrent[A] = (item ? item : {
+                            _id: row.torrent[A]
+                        });
+
+                        row.torrent[A].project = {
+                            _id: row._id
+                        };
+                    }
+
+                    var index = _.map(_this.project, function(A) {
+                        return A._id;
+                    }).indexOf(row._id);
+
+                    if (-1 < index) {
+                        _this.set("project." + index, row);
+                    } else {
+                        _this.unshift("project", row);
+                    }
+                });
+            }, 1000);
         }
 
     });
@@ -23463,7 +23454,7 @@ paper-calendar {
 
     <template>
         <paper-toast class="cursor-d horizontal justified layout" duration="4000" id="toast" on-transitionend="transition" style="font-size: 16px; margin-right: 12px; padding: 16px; z-index: 1000;" text="">
-            <div class="cursor-p self-start" hidden="[[!undo.torrent]]" on-click="clear_undo" style="color: #FFEB3B; margin-left: 8px;">UNDO</div>
+            <div class="cursor-p self-start" hidden="{{!undo.torrent}}" on-click="clear_undo" style="color: #FFEB3B; margin-left: 8px;">UNDO</div>
         </paper-toast>
     </template>
 
@@ -23582,11 +23573,11 @@ paper-calendar {
 
             <paper-progress hidden="" id="progress" indeterminate="" style="left: 0; position: fixed; width: 100%;"></paper-progress>
 
-            <template is="dom-repeat" items="[[list]]">
+            <template is="dom-repeat" items="{{list}}">
                 <div class="center-justified horizontal layout">
                     <div class="bordered cursor-p horizontal layout li white" on-click="add_project">
                         <iron-icon icon="chevron-right" style="padding: 16px; padding-right: 8px;"></iron-icon>
-                        <div class="flex" style="font-size: 16px; line-height: 24px; padding: 16px; padding-left: 8px;">[[item]]</div>
+                        <div class="flex" style="font-size: 16px; line-height: 24px; padding: 16px; padding-left: 8px;">{{item}}</div>
                     </div>
                 </div>
             </template>
@@ -23740,11 +23731,11 @@ paper-calendar {
 
     <template>
         <div class="icon">
-            <template if="[[icon_img_src]]" is="dom-if">
-                <img class$="[[icon_class]]" src$="[[icon_img_src]]">
+            <template if="{{icon_img_src}}" is="dom-if">
+                <img class$="{{icon_class}}" src$="{{icon_img_src}}">
             </template>
 
-            <span class$="[[icon_text_class('center-center horizontal layout letter', icon_class)]]" hidden$="[[icon_img_src]]">[[icon_text]]</span>
+            <span class$="center-center horizontal layout letter {{icon_class}}" hidden$="{{icon_img_src}}">{{icon_text}}</span>
 
             <iron-icon icon="check"></iron-icon>
         </div>
@@ -23772,10 +23763,6 @@ paper-calendar {
                 type: Boolean,
                 value: false
             }
-        },
-
-        icon_text_class: function(A, Z) {
-            return (A ? A + " " : "") + (Z ? Z : "");
         }
 
     });
@@ -23911,22 +23898,22 @@ paper-calendar {
                         </div>
 
                         <div class="flex layout vertical" style="padding: 16px; padding-left: 8px;">
-                            <div style="color: #757575; font-size: 14px; line-height: 20px;">[[return_description(torrent)]]</div>
+                            <div style="color: #757575; font-size: 14px; line-height: 20px;">{{return_description(torrent)}}</div>
 
-                            <div><span style="font-size: 16px; line-height: 24px;">[[torrent.title]]</span>&nbsp;&nbsp;<span class$="[[return_class(torrent.category)]]" style="font-size: 14px; line-height: 20px; padding-left: 4px; padding-right: 4px;">[[torrent.category]]</span>&nbsp;&nbsp;</div>
+                            <div><span style="font-size: 16px; line-height: 24px;">{{torrent.title}}</span>&nbsp;&nbsp;<span class$="{{return_class(torrent.category)}}" style="font-size: 14px; line-height: 20px; padding-left: 4px; padding-right: 4px;">{{torrent.category}}</span>&nbsp;&nbsp;</div>
                         </div>
                     </div>
 
                     <iron-selector activate-event="click" id="link" on-click="click" selected-attribute="selected">
-                        <template is="dom-repeat" items="[[torrent.link]]">
-                            <div class="bordered cursor-p horizontal hover layout white" data-link$="[[item.url]]">
+                        <template is="dom-repeat" items="{{torrent.link}}">
+                            <div class="bordered cursor-p horizontal hover layout white" data-link$="{{item.url}}">
                                 <div style="padding: 16px; padding-right: 8px;">
-                                    <selectable-icon icon_class$="[[return_class(item.text)]]" icon_text$="[[return_icon_text(item.text)]]"></selectable-icon>
+                                    <selectable-icon icon_class$="{{return_class(item.text)}}" icon_text$="{{return_icon_text(item.text)}}"></selectable-icon>
                                 </div>
 
                                 <div class="flex layout vertical" style="padding: 16px; padding-left: 8px;">
-                                    <div class="etc" style="font-size: 16px; line-height: 24px;">[[item.text]]</div>
-                                    <div class="etc" style="color: #757575; font-size: 14px; line-height: 20px;">[[return_time(item.time)]]</div>
+                                    <div class="etc" style="font-size: 16px; line-height: 24px;">{{item.text}}</div>
+                                    <div class="etc" style="color: #757575; font-size: 14px; line-height: 20px;">{{return_time(item.time)}}</div>
                                 </div>
                             </div>
                         </template>
@@ -23975,7 +23962,10 @@ paper-calendar {
                 value: false
             },
             torrent: {
-                type: Object
+                type: Object,
+                value: function() {
+                    return {};
+                }
             }
         },
 
@@ -24034,7 +24024,7 @@ paper-calendar {
     </style>
 
     <template>
-        <neon-animated-pages class="fit" selected="[[selected]]">
+        <neon-animated-pages class="fit" selected="{{selected}}">
             <user-check-layout></user-check-layout>
 
             <card-route ripple_class="white">
@@ -24393,10 +24383,6 @@ paper-calendar {
             selected: {
                 type: Number,
                 value: 2
-            },
-
-            sharedElements: {
-                type: Object
             }
         },
 

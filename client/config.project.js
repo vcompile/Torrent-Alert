@@ -1,4 +1,4 @@
-project_progress = function() {
+project_progress = _.debounce(function() {
     $(".project_progress").attr("hidden", true);
 
     var A = {};
@@ -23,7 +23,7 @@ project_progress = function() {
             }
         }
     });
-};
+}, 1000);
 
 project_save = function() {
     if (document.querySelector("layout-inbox")) {

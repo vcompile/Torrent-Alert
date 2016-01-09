@@ -4,13 +4,13 @@
         <div class="center-justified horizontal layout">
             <div class="bordered cursor-p horizontal hover layout li white" on-click="click">
                 <div style="padding: 16px; padding-right: 8px;">
-                    <selectable-icon icon_class$="[[return_class(item.category)]]" icon_text$="[[return_text(item.link.length)]]" id="selectable_icon" selected$="[[selected]]"></selectable-icon>
+                    <selectable-icon icon_class$="{{return_class(item.category)}}" icon_text$="{{return_text(item.link.length)}}" id="selectable_icon" selected$="{{selected}}"></selectable-icon>
                 </div>
 
                 <div class="flex layout vertical" style="padding: 16px; padding-left: 8px;">
-                    <div style="color: #757575; font-size: 14px; line-height: 20px;">[[return_description(item)]]</div>
-                    <div style="font-size: 16px; line-height: 24px;">[[item.title]]</div>
-                    <div style="color: #757575; font-size: 14px; line-height: 20px; text-align: right;">[[return_time(item.time)]]</div>
+                    <div style="color: #757575; font-size: 14px; line-height: 20px;">{{return_description(item)}}</div>
+                    <div style="font-size: 16px; line-height: 24px;">{{item.title}}</div>
+                    <div style="color: #757575; font-size: 14px; line-height: 20px; text-align: right;">{{return_time(item.time)}}</div>
                 </div>
             </div>
         </div>
@@ -39,7 +39,10 @@
 
         properties: {
             item: {
-                type: Object
+                type: Object,
+                value: function() {
+                    return {};
+                }
             },
             selected: {
                 notify: true,

@@ -28,22 +28,22 @@
                         </div>
 
                         <div class="flex layout vertical" style="padding: 16px; padding-left: 8px;">
-                            <div style="color: #757575; font-size: 14px; line-height: 20px;">[[return_description(torrent)]]</div>
+                            <div style="color: #757575; font-size: 14px; line-height: 20px;">{{return_description(torrent)}}</div>
 
-                            <div><span style="font-size: 16px; line-height: 24px;">[[torrent.title]]</span>&nbsp;&nbsp;<span class$="[[return_class(torrent.category)]]" style="font-size: 14px; line-height: 20px; padding-left: 4px; padding-right: 4px;">[[torrent.category]]</span>&nbsp;&nbsp;</div>
+                            <div><span style="font-size: 16px; line-height: 24px;">{{torrent.title}}</span>&nbsp;&nbsp;<span class$="{{return_class(torrent.category)}}" style="font-size: 14px; line-height: 20px; padding-left: 4px; padding-right: 4px;">{{torrent.category}}</span>&nbsp;&nbsp;</div>
                         </div>
                     </div>
 
                     <iron-selector activate-event="click" id="link" on-click="click" selected-attribute="selected">
-                        <template is="dom-repeat" items="[[torrent.link]]">
-                            <div class="bordered cursor-p horizontal hover layout white" data-link$="[[item.url]]">
+                        <template is="dom-repeat" items="{{torrent.link}}">
+                            <div class="bordered cursor-p horizontal hover layout white" data-link$="{{item.url}}">
                                 <div style="padding: 16px; padding-right: 8px;">
-                                    <selectable-icon icon_class$="[[return_class(item.text)]]" icon_text$="[[return_icon_text(item.text)]]"></selectable-icon>
+                                    <selectable-icon icon_class$="{{return_class(item.text)}}" icon_text$="{{return_icon_text(item.text)}}"></selectable-icon>
                                 </div>
 
                                 <div class="flex layout vertical" style="padding: 16px; padding-left: 8px;">
-                                    <div class="etc" style="font-size: 16px; line-height: 24px;">[[item.text]]</div>
-                                    <div class="etc" style="color: #757575; font-size: 14px; line-height: 20px;">[[return_time(item.time)]]</div>
+                                    <div class="etc" style="font-size: 16px; line-height: 24px;">{{item.text}}</div>
+                                    <div class="etc" style="color: #757575; font-size: 14px; line-height: 20px;">{{return_time(item.time)}}</div>
                                 </div>
                             </div>
                         </template>
@@ -92,7 +92,10 @@
                 value: false
             },
             torrent: {
-                type: Object
+                type: Object,
+                value: function() {
+                    return {};
+                }
             }
         },
 

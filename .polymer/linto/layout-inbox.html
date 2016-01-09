@@ -91,18 +91,18 @@
         <paper-drawer-panel id="drawer">
             <paper-header-panel drawer>
                 <div class="fit layout vertical">
-                    <template if="[[user._id]]" is="dom-if">
+                    <template if="{{user._id}}" is="dom-if">
                         <div class="cursor-p horizontal hover layout menu-li relative" on-click="user_prompt">
                             <div style="padding: 16px; padding-right: 8px;">
-                                <selectable-icon icon_img_src$="[[user.profile.picture]]"></selectable-icon>
+                                <selectable-icon icon_img_src$="{{user.profile.picture}}"></selectable-icon>
                             </div>
 
                             <div class="flex layout vertical" style="padding: 16px; padding-left: 8px;">
                                 <div class="horizontal layout">
-                                    <div class="etc flex self-center" style="font-size: 16px; line-height: 24px;">[[user.profile.name]]</div>
-                                    <div class="self-start" style="color: #757575; font-size: 14px; line-height: 20px;">[[return_text(project.length)]]</div>
+                                    <div class="etc flex self-center" style="font-size: 16px; line-height: 24px;">{{user.profile.name}}</div>
+                                    <div class="self-start" style="color: #757575; font-size: 14px; line-height: 20px;">{{return_text(project.length)}}</div>
                                 </div>
-                                <div class="etc" style="color: #757575; font-size: 14px; line-height: 20px;">[[user.profile.email]]</div>
+                                <div class="etc" style="color: #757575; font-size: 14px; line-height: 20px;">{{user.profile.email}}</div>
                             </div>
 
                             <paper-ripple></paper-ripple>
@@ -119,26 +119,26 @@
                                 <div class="flex layout vertical" style="padding: 16px; padding-left: 8px;">
                                     <div class="horizontal layout">
                                         <div class="etc flex self-center" style="font-size: 16px; line-height: 24px;">Trending</div>
-                                        <div class="self-start" style="color: #757575; font-size: 14px; line-height: 20px;">[[return_text(trend.keyword.length)]]</div>
+                                        <div class="self-start" style="color: #757575; font-size: 14px; line-height: 20px;">{{return_text(trend.keyword.length)}}</div>
                                     </div>
-                                    <div class="etc" style="color: #757575; font-size: 14px; line-height: 20px;">[[return_time_s(trend.time)]]</div>
+                                    <div class="etc" style="color: #757575; font-size: 14px; line-height: 20px;">{{return_time_s(trend.time)}}</div>
                                 </div>
 
                                 <paper-ripple></paper-ripple>
                             </div>
 
-                            <template is="dom-repeat" items="[[project]]">
-                                <div class="cursor-p horizontal hover layout menu-li relative" data-id$="[[item._id]]">
+                            <template is="dom-repeat" items="{{project}}">
+                                <div class="cursor-p horizontal hover layout menu-li relative" data-id$="{{item._id}}">
                                     <div style="padding: 16px; padding-right: 8px;">
-                                        <selectable-icon icon_class$="[[return_class(item.keyword)]]" icon_text$="[[return_icon_text(item.keyword)]]"></selectable-icon>
+                                        <selectable-icon icon_class$="{{return_class(item.keyword)}}" icon_text$="{{return_icon_text(item.keyword)}}"></selectable-icon>
                                     </div>
 
                                     <div class="flex layout vertical" style="padding: 16px; padding-left: 8px;">
                                         <div class="horizontal layout">
-                                            <div class="etc flex self-center" style="font-size: 16px; line-height: 24px;">[[item.keyword]]</div>
-                                            <div class="self-start" style="color: #757575; font-size: 14px; line-height: 20px;">[[return_torrent_count(item.torrent)]]</div>
+                                            <div class="etc flex self-center" style="font-size: 16px; line-height: 24px;">{{item.keyword}}</div>
+                                            <div class="self-start" style="color: #757575; font-size: 14px; line-height: 20px;">{{return_torrent_count(item.torrent)}}</div>
                                         </div>
-                                        <div class="etc" style="color: #757575; font-size: 14px; line-height: 20px;">[[return_project_description(item)]]</div>
+                                        <div class="etc" style="color: #757575; font-size: 14px; line-height: 20px;">{{return_project_description(item)}}</div>
                                     </div>
 
                                     <paper-ripple></paper-ripple>
@@ -171,14 +171,14 @@
                             <div class="center-justified horizontal layout">
                                 <div class="center cursor-d horizontal layout li" style="padding: 8px;">
                                     <iron-icon icon="trending-up" style="padding: 8px;"></iron-icon>
-                                    <div style="border-bottom: 2px solid #AAA; line-height: 24px; padding: 8px;">Trending Top <span>[[return_text(trend.keyword.length)]]</span></div>
+                                    <div style="border-bottom: 2px solid #AAA; line-height: 24px; padding: 8px;">Trending Top <span>{{return_text(trend.keyword.length)}}</span></div>
                                 </div>
                             </div>
 
                             <div class="center-justified horizontal layout">
                                 <div class="horizontal layout li wrap" style="padding: 4px 12px;">
-                                    <template is="dom-repeat" items="[[trend.keyword]]">
-                                        <div class="cursor-p grey-500" on-click="trend_opt" style="margin: 4px; padding: 8px 12px;">[[item]]</div>
+                                    <template is="dom-repeat" items="{{trend.keyword}}">
+                                        <div class="cursor-p grey-500" on-click="trend_opt" style="margin: 4px; padding: 8px 12px;">{{item}}</div>
                                     </template>
                                 </div>
                             </div>
@@ -189,30 +189,30 @@
 
                     <neon-animatable>
                         <iron-selector activate-event="click" attr-for-selected="item" multi selectable="inbox-item" selected-attribute="selected" selected-values="{{torrent_selected}}">
-                            <template is="dom-repeat" items="[[project]]">
-                                <template if="[[project_selected(menu_selected, item._id)]]" is="dom-if">
+                            <template is="dom-repeat" items="{{project}}">
+                                <template if="{{project_selected(menu_selected, item._id)}}" is="dom-if">
                                     <div class="center-justified horizontal layout">
                                         <div class="bordered center horizontal layout li">
-                                            <div class="flex" style="line-height: 24px; padding: 16px;">[[item.keyword]]</div>
+                                            <div class="flex" style="line-height: 24px; padding: 16px;">{{item.keyword}}</div>
 
-                                            <paper-icon-button data-id$="[[item._id]]" icon="refresh" on-click="refresh"></paper-icon-button>
+                                            <paper-icon-button data-id$="{{item._id}}" icon="refresh" on-click="refresh"></paper-icon-button>
 
-                                            <paper-icon-button data-id$="[[item._id]]" icon="alarm-add" hidden="[[!is_search(item.worker)]]" on-click="schedule"></paper-icon-button>
+                                            <paper-icon-button data-id$="{{item._id}}" icon="alarm-add" hidden="{{!is_search(item.worker)}}" on-click="schedule"></paper-icon-button>
 
-                                            <paper-icon-button data-id$="[[item._id]]" icon="close" on-click="remove_project" style="margin-right: 8px;"></paper-icon-button>
+                                            <paper-icon-button data-id$="{{item._id}}" icon="close" on-click="remove_project" style="margin-right: 8px;"></paper-icon-button>
                                         </div>
                                     </div>
 
                                     <div class="center-justified horizontal layout">
                                         <div class="li">
                                             <div style="padding: 0 4px;">
-                                                <paper-progress class="project_progress" data-id$="[[item._id]]" hidden style="width: 100%;"></paper-progress>
+                                                <paper-progress class="project_progress" data-id$="{{item._id}}" hidden style="width: 100%;"></paper-progress>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <template as="torrent" filter="filter_url" is="dom-repeat" items="[[item.torrent]]" sort="sort">
-                                        <inbox-item item$="[[torrent]]"></inbox-item>
+                                    <template as="torrent" filter="filter_url" is="dom-repeat" items="{{item.torrent}}" sort="sort">
+                                        <inbox-item item$="{{torrent}}"></inbox-item>
                                     </template>
                                 </template>
                             </template>
@@ -247,7 +247,7 @@
                     <paper-slider disabled editable id="seeds" max="96" min="1" style="max-width: 100px;" value="4"></paper-slider>
                 </div>
 
-                <div style="border-bottom: 2px solid #888; margin: 8px 0; padding: 4px 0;">user: <span>[[user.profile.name]]</span></div>
+                <div style="border-bottom: 2px solid #888; margin: 8px 0; padding: 4px 0;">user: <span>{{user.profile.name}}</span></div>
 
                 <div class="end-justified horizontal layout">
                     <paper-button class="blue-500" on-click="sign_out" style="margin: 8px 0; width: 50%;">SIGN OUT</paper-button>
@@ -323,58 +323,18 @@
 
             Meteor.setTimeout(function() {
                 _project.find().observe({
-                    added: function(row) {
-                        for (var A = 0; A < row.torrent.length; A++) {
-                            var item = _torrent.findOne({
-                                _id: row.torrent[A]
-                            });
+                    added: function() {
+                        _this._updater();
+                    },
 
-                            row.torrent[A] = (item ? item : {
-                                _id: row.torrent[A]
-                            });
+                    changed: function() {
+                        _this._updater();
+                    },
 
-                            row.torrent[A].project = {
-                                _id: row._id
-                            };
-                        }
-
+                    removed: function(row) {
                         var index = _.map(_this.project, function(A) {
                             return A._id;
                         }).indexOf(row._id);
-
-                        if (index == -1) {
-                            _this.unshift("project", row);
-                        }
-                    },
-
-                    changed: function(row, old) {
-                        for (var A = 0; A < row.torrent.length; A++) {
-                            var item = _torrent.findOne({
-                                _id: row.torrent[A]
-                            });
-
-                            row.torrent[A] = (item ? item : {
-                                _id: row.torrent[A]
-                            });
-
-                            row.torrent[A].project = {
-                                _id: row._id
-                            };
-                        }
-
-                        var index = _.map(_this.project, function(A) {
-                            return A._id;
-                        }).indexOf(row._id);
-
-                        if (-1 < index) {
-                            _this.splice("project", index, 1, row);
-                        }
-                    },
-
-                    removed: function(old) {
-                        var index = _.map(_this.project, function(A) {
-                            return A._id;
-                        }).indexOf(old._id);
 
                         if (-1 < index) {
                             _this.splice("project", index, 1);
@@ -385,35 +345,19 @@
 
             Meteor.setTimeout(function() {
                 _torrent.find().observe({
-                    added: function(row) {
+                    added: function() {
+                        _this._updater();
+                    },
+
+                    changed: function(row) {
+                        _this._updater();
+                    },
+
+                    removed: function(row) {
                         for (var A = 0; A < _this.project.length; A++) {
                             var index = _.map(_this.project[A].torrent, function(item) {
                                 return item._id;
                             }).indexOf(row._id);
-
-                            if (-1 < index) {
-                                _this.set("project." + A + ".torrent." + index, $.extend(true, _this.project[A].torrent[index], row));
-                            }
-                        }
-                    },
-
-                    changed: function(row, old) {
-                        for (var A = 0; A < _this.project.length; A++) {
-                            var index = _.map(_this.project[A].torrent, function(item) {
-                                return item._id;
-                            }).indexOf(row._id);
-
-                            if (-1 < index) {
-                                _this.set("project." + A + ".torrent." + index, $.extend(true, _this.project[A].torrent[index], row));
-                            }
-                        }
-                    },
-
-                    removed: function(old) {
-                        for (var A = 0; A < _this.project.length; A++) {
-                            var index = _.map(_this.project[A].torrent, function(item) {
-                                return item._id;
-                            }).indexOf(old._id);
 
                             if (-1 < index) {
                                 _this.splice("project." + A + ".torrent", index, 1);
@@ -741,6 +685,38 @@
 
         user_prompt: function() {
             this.$.user_prompt.open();
+        },
+
+        _updater: function() {
+            this.debounce("_updater", function() {
+                var _this = this;
+
+                _project.find().forEach(function(row) {
+                    for (var A = 0; A < row.torrent.length; A++) {
+                        var item = _torrent.findOne({
+                            _id: row.torrent[A]
+                        });
+
+                        row.torrent[A] = (item ? item : {
+                            _id: row.torrent[A]
+                        });
+
+                        row.torrent[A].project = {
+                            _id: row._id
+                        };
+                    }
+
+                    var index = _.map(_this.project, function(A) {
+                        return A._id;
+                    }).indexOf(row._id);
+
+                    if (-1 < index) {
+                        _this.set("project." + index, row);
+                    } else {
+                        _this.unshift("project", row);
+                    }
+                });
+            }, 1000);
         }
 
     });
