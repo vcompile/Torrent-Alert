@@ -23085,6 +23085,10 @@ paper-calendar {
     z-index: 1;
   }
   
+  paper-dialog {
+    width: 320px;
+  }
+  
   paper-fab {
     --paper-fab-background: var(--paper-red-500);
     --paper-fab-keyboard-focus-background: var(--paper-red-700);
@@ -23347,7 +23351,7 @@ paper-calendar {
 
     <paper-fab class="menu-b" id="fab" icon="add" on-click="add_project"></paper-fab>
 
-    <paper-dialog id="user_prompt" style="width: 320px;" with-backdrop="">
+    <paper-dialog id="user_prompt" with-backdrop="">
       <div class="layout vertical">
         <div style="border-bottom: 2px solid #888; margin: 8px 0; padding: 4px 0;">alerter</div>
 
@@ -23376,32 +23380,28 @@ paper-calendar {
       </div>
     </paper-dialog>
 
-    <paper-dialog id="remove_prompt" style="width: 320px;" with-backdrop="">
-      <div>Are you sure to delete this item ?</div>
+    <paper-dialog id="remove_prompt" with-backdrop="">
+      <div class="subhead">Are you sure to delete this item ?</div>
 
       <div class="buttons">
         <paper-button onclick="document.querySelector('#remove_prompt').close();">
-          <iron-icon icon="close"></iron-icon>
-          cancel
+          <iron-icon icon="close"></iron-icon>cancel
         </paper-button>
         <paper-button on-click="remove_ok">
-          <iron-icon icon="check"></iron-icon>
-          ok
+          <iron-icon icon="check"></iron-icon>ok
         </paper-button>
       </div>
     </paper-dialog>
 
-    <paper-dialog id="schedule_prompt" style="width: 320px;" with-backdrop="">
-      <div>Are you sure to schedule this item ?</div>
+    <paper-dialog id="schedule_prompt" with-backdrop="">
+      <div class="subhead">Are you sure to schedule this item ?</div>
 
       <div class="buttons">
         <paper-button onclick="document.querySelector('#schedule_prompt').close();">
-          <iron-icon icon="close"></iron-icon>
-          cancel
+          <iron-icon icon="close"></iron-icon>cancel
         </paper-button>
         <paper-button on-click="schedule_ok">
-          <iron-icon icon="check"></iron-icon>
-          ok
+          <iron-icon icon="check"></iron-icon>ok
         </paper-button>
       </div>
     </paper-dialog>
