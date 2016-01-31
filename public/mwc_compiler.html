@@ -22979,76 +22979,102 @@ paper-calendar {
 </dom-module>
 <dom-module id="inbox-item" assetpath="/linto/">
 
-    <template>
-        <div class="center-justified horizontal layout">
-            <div class="bordered cursor-p horizontal hover layout li white" on-click="click">
-                <div style="padding: 16px; padding-right: 8px;">
-                    <selectable-icon icon_class$="{{return_class(item.category)}}" icon_text$="{{return_text(item.link.length)}}" id="selectable_icon" selected$="{{selected}}"></selectable-icon>
-                </div>
+  <style>
+  .body1 {
+    @apply(--paper-font-body1);
+    color: #757575;
+  }
+  
+  .subhead {
+    @apply(--paper-font-subhead);
+  }
+  
+  .time {
+    text-align: right;
+  }
+  
+  .torrent-li {
+    border-bottom: 1px solid #EEE;
+    padding: 8px;
+  }
+  
+  .torrent-li > div {
+    padding: 8px;
+  }
+  </style>
 
-                <div class="flex layout vertical" style="padding: 16px; padding-left: 8px;">
-                    <div style="color: #757575; font-size: 14px; line-height: 20px;">{{return_description(item)}}</div>
-                    <div style="font-size: 16px; line-height: 24px;">{{item.title}}</div>
-                    <div style="color: #757575; font-size: 14px; line-height: 20px; text-align: right;">{{return_time(item.time)}}</div>
-                </div>
-            </div>
+  <template>
+    <div class="center-justified horizontal layout">
+      <div class="li">
+        <div class="cursor-p horizontal hover layout torrent-li white" on-click="click">
+          <div>
+            <selectable-icon icon_class="[[return_class(item.category)]]" icon_text="[[return_text(item.link.length)]]" id="selectable_icon" selected$="{{selected}}"></selectable-icon>
+          </div>
+
+          <div class="flex layout vertical">
+            <div class="body1">[[return_description(item)]]</div>
+            <div class="subhead">[[item.title]]</div>
+            <div class="body1 time">[[return_time(item.time)]]</div>
+          </div>
         </div>
-    </template>
+      </div>
+    </div>
+  </template>
 
-    <script>
-    Polymer({
+  <script>
+  Polymer({
 
-        click: function(e) {
-            if (Polymer.dom(e).localTarget.id != "selectable_icon") {
-                e.stopPropagation();
+    click: function(e) {
+      if (Polymer.dom(e).localTarget.id != "selectable_icon") {
+        e.stopPropagation();
 
-                if (_.has(this.item, "link") && this.item.link.length) {
-                    document.querySelector("torrent-view").torrent = this.item;
+        if (_.has(this.item, "link") && this.item.link.length) {
+          document.querySelector("torrent-view").torrent = this.item;
 
-                    FlowRouter.setQueryParams({
-                        "route": "torrent-view"
-                    });
-                } else {
-                    document.querySelector("#polymer_toast").toast("under processing");
-                }
-            }
-        },
-
-        is: "inbox-item",
-
-        properties: {
-            item: {
-                type: Object,
-                value: function() {
-                    return {};
-                }
-            },
-            selected: {
-                notify: true,
-                reflectToAttribute: true,
-                type: Boolean,
-                value: false
-            }
-        },
-
-        return_class: function(text) {
-            return polymer_color(text ? text : "#");
-        },
-
-        return_description: function(item) {
-            return (item.size ? item.size : "#") + " | " + (item.leech ? item.leech + "L" : "#") + " / " + (item.seed ? item.seed + "S" : "#");
-        },
-
-        return_text: function(text) {
-            return (text ? text : "#");
-        },
-
-        return_time: function(time) {
-            return (moment(time).isValid() ? moment(time).fromNow() : "#");
+          FlowRouter.setQueryParams({
+            "route": "torrent-view"
+          });
+        } else {
+          document.querySelector("#polymer_toast").toast("under processing");
         }
+      }
+    },
 
-    });
-    </script>
+    is: "inbox-item",
+
+    properties: {
+      item: {
+        type: Object,
+        value: function() {
+          return {};
+        }
+      },
+      selected: {
+        notify: true,
+        reflectToAttribute: true,
+        type: Boolean,
+        value: false
+      }
+    },
+
+    return_class: function(text) {
+      return polymer_color(text ? text : "#");
+    },
+
+    return_description: function(item) {
+      return (item.size ? item.size : "#") + " | " + (item.leech ? item.leech + "L" : "#") + " / " + (item.seed ? item.seed + "S" : "#");
+    },
+
+    return_text: function(text) {
+      return (text ? text : "#");
+    },
+
+    return_time: function(time) {
+      return (moment(time).isValid() ? moment(time).format("ddd YYYY MMM DD") : "#");
+    }
+
+  });
+  </script>
 
 </dom-module>
 <dom-module id="layout-inbox" assetpath="/linto/">
@@ -23066,6 +23092,10 @@ paper-calendar {
   
   paper-menu-button {
     padding: 0;
+  }
+  
+  paper-progress {
+    width: 100%;
   }
   
   paper-toggle-button {
@@ -23132,7 +23162,9 @@ paper-calendar {
   }
   
   .menu-li > div,
-  .menu-li-bottom > div {
+  .menu-li-bottom > div,
+  .title-li,
+  .title-li > div {
     padding: 8px;
   }
   
@@ -23140,17 +23172,25 @@ paper-calendar {
     bottom: 12px;
     position: fixed;
     right: 16px;
-    -webkit-transition: -webkit-transform 0.2s ease-in-out;
     transition: transform 0.2s ease-in-out;
     will-change: transform;
   }
   
   .menu-b.move-down {
-    transform: translate3d(0, 80px, 0)!important;
+    transform: translate3d(0, 88px, 0)!important;
   }
   
   .subhead {
     @apply(--paper-font-subhead);
+  }
+  
+  .trend-li {
+    padding: 4px 12px;
+  }
+  
+  .trend-li > div {
+    margin: 4px;
+    padding: 8px 12px;
   }
   
   .undo {
@@ -23184,7 +23224,7 @@ paper-calendar {
           </template>
 
           <div class="flex" style="overflow: auto;">
-            <iron-selector activate-event="click" id="menu_opt" on-iron-activate="menu_opt" selected-attribute="selected">
+            <iron-selector id="menu_opt" on-iron-select="menu_opt" selected-attribute="selected">
               <div class="cursor-p horizontal hover layout menu-li relative" data-id="trend">
                 <div>
                   <selectable-icon icon_class="cyan-700" icon_text="@"></selectable-icon>
@@ -23223,7 +23263,7 @@ paper-calendar {
             </iron-selector>
           </div>
 
-          <div class="cursor-p horizontal layout menu-li-bottom relative subhead white" onclick="window.open('https://github.com/HedCET/TorrentAlert', '_system')">
+          <div class="cursor-p center-justified horizontal layout menu-li-bottom relative subhead white" onclick="window.open('https://github.com/HedCET/TorrentAlert', '_system')">
             <div>About TorrentAlert</div>
 
             <paper-ripple></paper-ripple>
@@ -23244,53 +23284,56 @@ paper-calendar {
         </paper-toolbar>
 
         <neon-animated-pages class="fit" id="main_page" selected="1">
-          <neon-animatable>
+          <neon-animatable entry-animation="slide-from-right-animation" exit-animation="slide-left-animation">
             <paper-header-panel>
               <div class="center-justified horizontal layout">
-                <div class="center cursor-d horizontal layout li" style="padding: 8px;">
-                  <iron-icon icon="trending-up" style="padding: 8px;"></iron-icon>
-                  <div style="border-bottom: 2px solid #AAA; line-height: 24px; padding: 8px;">Trending Top <span>{{return_text(trend.keyword.length)}}</span></div>
+                <div class="li">
+                  <div class="center cursor-d horizontal layout title-li">
+                    <iron-icon icon="trending-up"></iron-icon>
+
+                    <div class="subhead" style="border-bottom: 1px solid #757575;">Trending Top [[return_text(trend.keyword.length)]]</div>
+                  </div>
                 </div>
               </div>
 
               <div class="center-justified horizontal layout">
-                <div class="horizontal layout li wrap" style="padding: 4px 12px;">
-                  <template is="dom-repeat" items="{{trend.keyword}}">
-                    <div class="cursor-p grey-500" on-click="trend_opt" style="margin: 4px; padding: 8px 12px;">{{item}}</div>
-                  </template>
+                <div class="li">
+                  <div class="horizontal layout trend-li wrap">
+                    <template is="dom-repeat" items="[[trend.keyword]]">
+                      <div class="cursor-p grey-500" on-click="trend_opt">[[item]]</div>
+                    </template>
+                  </div>
                 </div>
               </div>
 
-              <div style="min-height: 80px;"></div>
+              <div style="min-height: 88px;"></div>
             </paper-header-panel>
           </neon-animatable>
 
-          <neon-animatable>
-            <iron-selector activate-event="click" attr-for-selected="item" multi="" selectable="inbox-item" selected-attribute="selected" selected-values="{{torrent_selected}}">
-              <template is="dom-repeat" items="{{project}}">
-                <template if="{{project_selected(menu_selected, item._id)}}" is="dom-if">
+          <neon-animatable entry-animation="slide-from-right-animation" exit-animation="slide-left-animation">
+            <iron-selector attr-for-selected="item" multi="" selectable="inbox-item" selected-attribute="selected" selected-values="{{torrent_selected}}">
+              <template is="dom-repeat" items="[[project]]">
+                <template if="[[project_selected(menu_selected, item._id)]]" is="dom-if">
                   <div class="center-justified horizontal layout">
-                    <div class="bordered center horizontal layout li">
-                      <div class="flex" style="line-height: 24px; padding: 16px;">{{item.keyword}}</div>
+                    <div class="li">
+                      <div class="center horizontal layout title-li">
+                        <div class="flex subhead">[[item.keyword]]</div>
 
-                      <paper-icon-button data-id$="{{item._id}}" icon="refresh" on-click="refresh"></paper-icon-button>
-
-                      <paper-icon-button data-id$="{{item._id}}" icon="alarm-add" hidden="{{!is_search(item.worker)}}" on-click="schedule"></paper-icon-button>
-
-                      <paper-icon-button data-id$="{{item._id}}" icon="close" on-click="remove_project" style="margin-right: 8px;"></paper-icon-button>
+                        <paper-icon-button data-id$="[[item._id]]" icon="refresh" on-click="refresh"></paper-icon-button>
+                        <paper-icon-button data-id$="[[item._id]]" icon="alarm-add" hidden="[[!is_search(item.worker)]]" on-click="schedule"></paper-icon-button>
+                        <paper-icon-button data-id$="[[item._id]]" icon="close" on-click="remove_project"></paper-icon-button>
+                      </div>
                     </div>
                   </div>
 
                   <div class="center-justified horizontal layout">
                     <div class="li">
-                      <div style="padding: 0 4px;">
-                        <paper-progress class="project_progress" data-id$="{{item._id}}" hidden="" style="width: 100%;"></paper-progress>
-                      </div>
+                      <paper-progress class="project_progress" data-id$="[[item._id]]" hidden=""></paper-progress>
                     </div>
                   </div>
 
-                  <template as="torrent" filter="filter_url" is="dom-repeat" items="{{item.torrent}}" sort="sort">
-                    <inbox-item item$="{{torrent}}"></inbox-item>
+                  <template as="torrent" filter="filter_url" is="dom-repeat" items="[[item.torrent]]" sort="sort">
+                    <inbox-item item="[[torrent]]"></inbox-item>
                   </template>
                 </template>
               </template>
