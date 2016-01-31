@@ -11,3 +11,5 @@ git clone https://github.com/HedCET/TorrentAlert.git TorrentAlert
 cd TorrentAlert 
 meteor
 ```
+
+MAILTO ```request@vcompile.com``` For Abuse/ContentRemoval/copyright/DMCA/EUCD

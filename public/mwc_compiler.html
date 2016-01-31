@@ -23053,727 +23053,752 @@ paper-calendar {
 </dom-module>
 <dom-module id="layout-inbox" assetpath="/linto/">
 
-    <style>
-    paper-drawer-panel /deep/ #drawer,
-    paper-drawer-panel /deep/ #main #scrim {
-        z-index: 1;
-    }
-    
-    paper-fab {
-        --paper-fab-background: var(--paper-red-500);
-        --paper-fab-keyboard-focus-background: var(--paper-red-700);
-    }
-    
-    paper-menu-button {
-        padding: 0;
-    }
-    
-    paper-toggle-button {
-        --paper-toggle-button-checked-bar-color: var(--paper-green-500);
-        --paper-toggle-button-checked-button-color: var(--paper-green-500);
-        --paper-toggle-button-checked-ink-color: var(--paper-green-500);
-    }
-    
-    paper-toolbar {
-        --paper-toolbar-background: var(--paper-cyan-700);
-        --paper-toolbar-color: white;
-    }
-    
-    paper-toolbar paper-icon-button {
-        margin: 0!important;
-    }
-    
-    paper-toolbar paper-icon-button[icon="arrow-back"] {
-        transform: translateX(-42px);
-    }
-    
-    paper-toolbar.selection paper-icon-button[icon="arrow-back"] {
-        transform: translateX(0);
-    }
-    
-    paper-toolbar.selection .selection-hidden {
-        display: none;
-    }
-    
-    paper-toolbar.selection .selection-visible {
-        padding: 8px;
-        transform: rotateX(0);
-        visibility: visible;
-        width: 40px;
-    }
-    
-    paper-toolbar .selection-visible {
-        padding: 0;
-        transform: rotateX(90deg);
-        transition: transform 400ms ease-in-out;
-        visibility: hidden;
-        width: 0;
-        will-change: transform;
-    }
-    
-    paper-toolbar .title {
-        padding: 0 12px;
-    }
-    
-    .menu-li {
-        border-bottom: 2px solid #EEE;
-        border-top: 2px solid #EEE;
-    }
-    
-    .menu-b {
-        bottom: 12px;
-        position: fixed;
-        right: 16px;
-        -webkit-transition: -webkit-transform 0.2s ease-in-out;
-        transition: transform 0.2s ease-in-out;
-        will-change: transform;
-    }
-    
-    .menu-b.move-down {
-        transform: translate3d(0, 80px, 0)!important;
-    }
-    
-    .undo {
-        display: none!important;
-    }
-    </style>
+  <style>
+  paper-drawer-panel /deep/ #drawer,
+  paper-drawer-panel /deep/ #main #scrim {
+    z-index: 1;
+  }
+  
+  paper-fab {
+    --paper-fab-background: var(--paper-red-500);
+    --paper-fab-keyboard-focus-background: var(--paper-red-700);
+  }
+  
+  paper-menu-button {
+    padding: 0;
+  }
+  
+  paper-toggle-button {
+    --paper-toggle-button-checked-bar-color: var(--paper-green-500);
+    --paper-toggle-button-checked-button-color: var(--paper-green-500);
+    --paper-toggle-button-checked-ink-color: var(--paper-green-500);
+  }
+  
+  paper-toolbar {
+    --paper-toolbar-background: var(--paper-cyan-700);
+    --paper-toolbar-color: white;
+  }
+  
+  paper-toolbar paper-icon-button {
+    margin: 0!important;
+  }
+  
+  paper-toolbar paper-icon-button[icon="arrow-back"] {
+    transform: translateX(-42px);
+  }
+  
+  paper-toolbar.selection paper-icon-button[icon="arrow-back"] {
+    transform: translateX(0);
+  }
+  
+  paper-toolbar.selection .selection-hidden {
+    display: none;
+  }
+  
+  paper-toolbar.selection .selection-visible {
+    padding: 8px;
+    transform: rotateX(0);
+    visibility: visible;
+    width: 40px;
+  }
+  
+  paper-toolbar .selection-visible {
+    padding: 0;
+    transform: rotateX(90deg);
+    transition: transform 400ms ease-in-out;
+    visibility: hidden;
+    width: 0;
+    will-change: transform;
+  }
+  
+  paper-toolbar .title {
+    padding: 0 12px;
+  }
+  
+  .body1 {
+    @apply(--paper-font-body1);
+    color: #757575;
+  }
+  
+  .menu-li {
+    border-bottom: 1px solid #EEE;
+    padding: 8px;
+  }
+  
+  .menu-li-bottom {
+    border-top: 1px solid #EEE;
+    padding: 8px;
+    z-index: 1;
+  }
+  
+  .menu-li > div,
+  .menu-li-bottom > div {
+    padding: 8px;
+  }
+  
+  .menu-b {
+    bottom: 12px;
+    position: fixed;
+    right: 16px;
+    -webkit-transition: -webkit-transform 0.2s ease-in-out;
+    transition: transform 0.2s ease-in-out;
+    will-change: transform;
+  }
+  
+  .menu-b.move-down {
+    transform: translate3d(0, 80px, 0)!important;
+  }
+  
+  .subhead {
+    @apply(--paper-font-subhead);
+  }
+  
+  .undo {
+    display: none!important;
+  }
+  </style>
 
-    <template>
-        <iron-localstorage name="trend" on-iron-localstorage-load-empty="initialize_trend" value="{{trend}}"></iron-localstorage>
+  <template>
+    <iron-localstorage name="trend" on-iron-localstorage-load-empty="initialize_trend" value="{{trend}}"></iron-localstorage>
 
-        <paper-drawer-panel id="drawer">
-            <paper-header-panel drawer="">
-                <div class="fit layout vertical">
-                    <template if="{{user._id}}" is="dom-if">
-                        <div class="cursor-p horizontal hover layout menu-li relative" on-click="user_prompt">
-                            <div style="padding: 16px; padding-right: 8px;">
-                                <selectable-icon icon_img_src$="{{user.profile.picture}}"></selectable-icon>
-                            </div>
+    <paper-drawer-panel id="drawer">
+      <paper-header-panel drawer="">
+        <div class="fit layout vertical">
+          <template if="[[user._id]]" is="dom-if">
+            <div class="cursor-p horizontal hover layout menu-li relative" on-click="user_prompt">
+              <div>
+                <selectable-icon icon_img_src="[[user.profile.picture]]"></selectable-icon>
+              </div>
 
-                            <div class="flex layout vertical" style="padding: 16px; padding-left: 8px;">
-                                <div class="horizontal layout">
-                                    <div class="etc flex self-center" style="font-size: 16px; line-height: 24px;">{{user.profile.name}}</div>
-                                    <div class="self-start" style="color: #757575; font-size: 14px; line-height: 20px;">{{return_text(project.length)}}</div>
-                                </div>
-                                <div class="etc" style="color: #757575; font-size: 14px; line-height: 20px;">{{user.profile.email}}</div>
-                            </div>
+              <div class="flex layout vertical">
+                <div class="horizontal layout">
+                  <div class="etc flex self-center subhead">[[user.profile.name]]</div>
+                  <div class="body1 self-start">[[return_text(project.length)]]</div>
+                </div>
 
-                            <paper-ripple></paper-ripple>
-                        </div>
-                    </template>
+                <div class="body1 etc">[[user.profile.email]]</div>
+              </div>
 
-                    <div class="flex" style="overflow: auto;">
-                        <iron-selector activate-event="click" id="menu_opt" on-iron-select="menu_opt" selected-attribute="selected">
-                            <div class="cursor-p horizontal hover layout menu-li relative" data-id="trend">
-                                <div style="padding: 16px; padding-right: 8px;">
-                                    <selectable-icon icon_class="cyan-700" icon_text="@"></selectable-icon>
-                                </div>
+              <paper-ripple></paper-ripple>
+            </div>
+          </template>
 
-                                <div class="flex layout vertical" style="padding: 16px; padding-left: 8px;">
-                                    <div class="horizontal layout">
-                                        <div class="etc flex self-center" style="font-size: 16px; line-height: 24px;">Trending</div>
-                                        <div class="self-start" style="color: #757575; font-size: 14px; line-height: 20px;">{{return_text(trend.keyword.length)}}</div>
-                                    </div>
-                                    <div class="etc" style="color: #757575; font-size: 14px; line-height: 20px;">{{return_time_s(trend.time)}}</div>
-                                </div>
+          <div class="flex" style="overflow: auto;">
+            <iron-selector activate-event="click" id="menu_opt" on-iron-activate="menu_opt" selected-attribute="selected">
+              <div class="cursor-p horizontal hover layout menu-li relative" data-id="trend">
+                <div>
+                  <selectable-icon icon_class="cyan-700" icon_text="@"></selectable-icon>
+                </div>
 
-                                <paper-ripple></paper-ripple>
-                            </div>
+                <div class="flex layout vertical">
+                  <div class="horizontal layout">
+                    <div class="etc flex self-center subhead">Trending</div>
+                    <div class="body1 self-start">[[return_text(trend.keyword.length)]]</div>
+                  </div>
 
-                            <template is="dom-repeat" items="{{project}}">
-                                <div class="cursor-p horizontal hover layout menu-li relative" data-id$="{{item._id}}">
-                                    <div style="padding: 16px; padding-right: 8px;">
-                                        <selectable-icon icon_class$="{{return_class(item.keyword)}}" icon_text$="{{return_icon_text(item.keyword)}}"></selectable-icon>
-                                    </div>
+                  <div class="body1 etc">[[return_time_s(trend.time)]]</div>
+                </div>
 
-                                    <div class="flex layout vertical" style="padding: 16px; padding-left: 8px;">
-                                        <div class="horizontal layout">
-                                            <div class="etc flex self-center" style="font-size: 16px; line-height: 24px;">{{item.keyword}}</div>
-                                            <div class="self-start" style="color: #757575; font-size: 14px; line-height: 20px;">{{return_torrent_count(item.torrent)}}</div>
-                                        </div>
-                                        <div class="etc" style="color: #757575; font-size: 14px; line-height: 20px;">{{return_project_description(item)}}</div>
-                                    </div>
+                <paper-ripple></paper-ripple>
+              </div>
 
-                                    <paper-ripple></paper-ripple>
-                                </div>
-                            </template>
-                        </iron-selector>
+              <template is="dom-repeat" items="[[project]]">
+                <div class="cursor-p horizontal hover layout menu-li relative" data-id$="[[item._id]]">
+                  <div>
+                    <selectable-icon icon_class="[[return_class(item.keyword)]]" icon_text="[[return_icon_text(item.keyword)]]"></selectable-icon>
+                  </div>
+
+                  <div class="flex layout vertical">
+                    <div class="horizontal layout">
+                      <div class="etc flex self-center subhead">[[item.keyword]]</div>
+                      <div class="body1 self-start">[[return_torrent_count(item.torrent)]]</div>
                     </div>
 
-                    <div class="cursor-p menu-li relative white" onclick="window.open('http://vcompile.com/torrentz', '_system')" style="padding: 16px; z-index: 1;">About TorrentAlert
-                        <paper-ripple></paper-ripple>
+                    <div class="body1 etc">[[return_project_description(item)]]</div>
+                  </div>
+
+                  <paper-ripple></paper-ripple>
+                </div>
+              </template>
+            </iron-selector>
+          </div>
+
+          <div class="cursor-p horizontal layout menu-li-bottom relative subhead white" onclick="window.open('https://github.com/HedCET/TorrentAlert', '_system')">
+            <div>About TorrentAlert</div>
+
+            <paper-ripple></paper-ripple>
+          </div>
+        </div>
+      </paper-header-panel>
+
+      <paper-header-panel main="">
+        <paper-toolbar id="main_toolbar">
+          <paper-icon-button class="selection-visible" icon="arrow-back" on-click="clear_torrent_selection"></paper-icon-button>
+          <paper-icon-button class="selection-hidden" icon="menu" paper-drawer-toggle=""></paper-icon-button>
+
+          <div class="title" id="main_toolbar_title">TorrentAlert</div>
+
+          <paper-icon-button class="selection-visible" icon="delete" on-click="remove_torrent"></paper-icon-button>
+          <paper-icon-button class="selection-visible" icon="social:share" on-click="share"></paper-icon-button>
+          <paper-icon-button class="selection-hidden" icon="search" on-click="search_bar"></paper-icon-button>
+        </paper-toolbar>
+
+        <neon-animated-pages class="fit" id="main_page" selected="1">
+          <neon-animatable>
+            <paper-header-panel>
+              <div class="center-justified horizontal layout">
+                <div class="center cursor-d horizontal layout li" style="padding: 8px;">
+                  <iron-icon icon="trending-up" style="padding: 8px;"></iron-icon>
+                  <div style="border-bottom: 2px solid #AAA; line-height: 24px; padding: 8px;">Trending Top <span>{{return_text(trend.keyword.length)}}</span></div>
+                </div>
+              </div>
+
+              <div class="center-justified horizontal layout">
+                <div class="horizontal layout li wrap" style="padding: 4px 12px;">
+                  <template is="dom-repeat" items="{{trend.keyword}}">
+                    <div class="cursor-p grey-500" on-click="trend_opt" style="margin: 4px; padding: 8px 12px;">{{item}}</div>
+                  </template>
+                </div>
+              </div>
+
+              <div style="min-height: 80px;"></div>
+            </paper-header-panel>
+          </neon-animatable>
+
+          <neon-animatable>
+            <iron-selector activate-event="click" attr-for-selected="item" multi="" selectable="inbox-item" selected-attribute="selected" selected-values="{{torrent_selected}}">
+              <template is="dom-repeat" items="{{project}}">
+                <template if="{{project_selected(menu_selected, item._id)}}" is="dom-if">
+                  <div class="center-justified horizontal layout">
+                    <div class="bordered center horizontal layout li">
+                      <div class="flex" style="line-height: 24px; padding: 16px;">{{item.keyword}}</div>
+
+                      <paper-icon-button data-id$="{{item._id}}" icon="refresh" on-click="refresh"></paper-icon-button>
+
+                      <paper-icon-button data-id$="{{item._id}}" icon="alarm-add" hidden="{{!is_search(item.worker)}}" on-click="schedule"></paper-icon-button>
+
+                      <paper-icon-button data-id$="{{item._id}}" icon="close" on-click="remove_project" style="margin-right: 8px;"></paper-icon-button>
                     </div>
-                </div>
-            </paper-header-panel>
+                  </div>
 
-            <paper-header-panel main="">
-                <paper-toolbar id="main_toolbar">
-                    <paper-icon-button class="selection-visible" icon="arrow-back" on-click="clear_torrent_selection"></paper-icon-button>
-                    <paper-icon-button class="selection-hidden" icon="menu" paper-drawer-toggle=""></paper-icon-button>
+                  <div class="center-justified horizontal layout">
+                    <div class="li">
+                      <div style="padding: 0 4px;">
+                        <paper-progress class="project_progress" data-id$="{{item._id}}" hidden="" style="width: 100%;"></paper-progress>
+                      </div>
+                    </div>
+                  </div>
 
-                    <div class="title" id="main_toolbar_title">TorrentAlert</div>
+                  <template as="torrent" filter="filter_url" is="dom-repeat" items="{{item.torrent}}" sort="sort">
+                    <inbox-item item$="{{torrent}}"></inbox-item>
+                  </template>
+                </template>
+              </template>
+            </iron-selector>
 
-                    <paper-icon-button class="selection-visible" icon="delete" on-click="remove_torrent"></paper-icon-button>
-                    <paper-icon-button class="selection-visible" icon="social:share" on-click="share"></paper-icon-button>
-                    <paper-icon-button class="selection-hidden" icon="search" on-click="search_bar"></paper-icon-button>
-                </paper-toolbar>
+            <div style="min-height: 88px;"></div>
+          </neon-animatable>
+        </neon-animated-pages>
+      </paper-header-panel>
+    </paper-drawer-panel>
 
-                <neon-animated-pages class="fit" id="main_page" selected="1">
-                    <neon-animatable>
-                        <paper-header-panel>
-                            <div class="center-justified horizontal layout">
-                                <div class="center cursor-d horizontal layout li" style="padding: 8px;">
-                                    <iron-icon icon="trending-up" style="padding: 8px;"></iron-icon>
-                                    <div style="border-bottom: 2px solid #AAA; line-height: 24px; padding: 8px;">Trending Top <span>{{return_text(trend.keyword.length)}}</span></div>
-                                </div>
-                            </div>
+    <paper-fab class="menu-b" id="fab" icon="add" on-click="add_project"></paper-fab>
 
-                            <div class="center-justified horizontal layout">
-                                <div class="horizontal layout li wrap" style="padding: 4px 12px;">
-                                    <template is="dom-repeat" items="{{trend.keyword}}">
-                                        <div class="cursor-p grey-500" on-click="trend_opt" style="margin: 4px; padding: 8px 12px;">{{item}}</div>
-                                    </template>
-                                </div>
-                            </div>
+    <paper-dialog id="user_prompt" style="width: 320px;" with-backdrop="">
+      <div class="layout vertical">
+        <div style="border-bottom: 2px solid #888; margin: 8px 0; padding: 4px 0;">alerter</div>
 
-                            <div style="min-height: 80px;"></div>
-                        </paper-header-panel>
-                    </neon-animatable>
+        <div class="center horizontal justified layout" style="padding: 8px 0;">
+          <div style="color: #757575;">enable GCM</div>
+          <paper-toggle-button checked="" disabled=""></paper-toggle-button>
+        </div>
 
-                    <neon-animatable>
-                        <iron-selector activate-event="click" attr-for-selected="item" multi="" selectable="inbox-item" selected-attribute="selected" selected-values="{{torrent_selected}}">
-                            <template is="dom-repeat" items="{{project}}">
-                                <template if="{{project_selected(menu_selected, item._id)}}" is="dom-if">
-                                    <div class="center-justified horizontal layout">
-                                        <div class="bordered center horizontal layout li">
-                                            <div class="flex" style="line-height: 24px; padding: 16px;">{{item.keyword}}</div>
+        <div class="center horizontal justified layout" style="padding: 8px 0;">
+          <div style="color: #757575;">enable email alert</div>
+          <paper-toggle-button disabled=""></paper-toggle-button>
+        </div>
 
-                                            <paper-icon-button data-id$="{{item._id}}" icon="refresh" on-click="refresh"></paper-icon-button>
+        <div style="border-bottom: 2px solid #888; margin: 8px 0; padding: 4px 0;">scheduler</div>
 
-                                            <paper-icon-button data-id$="{{item._id}}" icon="alarm-add" hidden="{{!is_search(item.worker)}}" on-click="schedule"></paper-icon-button>
+        <div class="center horizontal layout">
+          <div class="flex" style="color: #757575;">schedule / day</div>
+          <paper-slider disabled="" editable="" id="seeds" max="96" min="1" style="max-width: 100px;" value="4"></paper-slider>
+        </div>
 
-                                            <paper-icon-button data-id$="{{item._id}}" icon="close" on-click="remove_project" style="margin-right: 8px;"></paper-icon-button>
-                                        </div>
-                                    </div>
+        <div style="border-bottom: 2px solid #888; margin: 8px 0; padding: 4px 0;">user: <span>{{user.profile.name}}</span></div>
 
-                                    <div class="center-justified horizontal layout">
-                                        <div class="li">
-                                            <div style="padding: 0 4px;">
-                                                <paper-progress class="project_progress" data-id$="{{item._id}}" hidden="" style="width: 100%;"></paper-progress>
-                                            </div>
-                                        </div>
-                                    </div>
+        <div class="end-justified horizontal layout">
+          <paper-button class="blue-500" on-click="sign_out" style="margin: 8px 0; width: 50%;">SIGN OUT</paper-button>
+        </div>
+      </div>
+    </paper-dialog>
 
-                                    <template as="torrent" filter="filter_url" is="dom-repeat" items="{{item.torrent}}" sort="sort">
-                                        <inbox-item item$="{{torrent}}"></inbox-item>
-                                    </template>
-                                </template>
-                            </template>
-                        </iron-selector>
+    <paper-dialog id="remove_prompt" style="width: 320px;" with-backdrop="">
+      <div>Are you sure to delete this item ?</div>
 
-                        <div style="min-height: 88px;"></div>
-                    </neon-animatable>
-                </neon-animated-pages>
-            </paper-header-panel>
-        </paper-drawer-panel>
+      <div class="buttons">
+        <paper-button onclick="document.querySelector('#remove_prompt').close();">
+          <iron-icon icon="close"></iron-icon>
+          cancel
+        </paper-button>
+        <paper-button on-click="remove_ok">
+          <iron-icon icon="check"></iron-icon>
+          ok
+        </paper-button>
+      </div>
+    </paper-dialog>
 
-        <paper-fab class="menu-b" id="fab" icon="add" on-click="add_project"></paper-fab>
+    <paper-dialog id="schedule_prompt" style="width: 320px;" with-backdrop="">
+      <div>Are you sure to schedule this item ?</div>
 
-        <paper-dialog id="user_prompt" style="width: 320px;" with-backdrop="">
-            <div class="layout vertical">
-                <div style="border-bottom: 2px solid #888; margin: 8px 0; padding: 4px 0;">alerter</div>
+      <div class="buttons">
+        <paper-button onclick="document.querySelector('#schedule_prompt').close();">
+          <iron-icon icon="close"></iron-icon>
+          cancel
+        </paper-button>
+        <paper-button on-click="schedule_ok">
+          <iron-icon icon="check"></iron-icon>
+          ok
+        </paper-button>
+      </div>
+    </paper-dialog>
+  </template>
 
-                <div class="center horizontal justified layout" style="padding: 8px 0;">
-                    <div style="color: #757575;">enable GCM</div>
-                    <paper-toggle-button checked="" disabled=""></paper-toggle-button>
-                </div>
+  <script>
+  Polymer({
 
-                <div class="center horizontal justified layout" style="padding: 8px 0;">
-                    <div style="color: #757575;">enable email alert</div>
-                    <paper-toggle-button disabled=""></paper-toggle-button>
-                </div>
+    add_project: function() {
+      FlowRouter.setQueryParams({
+        "route": "add-project"
+      });
+    },
 
-                <div style="border-bottom: 2px solid #888; margin: 8px 0; padding: 4px 0;">scheduler</div>
+    attached: function() {
+      this.user = (Meteor.user() ? Meteor.user() : {});
 
-                <div class="center horizontal layout">
-                    <div class="flex" style="color: #757575;">schedule / day</div>
-                    <paper-slider disabled="" editable="" id="seeds" max="96" min="1" style="max-width: 100px;" value="4"></paper-slider>
-                </div>
+      if ((document.querySelector("#torrent_db").value || []).length) {
+        this.project = document.querySelector("#torrent_db").value;
+      }
 
-                <div style="border-bottom: 2px solid #888; margin: 8px 0; padding: 4px 0;">user: <span>{{user.profile.name}}</span></div>
+      var _this = this;
 
-                <div class="end-justified horizontal layout">
-                    <paper-button class="blue-500" on-click="sign_out" style="margin: 8px 0; width: 50%;">SIGN OUT</paper-button>
-                </div>
-            </div>
-        </paper-dialog>
-
-        <paper-dialog id="remove_prompt" style="width: 320px;" with-backdrop="">
-            <div>Are you sure to delete this item ?</div>
-
-            <div class="buttons">
-                <paper-button onclick="document.querySelector('#remove_prompt').close();">
-                    <iron-icon icon="close"></iron-icon>
-                    cancel
-                </paper-button>
-                <paper-button on-click="remove_ok">
-                    <iron-icon icon="check"></iron-icon>
-                    ok
-                </paper-button>
-            </div>
-        </paper-dialog>
-
-        <paper-dialog id="schedule_prompt" style="width: 320px;" with-backdrop="">
-            <div>Are you sure to schedule this item ?</div>
-
-            <div class="buttons">
-                <paper-button onclick="document.querySelector('#schedule_prompt').close();">
-                    <iron-icon icon="close"></iron-icon>
-                    cancel
-                </paper-button>
-                <paper-button on-click="schedule_ok">
-                    <iron-icon icon="check"></iron-icon>
-                    ok
-                </paper-button>
-            </div>
-        </paper-dialog>
-    </template>
-
-    <script>
-    Polymer({
-
-        add_project: function() {
-            FlowRouter.setQueryParams({
-                "route": "add-project"
-            });
-        },
-
-        attached: function() {
-            this.user = (Meteor.user() ? Meteor.user() : {});
-
-            if ((document.querySelector("#torrent_db").value || []).length) {
-                this.project = document.querySelector("#torrent_db").value;
-            }
-
-            var _this = this;
-
-            Meteor.setTimeout(function() {
-                if (6 < moment.duration(moment().diff(moment(_this.trend.time))).asHours() || !_this.trend.keyword.length) {
-                    Meteor.call("trend", function(error, response) {
-                        if (error) {
-                            document.querySelector("#polymer_toast").toast(error.reason);
-                        } else {
-                            if (response.length) {
-                                _this.trend = {
-                                    keyword: response,
-                                    time: moment().format()
-                                };
-                            }
-                        }
-                    });
-                }
-            }, 1000);
-
-            Meteor.setTimeout(function() {
-                _project.find().observe({
-                    added: function() {
-                        _this._updater();
-                    },
-
-                    changed: function() {
-                        _this._updater();
-                    },
-
-                    removed: function(row) {
-                        var index = _.map(_this.project, function(A) {
-                            return A._id;
-                        }).indexOf(row._id);
-
-                        if (-1 < index) {
-                            _this.splice("project", index, 1);
-                        }
-                    }
-                });
-            }, 1000);
-
-            Meteor.setTimeout(function() {
-                _torrent.find().observe({
-                    added: function() {
-                        _this._updater();
-                    },
-
-                    changed: function(row) {
-                        _this._updater();
-                    },
-
-                    removed: function(row) {
-                        for (var A = 0; A < _this.project.length; A++) {
-                            var index = _.map(_this.project[A].torrent, function(item) {
-                                return item._id;
-                            }).indexOf(row._id);
-
-                            if (-1 < index) {
-                                _this.splice("project." + A + ".torrent", index, 1);
-                            }
-                        }
-                    }
-                });
-            }, 1000 * 4);
-        },
-
-        clear_torrent_selection: function() {
-            this.torrent_selected = [];
-        },
-
-        filter_url: function(torrent) {
-            return (torrent.url);
-        },
-
-        initialize_trend: function() {
-            this.trend = {
-                keyword: [],
-                time: moment().format()
-            };
-        },
-
-        is: "layout-inbox",
-
-        is_search: function(worker) {
-            return (worker == "search")
-        },
-
-        menu_opt: function(e, d) {
-            this.$.drawer.closeDrawer();
-
-            this.$.main_toolbar.className = this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "") + (d.item.dataset.id == "trend" ? "" : " " + document.querySelector("#menu_opt .iron-selected selectable-icon").icon_class);
-
-            this.$.main_page.selected = (d.item.dataset.id == "trend" ? 0 : 1);
-
-            this.menu_selected = d.item.dataset.id;
-        },
-
-        observers: [
-            "project_change(project.splices)",
-            "torrent_selected_change(torrent_selected.splices)"
-        ],
-
-        project_change: function(change) {
-            this.debounce("project_change", function() {
-                if (this.menu_selected != "trend") {
-                    this.$.main_page.selected = (this.project.length ? 1 : 0);
-                }
-            }, 1000);
-        },
-
-        project_selected: function(menu_opt, project_opt) {
-            return (menu_opt == "" ? true : menu_opt == project_opt);
-        },
-
-        properties: {
-            menu_selected: {
-                type: String,
-                value: ""
-            },
-            project: {
-                type: Array,
-                value: function() {
-                    return [];
-                }
-            },
-            torrent_selected: {
-                type: Array,
-                value: function() {
-                    return [];
-                }
-            },
-            trend: {
-                type: Object,
-                value: function() {
-                    return {
-                        keyword: [],
-                        time: moment().format()
-                    };
-                }
-            },
-            user: {
-                type: Object,
-                value: function() {
-                    return {};
-                }
-            }
-        },
-
-        refresh: function(e) {
-            if (Meteor.status().connected) {
-                var _this = this;
-
-                Meteor.call("refresh", Polymer.dom(e).localTarget.dataset.id, function(error, response) {
-                    if (error) {
-                        document.querySelector("#polymer_toast").toast(error.reason);
-                    } else {
-                        var index = _.map(_this.project, function(A) {
-                            return A._id;
-                        }).indexOf(response._id);
-
-                        if (-1 < index) {
-                            for (var A = 0; A < response.torrent.length; A++) {
-                                var item = _torrent.findOne({
-                                    _id: response.torrent[A]
-                                });
-
-                                response.torrent[A] = (item ? item : {
-                                    _id: response.torrent[A]
-                                });
-
-                                response.torrent[A].project = {
-                                    _id: response._id
-                                };
-                            }
-
-                            _this.splice("project", index, 1, response);
-                        }
-                    }
-                });
+      Meteor.setTimeout(function() {
+        if (6 < moment.duration(moment().diff(moment(_this.trend.time))).asHours() || !_this.trend.keyword.length) {
+          Meteor.call("trend", function(error, response) {
+            if (error) {
+              document.querySelector("#polymer_toast").toast(error.reason);
             } else {
-                document.querySelector("#polymer_toast").toast("server connection required");
+              if (response.length) {
+                _this.trend = {
+                  keyword: response,
+                  time: moment().format()
+                };
+              }
             }
-        },
-
-        remove_ok: function(e) {
-            if (Meteor.status().connected) {
-                var _this = this;
-
-                Meteor.call("remove_project", _this.$.remove_prompt.dataset.id, function(error, response) {
-                    if (error) {
-                        document.querySelector("#polymer_toast").toast(error.reason);
-                    } else {
-                        document.querySelector("#polymer_toast").toast(response);
-
-                        _this.$.main_toolbar.className = _this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "");
-
-                        _this.menu_selected = "";
-                    }
-                });
-            } else {
-                document.querySelector("#polymer_toast").toast("server connection required");
-            }
-
-            this.$.remove_prompt.close();
-        },
-
-        remove_project: function(e) {
-            this.$.remove_prompt.dataset.id = Polymer.dom(e).localTarget.dataset.id;
-            this.$.remove_prompt.open();
-        },
-
-        remove_torrent: function() {
-            $("inbox-item.iron-selected").addClass("undo");
-
-            document.querySelector("#polymer_toast").undo = {
-                torrent: _.map(this.torrent_selected, function(A) {
-                    return A._id;
-                })
-            };
-
-            document.querySelector("#polymer_toast").toast(this.torrent_selected.length + " torrent removed");
-
-            this.clear_torrent_selection();
-        },
-
-        return_class: function(text) {
-            return polymer_color(text ? text : "#");
-        },
-
-        return_icon_text: function(text) {
-            return (isNaN(text.charAt(0)) ? text.charAt(0) : "#");
-        },
-
-        return_project_description: function(item) {
-            return (item.worker == "schedule" ? item.within + "M | " + item.leech + "L / " + item.seed + "S" : moment(item.time).format("MMM DD ddd hh:mm A"));
-        },
-
-        return_text: function(text) {
-            return (text ? text : "#");
-        },
-
-        return_time: function(time) {
-            return (moment(time).isValid() ? moment(time).fromNow() : "#");
-        },
-
-        return_time_s: function(time) {
-            return (moment(time).isValid() ? moment(time).format("MMM DD ddd hh:mm A") : "#");
-        },
-
-        return_torrent_count: function(torrent) {
-            var A = _.countBy(torrent, function(item) {
-                return item.url ? "YES" : "NO";
-            });
-
-            return (A.YES && A.NO ? A.YES + " / " : "") + (torrent.length ? torrent.length : "#");
-        },
-
-        return_torrent_description: function(item) {
-            return (item.size ? item.size : "#") + " | " + (item.leech ? item.leech + "L" : "#") + " / " + (item.seed ? item.seed + "S" : "#");
-        },
-
-        schedule: function(e) {
-            this.$.schedule_prompt.dataset.id = Polymer.dom(e).localTarget.dataset.id;
-            this.$.schedule_prompt.open();
-        },
-
-        schedule_ok: function(e) {
-            if (Meteor.status().connected) {
-                var _this = this;
-
-                Meteor.call("schedule_project", _this.$.schedule_prompt.dataset.id, function(error, response) {
-                    if (error) {
-                        document.querySelector("#polymer_toast").toast(error.reason);
-                    } else {
-                        document.querySelector("#polymer_toast").toast(response);
-
-                        _this.$.main_toolbar.className = _this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "");
-
-                        _this.menu_selected = "";
-                    }
-                });
-            } else {
-                document.querySelector("#polymer_toast").toast("server connection required");
-            }
-
-            this.$.schedule_prompt.close();
-        },
-
-        search_bar: function() {
-            FlowRouter.setQueryParams({
-                "route": "search-bar"
-            });
-        },
-
-        share: function() {
-            var body = "";
-
-            for (var A = 0; A < this.torrent_selected.length; A++) {
-                if (this.torrent_selected[A].link.length) {
-                    body += "\n\n" + (A + 1) + "\t\t" + this.torrent_selected[A].title + "\n\n";
-
-                    for (var Z = 0; Z < this.torrent_selected[A].link.length; Z++) {
-                        body += "\t\t" + (Z + 1) + "\t\t" + this.torrent_selected[A].link[Z].url + "\n\n";
-                    }
-                }
-            }
-
-            if (body != "") {
-                if (Meteor.isCordova) {
-                    window.plugins.socialsharing.share("Hi\n\nTorrentAlert - " + this.user.profile.name + " shared " + this.torrent_selected.length + " torrent" + body);
-                } else {
-                    window.open("mailto:" + this.user.profile.email + "?subject=" + encodeURIComponent("TorrentAlert") + "&body=" + encodeURIComponent("Hi\n\n" + this.user.profile.name + " shared " + this.torrent_selected.length + " torrent" + body), "_system");
-                }
-            } else {
-                document.querySelector("#polymer_toast").toast("empty email body");
-            }
-        },
-
-        sign_out: function() {
-            if (Meteor.status().connected) {
-                this.project = [];
-
-                FlowRouter.go("/inbox/sign-out");
-            } else {
-                document.querySelector("#polymer_toast").toast("server connection required");
-            }
-        },
-
-        sort: function(A, Z) {
-            return (parseInt(moment(Z.time).format("x")) - parseInt(moment(A.time).format("x")));
-        },
-
-        torrent_selected_change: function(change) {
-            this.$.main_toolbar_title.textContent = (this.torrent_selected.length ? this.torrent_selected.length : "TorrentAlert");
-
-            this.$.main_toolbar.toggleClass("grey-500", this.torrent_selected.length);
-            this.$.main_toolbar.toggleClass("selection", this.torrent_selected.length);
-
-            this.$.fab.toggleClass("move-down", this.torrent_selected.length);
-        },
-
-        trend_opt: function(e) {
-            if (Meteor.status().connected) {
-                var keyword = Polymer.dom(e).localTarget.textContent.trim();
-
-                if (keyword.length) {
-                    var _this = this,
-                        row = {
-                            keyword: keyword,
-                            leech: 1,
-                            seed: 1,
-                            url: "search",
-                            within: 6,
-                            worker: "search"
-                        };
-
-                    Meteor.call("insert_project", row, function(error, response) {
-                        if (error) {
-                            document.querySelector("#polymer_toast").toast((error.reason == "userNotFound") ? "internet/user required" : error.reason);
-                        } else {
-                            if (response == "") {
-                                document.querySelector("#polymer_toast").toast("unknown issue");
-                            } else {
-                                document.querySelector("#polymer_toast").toast("i keyword added");
-
-                                _this.$.main_toolbar.className = _this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "") + " " + polymer_color(keyword);
-
-                                _this.menu_selected = response;
-                            }
-                        }
-                    });
-
-                    _this.$.main_page.selected = 1;
-                } else {
-                    document.querySelector("#polymer_toast").toast("empty keyword");
-                }
-            } else {
-                document.querySelector("#polymer_toast").toast("server connection required");
-            }
-        },
-
-        user_prompt: function() {
-            this.$.user_prompt.open();
-        },
-
-        _updater: function() {
-            this.debounce("_updater", function() {
-                var _this = this;
-
-                _project.find().forEach(function(row) {
-                    for (var A = 0; A < row.torrent.length; A++) {
-                        var item = _torrent.findOne({
-                            _id: row.torrent[A]
-                        });
-
-                        row.torrent[A] = (item ? item : {
-                            _id: row.torrent[A]
-                        });
-
-                        row.torrent[A].project = {
-                            _id: row._id
-                        };
-                    }
-
-                    var index = _.map(_this.project, function(A) {
-                        return A._id;
-                    }).indexOf(row._id);
-
-                    if (-1 < index) {
-                        _this.set("project." + index, row);
-                    } else {
-                        _this.unshift("project", row);
-                    }
-                });
-            }, 1000);
+          });
         }
+      }, 1000);
 
-    });
-    </script>
+      Meteor.setTimeout(function() {
+        _project.find().observe({
+          added: function() {
+            _this._updater();
+          },
+
+          changed: function() {
+            _this._updater();
+          },
+
+          removed: function(row) {
+            var index = _.map(_this.project, function(A) {
+              return A._id;
+            }).indexOf(row._id);
+
+            if (-1 < index) {
+              _this.splice("project", index, 1);
+            }
+          }
+        });
+      }, 1000);
+
+      Meteor.setTimeout(function() {
+        _torrent.find().observe({
+          added: function() {
+            _this._updater();
+          },
+
+          changed: function(row) {
+            _this._updater();
+          },
+
+          removed: function(row) {
+            for (var A = 0; A < _this.project.length; A++) {
+              var index = _.map(_this.project[A].torrent, function(item) {
+                return item._id;
+              }).indexOf(row._id);
+
+              if (-1 < index) {
+                _this.splice("project." + A + ".torrent", index, 1);
+              }
+            }
+          }
+        });
+      }, 1000 * 4);
+    },
+
+    clear_torrent_selection: function() {
+      this.torrent_selected = [];
+    },
+
+    filter_url: function(torrent) {
+      return (torrent.url);
+    },
+
+    initialize_trend: function() {
+      this.trend = {
+        keyword: [],
+        time: moment().format()
+      };
+    },
+
+    is: "layout-inbox",
+
+    is_search: function(worker) {
+      return (worker == "search")
+    },
+
+    menu_opt: function(e, d) {
+      this.$.drawer.closeDrawer();
+
+      this.$.main_toolbar.className = this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "") + (d.item.dataset.id == "trend" ? "" : " " + document.querySelector("#menu_opt .iron-selected selectable-icon").icon_class);
+
+      this.$.main_page.selected = (d.item.dataset.id == "trend" ? 0 : 1);
+
+      this.menu_selected = d.item.dataset.id;
+    },
+
+    observers: [
+      "project_change(project.splices)",
+      "torrent_selected_change(torrent_selected.splices)"
+    ],
+
+    project_change: function(change) {
+      this.debounce("project_change", function() {
+        if (this.menu_selected != "trend") {
+          this.$.main_page.selected = (this.project.length ? 1 : 0);
+        }
+      }, 1000);
+    },
+
+    project_selected: function(menu_opt, project_opt) {
+      return (menu_opt == "" ? true : menu_opt == project_opt);
+    },
+
+    properties: {
+      menu_selected: {
+        type: String,
+        value: ""
+      },
+      project: {
+        type: Array,
+        value: function() {
+          return [];
+        }
+      },
+      torrent_selected: {
+        type: Array,
+        value: function() {
+          return [];
+        }
+      },
+      trend: {
+        type: Object,
+        value: function() {
+          return {
+            keyword: [],
+            time: moment().format()
+          };
+        }
+      },
+      user: {
+        type: Object,
+        value: function() {
+          return {};
+        }
+      }
+    },
+
+    refresh: function(e) {
+      if (Meteor.status().connected) {
+        var _this = this;
+
+        Meteor.call("refresh", Polymer.dom(e).localTarget.dataset.id, function(error, response) {
+          if (error) {
+            document.querySelector("#polymer_toast").toast(error.reason);
+          } else {
+            var index = _.map(_this.project, function(A) {
+              return A._id;
+            }).indexOf(response._id);
+
+            if (-1 < index) {
+              for (var A = 0; A < response.torrent.length; A++) {
+                var item = _torrent.findOne({
+                  _id: response.torrent[A]
+                });
+
+                response.torrent[A] = (item ? item : {
+                  _id: response.torrent[A]
+                });
+
+                response.torrent[A].project = {
+                  _id: response._id
+                };
+              }
+
+              _this.splice("project", index, 1, response);
+            }
+          }
+        });
+      } else {
+        document.querySelector("#polymer_toast").toast("server connection required");
+      }
+    },
+
+    remove_ok: function(e) {
+      if (Meteor.status().connected) {
+        var _this = this;
+
+        Meteor.call("remove_project", _this.$.remove_prompt.dataset.id, function(error, response) {
+          if (error) {
+            document.querySelector("#polymer_toast").toast(error.reason);
+          } else {
+            document.querySelector("#polymer_toast").toast(response);
+
+            _this.$.main_toolbar.className = _this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "");
+
+            _this.menu_selected = "";
+          }
+        });
+      } else {
+        document.querySelector("#polymer_toast").toast("server connection required");
+      }
+
+      this.$.remove_prompt.close();
+    },
+
+    remove_project: function(e) {
+      this.$.remove_prompt.dataset.id = Polymer.dom(e).localTarget.dataset.id;
+      this.$.remove_prompt.open();
+    },
+
+    remove_torrent: function() {
+      $("inbox-item.iron-selected").addClass("undo");
+
+      document.querySelector("#polymer_toast").undo = {
+        torrent: _.map(this.torrent_selected, function(A) {
+          return A._id;
+        })
+      };
+
+      document.querySelector("#polymer_toast").toast(this.torrent_selected.length + " torrent removed");
+
+      this.clear_torrent_selection();
+    },
+
+    return_class: function(text) {
+      return polymer_color(text ? text : "#");
+    },
+
+    return_icon_text: function(text) {
+      return (isNaN(text.charAt(0)) ? text.charAt(0) : "#");
+    },
+
+    return_project_description: function(item) {
+      return (item.worker == "schedule" ? item.within + "M | " + item.leech + "L / " + item.seed + "S" : moment(item.time).format("MMM DD ddd hh:mm A"));
+    },
+
+    return_text: function(text) {
+      return (text ? text : "#");
+    },
+
+    return_time: function(time) {
+      return (moment(time).isValid() ? moment(time).fromNow() : "#");
+    },
+
+    return_time_s: function(time) {
+      return (moment(time).isValid() ? moment(time).format("MMM DD ddd hh:mm A") : "#");
+    },
+
+    return_torrent_count: function(torrent) {
+      var A = _.countBy(torrent, function(item) {
+        return item.url ? "YES" : "NO";
+      });
+
+      return (A.YES && A.NO ? A.YES + " / " : "") + (torrent.length ? torrent.length : "#");
+    },
+
+    return_torrent_description: function(item) {
+      return (item.size ? item.size : "#") + " | " + (item.leech ? item.leech + "L" : "#") + " / " + (item.seed ? item.seed + "S" : "#");
+    },
+
+    schedule: function(e) {
+      this.$.schedule_prompt.dataset.id = Polymer.dom(e).localTarget.dataset.id;
+      this.$.schedule_prompt.open();
+    },
+
+    schedule_ok: function(e) {
+      if (Meteor.status().connected) {
+        var _this = this;
+
+        Meteor.call("schedule_project", _this.$.schedule_prompt.dataset.id, function(error, response) {
+          if (error) {
+            document.querySelector("#polymer_toast").toast(error.reason);
+          } else {
+            document.querySelector("#polymer_toast").toast(response);
+
+            _this.$.main_toolbar.className = _this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "");
+
+            _this.menu_selected = "";
+          }
+        });
+      } else {
+        document.querySelector("#polymer_toast").toast("server connection required");
+      }
+
+      this.$.schedule_prompt.close();
+    },
+
+    search_bar: function() {
+      FlowRouter.setQueryParams({
+        "route": "search-bar"
+      });
+    },
+
+    share: function() {
+      var body = "";
+
+      for (var A = 0; A < this.torrent_selected.length; A++) {
+        if (this.torrent_selected[A].link.length) {
+          body += "\n\n" + (A + 1) + "\t\t" + this.torrent_selected[A].title + "\n\n";
+
+          for (var Z = 0; Z < this.torrent_selected[A].link.length; Z++) {
+            body += "\t\t" + (Z + 1) + "\t\t" + this.torrent_selected[A].link[Z].url + "\n\n";
+          }
+        }
+      }
+
+      if (body != "") {
+        if (Meteor.isCordova) {
+          window.plugins.socialsharing.share("Hi\n\nTorrentAlert - " + this.user.profile.name + " shared " + this.torrent_selected.length + " torrent" + body);
+        } else {
+          window.open("mailto:" + this.user.profile.email + "?subject=" + encodeURIComponent("TorrentAlert") + "&body=" + encodeURIComponent("Hi\n\n" + this.user.profile.name + " shared " + this.torrent_selected.length + " torrent" + body), "_system");
+        }
+      } else {
+        document.querySelector("#polymer_toast").toast("empty email body");
+      }
+    },
+
+    sign_out: function() {
+      if (Meteor.status().connected) {
+        this.project = [];
+
+        FlowRouter.go("/inbox/sign-out");
+      } else {
+        document.querySelector("#polymer_toast").toast("server connection required");
+      }
+    },
+
+    sort: function(A, Z) {
+      return (parseInt(moment(Z.time).format("x")) - parseInt(moment(A.time).format("x")));
+    },
+
+    torrent_selected_change: function(change) {
+      this.$.main_toolbar_title.textContent = (this.torrent_selected.length ? this.torrent_selected.length : "TorrentAlert");
+
+      this.$.main_toolbar.toggleClass("grey-500", this.torrent_selected.length);
+      this.$.main_toolbar.toggleClass("selection", this.torrent_selected.length);
+
+      this.$.fab.toggleClass("move-down", this.torrent_selected.length);
+    },
+
+    trend_opt: function(e) {
+      if (Meteor.status().connected) {
+        var keyword = Polymer.dom(e).localTarget.textContent.trim();
+
+        if (keyword.length) {
+          var _this = this,
+            row = {
+              keyword: keyword,
+              leech: 1,
+              seed: 1,
+              url: "search",
+              within: 6,
+              worker: "search"
+            };
+
+          Meteor.call("insert_project", row, function(error, response) {
+            if (error) {
+              document.querySelector("#polymer_toast").toast((error.reason == "userNotFound") ? "internet/user required" : error.reason);
+            } else {
+              if (response == "") {
+                document.querySelector("#polymer_toast").toast("unknown issue");
+              } else {
+                document.querySelector("#polymer_toast").toast("i keyword added");
+
+                _this.$.main_toolbar.className = _this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "") + " " + polymer_color(keyword);
+
+                _this.menu_selected = response;
+              }
+            }
+          });
+
+          _this.$.main_page.selected = 1;
+        } else {
+          document.querySelector("#polymer_toast").toast("empty keyword");
+        }
+      } else {
+        document.querySelector("#polymer_toast").toast("server connection required");
+      }
+    },
+
+    user_prompt: function() {
+      this.$.user_prompt.open();
+    },
+
+    _updater: function() {
+      this.debounce("_updater", function() {
+        var _this = this;
+
+        _project.find().forEach(function(row) {
+          for (var A = 0; A < row.torrent.length; A++) {
+            var item = _torrent.findOne({
+              _id: row.torrent[A]
+            });
+
+            row.torrent[A] = (item ? item : {
+              _id: row.torrent[A]
+            });
+
+            row.torrent[A].project = {
+              _id: row._id
+            };
+          }
+
+          var index = _.map(_this.project, function(A) {
+            return A._id;
+          }).indexOf(row._id);
+
+          if (-1 < index) {
+            _this.set("project." + index, row);
+          } else {
+            _this.unshift("project", row);
+          }
+        });
+      }, 1000);
+    }
+
+  });
+  </script>
 
 </dom-module>
 <dom-module id="load-awesome" assetpath="/linto/">
@@ -24053,92 +24078,95 @@ paper-calendar {
 </dom-module>
 <dom-module id="selectable-icon" assetpath="/linto/">
 
-    <style>
-    .icon {
-        background: #EEE;
-        border-radius: 50%;
-        color: black;
-        height: 40px;
-        overflow: hidden;
-        transition: transform 400ms ease-in-out;
-        width: 40px;
-        will-change: transform;
+  <style>
+  :host([selected]) .icon {
+    transform: rotate3d(0, 1, 0, -180deg);
+  }
+  
+  :host([selected]) img,
+  :host([selected]) .letter {
+    opacity: 0;
+  }
+  
+  :host([selected]) iron-icon {
+    transform: rotate3d(0, 1, 0, -180deg) scale(1);
+    opacity: 1;
+  }
+  
+  img,
+  .letter {
+    border-radius: inherit;
+    height: 100%;
+    text-transform: uppercase;
+    transition: opacity 200ms ease-in-out 200ms;
+    width: 100%;
+    will-change: opacity;
+  }
+  
+  iron-icon {
+    left: 20%;
+    position: absolute!important;
+    opacity: 0;
+    top: 20%;
+    transform: rotate3d(0, 1, 0, 180deg) scale(0);
+    transition: transform 200ms ease-in-out 200ms;
+    will-change: opacity;
+  }
+  
+  .font-title {
+    @apply(--paper-font-title);
+  }
+  
+  .icon {
+    background: #EEE;
+    border-radius: 50%;
+    color: black;
+    height: 40px;
+    overflow: hidden;
+    transition: transform 400ms ease-in-out;
+    width: 40px;
+    will-change: transform;
+  }
+  </style>
+
+  <template>
+    <div class="icon">
+      <template if="{{icon_img_src}}" is="dom-if">
+        <img class$="{{icon_class}}" src$="{{icon_img_src}}">
+      </template>
+
+      <span class$="center-center font-title horizontal layout letter {{icon_class}}" hidden$="{{icon_img_src}}">{{icon_text}}</span>
+
+      <iron-icon icon="check"></iron-icon>
+    </div>
+  </template>
+
+  <script>
+  Polymer({
+
+    is: "selectable-icon",
+
+    properties: {
+      icon_class: {
+        type: String,
+        value: null
+      },
+      icon_img_src: {
+        type: String,
+        value: null
+      },
+      icon_text: {
+        type: String,
+        value: null
+      },
+      selected: {
+        type: Boolean,
+        value: false
+      }
     }
-    
-    img,
-    .letter {
-        border-radius: inherit;
-        font-size: 1.15em;
-        height: 100%;
-        text-transform: uppercase;
-        transition: opacity 200ms ease-in-out 200ms;
-        width: 100%;
-        will-change: opacity;
-    }
-    
-    iron-icon {
-        left: 20%;
-        position: absolute!important;
-        opacity: 0;
-        top: 20%;
-        transform: rotate3d(0, 1, 0, 180deg) scale(0);
-        transition: transform 200ms ease-in-out 200ms;
-        will-change: opacity;
-    }
-    
-    :host([selected]) .icon {
-        transform: rotate3d(0, 1, 0, -180deg);
-    }
-    
-    :host([selected]) img,
-    :host([selected]) .letter {
-        opacity: 0;
-    }
-    
-    :host([selected]) iron-icon {
-        transform: rotate3d(0, 1, 0, -180deg) scale(1);
-        opacity: 1;
-    }
-    </style>
 
-    <template>
-        <div class="icon">
-            <template if="{{icon_img_src}}" is="dom-if">
-                <img class$="{{icon_class}}" src$="{{icon_img_src}}">
-            </template>
-
-            <span class$="center-center horizontal layout letter {{icon_class}}" hidden$="{{icon_img_src}}">{{icon_text}}</span>
-
-            <iron-icon icon="check"></iron-icon>
-        </div>
-    </template>
-
-    <script>
-    Polymer({
-
-        is: "selectable-icon",
-
-        properties: {
-            icon_class: {
-                type: String,
-                value: null
-            },
-            icon_img_src: {
-                type: String,
-                value: null
-            },
-            icon_text: {
-                type: String,
-                value: null
-            },
-            selected: {
-                type: Boolean,
-                value: false
-            }
-        }
-
-    });
-    </script>
+  });
+  </script>
 
 </dom-module>
 <dom-module id="set-password" assetpath="/linto/">
@@ -24813,4 +24841,4 @@ paper-calendar {
   </script>
 
 </dom-module>
-</div></body></html>          
+</div></body></html>
