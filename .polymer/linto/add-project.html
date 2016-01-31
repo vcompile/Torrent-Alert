@@ -32,12 +32,12 @@
     min-height: 88px;
   }
   
-  .right {
-    text-align: right;
-  }
-  
   .subhead {
     @apply(--paper-font-subhead);
+  }
+
+  .text-right {
+    text-align: right;
   }
   </style>
 
@@ -56,11 +56,11 @@
             <br>
 
             <div class="center horizontal layout">
-              <div class="cursor-d flex right subhead">min leech count</div>
+              <div class="cursor-d flex subhead text-right">min leech count</div>
               <paper-slider class="flex" editable max="1000" min="1" value="{{leech}}"></paper-slider>
             </div>
             <div class="center horizontal layout">
-              <div class="cursor-d flex right subhead">min seed count</div>
+              <div class="cursor-d flex subhead text-right">min seed count</div>
               <paper-slider class="flex" editable max="1000" min="1" value="{{seed}}"></paper-slider>
             </div>
 

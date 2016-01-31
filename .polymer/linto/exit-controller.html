@@ -1,44 +1,48 @@
 <dom-module id="exit-controller">
 
-    <template>
-        <paper-dialog id="exit_prompt" style="width: 320px;" with-backdrop>
-            <div>Are you sure you want to exit ?</div>
+  <style>
+  .subhead {
+    @apply(--paper-font-subhead);
+  }
+  </style>
 
-            <div class="buttons">
-                <paper-button onclick="document.querySelector('#exit_prompt').close();">
-                    <iron-icon icon="close"></iron-icon>
-                    cancel
-                </paper-button>
-                <paper-button dialog-confirm on-tap="exit">
-                    <iron-icon icon="check"></iron-icon>
-                    ok
-                </paper-button>
-            </div>
-        </paper-dialog>
-    </template>
+  <template>
+    <paper-dialog id="exit_prompt" style="width: 320px;" with-backdrop>
+      <div class="subhead">Are you sure you want to exit ?</div>
 
-    <script>
-    Polymer({
+      <div class="buttons">
+        <paper-button onclick="document.querySelector('#exit_prompt').close();">
+          <iron-icon icon="close"></iron-icon>cancel
+        </paper-button>
+        <paper-button dialog-confirm on-tap="exit">
+          <iron-icon icon="check"></iron-icon>ok
+        </paper-button>
+      </div>
+    </paper-dialog>
+  </template>
 
-        exit: function() {
-            if (Meteor.isCordova) {
-                navigator.app.exitApp();
-            }
-        },
+  <script>
+  Polymer({
 
-        is: "exit-controller",
+    exit: function() {
+      if (Meteor.isCordova) {
+        navigator.app.exitApp();
+      }
+    },
 
-        time: function(time) {
-            if ((parseInt(time) - parseInt(this._time)) < 1000) {
-                this.$.exit_prompt.open();
-            }
+    is: "exit-controller",
 
-            this._time = moment().format("x");
-        },
+    time: function(time) {
+      if ((parseInt(time) - parseInt(this._time)) < 1000) {
+        this.$.exit_prompt.open();
+      }
 
-        _time: moment().format("x")
+      this._time = moment().format("x");
+    },
 
-    });
-    </script>
+    _time: moment().format("x")
+
+  });
+  </script>
 
 </dom-module>

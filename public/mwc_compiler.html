@@ -21254,12 +21254,12 @@ paper-calendar {
     min-height: 88px;
   }
   
-  .right {
-    text-align: right;
-  }
-  
   .subhead {
     @apply(--paper-font-subhead);
+  }
+
+  .text-right {
+    text-align: right;
   }
   </style>
 
@@ -21278,11 +21278,11 @@ paper-calendar {
             <br>
 
             <div class="center horizontal layout">
-              <div class="cursor-d flex right subhead">min leech count</div>
+              <div class="cursor-d flex subhead text-right">min leech count</div>
               <paper-slider class="flex" editable="" max="1000" min="1" value="{{leech}}"></paper-slider>
             </div>
             <div class="center horizontal layout">
-              <div class="cursor-d flex right subhead">min seed count</div>
+              <div class="cursor-d flex subhead text-right">min seed count</div>
               <paper-slider class="flex" editable="" max="1000" min="1" value="{{seed}}"></paper-slider>
             </div>
 
@@ -21425,138 +21425,140 @@ paper-calendar {
 </dom-module>
 <dom-module id="card-route" assetpath="/linto/">
 
-    <style>
-    :host {
-        background: transparent!important;
-    }
-    </style>
+  <style>
+  :host {
+    background: transparent!important;
+  }
+  </style>
 
-    <template>
+  <template>
+    <div class$="[[get_ripple_class(ripple_class)]]" id="animator" style="opacity: 0;"></div>
 
-        <div class$="[[get_ripple_class(ripple_class)]]" id="animator" style="opacity: 0;"></div>
+    <div id="container">
+      <content select="div"></content>
+    </div>
+  </template>
 
-        <div id="container">
-            <content select="div"></content>
-        </div>
+  <script>
+  Polymer({
 
-    </template>
+    behaviors: [
+      Polymer.NeonSharedElementAnimatableBehavior
+    ],
 
-    <script>
-    Polymer({
+    get_ripple_class: function(ripple_class) {
+      return "fit " + ripple_class;
+    },
 
-        behaviors: [
-            Polymer.NeonSharedElementAnimatableBehavior
-        ],
+    is: "card-route",
 
-        get_ripple_class: function(ripple_class) {
-            return "fit " + ripple_class;
-        },
+    properties: {
+      animationConfig: {
+        type: Object,
+        value: function() {
+          return {
+            'entry': [{
+              name: 'ripple-animation',
+              id: 'ripple',
+              toPage: this
+            }, {
+              name: 'fade-out-animation',
+              node: this.$.animator,
+              timing: {
+                delay: 200
+              }
+            }, {
+              name: 'fade-in-animation',
+              node: this.$.container,
+              timing: {
+                delay: 100
+              }
+            }],
 
-        is: "card-route",
-
-        properties: {
-            animationConfig: {
-                type: Object,
-                value: function() {
-                    return {
-                        'entry': [{
-                            name: 'ripple-animation',
-                            id: 'ripple',
-                            toPage: this
-                        }, {
-                            name: 'fade-out-animation',
-                            node: this.$.animator,
-                            timing: {
-                                delay: 200
-                            }
-                        }, {
-                            name: 'fade-in-animation',
-                            node: this.$.container,
-                            timing: {
-                                delay: 100
-                            }
-                        }],
-
-                        'exit': [{
-                            name: 'opaque-animation',
-                            node: this.$.animator
-                        }, {
-                            name: 'fade-out-animation',
-                            node: this.$.container,
-                            timing: {
-                                duration: 200
-                            }
-                        }, {
-                            name: 'reverse-ripple-animation',
-                            id: 'reverse-ripple',
-                            fromPage: this
-                        }]
-                    };
-                }
-            },
-
-            ripple_class: {
-                type: String,
-                value: "white"
-            },
-
-            sharedElements: {
-                type: Object,
-                value: function() {
-                    return {
-                        "ripple": this.$.animator,
-                        "reverse-ripple": this.$.animator
-                    };
-                }
-            }
+            'exit': [{
+              name: 'opaque-animation',
+              node: this.$.animator
+            }, {
+              name: 'fade-out-animation',
+              node: this.$.container,
+              timing: {
+                duration: 200
+              }
+            }, {
+              name: 'reverse-ripple-animation',
+              id: 'reverse-ripple',
+              fromPage: this
+            }]
+          };
         }
+      },
 
-    });
-    </script>
+      ripple_class: {
+        type: String,
+        value: "white"
+      },
+
+      sharedElements: {
+        type: Object,
+        value: function() {
+          return {
+            "ripple": this.$.animator,
+            "reverse-ripple": this.$.animator
+          };
+        }
+      }
+    }
+
+  });
+  </script>
 
 </dom-module>
 <dom-module id="exit-controller" assetpath="/linto/">
 
-    <template>
-        <paper-dialog id="exit_prompt" style="width: 320px;" with-backdrop="">
-            <div>Are you sure you want to exit ?</div>
+  <style>
+  .subhead {
+    @apply(--paper-font-subhead);
+  }
+  </style>
 
-            <div class="buttons">
-                <paper-button onclick="document.querySelector('#exit_prompt').close();">
-                    <iron-icon icon="close"></iron-icon>
-                    cancel
-                </paper-button>
-                <paper-button dialog-confirm="" on-tap="exit">
-                    <iron-icon icon="check"></iron-icon>
-                    ok
-                </paper-button>
-            </div>
-        </paper-dialog>
-    </template>
+  <template>
+    <paper-dialog id="exit_prompt" style="width: 320px;" with-backdrop="">
+      <div class="subhead">Are you sure you want to exit ?</div>
 
-    <script>
-    Polymer({
+      <div class="buttons">
+        <paper-button onclick="document.querySelector('#exit_prompt').close();">
+          <iron-icon icon="close"></iron-icon>cancel
+        </paper-button>
+        <paper-button dialog-confirm="" on-tap="exit">
+          <iron-icon icon="check"></iron-icon>ok
+        </paper-button>
+      </div>
+    </paper-dialog>
+  </template>
 
-        exit: function() {
-            if (Meteor.isCordova) {
-                navigator.app.exitApp();
-            }
-        },
+  <script>
+  Polymer({
 
-        is: "exit-controller",
+    exit: function() {
+      if (Meteor.isCordova) {
+        navigator.app.exitApp();
+      }
+    },
 
-        time: function(time) {
-            if ((parseInt(time) - parseInt(this._time)) < 1000) {
-                this.$.exit_prompt.open();
-            }
+    is: "exit-controller",
 
-            this._time = moment().format("x");
-        },
+    time: function(time) {
+      if ((parseInt(time) - parseInt(this._time)) < 1000) {
+        this.$.exit_prompt.open();
+      }
 
-        _time: moment().format("x")
+      this._time = moment().format("x");
+    },
 
-    });
-    </script>
+    _time: moment().format("x")
+
+  });
+  </script>
 
 </dom-module>
 <dom-module id="inbox-item" assetpath="/linto/">
@@ -21749,7 +21751,7 @@ paper-calendar {
   }
   
   .menu-b {
-    bottom: 12px;
+    bottom: 16px;
     position: fixed;
     right: 16px;
     transition: transform 0.2s ease-in-out;
@@ -21869,7 +21871,9 @@ paper-calendar {
               <div class="center-justified horizontal layout">
                 <div class="li">
                   <div class="center cursor-d horizontal layout title-li">
-                    <iron-icon icon="store"></iron-icon>
+                    <div>
+                      <iron-icon icon="store"></iron-icon>
+                    </div>
 
                     <div class="subhead" style="border-bottom: 1px solid #757575;">Trending Top [[return_text(trend.keyword.length)]]</div>
                   </div>
@@ -22459,231 +22463,274 @@ paper-calendar {
 </dom-module>
 <dom-module id="polymer-toast" assetpath="/linto/">
 
-    <template>
-        <paper-toast class="cursor-d horizontal justified layout" duration="4000" id="toast" on-transitionend="transition" style="font-size: 16px; margin-right: 12px; padding: 16px; z-index: 1000;" text="">
-            <div class="cursor-p self-start" hidden="{{!undo.torrent}}" on-click="clear_undo" style="color: #FFEB3B; margin-left: 8px;">UNDO</div>
-        </paper-toast>
-    </template>
+  <template>
+    <paper-toast class="cursor-d horizontal justified layout" duration="4000" id="toast" on-transitionend="transition" style="font-size: 16px; margin-right: 12px; padding: 16px; z-index: 1000;" text="">
+      <div class="cursor-p self-start" hidden="{{!undo.torrent}}" on-click="clear_undo" style="color: #FFEB3B; margin-left: 8px;">UNDO</div>
+    </paper-toast>
+  </template>
 
-    <script>
-    Polymer({
+  <script>
+  Polymer({
 
-        clear_undo: function() {
-            $("inbox-item.undo").removeClass("undo");
+    clear_undo: function() {
+      $("inbox-item.undo").removeClass("undo");
+
+      this.set("undo", {});
+
+      this.$.toast.hide();
+    },
+
+    is: "polymer-toast",
+
+    properties: {
+      undo: {
+        type: Object,
+        value: function() {
+          return {};
+        }
+      }
+    },
+
+    ready: function() {
+      var _this = this;
+
+      Tracker.autorun(function() {
+        if (Meteor.status().connected) {
+          if (_this.$.toast.text != "" && _this.$.toast.text != "server connected") {
+            _this.toast("server connected");
+          }
+        } else {
+          if (_this.$.toast.text != "lost server connection") {
+            _this.toast("lost server connection");
+          }
+        }
+      });
+    },
+
+    toast: function(text) {
+      this.$.toast.hide();
+
+      this.async(function() {
+        this.$.toast.text = text;
+        this.$.toast.show();
+      }, 400);
+    },
+
+    transition: function() {
+      if (document.querySelector(".menu-b")) {
+        if (this.$.toast.opened) {
+          document.querySelector(".menu-b").translate3d(0, "-" + ($("#toast #label").height() + 56) + "px", 0);
+        } else {
+          if (this.undo.torrent) {
+            if (Meteor.status().connected) {
+              Meteor.call("remove_torrent", this.undo, function(error) {
+                if (error) {
+                  console.log(error);
+                } else {
+                  $("inbox-item.undo").remove();
+                }
+              });
+            } else {
+              document.querySelector("#polymer_toast").toast("server connection required");
+            }
 
             this.set("undo", {});
+          }
 
-            this.$.toast.hide();
-        },
-
-        is: "polymer-toast",
-
-        properties: {
-            undo: {
-                type: Object,
-                value: function() {
-                    return {};
-                }
-            }
-        },
-
-        ready: function() {
-            var _this = this;
-
-            Tracker.autorun(function() {
-                if (Meteor.status().connected) {
-                    if (_this.$.toast.text != "" && _this.$.toast.text != "server connected") {
-                        _this.toast("server connected");
-                    }
-                } else {
-                    if (_this.$.toast.text != "lost server connection") {
-                        _this.toast("lost server connection");
-                    }
-                }
-            });
-        },
-
-        toast: function(text) {
-            this.$.toast.hide();
-
-            this.async(function() {
-                this.$.toast.text = text;
-                this.$.toast.show();
-            }, 400);
-        },
-
-        transition: function() {
-            if (document.querySelector(".menu-b")) {
-                if (this.$.toast.opened) {
-                    document.querySelector(".menu-b").translate3d(0, "-" + ($("#toast #label").height() + 48) + "px", 0);
-                } else {
-                    if (this.undo.torrent) {
-                        if (Meteor.status().connected) {
-                            Meteor.call("remove_torrent", this.undo, function(error) {
-                                if (error) {
-                                    console.log(error);
-                                } else {
-                                    $("inbox-item.undo").remove();
-                                }
-                            });
-                        } else {
-                            document.querySelector("#polymer_toast").toast("server connection required");
-                        }
-
-                        this.set("undo", {});
-                    }
-
-                    document.querySelector(".menu-b").translate3d(0, 0, 0);
-                }
-            }
+          document.querySelector(".menu-b").translate3d(0, 0, 0);
         }
+      }
+    }
 
-    });
-    </script>
+  });
+  </script>
 
 </dom-module>
 <dom-module id="search-bar" assetpath="/linto/">
 
-    <style>
-    :host {
-        display: none;
-    }
-    
-    :host([active]) {
-        display: block;
-    }
-    
-    paper-progress {
-        --paper-progress-active-color: var(--paper-red-500);
-        --paper-progress-secondary-color: var(--paper-red-100);
-    }
-    
-    paper-toolbar {
-        --paper-toolbar-background: white;
-        --paper-toolbar-color: black;
-    }
-    
-    input {
-        background: transparent;
-        border: none;
-        font-size: 18px;
-        padding: 0 12px;
-    }
-    </style>
+  <style>
+  :host {
+    display: none;
+  }
+  
+  :host([active]) {
+    display: block;
+  }
+  
+  paper-header-panel {
+    background: rgba(255, 255, 255, 0.5);
+    z-index: 10;
+  }
+  
+  paper-progress {
+    left: 0;
+    position: fixed;
+    width: 100%;
+    --paper-progress-active-color: var(--paper-red-500);
+    --paper-progress-secondary-color: var(--paper-red-100);
+  }
+  
+  paper-toolbar {
+    --paper-toolbar-background: white;
+    --paper-toolbar-color: black;
+  }
+  
+  input {
+    @apply(--paper-font-title);
+    background: transparent;
+    border: none;
+    padding: 0 12px;
+  }
+  
+  .footer {
+    min-height: 88px;
+  }
+  
+  .search-li {
+    border-bottom: 1px solid #EEE;
+    padding: 8px;
+  }
+  
+  .search-li > div {
+    padding: 8px;
+  }
+  
+  .subhead {
+    @apply(--paper-font-subhead);
+  }
+  </style>
 
-    <template>
-        <paper-header-panel class="fit" style="background: rgba(255, 255, 255, 0.5); z-index: 10;">
-            <paper-toolbar>
-                <paper-icon-button icon="arrow-back" on-click="back"></paper-icon-button>
-                <input class="flex" id="input" on-keyup="search" placeholder="search">
-            </paper-toolbar>
+  <template>
+    <paper-header-panel class="fit">
+      <paper-toolbar>
+        <paper-icon-button icon="arrow-back" on-click="back"></paper-icon-button>
+        <input class="flex" id="input" on-keyup="search" placeholder="search">
+      </paper-toolbar>
 
-            <paper-progress hidden="" id="progress" indeterminate="" style="left: 0; position: fixed; width: 100%;"></paper-progress>
+      <paper-progress hidden="" id="progress" indeterminate=""></paper-progress>
 
-            <template is="dom-repeat" items="{{list}}">
-                <div class="center-justified horizontal layout">
-                    <div class="bordered cursor-p horizontal layout li white" on-click="add_project">
-                        <iron-icon icon="chevron-right" style="padding: 16px; padding-right: 8px;"></iron-icon>
-                        <div class="flex" style="font-size: 16px; line-height: 24px; padding: 16px; padding-left: 8px;">{{item}}</div>
-                    </div>
-                </div>
-            </template>
+      <template is="dom-repeat" items="{{list}}">
+        <div class="center-justified horizontal layout">
+          <div class="li">
+            <div class="center cursor-p horizontal layout relative search-li white" on-click="add_project">
+              <div>
+                <iron-icon icon="launch"></iron-icon>
+              </div>
 
-            <div style="min-height: 88px;"></div>
-        </paper-header-panel>
-    </template>
+              <div class="flex subhead">{{item}}</div>
 
-    <script>
-    Polymer({
+              <paper-ripple></paper-ripple>
+            </div>
+          </div>
+        </div>
+      </template>
 
-        add_project: function(e, d) {
-            if (Meteor.status().connected) {
-                var keyword = Polymer.dom(e).localTarget.textContent.trim();
+      <div class="footer"></div>
+    </paper-header-panel>
+  </template>
 
-                if (keyword.length) {
-                    var row = {
-                        keyword: keyword,
-                        leech: 1,
-                        seed: 1,
-                        url: "search",
-                        within: 6,
-                        worker: "search"
-                    };
+  <script>
+  Polymer({
 
-                    Meteor.call("insert_project", row, function(error, response) {
-                        if (error) {
-                            document.querySelector("#polymer_toast").toast((error.reason == "userNotFound") ? "internet/user required" : error.reason);
-                        } else {
-                            if (response == "") {
-                                document.querySelector("#polymer_toast").toast("unknown issue");
-                            } else {
-                                document.querySelector("#polymer_toast").toast("i keyword added");
+    add_project: function(e, d) {
+      if (Meteor.status().connected) {
+        var keyword = Polymer.dom(e).localTarget.textContent.trim();
 
-                                document.querySelector("#main_toolbar").className = document.querySelector("#main_toolbar").className.replace(/ ?[a-z\-]+\-500/g, "") + " " + polymer_color(keyword);
+        if (keyword.length) {
+          var row = {
+            keyword: keyword,
+            leech: 1,
+            seed: 1,
+            url: "search",
+            within: 6,
+            worker: "search"
+          };
 
-                                document.querySelector("layout-inbox").menu_selected = response;
-                            }
-                        }
-                    });
-
-                    this.back();
-                } else {
-                    document.querySelector("#polymer_toast").toast("empty keyword");
-                }
+          Meteor.call("insert_project", row, function(error, response) {
+            if (error) {
+              document.querySelector("#polymer_toast").toast((error.reason == "userNotFound") ? "internet/user required" : error.reason);
             } else {
-                document.querySelector("#polymer_toast").toast("server connection required");
+              if (response == "") {
+                document.querySelector("#polymer_toast").toast("unknown issue");
+              } else {
+                document.querySelector("#polymer_toast").toast("i keyword added");
+
+                document.querySelector("#main_toolbar").className = document.querySelector("#main_toolbar").className.replace(/ ?[a-z\-]+\-500/g, "") + " " + polymer_color(keyword);
+
+                document.querySelector("layout-inbox").menu_selected = response;
+
+                Meteor.setTimeout(function() {
+                  if (document.querySelector('.project_progress[data-id="' + response + '"]')) {
+                    var project_progress = document.querySelector('.project_progress[data-id="' + response + '"]');
+
+                    project_progress.hidden = false;
+
+                    project_progress.max = 50;
+                    project_progress.value = 10;
+                  }
+                }, 1000);
+              }
             }
-        },
+          });
 
-        back: function() {
-            FlowRouter.setQueryParams({
-                "route": null
-            });
-        },
-
-        is: "search-bar",
-
-        properties: {
-            active: {
-                notify: true,
-                reflectToAttribute: true,
-                type: Boolean,
-                value: false
-            },
-            list: {
-                type: Array,
-                value: function() {
-                    return [];
-                }
-            }
-        },
-
-        search: function() {
-            this.$.progress.hidden = false;
-
-            // this.debounce("search", function() {
-            if (this.$.input.value.trim().length) {
-                if (Meteor.status().connected) {
-                    var _this = this;
-
-                    Meteor.call("search", this.$.input.value.trim(), function(error, response) {
-                        _this.$.progress.hidden = true;
-
-                        if (!error) {
-                            _this.list = response;
-                        }
-                    });
-                } else {
-                    document.querySelector("#polymer_toast").toast("server connection required");
-                }
-            } else {
-                this.$.progress.hidden = true;
-            }
-            // }, 1000);
+          this.back();
+        } else {
+          document.querySelector("#polymer_toast").toast("empty keyword");
         }
+      } else {
+        document.querySelector("#polymer_toast").toast("server connection required");
+      }
+    },
 
-    });
-    </script>
+    back: function() {
+      FlowRouter.setQueryParams({
+        "route": null
+      });
+    },
+
+    is: "search-bar",
+
+    properties: {
+      active: {
+        notify: true,
+        reflectToAttribute: true,
+        type: Boolean,
+        value: false
+      },
+      list: {
+        type: Array,
+        value: function() {
+          return [];
+        }
+      }
+    },
+
+    search: function() {
+      this.$.progress.hidden = false;
+
+      this.debounce("search", function() {
+        if (this.$.input.value.trim().length) {
+          if (Meteor.status().connected) {
+            var _this = this;
+
+            Meteor.call("search", this.$.input.value.trim(), function(error, response) {
+              _this.$.progress.hidden = true;
+
+              if (!error) {
+                _this.list = response;
+              }
+            });
+          } else {
+            document.querySelector("#polymer_toast").toast("server connection required");
+          }
+        } else {
+          this.$.progress.hidden = true;
+        }
+      }, 1000 * 4);
+    }
+
+  });
+  </script>
 
 </dom-module>
 <dom-module id="selectable-icon" assetpath="/linto/">
@@ -22781,101 +22828,106 @@ paper-calendar {
 </dom-module>
 <dom-module id="set-password" assetpath="/linto/">
 
-    <style>
-    paper-button {
-        margin: 0;
-        min-width: 50%;
-        padding: 16px;
-    }
-    
-    .page-body {
-        overflow: auto;
-        padding: 24px;
-    }
-    
-    .page-title {
-        border-bottom: 2px solid #EEE;
-    }
-    
-    .page-title paper-icon-button {
-        margin-right: 16px;
-    }
-    
-    .page-title > div {
-        padding: 16px;
-    }
-    </style>
+  <style>
+  paper-button {
+    margin: 0;
+    min-width: 50%;
+    padding: 16px;
+  }
+  
+  .page-body {
+    overflow: auto;
+    padding: 24px;
+  }
+  
+  .page-title {
+    border-bottom: 1px solid #757575;
+    padding: 8px;
+  }
+  
+  .page-title > div {
+    padding: 8px;
+  }
+  
+  .page-title > div {
+    padding: 16px;
+  }
+  
+  .subhead {
+    @apply(--paper-font-subhead);
+  }
+  </style>
 
-    <template>
-        <div class="fit center-justified horizontal layout white">
-            <div class="layout li vertical">
-                <div class="center horizontal justified layout page-title">
-                    <div class="cursor-d etc flex">set password</div>
-                    <paper-icon-button on-click="back" icon="close"></paper-icon-button>
-                </div>
-
-                <div class="flex layout page-body vertical">
-                    <paper-input auto-validate="" label="password" required="" type="password" value="{{password}}"></paper-input>
-                    <paper-input auto-validate="" label="retype password" required="" type="password" value="{{retype_password}}"></paper-input>
-
-                    <br>
-
-                    <div class="end-justified horizontal layout">
-                        <paper-button class="blue-500" on-click="set_password_submit">submit</paper-button>
-                    </div>
-                </div>
-            </div>
+  <template>
+    <div class="fit center-justified horizontal layout white">
+      <div class="layout li vertical">
+        <div class="center horizontal justified layout page-title">
+          <div class="cursor-d etc flex subhead">SET PASSWORD</div>
+          <paper-icon-button on-click="back" icon="close"></paper-icon-button>
         </div>
-    </template>
 
-    <script>
-    Polymer({
+        <div class="flex layout page-body vertical">
+          <paper-input auto-validate="" label="password" required="" type="password" value="{{password}}"></paper-input>
+          <paper-input auto-validate="" label="retype password" required="" type="password" value="{{retype_password}}"></paper-input>
 
-        back: function(route) {
-            FlowRouter.go("/");
-        },
+          <br>
 
-        is: "set-password",
+          <div class="end-justified horizontal layout">
+            <paper-button class="blue-500" on-click="set_password_submit">submit</paper-button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
 
-        properties: {
-            password: {
-                type: String,
-                value: "password"
-            },
-            retype_password: {
-                type: String,
-                value: "retype_password"
-            }
-        },
+  <script>
+  Polymer({
 
-        set_password_submit: function(e) {
-            if (6 <= this.password.length) {
-                if (this.password == this.retype_password) {
-                    document.querySelector("#load_awesome").active = true;
+    back: function(route) {
+      FlowRouter.go("/");
+    },
 
-                    Accounts.resetPassword(FlowRouter.getQueryParam("password-token"), this.password, function(error) {
-                        document.querySelector("#load_awesome").active = false;
+    is: "set-password",
 
-                        if (error) {
-                            document.querySelector("#polymer_toast").toast(error.reason);
-                        } else {
-                            if (typeof(_done) == "function") {
-                                _done();
-                            }
+    properties: {
+      password: {
+        type: String,
+        value: "password"
+      },
+      retype_password: {
+        type: String,
+        value: "retype_password"
+      }
+    },
 
-                            FlowRouter.go("/inbox");
-                        }
-                    });
-                } else {
-                    document.querySelector("#polymer_toast").toast("retype password mismatch");
-                }
+    set_password_submit: function(e) {
+      if (6 <= this.password.length) {
+        if (this.password == this.retype_password) {
+          document.querySelector("#load_awesome").active = true;
+
+          Accounts.resetPassword(FlowRouter.getQueryParam("password-token"), this.password, function(error) {
+            document.querySelector("#load_awesome").active = false;
+
+            if (error) {
+              document.querySelector("#polymer_toast").toast(error.reason);
             } else {
-                document.querySelector("#polymer_toast").toast("min password length is 6");
-            }
-        }
+              if (typeof(_done) == "function") {
+                _done();
+              }
 
-    });
-    </script>
+              FlowRouter.go("/inbox");
+            }
+          });
+        } else {
+          document.querySelector("#polymer_toast").toast("retype password mismatch");
+        }
+      } else {
+        document.querySelector("#polymer_toast").toast("min password length is 6");
+      }
+    }
+
+  });
+  </script>
 
 </dom-module>
 <dom-module id="torrent-view" assetpath="/linto/">
@@ -23029,15 +23081,12 @@ paper-calendar {
   }
   
   .page-title {
-    border-bottom: 2px solid #757575;
-  }
-  
-  .page-title paper-icon-button {
-    margin-right: 8px;
+    border-bottom: 1px solid #757575;
+    padding: 8px;
   }
   
   .page-title > div {
-    padding: 16px;
+    padding: 8px;
   }
   
   .subhead {
