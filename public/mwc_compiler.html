@@ -411,6 +411,7 @@ this._marshalBehavior(this);
 });
 Polymer.Base._behaviorProperties = {
 hostAttributes: true,
+beforeRegister: true,
 registered: true,
 properties: true,
 observers: true,
@@ -662,31 +663,7 @@ return value != null ? value : undefined;
 }
 }
 });
-Polymer.Base._addFeature({
-_setupDebouncers: function () {
-this._debouncers = {};
-},
-debounce: function (jobName, callback, wait) {
-return this._debouncers[jobName] = Polymer.Debounce.call(this, this._debouncers[jobName], callback, wait);
-},
-isDebouncerActive: function (jobName) {
-var debouncer = this._debouncers[jobName];
-return debouncer && debouncer.finish;
-},
-flushDebouncer: function (jobName) {
-var debouncer = this._debouncers[jobName];
-if (debouncer) {
-debouncer.complete();
-}
-},
-cancelDebouncer: function (jobName) {
-var debouncer = this._debouncers[jobName];
-if (debouncer) {
-debouncer.stop();
-}
-}
-});
-Polymer.version = '1.2.3';
+Polymer.version = '1.2.4';
 Polymer.Base._addFeature({
 _registerFeatures: function () {
 this._prepIs();
@@ -701,12 +678,9 @@ _marshalBehavior: function (b) {
 },
 _initFeatures: function () {
 this._marshalHostAttributes();
-this._setupDebouncers();
 this._marshalBehaviors();
 }
-});</script>
-
-<script>Polymer.Base._addFeature({
+});</script><script>Polymer.Base._addFeature({
 _prepTemplate: function () {
 if (this._template === undefined) {
 this._template = Polymer.DomModule.import(this.is, 'template');
@@ -739,6 +713,8 @@ this.dataHost = host = host || Polymer.Base._hostStack[Polymer.Base._hostStack.l
 if (host && host._clients) {
 host._clients.push(this);
 }
+this._clients = null;
+this._clientsReadied = false;
 },
 _beginHosting: function () {
 Polymer.Base._hostStack.push(this);
@@ -750,6 +726,7 @@ _endHosting: function () {
 Polymer.Base._hostStack.pop();
 },
 _tryReady: function () {
+this._readied = false;
 if (this._canReady()) {
 this._ready();
 }
@@ -1062,7 +1039,6 @@ if (node instanceof HTMLTemplateElement)
 node = node.content;
 var s = '';
 var c$ = Polymer.dom(node).childNodes;
-c$ = composed ? node._composedChildren : c$;
 for (var i = 0, l = c$.length, child; i < l && (child = c$[i]); i++) {
 s += getOuterHTML(child, node, composed);
 }
@@ -1070,24 +1046,213 @@ return s;
 }
 return { getInnerHTML: getInnerHTML };
 }();
+(function () {
+'use strict';
+var nativeInsertBefore = Element.prototype.insertBefore;
+var nativeAppendChild = Element.prototype.appendChild;
+var nativeRemoveChild = Element.prototype.removeChild;
+var TreeApi = Polymer.TreeApi = {
+arrayCopyChildNodes: function (parent) {
+var copy = [], i = 0;
+for (var n = parent.firstChild; n; n = n.nextSibling) {
+copy[i++] = n;
+}
+return copy;
+},
+arrayCopyChildren: function (parent) {
+var copy = [], i = 0;
+for (var n = parent.firstElementChild; n; n = n.nextElementSibling) {
+copy[i++] = n;
+}
+return copy;
+},
+arrayCopy: function (a$) {
+var l = a$.length;
+var copy = new Array(l);
+for (var i = 0; i < l; i++) {
+copy[i] = a$[i];
+}
+return copy;
+}
+};
+Polymer.TreeApi.Logical = {
+hasParentNode: function (node) {
+return Boolean(node.__dom && node.__dom.parentNode);
+},
+hasChildNodes: function (node) {
+return Boolean(node.__dom && node.__dom.childNodes !== undefined);
+},
+getChildNodes: function (node) {
+return this.hasChildNodes(node) ? this._getChildNodes(node) : node.childNodes;
+},
+_getChildNodes: function (node) {
+if (!node.__dom.childNodes) {
+node.__dom.childNodes = [];
+for (var n = node.__dom.firstChild; n; n = n.__dom.nextSibling) {
+node.__dom.childNodes.push(n);
+}
+}
+return node.__dom.childNodes;
+},
+getParentNode: function (node) {
+return node.__dom && node.__dom.parentNode !== undefined ? node.__dom.parentNode : node.parentNode;
+},
+getFirstChild: function (node) {
+return node.__dom && node.__dom.firstChild !== undefined ? node.__dom.firstChild : node.firstChild;
+},
+getLastChild: function (node) {
+return node.__dom && node.__dom.lastChild !== undefined ? node.__dom.lastChild : node.lastChild;
+},
+getNextSibling: function (node) {
+return node.__dom && node.__dom.nextSibling !== undefined ? node.__dom.nextSibling : node.nextSibling;
+},
+getPreviousSibling: function (node) {
+return node.__dom && node.__dom.previousSibling !== undefined ? node.__dom.previousSibling : node.previousSibling;
+},
+getFirstElementChild: function (node) {
+return node.__dom && node.__dom.firstChild !== undefined ? this._getFirstElementChild(node) : node.firstElementChild;
+},
+_getFirstElementChild: function (node) {
+var n = node.__dom.firstChild;
+while (n && n.nodeType !== Node.ELEMENT_NODE) {
+n = n.__dom.nextSibling;
+}
+return n;
+},
+getLastElementChild: function (node) {
+return node.__dom && node.__dom.lastChild !== undefined ? this._getLastElementChild(node) : node.lastElementChild;
+},
+_getLastElementChild: function (node) {
+var n = node.__dom.lastChild;
+while (n && n.nodeType !== Node.ELEMENT_NODE) {
+n = n.__dom.previousSibling;
+}
+return n;
+},
+getNextElementSibling: function (node) {
+return node.__dom && node.__dom.nextSibling !== undefined ? this._getNextElementSibling(node) : node.nextElementSibling;
+},
+_getNextElementSibling: function (node) {
+var n = node.__dom.nextSibling;
+while (n && n.nodeType !== Node.ELEMENT_NODE) {
+n = n.__dom.nextSibling;
+}
+return n;
+},
+getPreviousElementSibling: function (node) {
+return node.__dom && node.__dom.previousSibling !== undefined ? this._getPreviousElementSibling(node) : node.previousElementSibling;
+},
+_getPreviousElementSibling: function (node) {
+var n = node.__dom.previousSibling;
+while (n && n.nodeType !== Node.ELEMENT_NODE) {
+n = n.__dom.previousSibling;
+}
+return n;
+},
+saveChildNodes: function (node) {
+if (!this.hasChildNodes(node)) {
+node.__dom = node.__dom || {};
+node.__dom.firstChild = node.firstChild;
+node.__dom.lastChild = node.lastChild;
+node.__dom.childNodes = [];
+for (var n = node.firstChild; n; n = n.nextSibling) {
+n.__dom = n.__dom || {};
+n.__dom.parentNode = node;
+node.__dom.childNodes.push(n);
+n.__dom.nextSibling = n.nextSibling;
+n.__dom.previousSibling = n.previousSibling;
+}
+}
+},
+recordInsertBefore: function (node, container, ref_node) {
+container.__dom.childNodes = null;
+if (node.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
+for (var n = node.firstChild; n; n = n.nextSibling) {
+this._linkNode(n, container, ref_node);
+}
+} else {
+this._linkNode(node, container, ref_node);
+}
+},
+_linkNode: function (node, container, ref_node) {
+node.__dom = node.__dom || {};
+container.__dom = container.__dom || {};
+if (ref_node) {
+ref_node.__dom = ref_node.__dom || {};
+}
+node.__dom.previousSibling = ref_node ? ref_node.__dom.previousSibling : container.__dom.lastChild;
+if (node.__dom.previousSibling) {
+node.__dom.previousSibling.__dom.nextSibling = node;
+}
+node.__dom.nextSibling = ref_node;
+if (node.__dom.nextSibling) {
+node.__dom.nextSibling.__dom.previousSibling = node;
+}
+node.__dom.parentNode = container;
+if (ref_node) {
+if (ref_node === container.__dom.firstChild) {
+container.__dom.firstChild = node;
+}
+} else {
+container.__dom.lastChild = node;
+if (!container.__dom.firstChild) {
+container.__dom.firstChild = node;
+}
+}
+container.__dom.childNodes = null;
+},
+recordRemoveChild: function (node, container) {
+node.__dom = node.__dom || {};
+container.__dom = container.__dom || {};
+if (node === container.__dom.firstChild) {
+container.__dom.firstChild = node.__dom.nextSibling;
+}
+if (node === container.__dom.lastChild) {
+container.__dom.lastChild = node.__dom.previousSibling;
+}
+var p = node.__dom.previousSibling;
+var n = node.__dom.nextSibling;
+if (p) {
+p.__dom.nextSibling = n;
+}
+if (n) {
+n.__dom.previousSibling = p;
+}
+node.__dom.parentNode = node.__dom.previousSibling = node.__dom.nextSibling = undefined;
+container.__dom.childNodes = null;
+}
+};
+Polymer.TreeApi.Composed = {
+getChildNodes: function (node) {
+return Polymer.TreeApi.arrayCopyChildNodes(node);
+},
+getParentNode: function (node) {
+return node.parentNode;
+},
+clearChildNodes: function (node) {
+node.textContent = '';
+},
+insertBefore: function (parentNode, newChild, refChild) {
+return nativeInsertBefore.call(parentNode, newChild, refChild || null);
+},
+appendChild: function (parentNode, newChild) {
+return nativeAppendChild.call(parentNode, newChild);
+},
+removeChild: function (parentNode, node) {
+return nativeRemoveChild.call(parentNode, node);
+}
+};
+}());
 Polymer.DomApi = function () {
 'use strict';
 var Settings = Polymer.Settings;
-var getInnerHTML = Polymer.domInnerHTML.getInnerHTML;
-var nativeInsertBefore = Element.prototype.insertBefore;
-var nativeRemoveChild = Element.prototype.removeChild;
-var nativeAppendChild = Element.prototype.appendChild;
-var nativeCloneNode = Element.prototype.cloneNode;
-var nativeImportNode = Document.prototype.importNode;
-var needsToWrap = Settings.hasShadow && !Settings.nativeShadow;
-var wrap = window.wrap ? window.wrap : function (node) {
-return node;
-};
+var TreeApi = Polymer.TreeApi;
 var DomApi = function (node) {
-this.node = needsToWrap ? wrap(node) : node;
-if (this.patch) {
-this.patch();
-}
+this.node = needsToWrap ? DomApi.wrap(node) : node;
+};
+var needsToWrap = Settings.hasShadow && !Settings.nativeShadow;
+DomApi.wrap = window.wrap ? window.wrap : function (node) {
+return node;
 };
 DomApi.prototype = {
 flush: function () {
@@ -1098,306 +1263,17 @@ if (this.node.contains(node)) {
 return true;
 }
 var n = node;
-var wrappedDocument = wrap(document);
-while (n && n !== wrappedDocument && n !== this.node) {
+var doc = node.ownerDocument;
+while (n && n !== doc && n !== this.node) {
 n = Polymer.dom(n).parentNode || n.host;
 }
 return n === this.node;
-},
-_lazyDistribute: function (host) {
-if (host.shadyRoot && host.shadyRoot._distributionClean) {
-host.shadyRoot._distributionClean = false;
-Polymer.dom.addDebouncer(host.debounce('_distribute', host._distributeContent));
-}
-},
-appendChild: function (node) {
-return this._addNode(node);
-},
-insertBefore: function (node, ref_node) {
-return this._addNode(node, ref_node);
-},
-_addNode: function (node, ref_node) {
-this._removeNodeFromParent(node);
-var addedInsertionPoint;
-var root = this.getOwnerRoot();
-if (root) {
-addedInsertionPoint = this._maybeAddInsertionPoint(node, this.node);
-}
-if (this._nodeHasLogicalChildren(this.node)) {
-if (ref_node) {
-var children = this.childNodes;
-var index = children.indexOf(ref_node);
-if (index < 0) {
-throw Error('The ref_node to be inserted before is not a child ' + 'of this node');
-}
-}
-this._addLogicalInfo(node, this.node, index);
-}
-this._addNodeToHost(node);
-if (!this._maybeDistribute(node, this.node) && !this._tryRemoveUndistributedNode(node)) {
-if (ref_node) {
-ref_node = ref_node.localName === CONTENT ? this._firstComposedNode(ref_node) : ref_node;
-}
-var container = this.node._isShadyRoot ? this.node.host : this.node;
-addToComposedParent(container, node, ref_node);
-if (ref_node) {
-nativeInsertBefore.call(container, node, ref_node);
-} else {
-nativeAppendChild.call(container, node);
-}
-}
-if (addedInsertionPoint) {
-this._updateInsertionPoints(root.host);
-}
-this.notifyObserver();
-return node;
-},
-removeChild: function (node) {
-if (factory(node).parentNode !== this.node) {
-console.warn('The node to be removed is not a child of this node', node);
-}
-this._removeNodeFromHost(node);
-if (!this._maybeDistribute(node, this.node)) {
-var container = this.node._isShadyRoot ? this.node.host : this.node;
-if (container === node.parentNode) {
-removeFromComposedParent(container, node);
-nativeRemoveChild.call(container, node);
-}
-}
-this.notifyObserver();
-return node;
-},
-replaceChild: function (node, ref_node) {
-this.insertBefore(node, ref_node);
-this.removeChild(ref_node);
-return node;
-},
-_hasCachedOwnerRoot: function (node) {
-return Boolean(node._ownerShadyRoot !== undefined);
-},
-getOwnerRoot: function () {
-return this._ownerShadyRootForNode(this.node);
-},
-_ownerShadyRootForNode: function (node) {
-if (!node) {
-return;
-}
-if (node._ownerShadyRoot === undefined) {
-var root;
-if (node._isShadyRoot) {
-root = node;
-} else {
-var parent = Polymer.dom(node).parentNode;
-if (parent) {
-root = parent._isShadyRoot ? parent : this._ownerShadyRootForNode(parent);
-} else {
-root = null;
-}
-}
-node._ownerShadyRoot = root;
-}
-return node._ownerShadyRoot;
-},
-_maybeDistribute: function (node, parent) {
-var fragContent = node.nodeType === Node.DOCUMENT_FRAGMENT_NODE && !node.__noContent && Polymer.dom(node).querySelector(CONTENT);
-var wrappedContent = fragContent && Polymer.dom(fragContent).parentNode.nodeType !== Node.DOCUMENT_FRAGMENT_NODE;
-var hasContent = fragContent || node.localName === CONTENT;
-if (hasContent) {
-var root = this._ownerShadyRootForNode(parent);
-if (root) {
-var host = root.host;
-this._lazyDistribute(host);
-}
-}
-var parentNeedsDist = this._parentNeedsDistribution(parent);
-if (parentNeedsDist) {
-this._lazyDistribute(parent);
-}
-return parentNeedsDist || hasContent && !wrappedContent;
-},
-_maybeAddInsertionPoint: function (node, parent) {
-var added;
-if (node.nodeType === Node.DOCUMENT_FRAGMENT_NODE && !node.__noContent) {
-var c$ = factory(node).querySelectorAll(CONTENT);
-for (var i = 0, n, np, na; i < c$.length && (n = c$[i]); i++) {
-np = factory(n).parentNode;
-if (np === node) {
-np = parent;
-}
-na = this._maybeAddInsertionPoint(n, np);
-added = added || na;
-}
-} else if (node.localName === CONTENT) {
-saveLightChildrenIfNeeded(parent);
-saveLightChildrenIfNeeded(node);
-added = true;
-}
-return added;
-},
-_tryRemoveUndistributedNode: function (node) {
-if (this.node.shadyRoot) {
-var parent = getComposedParent(node);
-if (parent) {
-nativeRemoveChild.call(parent, node);
-}
-return true;
-}
-},
-_updateInsertionPoints: function (host) {
-var i$ = host.shadyRoot._insertionPoints = factory(host.shadyRoot).querySelectorAll(CONTENT);
-for (var i = 0, c; i < i$.length; i++) {
-c = i$[i];
-saveLightChildrenIfNeeded(c);
-saveLightChildrenIfNeeded(factory(c).parentNode);
-}
-},
-_nodeHasLogicalChildren: function (node) {
-return Boolean(node._lightChildren !== undefined);
-},
-_parentNeedsDistribution: function (parent) {
-return parent && parent.shadyRoot && hasInsertionPoint(parent.shadyRoot);
-},
-_removeNodeFromParent: function (node) {
-var parent = node._lightParent || node.parentNode;
-if (parent && hasDomApi(parent)) {
-factory(parent).notifyObserver();
-}
-this._removeNodeFromHost(node, true);
-},
-_removeNodeFromHost: function (node, ensureComposedRemoval) {
-var hostNeedsDist;
-var root;
-var parent = node._lightParent;
-if (parent) {
-factory(node)._distributeParent();
-root = this._ownerShadyRootForNode(node);
-if (root) {
-root.host._elementRemove(node);
-hostNeedsDist = this._removeDistributedChildren(root, node);
-}
-this._removeLogicalInfo(node, parent);
-}
-this._removeOwnerShadyRoot(node);
-if (root && hostNeedsDist) {
-this._updateInsertionPoints(root.host);
-this._lazyDistribute(root.host);
-} else if (ensureComposedRemoval) {
-removeFromComposedParent(getComposedParent(node), node);
-}
-},
-_removeDistributedChildren: function (root, container) {
-var hostNeedsDist;
-var ip$ = root._insertionPoints;
-for (var i = 0; i < ip$.length; i++) {
-var content = ip$[i];
-if (this._contains(container, content)) {
-var dc$ = factory(content).getDistributedNodes();
-for (var j = 0; j < dc$.length; j++) {
-hostNeedsDist = true;
-var node = dc$[j];
-var parent = node.parentNode;
-if (parent) {
-removeFromComposedParent(parent, node);
-nativeRemoveChild.call(parent, node);
-}
-}
-}
-}
-return hostNeedsDist;
-},
-_contains: function (container, node) {
-while (node) {
-if (node == container) {
-return true;
-}
-node = factory(node).parentNode;
-}
-},
-_addNodeToHost: function (node) {
-var root = this.getOwnerRoot();
-if (root) {
-root.host._elementAdd(node);
-}
-},
-_addLogicalInfo: function (node, container, index) {
-var children = factory(container).childNodes;
-index = index === undefined ? children.length : index;
-if (node.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
-var c$ = arrayCopyChildNodes(node);
-for (var i = 0, n; i < c$.length && (n = c$[i]); i++) {
-children.splice(index++, 0, n);
-n._lightParent = container;
-}
-} else {
-children.splice(index, 0, node);
-node._lightParent = container;
-}
-},
-_removeLogicalInfo: function (node, container) {
-var children = factory(container).childNodes;
-var index = children.indexOf(node);
-if (index < 0 || container !== node._lightParent) {
-throw Error('The node to be removed is not a child of this node');
-}
-children.splice(index, 1);
-node._lightParent = null;
-},
-_removeOwnerShadyRoot: function (node) {
-if (this._hasCachedOwnerRoot(node)) {
-var c$ = factory(node).childNodes;
-for (var i = 0, l = c$.length, n; i < l && (n = c$[i]); i++) {
-this._removeOwnerShadyRoot(n);
-}
-}
-node._ownerShadyRoot = undefined;
-},
-_firstComposedNode: function (content) {
-var n$ = factory(content).getDistributedNodes();
-for (var i = 0, l = n$.length, n, p$; i < l && (n = n$[i]); i++) {
-p$ = factory(n).getDestinationInsertionPoints();
-if (p$[p$.length - 1] === content) {
-return n;
-}
-}
-},
-querySelector: function (selector) {
-return this.querySelectorAll(selector)[0];
-},
-querySelectorAll: function (selector) {
-return this._query(function (n) {
-return matchesSelector.call(n, selector);
-}, this.node);
-},
-_query: function (matcher, node) {
-node = node || this.node;
-var list = [];
-this._queryElements(factory(node).childNodes, matcher, list);
-return list;
-},
-_queryElements: function (elements, matcher, list) {
-for (var i = 0, l = elements.length, c; i < l && (c = elements[i]); i++) {
-if (c.nodeType === Node.ELEMENT_NODE) {
-this._queryElement(c, matcher, list);
-}
-}
-},
-_queryElement: function (node, matcher, list) {
-if (matcher(node)) {
-list.push(node);
-}
-this._queryElements(factory(node).childNodes, matcher, list);
-},
-getDestinationInsertionPoints: function () {
-return this.node._destinationInsertionPoints || [];
-},
-getDistributedNodes: function () {
-return this.node._distributedNodes || [];
 },
 queryDistributedElements: function (selector) {
 var c$ = this.getEffectiveChildNodes();
 var list = [];
 for (var i = 0, l = c$.length, c; i < l && (c = c$[i]); i++) {
-if (c.nodeType === Node.ELEMENT_NODE && matchesSelector.call(c, selector)) {
+if (c.nodeType === Node.ELEMENT_NODE && DomApi.matchesSelector.call(c, selector)) {
 list.push(c);
 }
 }
@@ -1408,7 +1284,7 @@ var list = [];
 var c$ = this.childNodes;
 for (var i = 0, l = c$.length, c; i < l && (c = c$[i]); i++) {
 if (c.localName === CONTENT) {
-var d$ = factory(c).getDistributedNodes();
+var d$ = dom(c).getDistributedNodes();
 for (var j = 0; j < d$.length; j++) {
 list.push(d$[j]);
 }
@@ -1417,49 +1293,6 @@ list.push(c);
 }
 }
 return list;
-},
-_clear: function () {
-while (this.childNodes.length) {
-this.removeChild(this.childNodes[0]);
-}
-},
-setAttribute: function (name, value) {
-this.node.setAttribute(name, value);
-this._distributeParent();
-},
-removeAttribute: function (name) {
-this.node.removeAttribute(name);
-this._distributeParent();
-},
-_distributeParent: function () {
-if (this._parentNeedsDistribution(this.parentNode)) {
-this._lazyDistribute(this.parentNode);
-}
-},
-cloneNode: function (deep) {
-var n = nativeCloneNode.call(this.node, false);
-if (deep) {
-var c$ = this.childNodes;
-var d = factory(n);
-for (var i = 0, nc; i < c$.length; i++) {
-nc = factory(c$[i]).cloneNode(true);
-d.appendChild(nc);
-}
-}
-return n;
-},
-importNode: function (externalNode, deep) {
-var doc = this.node instanceof Document ? this.node : this.node.ownerDocument;
-var n = nativeImportNode.call(doc, externalNode, false);
-if (deep) {
-var c$ = factory(externalNode).childNodes;
-var d = factory(n);
-for (var i = 0, nc; i < c$.length; i++) {
-nc = factory(doc).importNode(c$[i], true);
-d.appendChild(nc);
-}
-}
-return n;
 },
 observeNodes: function (callback) {
 if (callback) {
@@ -1478,90 +1311,467 @@ notifyObserver: function () {
 if (this.observer) {
 this.observer.notify();
 }
+},
+_query: function (matcher, node, halter) {
+node = node || this.node;
+var list = [];
+this._queryElements(TreeApi.Logical.getChildNodes(node), matcher, halter, list);
+return list;
+},
+_queryElements: function (elements, matcher, halter, list) {
+for (var i = 0, l = elements.length, c; i < l && (c = elements[i]); i++) {
+if (c.nodeType === Node.ELEMENT_NODE) {
+if (this._queryElement(c, matcher, halter, list)) {
+return true;
+}
+}
+}
+},
+_queryElement: function (node, matcher, halter, list) {
+var result = matcher(node);
+if (result) {
+list.push(node);
+}
+if (halter && halter(result)) {
+return result;
+}
+this._queryElements(TreeApi.Logical.getChildNodes(node), matcher, halter, list);
 }
 };
-if (!Settings.useShadow) {
+var CONTENT = DomApi.CONTENT = 'content';
+var dom = DomApi.factory = function (node) {
+node = node || document;
+if (!node.__domApi) {
+node.__domApi = new DomApi.ctor(node);
+}
+return node.__domApi;
+};
+DomApi.hasApi = function (node) {
+return Boolean(node.__domApi);
+};
+DomApi.ctor = DomApi;
+Polymer.dom = function (obj, patch) {
+if (obj instanceof Event) {
+return Polymer.EventApi.factory(obj);
+} else {
+return DomApi.factory(obj, patch);
+}
+};
+var p = Element.prototype;
+DomApi.matchesSelector = p.matches || p.matchesSelector || p.mozMatchesSelector || p.msMatchesSelector || p.oMatchesSelector || p.webkitMatchesSelector;
+return DomApi;
+}();
+(function () {
+'use strict';
+var Settings = Polymer.Settings;
+var DomApi = Polymer.DomApi;
+var dom = DomApi.factory;
+var TreeApi = Polymer.TreeApi;
+var getInnerHTML = Polymer.domInnerHTML.getInnerHTML;
+var CONTENT = DomApi.CONTENT;
+if (Settings.useShadow) {
+return;
+}
+var nativeCloneNode = Element.prototype.cloneNode;
+var nativeImportNode = Document.prototype.importNode;
+Polymer.Base.extend(DomApi.prototype, {
+_lazyDistribute: function (host) {
+if (host.shadyRoot && host.shadyRoot._distributionClean) {
+host.shadyRoot._distributionClean = false;
+Polymer.dom.addDebouncer(host.debounce('_distribute', host._distributeContent));
+}
+},
+appendChild: function (node) {
+return this.insertBefore(node);
+},
+insertBefore: function (node, ref_node) {
+if (ref_node && TreeApi.Logical.getParentNode(ref_node) !== this.node) {
+throw Error('The ref_node to be inserted before is not a child ' + 'of this node');
+}
+if (node.nodeType !== Node.DOCUMENT_FRAGMENT_NODE) {
+var parent = TreeApi.Logical.getParentNode(node);
+if (parent) {
+if (DomApi.hasApi(parent)) {
+dom(parent).notifyObserver();
+}
+this._removeNode(node);
+} else {
+this._removeOwnerShadyRoot(node);
+}
+}
+if (!this._addNode(node, ref_node)) {
+if (ref_node) {
+ref_node = ref_node.localName === CONTENT ? this._firstComposedNode(ref_node) : ref_node;
+}
+var container = this.node._isShadyRoot ? this.node.host : this.node;
+if (ref_node) {
+TreeApi.Composed.insertBefore(container, node, ref_node);
+} else {
+TreeApi.Composed.appendChild(container, node);
+}
+}
+this.notifyObserver();
+return node;
+},
+_addNode: function (node, ref_node) {
+var root = this.getOwnerRoot();
+if (root) {
+var ipAdded = this._maybeAddInsertionPoint(node, this.node);
+if (!root._invalidInsertionPoints) {
+root._invalidInsertionPoints = ipAdded;
+}
+this._addNodeToHost(root.host, node);
+}
+if (TreeApi.Logical.hasChildNodes(this.node)) {
+TreeApi.Logical.recordInsertBefore(node, this.node, ref_node);
+}
+var handled = this._maybeDistribute(node) || this.node.shadyRoot;
+if (handled) {
+if (node.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
+while (node.firstChild) {
+TreeApi.Composed.removeChild(node, node.firstChild);
+}
+} else {
+var parent = TreeApi.Composed.getParentNode(node);
+if (parent) {
+TreeApi.Composed.removeChild(parent, node);
+}
+}
+}
+return handled;
+},
+removeChild: function (node) {
+if (TreeApi.Logical.getParentNode(node) !== this.node) {
+throw Error('The node to be removed is not a child of this node: ' + node);
+}
+if (!this._removeNode(node)) {
+var container = this.node._isShadyRoot ? this.node.host : this.node;
+var parent = TreeApi.Composed.getParentNode(node);
+if (container === parent) {
+TreeApi.Composed.removeChild(container, node);
+}
+}
+this.notifyObserver();
+return node;
+},
+_removeNode: function (node) {
+var logicalParent = TreeApi.Logical.hasParentNode(node) && TreeApi.Logical.getParentNode(node);
+var distributed;
+var root = this._ownerShadyRootForNode(node);
+if (logicalParent) {
+distributed = dom(node)._maybeDistributeParent();
+TreeApi.Logical.recordRemoveChild(node, logicalParent);
+if (root && this._removeDistributedChildren(root, node)) {
+root._invalidInsertionPoints = true;
+this._lazyDistribute(root.host);
+}
+}
+this._removeOwnerShadyRoot(node);
+if (root) {
+this._removeNodeFromHost(root.host, node);
+}
+return distributed;
+},
+replaceChild: function (node, ref_node) {
+this.insertBefore(node, ref_node);
+this.removeChild(ref_node);
+return node;
+},
+_hasCachedOwnerRoot: function (node) {
+return Boolean(node._ownerShadyRoot !== undefined);
+},
+getOwnerRoot: function () {
+return this._ownerShadyRootForNode(this.node);
+},
+_ownerShadyRootForNode: function (node) {
+if (!node) {
+return;
+}
+var root = node._ownerShadyRoot;
+if (root === undefined) {
+if (node._isShadyRoot) {
+root = node;
+} else {
+var parent = TreeApi.Logical.getParentNode(node);
+if (parent) {
+root = parent._isShadyRoot ? parent : this._ownerShadyRootForNode(parent);
+} else {
+root = null;
+}
+}
+if (root || document.documentElement.contains(node)) {
+node._ownerShadyRoot = root;
+}
+}
+return root;
+},
+_maybeDistribute: function (node) {
+var fragContent = node.nodeType === Node.DOCUMENT_FRAGMENT_NODE && !node.__noContent && dom(node).querySelector(CONTENT);
+var wrappedContent = fragContent && TreeApi.Logical.getParentNode(fragContent).nodeType !== Node.DOCUMENT_FRAGMENT_NODE;
+var hasContent = fragContent || node.localName === CONTENT;
+if (hasContent) {
+var root = this.getOwnerRoot();
+if (root) {
+this._lazyDistribute(root.host);
+}
+}
+var needsDist = this._nodeNeedsDistribution(this.node);
+if (needsDist) {
+this._lazyDistribute(this.node);
+}
+return needsDist || hasContent && !wrappedContent;
+},
+_maybeAddInsertionPoint: function (node, parent) {
+var added;
+if (node.nodeType === Node.DOCUMENT_FRAGMENT_NODE && !node.__noContent) {
+var c$ = dom(node).querySelectorAll(CONTENT);
+for (var i = 0, n, np, na; i < c$.length && (n = c$[i]); i++) {
+np = TreeApi.Logical.getParentNode(n);
+if (np === node) {
+np = parent;
+}
+na = this._maybeAddInsertionPoint(n, np);
+added = added || na;
+}
+} else if (node.localName === CONTENT) {
+TreeApi.Logical.saveChildNodes(parent);
+TreeApi.Logical.saveChildNodes(node);
+added = true;
+}
+return added;
+},
+_updateInsertionPoints: function (host) {
+var i$ = host.shadyRoot._insertionPoints = dom(host.shadyRoot).querySelectorAll(CONTENT);
+for (var i = 0, c; i < i$.length; i++) {
+c = i$[i];
+TreeApi.Logical.saveChildNodes(c);
+TreeApi.Logical.saveChildNodes(TreeApi.Logical.getParentNode(c));
+}
+},
+_nodeNeedsDistribution: function (node) {
+return node && node.shadyRoot && DomApi.hasInsertionPoint(node.shadyRoot);
+},
+_addNodeToHost: function (host, node) {
+if (host._elementAdd) {
+host._elementAdd(node);
+}
+},
+_removeNodeFromHost: function (host, node) {
+if (host._elementRemove) {
+host._elementRemove(node);
+}
+},
+_removeDistributedChildren: function (root, container) {
+var hostNeedsDist;
+var ip$ = root._insertionPoints;
+for (var i = 0; i < ip$.length; i++) {
+var content = ip$[i];
+if (this._contains(container, content)) {
+var dc$ = dom(content).getDistributedNodes();
+for (var j = 0; j < dc$.length; j++) {
+hostNeedsDist = true;
+var node = dc$[j];
+var parent = TreeApi.Composed.getParentNode(node);
+if (parent) {
+TreeApi.Composed.removeChild(parent, node);
+}
+}
+}
+}
+return hostNeedsDist;
+},
+_contains: function (container, node) {
+while (node) {
+if (node == container) {
+return true;
+}
+node = TreeApi.Logical.getParentNode(node);
+}
+},
+_removeOwnerShadyRoot: function (node) {
+if (this._hasCachedOwnerRoot(node)) {
+var c$ = TreeApi.Logical.getChildNodes(node);
+for (var i = 0, l = c$.length, n; i < l && (n = c$[i]); i++) {
+this._removeOwnerShadyRoot(n);
+}
+}
+node._ownerShadyRoot = undefined;
+},
+_firstComposedNode: function (content) {
+var n$ = dom(content).getDistributedNodes();
+for (var i = 0, l = n$.length, n, p$; i < l && (n = n$[i]); i++) {
+p$ = dom(n).getDestinationInsertionPoints();
+if (p$[p$.length - 1] === content) {
+return n;
+}
+}
+},
+querySelector: function (selector) {
+var result = this._query(function (n) {
+return DomApi.matchesSelector.call(n, selector);
+}, this.node, function (n) {
+return Boolean(n);
+})[0];
+return result || null;
+},
+querySelectorAll: function (selector) {
+return this._query(function (n) {
+return DomApi.matchesSelector.call(n, selector);
+}, this.node);
+},
+getDestinationInsertionPoints: function () {
+return this.node._destinationInsertionPoints || [];
+},
+getDistributedNodes: function () {
+return this.node._distributedNodes || [];
+},
+_clear: function () {
+while (this.childNodes.length) {
+this.removeChild(this.childNodes[0]);
+}
+},
+setAttribute: function (name, value) {
+this.node.setAttribute(name, value);
+this._maybeDistributeParent();
+},
+removeAttribute: function (name) {
+this.node.removeAttribute(name);
+this._maybeDistributeParent();
+},
+_maybeDistributeParent: function () {
+if (this._nodeNeedsDistribution(this.parentNode)) {
+this._lazyDistribute(this.parentNode);
+return true;
+}
+},
+cloneNode: function (deep) {
+var n = nativeCloneNode.call(this.node, false);
+if (deep) {
+var c$ = this.childNodes;
+var d = dom(n);
+for (var i = 0, nc; i < c$.length; i++) {
+nc = dom(c$[i]).cloneNode(true);
+d.appendChild(nc);
+}
+}
+return n;
+},
+importNode: function (externalNode, deep) {
+var doc = this.node instanceof Document ? this.node : this.node.ownerDocument;
+var n = nativeImportNode.call(doc, externalNode, false);
+if (deep) {
+var c$ = TreeApi.Logical.getChildNodes(externalNode);
+var d = dom(n);
+for (var i = 0, nc; i < c$.length; i++) {
+nc = dom(doc).importNode(c$[i], true);
+d.appendChild(nc);
+}
+}
+return n;
+},
+_getComposedInnerHTML: function () {
+return getInnerHTML(this.node, true);
+}
+});
 Object.defineProperties(DomApi.prototype, {
+activeElement: {
+get: function () {
+var active = document.activeElement;
+if (!active) {
+return null;
+}
+var isShadyRoot = !!this.node._isShadyRoot;
+if (this.node !== document) {
+if (!isShadyRoot) {
+return null;
+}
+if (this.node.host === active || !this.node.host.contains(active)) {
+return null;
+}
+}
+var activeRoot = dom(active).getOwnerRoot();
+while (activeRoot && activeRoot !== this.node) {
+active = activeRoot.host;
+activeRoot = dom(active).getOwnerRoot();
+}
+if (this.node === document) {
+return activeRoot ? null : active;
+} else {
+return activeRoot === this.node ? active : null;
+}
+},
+configurable: true
+},
 childNodes: {
 get: function () {
-var c$ = getLightChildren(this.node);
-return Array.isArray(c$) ? c$ : arrayCopyChildNodes(this.node);
+var c$ = TreeApi.Logical.getChildNodes(this.node);
+return Array.isArray(c$) ? c$ : TreeApi.arrayCopyChildNodes(this.node);
 },
 configurable: true
 },
 children: {
 get: function () {
+if (TreeApi.Logical.hasChildNodes(this.node)) {
 return Array.prototype.filter.call(this.childNodes, function (n) {
 return n.nodeType === Node.ELEMENT_NODE;
 });
+} else {
+return TreeApi.arrayCopyChildren(this.node);
+}
 },
 configurable: true
 },
 parentNode: {
 get: function () {
-return this.node._lightParent || getComposedParent(this.node);
+return TreeApi.Logical.getParentNode(this.node);
 },
 configurable: true
 },
 firstChild: {
 get: function () {
-return this.childNodes[0];
+return TreeApi.Logical.getFirstChild(this.node);
 },
 configurable: true
 },
 lastChild: {
 get: function () {
-var c$ = this.childNodes;
-return c$[c$.length - 1];
+return TreeApi.Logical.getLastChild(this.node);
 },
 configurable: true
 },
 nextSibling: {
 get: function () {
-var c$ = this.parentNode && factory(this.parentNode).childNodes;
-if (c$) {
-return c$[Array.prototype.indexOf.call(c$, this.node) + 1];
-}
+return TreeApi.Logical.getNextSibling(this.node);
 },
 configurable: true
 },
 previousSibling: {
 get: function () {
-var c$ = this.parentNode && factory(this.parentNode).childNodes;
-if (c$) {
-return c$[Array.prototype.indexOf.call(c$, this.node) - 1];
-}
+return TreeApi.Logical.getPreviousSibling(this.node);
 },
 configurable: true
 },
 firstElementChild: {
 get: function () {
-return this.children[0];
+return TreeApi.Logical.getFirstElementChild(this.node);
 },
 configurable: true
 },
 lastElementChild: {
 get: function () {
-var c$ = this.children;
-return c$[c$.length - 1];
+return TreeApi.Logical.getLastElementChild(this.node);
 },
 configurable: true
 },
 nextElementSibling: {
 get: function () {
-var c$ = this.parentNode && factory(this.parentNode).children;
-if (c$) {
-return c$[Array.prototype.indexOf.call(c$, this.node) + 1];
-}
+return TreeApi.Logical.getNextElementSibling(this.node);
 },
 configurable: true
 },
 previousElementSibling: {
 get: function () {
-var c$ = this.parentNode && factory(this.parentNode).children;
-if (c$) {
-return c$[Array.prototype.indexOf.call(c$, this.node) - 1];
-}
+return TreeApi.Logical.getPreviousElementSibling(this.node);
 },
 configurable: true
 },
@@ -1608,7 +1818,7 @@ if (nt !== Node.TEXT_NODE || nt !== Node.COMMENT_NODE) {
 this._clear();
 var d = document.createElement('div');
 d.innerHTML = text;
-var c$ = arrayCopyChildNodes(d);
+var c$ = TreeApi.arrayCopyChildNodes(d);
 for (var i = 0; i < c$.length; i++) {
 this.appendChild(c$[i]);
 }
@@ -1617,31 +1827,23 @@ this.appendChild(c$[i]);
 configurable: true
 }
 });
-DomApi.prototype._getComposedInnerHTML = function () {
-return getInnerHTML(this.node, true);
+DomApi.hasInsertionPoint = function (root) {
+return Boolean(root && root._insertionPoints.length);
 };
-} else {
-var forwardMethods = function (m$) {
-for (var i = 0; i < m$.length; i++) {
-forwardMethod(m$[i]);
+}());
+(function () {
+'use strict';
+var Settings = Polymer.Settings;
+var TreeApi = Polymer.TreeApi;
+var DomApi = Polymer.DomApi;
+if (!Settings.useShadow) {
+return;
 }
-};
-var forwardMethod = function (method) {
-DomApi.prototype[method] = function () {
-return this.node[method].apply(this.node, arguments);
-};
-};
-forwardMethods([
-'cloneNode',
-'appendChild',
-'insertBefore',
-'removeChild',
-'replaceChild'
-]);
-DomApi.prototype.querySelectorAll = function (selector) {
-return arrayCopy(this.node.querySelectorAll(selector));
-};
-DomApi.prototype.getOwnerRoot = function () {
+Polymer.Base.extend(DomApi.prototype, {
+querySelectorAll: function (selector) {
+return TreeApi.arrayCopy(this.node.querySelectorAll(selector));
+},
+getOwnerRoot: function () {
 var n = this.node;
 while (n) {
 if (n.nodeType === Node.DOCUMENT_FRAGMENT_NODE && n.host) {
@@ -1649,31 +1851,38 @@ return n;
 }
 n = n.parentNode;
 }
-};
-DomApi.prototype.importNode = function (externalNode, deep) {
+},
+importNode: function (externalNode, deep) {
 var doc = this.node instanceof Document ? this.node : this.node.ownerDocument;
 return doc.importNode(externalNode, deep);
-};
-DomApi.prototype.getDestinationInsertionPoints = function () {
+},
+getDestinationInsertionPoints: function () {
 var n$ = this.node.getDestinationInsertionPoints && this.node.getDestinationInsertionPoints();
-return n$ ? arrayCopy(n$) : [];
-};
-DomApi.prototype.getDistributedNodes = function () {
+return n$ ? TreeApi.arrayCopy(n$) : [];
+},
+getDistributedNodes: function () {
 var n$ = this.node.getDistributedNodes && this.node.getDistributedNodes();
-return n$ ? arrayCopy(n$) : [];
-};
-DomApi.prototype._distributeParent = function () {
-};
+return n$ ? TreeApi.arrayCopy(n$) : [];
+}
+});
 Object.defineProperties(DomApi.prototype, {
+activeElement: {
+get: function () {
+var node = DomApi.wrap(this.node);
+var activeElement = node.activeElement;
+return node.contains(activeElement) ? activeElement : null;
+},
+configurable: true
+},
 childNodes: {
 get: function () {
-return arrayCopyChildNodes(this.node);
+return TreeApi.arrayCopyChildNodes(this.node);
 },
 configurable: true
 },
 children: {
 get: function () {
-return arrayCopyChildren(this.node);
+return TreeApi.arrayCopyChildren(this.node);
 },
 configurable: true
 },
@@ -1696,6 +1905,26 @@ return this.node.innerHTML = value;
 configurable: true
 }
 });
+var forwardMethods = function (m$) {
+for (var i = 0; i < m$.length; i++) {
+forwardMethod(m$[i]);
+}
+};
+var forwardMethod = function (method) {
+DomApi.prototype[method] = function () {
+return this.node[method].apply(this.node, arguments);
+};
+};
+forwardMethods([
+'cloneNode',
+'appendChild',
+'insertBefore',
+'removeChild',
+'replaceChild',
+'setAttribute',
+'removeAttribute',
+'querySelector'
+]);
 var forwardProperties = function (f$) {
 for (var i = 0; i < f$.length; i++) {
 forwardProperty(f$[i]);
@@ -1720,120 +1949,7 @@ forwardProperties([
 'nextElementSibling',
 'previousElementSibling'
 ]);
-}
-var CONTENT = 'content';
-function factory(node, patch) {
-node = node || document;
-if (!node.__domApi) {
-node.__domApi = new DomApi(node, patch);
-}
-return node.__domApi;
-}
-;
-function hasDomApi(node) {
-return Boolean(node.__domApi);
-}
-;
-Polymer.dom = function (obj, patch) {
-if (obj instanceof Event) {
-return Polymer.EventApi.factory(obj);
-} else {
-return factory(obj, patch);
-}
-};
-function getLightChildren(node) {
-var children = node._lightChildren;
-return children ? children : node.childNodes;
-}
-function getComposedChildren(node) {
-if (!node._composedChildren) {
-node._composedChildren = arrayCopyChildNodes(node);
-}
-return node._composedChildren;
-}
-function addToComposedParent(parent, node, ref_node) {
-var children = getComposedChildren(parent);
-var i = ref_node ? children.indexOf(ref_node) : -1;
-if (node.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
-var fragChildren = getComposedChildren(node);
-for (var j = 0; j < fragChildren.length; j++) {
-addNodeToComposedChildren(fragChildren[j], parent, children, i + j);
-}
-node._composedChildren = null;
-} else {
-addNodeToComposedChildren(node, parent, children, i);
-}
-}
-function getComposedParent(node) {
-return node.__patched ? node._composedParent : node.parentNode;
-}
-function addNodeToComposedChildren(node, parent, children, i) {
-node._composedParent = parent;
-children.splice(i >= 0 ? i : children.length, 0, node);
-}
-function removeFromComposedParent(parent, node) {
-node._composedParent = null;
-if (parent) {
-var children = getComposedChildren(parent);
-var i = children.indexOf(node);
-if (i >= 0) {
-children.splice(i, 1);
-}
-}
-}
-function saveLightChildrenIfNeeded(node) {
-if (!node._lightChildren) {
-var c$ = arrayCopyChildNodes(node);
-for (var i = 0, l = c$.length, child; i < l && (child = c$[i]); i++) {
-child._lightParent = child._lightParent || node;
-}
-node._lightChildren = c$;
-}
-}
-function arrayCopyChildNodes(parent) {
-var copy = [], i = 0;
-for (var n = parent.firstChild; n; n = n.nextSibling) {
-copy[i++] = n;
-}
-return copy;
-}
-function arrayCopyChildren(parent) {
-var copy = [], i = 0;
-for (var n = parent.firstElementChild; n; n = n.nextElementSibling) {
-copy[i++] = n;
-}
-return copy;
-}
-function arrayCopy(a$) {
-var l = a$.length;
-var copy = new Array(l);
-for (var i = 0; i < l; i++) {
-copy[i] = a$[i];
-}
-return copy;
-}
-function hasInsertionPoint(root) {
-return Boolean(root && root._insertionPoints.length);
-}
-var p = Element.prototype;
-var matchesSelector = p.matches || p.matchesSelector || p.mozMatchesSelector || p.msMatchesSelector || p.oMatchesSelector || p.webkitMatchesSelector;
-return {
-getLightChildren: getLightChildren,
-getComposedParent: getComposedParent,
-getComposedChildren: getComposedChildren,
-removeFromComposedParent: removeFromComposedParent,
-saveLightChildrenIfNeeded: saveLightChildrenIfNeeded,
-matchesSelector: matchesSelector,
-hasInsertionPoint: hasInsertionPoint,
-ctor: DomApi,
-factory: factory,
-hasDomApi: hasDomApi,
-arrayCopy: arrayCopy,
-arrayCopyChildNodes: arrayCopyChildNodes,
-arrayCopyChildren: arrayCopyChildren,
-wrap: wrap
-};
-}();
+}());
 Polymer.Base.extend(Polymer.dom, {
 _flushGuard: 0,
 _FLUSH_MAX: 100,
@@ -1845,8 +1961,8 @@ flush: function () {
 this._flushGuard = 0;
 this._prepareFlush();
 while (this._debouncers.length && this._flushGuard < this._FLUSH_MAX) {
-for (var i = 0; i < this._debouncers.length; i++) {
-this._debouncers[i].complete();
+while (this._debouncers.length) {
+this._debouncers.shift().complete();
 }
 if (this._finishDebouncer) {
 this._finishDebouncer.complete();
@@ -1920,10 +2036,18 @@ return p$[i];
 get path() {
 if (!this.event._path) {
 var path = [];
-var o = this.rootTarget;
-while (o) {
-path.push(o);
-o = Polymer.dom(o).parentNode || o.host;
+var current = this.rootTarget;
+while (current) {
+path.push(current);
+var insertionPoints = Polymer.dom(current).getDestinationInsertionPoints();
+if (insertionPoints.length) {
+for (var i = 0; i < insertionPoints.length - 1; i++) {
+path.push(insertionPoints[i]);
+}
+current = insertionPoints[insertionPoints.length - 1];
+} else {
+current = Polymer.dom(current).parentNode || current.host;
+}
 }
 path.push(window);
 this.event._path = path;
@@ -1943,6 +2067,7 @@ return { factory: factory };
 (function () {
 'use strict';
 var DomApi = Polymer.DomApi.ctor;
+var useShadow = Polymer.Settings.useShadow;
 Object.defineProperty(DomApi.prototype, 'classList', {
 get: function () {
 if (!this._classList) {
@@ -1959,15 +2084,20 @@ this.node = host.node;
 DomApi.ClassList.prototype = {
 add: function () {
 this.node.classList.add.apply(this.node.classList, arguments);
-this.domApi._distributeParent();
+this._distributeParent();
 },
 remove: function () {
 this.node.classList.remove.apply(this.node.classList, arguments);
-this.domApi._distributeParent();
+this._distributeParent();
 },
 toggle: function () {
 this.node.classList.toggle.apply(this.node.classList, arguments);
-this.domApi._distributeParent();
+this._distributeParent();
+},
+_distributeParent: function () {
+if (!useShadow) {
+this.domApi._maybeDistributeParent();
+}
 },
 contains: function () {
 return this.node.classList.contains.apply(this.node.classList, arguments);
@@ -2230,21 +2360,34 @@ this._observer = null;
 }
 }());
 (function () {
-var hasDomApi = Polymer.DomApi.hasDomApi;
+var DomApi = Polymer.DomApi;
+var TreeApi = Polymer.TreeApi;
 Polymer.Base._addFeature({
 _prepShady: function () {
 this._useContent = this._useContent || Boolean(this._template);
 },
+_setupShady: function () {
+this.shadyRoot = null;
+if (!this.__domApi) {
+this.__domApi = null;
+}
+if (!this.__dom) {
+this.__dom = null;
+}
+if (!this._ownerShadyRoot) {
+this._ownerShadyRoot = undefined;
+}
+},
 _poolContent: function () {
 if (this._useContent) {
-saveLightChildrenIfNeeded(this);
+TreeApi.Logical.saveChildNodes(this);
 }
 },
 _setupRoot: function () {
 if (this._useContent) {
 this._createLocalRoot();
 if (!this.dataHost) {
-upgradeLightChildren(this._lightChildren);
+upgradeLogicalChildren(TreeApi.Logical.getChildNodes(this));
 }
 }
 },
@@ -2255,11 +2398,11 @@ this.shadyRoot._hasDistributed = false;
 this.shadyRoot._isShadyRoot = true;
 this.shadyRoot._dirtyRoots = [];
 var i$ = this.shadyRoot._insertionPoints = !this._notes || this._notes._hasContent ? this.shadyRoot.querySelectorAll('content') : [];
-saveLightChildrenIfNeeded(this.shadyRoot);
+TreeApi.Logical.saveChildNodes(this.shadyRoot);
 for (var i = 0, c; i < i$.length; i++) {
 c = i$[i];
-saveLightChildrenIfNeeded(c);
-saveLightChildrenIfNeeded(c.parentNode);
+TreeApi.Logical.saveChildNodes(c);
+TreeApi.Logical.saveChildNodes(c.parentNode);
 }
 this.shadyRoot.host = this;
 },
@@ -2269,23 +2412,24 @@ return root && root.host;
 },
 distributeContent: function (updateInsertionPoints) {
 if (this.shadyRoot) {
-var dom = Polymer.dom(this);
-if (updateInsertionPoints) {
-dom._updateInsertionPoints(this);
-}
+this.shadyRoot._invalidInsertionPoints = this.shadyRoot._invalidInsertionPoints || updateInsertionPoints;
 var host = getTopDistributingHost(this);
-dom._lazyDistribute(host);
+Polymer.dom(this)._lazyDistribute(host);
 }
 },
 _distributeContent: function () {
 if (this._useContent && !this.shadyRoot._distributionClean) {
+if (this.shadyRoot._invalidInsertionPoints) {
+Polymer.dom(this)._updateInsertionPoints(this);
+this.shadyRoot._invalidInsertionPoints = false;
+}
 this._beginDistribute();
 this._distributeDirtyRoots();
 this._finishDistribute();
 }
 },
 _beginDistribute: function () {
-if (this._useContent && hasInsertionPoint(this.shadyRoot)) {
+if (this._useContent && DomApi.hasInsertionPoint(this.shadyRoot)) {
 this._resetDistribution();
 this._distributePool(this.shadyRoot, this._collectPool());
 }
@@ -2300,13 +2444,12 @@ this.shadyRoot._dirtyRoots = [];
 _finishDistribute: function () {
 if (this._useContent) {
 this.shadyRoot._distributionClean = true;
-if (hasInsertionPoint(this.shadyRoot)) {
+if (DomApi.hasInsertionPoint(this.shadyRoot)) {
 this._composeTree();
 notifyContentObservers(this.shadyRoot);
 } else {
 if (!this.shadyRoot._hasDistributed) {
-this.textContent = '';
-this._composedChildren = null;
+TreeApi.Composed.clearChildNodes(this);
 this.appendChild(this.shadyRoot);
 } else {
 var children = this._composeNode(this);
@@ -2321,10 +2464,10 @@ this.shadyRoot._hasDistributed = true;
 },
 elementMatches: function (selector, node) {
 node = node || this;
-return matchesSelector.call(node, selector);
+return DomApi.matchesSelector.call(node, selector);
 },
 _resetDistribution: function () {
-var children = getLightChildren(this);
+var children = TreeApi.Logical.getChildNodes(this);
 for (var i = 0; i < children.length; i++) {
 var child = children[i];
 if (child._destinationInsertionPoints) {
@@ -2342,7 +2485,7 @@ p$[j]._distributedNodes = [];
 },
 _collectPool: function () {
 var pool = [];
-var children = getLightChildren(this);
+var children = TreeApi.Logical.getChildNodes(this);
 for (var i = 0; i < children.length; i++) {
 var child = children[i];
 if (isInsertionPoint(child)) {
@@ -2374,7 +2517,7 @@ anyDistributed = true;
 }
 }
 if (!anyDistributed) {
-var children = getLightChildren(content);
+var children = TreeApi.Logical.getChildNodes(content);
 for (var j = 0; j < children.length; j++) {
 distributeNodeInto(children[j], content);
 }
@@ -2384,7 +2527,7 @@ _composeTree: function () {
 this._updateChildNodes(this, this._composeNode(this));
 var p$ = this.shadyRoot._insertionPoints;
 for (var i = 0, l = p$.length, p, parent; i < l && (p = p$[i]); i++) {
-parent = p._lightParent || p.parentNode;
+parent = TreeApi.Logical.getParentNode(p);
 if (!parent._useContent && parent !== this && parent !== this.shadyRoot) {
 this._updateChildNodes(parent, this._composeNode(parent));
 }
@@ -2392,7 +2535,7 @@ this._updateChildNodes(parent, this._composeNode(parent));
 },
 _composeNode: function (node) {
 var children = [];
-var c$ = getLightChildren(node.shadyRoot || node);
+var c$ = TreeApi.Logical.getChildNodes(node.shadyRoot || node);
 for (var i = 0; i < c$.length; i++) {
 var child = c$[i];
 if (isInsertionPoint(child)) {
@@ -2410,12 +2553,12 @@ children.push(child);
 return children;
 },
 _updateChildNodes: function (container, children) {
-var composed = getComposedChildren(container);
+var composed = TreeApi.Composed.getChildNodes(container);
 var splices = Polymer.ArraySplice.calculateSplices(children, composed);
 for (var i = 0, d = 0, s; i < splices.length && (s = splices[i]); i++) {
 for (var j = 0, n; j < s.removed.length && (n = s.removed[j]); j++) {
-if (getComposedParent(n) === container) {
-remove(n);
+if (TreeApi.Composed.getParentNode(n) === container) {
+TreeApi.Composed.removeChild(container, n);
 }
 composed.splice(s.index + d, 1);
 }
@@ -2425,11 +2568,10 @@ for (var i = 0, s, next; i < splices.length && (s = splices[i]); i++) {
 next = composed[s.index];
 for (var j = s.index, n; j < s.index + s.addedCount; j++) {
 n = children[j];
-insertBefore(container, n, next);
+TreeApi.Composed.insertBefore(container, n, next);
 composed.splice(j, 0, n);
 }
 }
-ensureComposedParent(container, children);
 },
 _matchesContentSelect: function (node, contentElement) {
 var select = contentElement.getAttribute('select');
@@ -2454,13 +2596,6 @@ _elementAdd: function () {
 _elementRemove: function () {
 }
 });
-var saveLightChildrenIfNeeded = Polymer.DomApi.saveLightChildrenIfNeeded;
-var getLightChildren = Polymer.DomApi.getLightChildren;
-var matchesSelector = Polymer.DomApi.matchesSelector;
-var hasInsertionPoint = Polymer.DomApi.hasInsertionPoint;
-var getComposedChildren = Polymer.DomApi.getComposedChildren;
-var getComposedParent = Polymer.DomApi.getComposedParent;
-var removeFromComposedParent = Polymer.DomApi.removeFromComposedParent;
 function distributeNodeInto(child, insertionPoint) {
 insertionPoint._distributedNodes.push(child);
 var points = child._destinationInsertionPoints;
@@ -2482,8 +2617,8 @@ d.splice(d.indexOf(content) + 1, d.length);
 }
 }
 function maybeRedistributeParent(content, host) {
-var parent = content._lightParent;
-if (parent && parent.shadyRoot && hasInsertionPoint(parent.shadyRoot) && parent.shadyRoot._distributionClean) {
+var parent = TreeApi.Logical.getParentNode(content);
+if (parent && parent.shadyRoot && DomApi.hasInsertionPoint(parent.shadyRoot) && parent.shadyRoot._distributionClean) {
 parent.shadyRoot._distributionClean = false;
 host.shadyRoot._dirtyRoots.push(parent);
 }
@@ -2495,29 +2630,6 @@ return points && points[points.length - 1] === insertionPoint;
 function isInsertionPoint(node) {
 return node.localName == 'content';
 }
-var nativeInsertBefore = Element.prototype.insertBefore;
-var nativeRemoveChild = Element.prototype.removeChild;
-function insertBefore(parentNode, newChild, refChild) {
-var newChildParent = getComposedParent(newChild);
-if (newChildParent !== parentNode) {
-removeFromComposedParent(newChildParent, newChild);
-}
-remove(newChild);
-nativeInsertBefore.call(parentNode, newChild, refChild || null);
-newChild._composedParent = parentNode;
-}
-function remove(node) {
-var parentNode = getComposedParent(node);
-if (parentNode) {
-node._composedParent = null;
-nativeRemoveChild.call(parentNode, node);
-}
-}
-function ensureComposedParent(parent, children) {
-for (var i = 0, n; i < children.length; i++) {
-children[i]._composedParent = parent;
-}
-}
 function getTopDistributingHost(host) {
 while (host && hostNeedsRedistribution(host)) {
 host = host.domHost;
@@ -2525,10 +2637,10 @@ host = host.domHost;
 return host;
 }
 function hostNeedsRedistribution(host) {
-var c$ = Polymer.dom(host).children;
+var c$ = TreeApi.Logical.getChildNodes(host);
 for (var i = 0, c; i < c$.length; i++) {
 c = c$[i];
-if (c.localName === 'content') {
+if (c.localName && c.localName === 'content') {
 return host.domHost;
 }
 }
@@ -2536,18 +2648,18 @@ return host.domHost;
 function notifyContentObservers(root) {
 for (var i = 0, c; i < root._insertionPoints.length; i++) {
 c = root._insertionPoints[i];
-if (hasDomApi(c)) {
+if (DomApi.hasApi(c)) {
 Polymer.dom(c).notifyObserver();
 }
 }
 }
 function notifyInitialDistribution(host) {
-if (hasDomApi(host)) {
+if (DomApi.hasApi(host)) {
 Polymer.dom(host).notifyObserver();
 }
 }
 var needsUpgrade = window.CustomElements && !CustomElements.useNative;
-function upgradeLightChildren(children) {
+function upgradeLogicalChildren(children) {
 if (needsUpgrade && children) {
 for (var i = 0; i < children.length; i++) {
 CustomElements.upgrade(children[i]);
@@ -2574,6 +2686,123 @@ this.root = this.shadowRoot;
 }
 });
 }
+Polymer.Async = {
+_currVal: 0,
+_lastVal: 0,
+_callbacks: [],
+_twiddleContent: 0,
+_twiddle: document.createTextNode(''),
+run: function (callback, waitTime) {
+if (waitTime > 0) {
+return ~setTimeout(callback, waitTime);
+} else {
+this._twiddle.textContent = this._twiddleContent++;
+this._callbacks.push(callback);
+return this._currVal++;
+}
+},
+cancel: function (handle) {
+if (handle < 0) {
+clearTimeout(~handle);
+} else {
+var idx = handle - this._lastVal;
+if (idx >= 0) {
+if (!this._callbacks[idx]) {
+throw 'invalid async handle: ' + handle;
+}
+this._callbacks[idx] = null;
+}
+}
+},
+_atEndOfMicrotask: function () {
+var len = this._callbacks.length;
+for (var i = 0; i < len; i++) {
+var cb = this._callbacks[i];
+if (cb) {
+try {
+cb();
+} catch (e) {
+i++;
+this._callbacks.splice(0, i);
+this._lastVal += i;
+this._twiddle.textContent = this._twiddleContent++;
+throw e;
+}
+}
+}
+this._callbacks.splice(0, len);
+this._lastVal += len;
+}
+};
+new window.MutationObserver(function () {
+Polymer.Async._atEndOfMicrotask();
+}).observe(Polymer.Async._twiddle, { characterData: true });
+Polymer.Debounce = function () {
+var Async = Polymer.Async;
+var Debouncer = function (context) {
+this.context = context;
+var self = this;
+this.boundComplete = function () {
+self.complete();
+};
+};
+Debouncer.prototype = {
+go: function (callback, wait) {
+var h;
+this.finish = function () {
+Async.cancel(h);
+};
+h = Async.run(this.boundComplete, wait);
+this.callback = callback;
+},
+stop: function () {
+if (this.finish) {
+this.finish();
+this.finish = null;
+}
+},
+complete: function () {
+if (this.finish) {
+this.stop();
+this.callback.call(this.context);
+}
+}
+};
+function debounce(debouncer, callback, wait) {
+if (debouncer) {
+debouncer.stop();
+} else {
+debouncer = new Debouncer(this);
+}
+debouncer.go(callback, wait);
+return debouncer;
+}
+return debounce;
+}();
+Polymer.Base._addFeature({
+_setupDebouncers: function () {
+this._debouncers = {};
+},
+debounce: function (jobName, callback, wait) {
+return this._debouncers[jobName] = Polymer.Debounce.call(this, this._debouncers[jobName], callback, wait);
+},
+isDebouncerActive: function (jobName) {
+var debouncer = this._debouncers[jobName];
+return !!(debouncer && debouncer.finish);
+},
+flushDebouncer: function (jobName) {
+var debouncer = this._debouncers[jobName];
+if (debouncer) {
+debouncer.complete();
+}
+},
+cancelDebouncer: function (jobName) {
+var debouncer = this._debouncers[jobName];
+if (debouncer) {
+debouncer.stop();
+}
+}
+});
 Polymer.DomModule = document.createElement('dom-module');
 Polymer.Base._addFeature({
 _registerFeatures: function () {
@@ -2602,9 +2831,7 @@ this._tryReady();
 },
 _marshalBehavior: function (b) {
 }
-});</script>
-
-<script>Polymer.nar = [];
+});</script><script>Polymer.nar = [];
 Polymer.Annotations = {
 parseAnnotations: function (template) {
 var list = [];
@@ -2615,22 +2842,34 @@ return list;
 _parseNodeAnnotations: function (node, list, stripWhiteSpace) {
 return node.nodeType === Node.TEXT_NODE ? this._parseTextNodeAnnotation(node, list) : this._parseElementAnnotations(node, list, stripWhiteSpace);
 },
-_bindingRegex: /([^{[]*)(\{\{|\[\[)(?!\}\}|\]\])(.+?)(?:\]\]|\}\})/g,
+_bindingRegex: function () {
+var IDENT = '(?:' + '[a-zA-Z_$][\\w.:$-*]*' + ')';
+var NUMBER = '(?:' + '[-+]?[0-9]*\\.?[0-9]+(?:[eE][-+]?[0-9]+)?' + ')';
+var SQUOTE_STRING = '(?:' + '\'(?:[^\'\\\\]|\\\\.)*\'' + ')';
+var DQUOTE_STRING = '(?:' + '"(?:[^"\\\\]|\\\\.)*"' + ')';
+var STRING = '(?:' + SQUOTE_STRING + '|' + DQUOTE_STRING + ')';
+var ARGUMENT = '(?:' + IDENT + '|' + NUMBER + '|' + STRING + '\\s*' + ')';
+var ARGUMENTS = '(?:' + ARGUMENT + '(?:,\\s*' + ARGUMENT + ')*' + ')';
+var ARGUMENT_LIST = '(?:' + '\\(\\s*' + '(?:' + ARGUMENTS + '?' + ')' + '\\)\\s*' + ')';
+var BINDING = '(' + IDENT + '\\s*' + ARGUMENT_LIST + '?' + ')';
+var OPEN_BRACKET = '(\\[\\[|{{)' + '\\s*';
+var CLOSE_BRACKET = '(?:]]|}})';
+var NEGATE = '(?:(!)\\s*)?';
+var EXPRESSION = OPEN_BRACKET + NEGATE + BINDING + CLOSE_BRACKET;
+return new RegExp(EXPRESSION, 'g');
+}(),
 _parseBindings: function (text) {
 var re = this._bindingRegex;
 var parts = [];
-var m, lastIndex;
+var lastIndex = 0;
+var m;
 while ((m = re.exec(text)) !== null) {
-if (m[1]) {
-parts.push({ literal: m[1] });
+if (m.index > lastIndex) {
+parts.push({ literal: text.slice(lastIndex, m.index) });
 }
-var mode = m[2][0];
+var mode = m[1][0];
+var negate = Boolean(m[2]);
 var value = m[3].trim();
-var negate = false;
-if (value[0] == '!') {
-negate = true;
-value = value.substring(1).trim();
-}
 var customEvent, notifyEvent, colon;
 if (mode == '{' && (colon = value.indexOf('::')) > 0) {
 notifyEvent = value.substring(colon + 2);
@@ -2779,7 +3018,7 @@ var literal = this._literalFromParts(parts);
 if (literal && kind == 'attribute') {
 node.setAttribute(name, literal);
 }
-if (node.localName == 'input' && name == 'value') {
+if (node.localName === 'input' && origName === 'value') {
 node.setAttribute(origName, '');
 }
 node.removeAttribute(origName);
@@ -2795,12 +3034,17 @@ isCompound: parts.length !== 1
 };
 }
 },
-_localSubTree: function (node, host) {
-return node === host ? node.childNodes : node._lightChildren || node.childNodes;
-},
 findAnnotatedNode: function (root, annote) {
 var parent = annote.parent && Polymer.Annotations.findAnnotatedNode(root, annote.parent);
-return !parent ? root : Polymer.Annotations._localSubTree(parent, root)[annote.index];
+if (parent) {
+for (var n = parent.firstChild, i = 0; n; n = n.nextSibling) {
+if (annote.index === i++) {
+return n;
+}
+}
+} else {
+return root;
+}
 }
 };
 (function () {
@@ -2875,8 +3119,8 @@ if (this._template._content && this._template._content._notes) {
 this._notes = this._template._content._notes;
 } else {
 this._notes = Polymer.Annotations.parseAnnotations(this._template);
-}
 this._processAnnotations(this._notes);
+}
 Polymer.Annotations.prepElement = null;
 }
 },
@@ -2923,10 +3167,15 @@ for (var k = 0, p$ = b.parts, p; k < p$.length && (p = p$[k]); k++) {
 if (p.signature) {
 var args = p.signature.args;
 for (var kk = 0; kk < args.length; kk++) {
-pp[args[kk].model] = true;
+var model = args[kk].model;
+if (model) {
+pp[model] = true;
+}
 }
 } else {
+if (p.model) {
 pp[p.model] = true;
+}
 }
 }
 }
@@ -3225,6 +3474,8 @@ document.addEventListener('mouseup', upfn);
 function untrackDocument(stateObj) {
 document.removeEventListener('mousemove', stateObj.movefn);
 document.removeEventListener('mouseup', stateObj.upfn);
+stateObj.movefn = null;
+stateObj.upfn = null;
 }
 var Gestures = {
 gestures: {},
@@ -3451,10 +3702,8 @@ emits: [
 'up'
 ],
 info: {
-movefn: function () {
-},
-upfn: function () {
-}
+movefn: null,
+upfn: null
 },
 reset: function () {
 untrackDocument(this.info);
@@ -3487,7 +3736,6 @@ touchend: function (e) {
 this.fire('up', Gestures.findOriginalTarget(e), e.changedTouches[0]);
 },
 fire: function (type, target, event) {
-var self = this;
 Gestures.fire(target, type, {
 x: event.clientX,
 y: event.clientY,
@@ -3530,10 +3778,8 @@ this.moves.shift();
 }
 this.moves.push(move);
 },
-movefn: function () {
-},
-upfn: function () {
-},
+movefn: null,
+upfn: null,
 prevent: false
 },
 reset: function () {
@@ -3717,6 +3963,9 @@ none: 'none',
 all: 'auto'
 };
 Polymer.Base._addFeature({
+_setupGestures: function () {
+this.__polymerGestures = null;
+},
 _listen: function (node, eventName, handler) {
 if (Gestures.gestures[eventName]) {
 Gestures.add(node, eventName, handler);
@@ -3738,99 +3987,6 @@ Gestures.setTouchAction(node, DIRECTION_MAP[direction] || 'auto');
 });
 Polymer.Gestures = Gestures;
 }());
-Polymer.Async = {
-_currVal: 0,
-_lastVal: 0,
-_callbacks: [],
-_twiddleContent: 0,
-_twiddle: document.createTextNode(''),
-run: function (callback, waitTime) {
-if (waitTime > 0) {
-return ~setTimeout(callback, waitTime);
-} else {
-this._twiddle.textContent = this._twiddleContent++;
-this._callbacks.push(callback);
-return this._currVal++;
-}
-},
-cancel: function (handle) {
-if (handle < 0) {
-clearTimeout(~handle);
-} else {
-var idx = handle - this._lastVal;
-if (idx >= 0) {
-if (!this._callbacks[idx]) {
-throw 'invalid async handle: ' + handle;
-}
-this._callbacks[idx] = null;
-}
-}
-},
-_atEndOfMicrotask: function () {
-var len = this._callbacks.length;
-for (var i = 0; i < len; i++) {
-var cb = this._callbacks[i];
-if (cb) {
-try {
-cb();
-} catch (e) {
-i++;
-this._callbacks.splice(0, i);
-this._lastVal += i;
-this._twiddle.textContent = this._twiddleContent++;
-throw e;
-}
-}
-}
-this._callbacks.splice(0, len);
-this._lastVal += len;
-}
-};
-new window.MutationObserver(function () {
-Polymer.Async._atEndOfMicrotask();
-}).observe(Polymer.Async._twiddle, { characterData: true });
-Polymer.Debounce = function () {
-var Async = Polymer.Async;
-var Debouncer = function (context) {
-this.context = context;
-var self = this;
-this.boundComplete = function () {
-self.complete();
-};
-};
-Debouncer.prototype = {
-go: function (callback, wait) {
-var h;
-this.finish = function () {
-Async.cancel(h);
-};
-h = Async.run(this.boundComplete, wait);
-this.callback = callback;
-},
-stop: function () {
-if (this.finish) {
-this.finish();
-this.finish = null;
-}
-},
-complete: function () {
-if (this.finish) {
-this.stop();
-this.callback.call(this.context);
-}
-}
-};
-function debounce(debouncer, callback, wait) {
-if (debouncer) {
-debouncer.stop();
-} else {
-debouncer = new Debouncer(this);
-}
-debouncer.go(callback, wait);
-return debouncer;
-}
-return debounce;
-}();
 Polymer.Base._addFeature({
 $$: function (slctr) {
 return Polymer.dom(this.root).querySelector(slctr);
@@ -3970,10 +4126,14 @@ translate3d: function (x, y, z, node) {
 node = node || this;
 this.transform('translate3d(' + x + ',' + y + ',' + z + ')', node);
 },
-importHref: function (href, onload, onerror) {
+importHref: function (href, onload, onerror, optAsync) {
 var l = document.createElement('link');
 l.rel = 'import';
 l.href = href;
+optAsync = Boolean(optAsync);
+if (optAsync) {
+l.setAttribute('async', '');
+}
 var self = this;
 if (onload) {
 l.onload = function (e) {
@@ -4341,6 +4501,9 @@ this._addComplexObserverEffect(o);
 },
 _addComplexObserverEffect: function (observer) {
 var sig = this._parseMethod(observer);
+if (!sig) {
+throw new Error('Malformed observer expression \'' + observer + '\'');
+}
 for (var i = 0, arg; i < sig.args.length && (arg = sig.args[i]); i++) {
 this._addPropertyEffect(arg.model, 'complexObserver', {
 method: sig.method,
@@ -4406,7 +4569,7 @@ trigger: trigger
 });
 },
 _parseMethod: function (expression) {
-var m = expression.match(/([^\s]+)\((.*)\)/);
+var m = expression.match(/([^\s]+?)\((.*)\)/);
 if (m) {
 var sig = {
 method: m[1],
@@ -4433,10 +4596,7 @@ return sig;
 },
 _parseArg: function (rawArg) {
 var arg = rawArg.trim().replace(/&comma;/g, ',').replace(/\\(.)/g, '$1');
-var a = {
-name: arg,
-model: this._modelForPath(arg)
-};
+var a = { name: arg };
 var fc = arg[0];
 if (fc === '-') {
 fc = arg[1];
@@ -4456,6 +4616,7 @@ a.literal = true;
 break;
 }
 if (!a.literal) {
+a.model = this._modelForPath(arg);
 a.structured = arg.indexOf('.') > 0;
 if (a.structured) {
 a.wildcard = arg.slice(-2) == '.*';
@@ -4491,7 +4652,7 @@ value = value == undefined ? '' : value;
 }
 var pinfo;
 if (!node._propertyInfo || !(pinfo = node._propertyInfo[property]) || !pinfo.readOnly) {
-this.__setProperty(property, value, true, node);
+this.__setProperty(property, value, false, node);
 }
 }
 },
@@ -4505,6 +4666,7 @@ Polymer.Base._addFeature({
 _setupConfigure: function (initialConfig) {
 this._config = {};
 this._handlers = [];
+this._aboveConfig = null;
 if (initialConfig) {
 for (var i in initialConfig) {
 if (initialConfig[i] !== undefined) {
@@ -4622,7 +4784,9 @@ Polymer.Base._addFeature({
 notifyPath: function (path, value, fromAbove) {
 var info = {};
 this._get(path, this, info);
+if (info.path) {
 this._notifyPath(info.path, value, fromAbove);
+}
 },
 _notifyPath: function (path, value, fromAbove) {
 var old = this._propertySetter(path, value);
@@ -4934,7 +5098,7 @@ return Polymer.ResolveUrl.resolveUrl(url, root);
 }
 });
 Polymer.CssParse = function () {
-var api = {
+return {
 parse: function (text) {
 text = this._clean(text);
 return this._parseCss(this._lex(text), text);
@@ -4948,7 +5112,7 @@ start: 0,
 end: text.length
 };
 var n = root;
-for (var i = 0, s = 0, l = text.length; i < l; i++) {
+for (var i = 0, l = text.length; i < l; i++) {
 switch (text[i]) {
 case this.OPEN_BRACE:
 if (!n.rules) {
@@ -5065,8 +5229,8 @@ CLOSE_BRACE: '}',
 _rx: {
 comments: /\/\*[^*]*\*+([^\/*][^*]*\*+)*\//gim,
 port: /@import[^;]*;/gim,
-customProp: /(?:^|[\s;])--[^;{]*?:[^{};]*?(?:[;\n]|$)/gim,
-mixinProp: /(?:^|[\s;])?--[^;{]*?:[^{;]*?{[^}]*?}(?:[;\n]|$)?/gim,
+customProp: /(?:^[^;\-\s}]+)?--[^;{}]*?:[^{};]*?(?:[;\n]|$)/gim,
+mixinProp: /(?:^[^;\-\s}]+)?--[^;{}]*?:[^{};]*?{[^}]*?}(?:[;\n]|$)?/gim,
 mixinApply: /@apply[\s]*\([^)]*?\)[\s]*(?:[;\n]|$)?/gim,
 varApply: /[^;:]*?:[^;]*?var\([^;]*\)(?:[;\n]|$)?/gim,
 keyframesRule: /^@[^\s]*keyframes/,
@@ -5076,7 +5240,6 @@ VAR_START: '--',
 MEDIA_START: '@media',
 AT_START: '@'
 };
-return api;
 }();
 Polymer.StyleUtil = function () {
 return {
@@ -5104,14 +5267,10 @@ style.__cssRules = this.parser.parse(style.textContent);
 }
 return style.__cssRules;
 },
-clearStyleRules: function (style) {
-style.__cssRules = null;
-},
 forEachStyleRule: function (node, callback) {
 if (!node) {
 return;
 }
-var s = node.parsedSelector;
 var skipRules = false;
 if (node.type === this.ruleTypes.STYLE_RULE) {
 callback(node);
@@ -5160,7 +5319,7 @@ return m && m._cssText || '';
 cssFromElement: function (element) {
 var cssText = '';
 var content = element.content || element;
-var e$ = Polymer.DomApi.arrayCopy(content.querySelectorAll(this.MODULE_STYLES_SELECTOR));
+var e$ = Polymer.TreeApi.arrayCopy(content.querySelectorAll(this.MODULE_STYLES_SELECTOR));
 for (var i = 0, e; i < e$.length; i++) {
 e = e$[i];
 if (e.localName === 'template') {
@@ -5226,7 +5385,7 @@ if (c) {
 element.setAttribute(CLASS, c.replace(SCOPE_NAME, '').replace(scope, ''));
 }
 } else {
-element.setAttribute(CLASS, c + (c ? ' ' : '') + SCOPE_NAME + ' ' + scope);
+element.setAttribute(CLASS, (c ? c + ' ' : '') + SCOPE_NAME + ' ' + scope);
 }
 }
 }
@@ -5235,7 +5394,7 @@ element.setAttribute(CLASS, c + (c ? ' ' : '') + SCOPE_NAME + ' ' + scope);
 elementStyles: function (element, callback) {
 var styles = element._styles;
 var cssText = '';
-for (var i = 0, l = styles.length, s, text; i < l && (s = styles[i]); i++) {
+for (var i = 0, l = styles.length, s; i < l && (s = styles[i]); i++) {
 var rules = styleUtil.rulesForStyle(s);
 cssText += nativeShadow ? styleUtil.toCssText(rules, callback) : this.css(rules, element.is, element.extends, callback, element._scopeCssViaAttr) + '\n\n';
 }
@@ -5356,9 +5515,9 @@ var HOST = ':host';
 var ROOT = ':root';
 var HOST_PAREN = /(\:host)(?:\(((?:\([^)(]*\)|[^)(]*)+?)\))/g;
 var HOST_CONTEXT = ':host-context';
-var HOST_CONTEXT_PAREN = /(.*)(?:\:host-context)(?:\(((?:\([^)(]*\)|[^)(]*)+?)\))(.*)/;
+var HOST_CONTEXT_PAREN = /(.*)(?::host-context)(?:\(((?:\([^)(]*\)|[^)(]*)+?)\))(.*)/;
 var CONTENT = '::content';
-var SCOPE_JUMP = /\:\:content|\:\:shadow|\/deep\//;
+var SCOPE_JUMP = /::content|::shadow|\/deep\//;
 var CSS_CLASS_PREFIX = '.';
 var CSS_ATTR_PREFIX = '[' + SCOPE_NAME + '~=';
 var CSS_ATTR_SUFFIX = ']';
@@ -5511,10 +5670,12 @@ return;
 var self = this;
 var scopify = function (node) {
 if (node.nodeType === Node.ELEMENT_NODE) {
-node.className = self._scopeElementClass(node, node.className);
+var className = node.getAttribute('class');
+node.setAttribute('class', self._scopeElementClass(node, className));
 var n$ = node.querySelectorAll('*');
 for (var i = 0, n; i < n$.length && (n = n$[i]); i++) {
-n.className = self._scopeElementClass(n, n.className);
+className = n.getAttribute('class');
+n.setAttribute('class', self._scopeElementClass(n, className));
 }
 }
 };
@@ -5652,9 +5813,7 @@ p = pp.join(':');
 parts[i] = p && p.lastIndexOf(';') === p.length - 1 ? p.slice(0, -1) : p || '';
 }
 }
-return parts.filter(function (v) {
-return v;
-}).join(';');
+return parts.join(';');
 },
 applyProperties: function (rule, props) {
 var output = '';
@@ -5734,13 +5893,13 @@ parts[i] = p.match(hostRx) ? p.replace(hostSelector, hostSelector + scope) : sco
 rule.selector = parts.join(',');
 },
 applyElementScopeSelector: function (element, selector, old, viaAttr) {
-var c = viaAttr ? element.getAttribute(styleTransformer.SCOPE_NAME) : element.className;
+var c = viaAttr ? element.getAttribute(styleTransformer.SCOPE_NAME) : element.getAttribute('class') || '';
 var v = old ? c.replace(old, selector) : (c ? c + ' ' : '') + this.XSCOPE_NAME + ' ' + selector;
 if (c !== v) {
 if (viaAttr) {
 element.setAttribute(styleTransformer.SCOPE_NAME, v);
 } else {
-element.className = v;
+element.setAttribute('class', v);
 }
 }
 },
@@ -5907,6 +6066,11 @@ return this._styleProperties && this._styleProperties[property] || getComputedSt
 },
 _setupStyleProperties: function () {
 this.customStyle = {};
+this._styleCache = null;
+this._styleProperties = null;
+this._scopeSelector = null;
+this._ownStyleProperties = null;
+this._customStyle = null;
 },
 _needsStyleProperties: function () {
 return Boolean(this._ownStylePropertyNames && this._ownStylePropertyNames.length);
@@ -6067,9 +6231,11 @@ this._addComplexObserverEffects(b.observers);
 this._addHostAttributes(b.hostAttributes);
 },
 _initFeatures: function () {
+this._setupGestures();
 this._setupConfigure();
 this._setupStyleProperties();
 this._setupDebouncers();
+this._setupShady();
 this._registerHost();
 if (this._template) {
 this._poolContent();
@@ -6137,9 +6303,9 @@ styleUtil.forEachStyleRule(styleUtil.rulesForStyle(e), function (rule) {
 styleTransformer.documentRule(rule);
 });
 var self = this;
-function fn() {
+var fn = function fn() {
 self._applyCustomProperties(e);
-}
+};
 if (this._pendingApplyProperties) {
 cancelAnimationFrame(this._pendingApplyProperties);
 this._pendingApplyProperties = null;
@@ -6191,6 +6357,8 @@ archetype._notifyPathUp = this._notifyPathUpImpl;
 archetype._scopeElementClass = this._scopeElementClassImpl;
 archetype.listen = this._listenImpl;
 archetype._showHideChildren = this._showHideChildrenImpl;
+archetype.__setPropertyOrig = this.__setProperty;
+archetype.__setProperty = this.__setPropertyImpl;
 var _constructor = this._constructorImpl;
 var ctor = function TemplateInstance(model, host) {
 _constructor.call(this, model, host);
@@ -6226,6 +6394,12 @@ n.style.display = n.__polymerDisplay__;
 }
 n.__hideTemplateChildren__ = hide;
 }
+},
+__setPropertyImpl: function (property, value, fromAbove, node) {
+if (node && node.__hideTemplateChildren__ && property == 'textContent') {
+property = '__polymerTextContent__';
+}
+this.__setPropertyOrig(property, value, fromAbove, node);
 },
 _debounceTemplate: function (fn) {
 Polymer.dom.addDebouncer(this.debounce('_debounceTemplate', fn));
@@ -6464,9 +6638,10 @@ this.pmap[item] = key;
 return '#' + key;
 },
 removeKey: function (key) {
-key = this._parseKey(key);
+if (key = this._parseKey(key)) {
 this._removeFromMap(this.store[key]);
 delete this.store[key];
+}
 },
 _removeFromMap: function (item) {
 if (item && typeof item == 'object') {
@@ -6497,13 +6672,12 @@ return '#' + key;
 });
 },
 _parseKey: function (key) {
-if (key[0] == '#') {
+if (key && key[0] == '#') {
 return key.slice(1);
 }
-throw new Error('unexpected key ' + key);
 },
 setItem: function (key, item) {
-key = this._parseKey(key);
+if (key = this._parseKey(key)) {
 var old = this.store[key];
 if (old) {
 this._removeFromMap(old);
@@ -6514,10 +6688,12 @@ this.omap.set(item, key);
 this.pmap[item] = key;
 }
 this.store[key] = item;
+}
 },
 getItem: function (key) {
-key = this._parseKey(key);
+if (key = this._parseKey(key)) {
 return this.store[key];
+}
 },
 getItems: function () {
 var items = [], store = this.store;
@@ -6593,6 +6769,11 @@ type: String,
 observer: '_observeChanged'
 },
 delay: Number,
+renderedItemCount: {
+type: Number,
+notify: true,
+readOnly: true
+},
 initialCount: {
 type: Number,
 observer: '_initializeChunking'
@@ -6601,7 +6782,10 @@ targetFramerate: {
 type: Number,
 value: 20
 },
-_targetFrameTime: { computed: '_computeFrameTime(targetFramerate)' }
+_targetFrameTime: {
+type: Number,
+computed: '_computeFrameTime(targetFramerate)'
+}
 },
 behaviors: [Polymer.Templatizer],
 observers: ['_itemsChanged(items.*)'],
@@ -6615,14 +6799,18 @@ self._renderChunk();
 };
 },
 detached: function () {
+this.__isDetached = true;
 for (var i = 0; i < this._instances.length; i++) {
 this._detachInstance(i);
 }
 },
 attached: function () {
+if (this.__isDetached) {
+this.__isDetached = false;
 var parent = Polymer.dom(Polymer.dom(this).parentNode);
 for (var i = 0; i < this._instances.length; i++) {
 this._attachInstance(i, parent);
+}
 }
 },
 ready: function () {
@@ -6761,6 +6949,7 @@ inst.__setProperty(this.indexAs, i, true);
 }
 }
 this._pool.length = 0;
+this._setRenderedItemCount(this._instances.length);
 this.fire('dom-change');
 this._tryRenderChunk();
 },
@@ -7135,7 +7324,9 @@ _queueRender: function () {
 this._debounceTemplate(this._render);
 },
 detached: function () {
+if (!this.parentNode || this.parentNode.nodeType == Node.DOCUMENT_FRAGMENT_NODE && (!Polymer.Settings.hasShadow || !(this.parentNode instanceof ShadowRoot))) {
 this._teardownInstance();
+}
 },
 attached: function () {
 if (this.if && this.ctor) {
@@ -7164,20 +7355,30 @@ this._lastIf = this.if;
 }
 },
 _ensureInstance: function () {
-if (!this._instance) {
 var parentNode = Polymer.dom(this).parentNode;
 if (parentNode) {
 var parent = Polymer.dom(parentNode);
+if (!this._instance) {
 this._instance = this.stamp();
 var root = this._instance.root;
 parent.insertBefore(root, this);
+} else {
+var c$ = this._instance._children;
+if (c$ && c$.length) {
+var lastChild = Polymer.dom(this).previousSibling;
+if (lastChild !== c$[c$.length - 1]) {
+for (var i = 0, n; i < c$.length && (n = c$[i]); i++) {
+parent.insertBefore(n, this);
+}
+}
+}
 }
 }
 },
 _teardownInstance: function () {
 if (this._instance) {
 var c$ = this._instance._children;
-if (c$) {
+if (c$ && c$.length) {
 var parent = Polymer.dom(Polymer.dom(c$[0]).parentNode);
 for (var i = 0, n; i < c$.length && (n = c$[i]); i++) {
 parent.removeChild(n);
@@ -7274,7 +7475,7 @@ this._prepConfigure();
 this._prepBindings();
 this._prepPropertyInfo();
 Polymer.Base._initFeatures.call(this);
-this._children = Polymer.DomApi.arrayCopyChildNodes(this.root);
+this._children = Polymer.TreeApi.arrayCopyChildNodes(this.root);
 }
 this._insertChildren();
 this.fire('dom-change');
@@ -7336,6 +7537,15 @@ this.fire('dom-change');
     };
 
     /**
+     * KeyboardEvent.key is mostly represented by printable character made by
+     * the keyboard, with unprintable keys labeled nicely.
+     *
+     * However, on OS X, Alt+char can make a Unicode character that follows an
+     * Apple-specific mapping. In this case, we fall back to .keyCode.
+     */
+    var KEY_CHAR = /[a-z0-9*]/;
+
+    /**
      * Matches a keyIdentifier string.
      */
     var IDENT_CHAR = /U\+/;
@@ -7351,14 +7561,22 @@ this.fire('dom-change');
      */
     var SPACE_KEY = /^space(bar)?/;
 
-    function transformKey(key) {
+    /**
+     * Transforms the key.
+     * @param {string} key The KeyBoardEvent.key
+     * @param {Boolean} [noSpecialChars] Limits the transformation to
+     * alpha-numeric characters.
+     */
+    function transformKey(key, noSpecialChars) {
       var validKey = '';
       if (key) {
         var lKey = key.toLowerCase();
         if (lKey === ' ' || SPACE_KEY.test(lKey)) {
           validKey = 'space';
         } else if (lKey.length == 1) {
-          validKey = lKey;
+          if (!noSpecialChars || KEY_CHAR.test(lKey)) {
+            validKey = lKey;
+          }
         } else if (ARROW_KEY.test(lKey)) {
           validKey = lKey.replace('arrow', '');
         } else if (lKey == 'multiply') {
@@ -7409,17 +7627,29 @@ this.fire('dom-change');
       return validKey;
     }
 
-    function normalizedKeyForEvent(keyEvent) {
-      // fall back from .key, to .keyIdentifier, to .keyCode, and then to
-      // .detail.key to support artificial keyboard events
-      return transformKey(keyEvent.key) ||
+    /**
+      * Calculates the normalized key for a KeyboardEvent.
+      * @param {KeyboardEvent} keyEvent
+      * @param {Boolean} [noSpecialChars] Set to true to limit keyEvent.key
+      * transformation to alpha-numeric chars. This is useful with key
+      * combinations like shift + 2, which on FF for MacOS produces
+      * keyEvent.key = @
+      * To get 2 returned, set noSpecialChars = true
+      * To get @ returned, set noSpecialChars = false
+     */
+    function normalizedKeyForEvent(keyEvent, noSpecialChars) {
+      // Fall back from .key, to .keyIdentifier, to .keyCode, and then to
+      // .detail.key to support artificial keyboard events.
+      return transformKey(keyEvent.key, noSpecialChars) ||
         transformKeyIdentifier(keyEvent.keyIdentifier) ||
         transformKeyCode(keyEvent.keyCode) ||
-        transformKey(keyEvent.detail.key) || '';
+        transformKey(keyEvent.detail.key, noSpecialChars) || '';
     }
 
-    function keyComboMatchesEvent(keyCombo, event, eventKey) {
-      return eventKey === keyCombo.key &&
+    function keyComboMatchesEvent(keyCombo, event) {
+      // For combos with modifiers we support only alpha-numeric keys
+      var keyEvent = normalizedKeyForEvent(event, keyCombo.hasModifiers);
+      return keyEvent === keyCombo.key &&
         (!keyCombo.hasModifiers || (
           !!event.shiftKey === !!keyCombo.shiftKey &&
           !!event.ctrlKey === !!keyCombo.ctrlKey &&
@@ -7556,9 +7786,8 @@ this.fire('dom-change');
 
       keyboardEventMatchesKeys: function(event, eventString) {
         var keyCombos = parseEventString(eventString);
-        var eventKey = normalizedKeyForEvent(event);
         for (var i = 0; i < keyCombos.length; ++i) {
-          if (keyComboMatchesEvent(keyCombos[i], event, eventKey)) {
+          if (keyComboMatchesEvent(keyCombos[i], event)) {
             return true;
           }
         }
@@ -7658,11 +7887,10 @@ this.fire('dom-change');
           return;
         }
 
-        var eventKey = normalizedKeyForEvent(event);
         for (var i = 0; i < keyBindings.length; i++) {
           var keyCombo = keyBindings[i][0];
           var handlerName = keyBindings[i][1];
-          if (keyComboMatchesEvent(keyCombo, event, eventKey)) {
+          if (keyComboMatchesEvent(keyCombo, event)) {
             this._triggerKeyHandler(keyCombo, handlerName, event);
             // exit the loop if eventDefault was prevented
             if (event.defaultPrevented) {
@@ -7801,7 +8029,9 @@ this.fire('dom-change');
        */
 
       /**
-       * The label for this input. Bind this to `<label>`'s content and `hidden` property, e.g.
+       * The label for this input. If you're using PaperInputBehavior to
+       * implement your own paper-input-like element, bind this to
+       * `<label>`'s content and `hidden` property, e.g.
        * `<label hidden$="[[!label]]">[[label]]</label>` in your `template`
        */
       label: {
@@ -7809,7 +8039,9 @@ this.fire('dom-change');
       },
 
       /**
-       * The value for this input. Bind this to the `<input is="iron-input">`'s `bindValue`
+       * The value for this input. If you're using PaperInputBehavior to
+       * implement your own paper-input-like element, bind this to
+       * the `<input is="iron-input">`'s `bindValue`
        * property, or the value property of your input that is `notify:true`.
        */
       value: {
@@ -7818,8 +8050,9 @@ this.fire('dom-change');
       },
 
       /**
-       * Set to true to disable this input. Bind this to both the `<paper-input-container>`'s
-       * and the input's `disabled` property.
+       * Set to true to disable this input. If you're using PaperInputBehavior to
+       * implement your own paper-input-like element, bind this to
+       * both the `<paper-input-container>`'s and the input's `disabled` property.
        */
       disabled: {
         type: Boolean,
@@ -7827,9 +8060,10 @@ this.fire('dom-change');
       },
 
       /**
-       * Returns true if the value is invalid. Bind this to both the `<paper-input-container>`'s
-       * and the input's `invalid` property.
-       * 
+       * Returns true if the value is invalid. If you're using PaperInputBehavior to
+       * implement your own paper-input-like element, bind this to both the
+       * `<paper-input-container>`'s and the input's `invalid` property.
+       *
        * If `autoValidate` is true, the `invalid` attribute is managed automatically,
        * which can clobber attempts to manage it manually.
        */
@@ -7840,48 +8074,55 @@ this.fire('dom-change');
       },
 
       /**
-       * Set to true to prevent the user from entering invalid input. Bind this to the
-       * `<input is="iron-input">`'s `preventInvalidInput` property.
+       * Set to true to prevent the user from entering invalid input. If you're
+       * using PaperInputBehavior to  implement your own paper-input-like element,
+       * bind this to `<input is="iron-input">`'s `preventInvalidInput` property.
        */
       preventInvalidInput: {
         type: Boolean
       },
 
       /**
-       * Set this to specify the pattern allowed by `preventInvalidInput`. Bind this to the
-       * `<input is="iron-input">`'s `allowedPattern` property.
+       * Set this to specify the pattern allowed by `preventInvalidInput`. If
+       * you're using PaperInputBehavior to implement your own paper-input-like
+       * element, bind this to the `<input is="iron-input">`'s `allowedPattern`
+       * property.
        */
       allowedPattern: {
         type: String
       },
 
       /**
-       * The type of the input. The supported types are `text`, `number` and `password`. Bind this
-       * to the `<input is="iron-input">`'s `type` property.
+       * The type of the input. The supported types are `text`, `number` and `password`.
+       * If you're using PaperInputBehavior to implement your own paper-input-like element,
+       * bind this to the `<input is="iron-input">`'s `type` property.
        */
       type: {
         type: String
       },
 
       /**
-       * The datalist of the input (if any). This should match the id of an existing `<datalist>`. Bind this
-       * to the `<input is="iron-input">`'s `list` property.
+       * The datalist of the input (if any). This should match the id of an existing `<datalist>`.
+       * If you're using PaperInputBehavior to implement your own paper-input-like
+       * element, bind this to the `<input is="iron-input">`'s `list` property.
        */
       list: {
         type: String
       },
 
       /**
-       * A pattern to validate the `input` with. Bind this to the `<input is="iron-input">`'s
-       * `pattern` property.
+       * A pattern to validate the `input` with. If you're using PaperInputBehavior to
+       * implement your own paper-input-like element, bind this to
+       * the `<input is="iron-input">`'s `pattern` property.
        */
       pattern: {
         type: String
       },
 
       /**
-       * Set to true to mark the input as required. Bind this to the `<input is="iron-input">`'s
-       * `required` property.
+       * Set to true to mark the input as required. If you're using PaperInputBehavior to
+       * implement your own paper-input-like element, bind this to
+       * the `<input is="iron-input">`'s `required` property.
        */
       required: {
         type: Boolean,
@@ -7889,8 +8130,9 @@ this.fire('dom-change');
       },
 
       /**
-       * The error message to display when the input is invalid. Bind this to the
-       * `<paper-input-error>`'s content, if using.
+       * The error message to display when the input is invalid. If you're using
+       * PaperInputBehavior to implement your own paper-input-like element,
+       * bind this to the `<paper-input-error>`'s content, if using.
        */
       errorMessage: {
         type: String
@@ -7905,8 +8147,9 @@ this.fire('dom-change');
       },
 
       /**
-       * Set to true to disable the floating label. Bind this to the `<paper-input-container>`'s
-       * `noLabelFloat` property.
+       * Set to true to disable the floating label. If you're using PaperInputBehavior to
+       * implement your own paper-input-like element, bind this to
+       * the `<paper-input-container>`'s `noLabelFloat` property.
        */
       noLabelFloat: {
         type: Boolean,
@@ -7914,8 +8157,9 @@ this.fire('dom-change');
       },
 
       /**
-       * Set to true to always float the label. Bind this to the `<paper-input-container>`'s
-       * `alwaysFloatLabel` property.
+       * Set to true to always float the label. If you're using PaperInputBehavior to
+       * implement your own paper-input-like element, bind this to
+       * the `<paper-input-container>`'s `alwaysFloatLabel` property.
        */
       alwaysFloatLabel: {
         type: Boolean,
@@ -7923,8 +8167,9 @@ this.fire('dom-change');
       },
 
       /**
-       * Set to true to auto-validate the input value. Bind this to the `<paper-input-container>`'s
-       * `autoValidate` property.
+       * Set to true to auto-validate the input value. If you're using PaperInputBehavior to
+       * implement your own paper-input-like element, bind this to
+       * the `<paper-input-container>`'s `autoValidate` property.
        */
       autoValidate: {
         type: Boolean,
@@ -7932,8 +8177,9 @@ this.fire('dom-change');
       },
 
       /**
-       * Name of the validator to use. Bind this to the `<input is="iron-input">`'s `validator`
-       * property.
+       * Name of the validator to use. If you're using PaperInputBehavior to
+       * implement your own paper-input-like element, bind this to
+       * the `<input is="iron-input">`'s `validator` property.
        */
       validator: {
         type: String
@@ -7942,7 +8188,8 @@ this.fire('dom-change');
       // HTMLInputElement attributes for binding if needed
 
       /**
-       * Bind this to the `<input is="iron-input">`'s `autocomplete` property.
+       * If you're using PaperInputBehavior to implement your own paper-input-like
+       * element, bind this to the `<input is="iron-input">`'s `autocomplete` property.
        */
       autocomplete: {
         type: String,
@@ -7950,29 +8197,34 @@ this.fire('dom-change');
       },
 
       /**
-       * Bind this to the `<input is="iron-input">`'s `autofocus` property.
+       * If you're using PaperInputBehavior to implement your own paper-input-like
+       * element, bind this to the `<input is="iron-input">`'s `autofocus` property.
        */
       autofocus: {
         type: Boolean
       },
 
       /**
-       * Bind this to the `<input is="iron-input">`'s `inputmode` property.
+       * If you're using PaperInputBehavior to implement your own paper-input-like
+       * element, bind this to the `<input is="iron-input">`'s `inputmode` property.
        */
       inputmode: {
         type: String
       },
 
       /**
-       * Bind this to the `<input is="iron-input">`'s `minlength` property.
+       * The minimum length of the input value.
+       * If you're using PaperInputBehavior to implement your own paper-input-like
+       * element, bind this to the `<input is="iron-input">`'s `minlength` property.
        */
       minlength: {
         type: Number
       },
 
       /**
-       * The maximum length of the input value. Bind this to the `<input is="iron-input">`'s
-       * `maxlength` property.
+       * The maximum length of the input value.
+       * If you're using PaperInputBehavior to implement your own paper-input-like
+       * element, bind this to the `<input is="iron-input">`'s `maxlength` property.
        */
       maxlength: {
         type: Number
@@ -7980,7 +8232,8 @@ this.fire('dom-change');
 
       /**
        * The minimum (numeric or date-time) input value.
-       * Bind this to the `<input is="iron-input">`'s `min` property.
+       * If you're using PaperInputBehavior to implement your own paper-input-like
+       * element, bind this to the `<input is="iron-input">`'s `min` property.
        */
       min: {
         type: String
@@ -7989,7 +8242,8 @@ this.fire('dom-change');
       /**
        * The maximum (numeric or date-time) input value.
        * Can be a String (e.g. `"2000-1-1"`) or a Number (e.g. `2`).
-       * Bind this to the `<input is="iron-input">`'s `max` property.
+       * If you're using PaperInputBehavior to implement your own paper-input-like
+       * element, bind this to the `<input is="iron-input">`'s `max` property.
        */
       max: {
         type: String
@@ -7997,14 +8251,16 @@ this.fire('dom-change');
 
       /**
        * Limits the numeric or date-time increments.
-       * Bind this to the `<input is="iron-input">`'s `step` property.
+       * If you're using PaperInputBehavior to implement your own paper-input-like
+       * element, bind this to the `<input is="iron-input">`'s `step` property.
        */
       step: {
         type: String
       },
 
       /**
-       * Bind this to the `<input is="iron-input">`'s `name` property.
+       * If you're using PaperInputBehavior to implement your own paper-input-like
+       * element, bind this to the `<input is="iron-input">`'s `name` property.
        */
       name: {
         type: String
@@ -8020,7 +8276,8 @@ this.fire('dom-change');
       },
 
       /**
-       * Bind this to the `<input is="iron-input">`'s `readonly` property.
+       * If you're using PaperInputBehavior to implement your own paper-input-like
+       * element, bind this to the `<input is="iron-input">`'s `readonly` property.
        */
       readonly: {
         type: Boolean,
@@ -8028,7 +8285,8 @@ this.fire('dom-change');
       },
 
       /**
-       * Bind this to the `<input is="iron-input">`'s `size` property.
+       * If you're using PaperInputBehavior to implement your own paper-input-like
+       * element, bind this to the `<input is="iron-input">`'s `size` property.
        */
       size: {
         type: Number
@@ -8037,7 +8295,8 @@ this.fire('dom-change');
       // Nonstandard attributes for binding if needed
 
       /**
-       * Bind this to the `<input is="iron-input">`'s `autocapitalize` property.
+       * If you're using PaperInputBehavior to implement your own paper-input-like
+       * element, bind this to the `<input is="iron-input">`'s `autocapitalize` property.
        */
       autocapitalize: {
         type: String,
@@ -8045,7 +8304,8 @@ this.fire('dom-change');
       },
 
       /**
-       * Bind this to the `<input is="iron-input">`'s `autocorrect` property.
+       * If you're using PaperInputBehavior to implement your own paper-input-like
+       * element, bind this to the `<input is="iron-input">`'s `autocorrect` property.
        */
       autocorrect: {
         type: String,
@@ -8053,28 +8313,36 @@ this.fire('dom-change');
       },
 
       /**
-       * Bind this to the `<input is="iron-input">`'s `autosave` property, used with type=search.
+       * If you're using PaperInputBehavior to implement your own paper-input-like
+       * element, bind this to the `<input is="iron-input">`'s `autosave` property,
+       * used with type=search.
        */
       autosave: {
         type: String
       },
 
       /**
-       * Bind this to the `<input is="iron-input">`'s `results` property, used with type=search.
+       * If you're using PaperInputBehavior to implement your own paper-input-like
+       * element, bind this to the `<input is="iron-input">`'s `results` property,
+       * used with type=search.
        */
       results: {
         type: Number
       },
 
       /**
-       * Bind this to the `<input is="iron-input">`'s `accept` property, used with type=file.
+       * If you're using PaperInputBehavior to implement your own paper-input-like
+       * element, bind this to the `<input is="iron-input">`'s `accept` property,
+       * used with type=file.
        */
       accept: {
         type: String
       },
 
       /**
-       * Bind this to the `<input is="iron-input">`'s `multiple` property, used with type=file.
+       * If you're using PaperInputBehavior to implement your own paper-input-like
+       * element, bind this to the`<input is="iron-input">`'s `multiple` property,
+       * used with type=file.
        */
       multiple: {
         type: Boolean
@@ -8123,8 +8391,20 @@ this.fire('dom-change');
       return this.inputElement;
     },
 
+    registered: function() {
+      // These types have some default placeholder text; overlapping
+      // the label on top of it looks terrible. Auto-float the label in this case.
+      this._typesThatHaveText = ["date", "datetime", "datetime-local", "month",
+          "time", "week", "file"];
+    },
+
     attached: function() {
       this._updateAriaLabelledBy();
+
+      if (this.inputElement &&
+          this._typesThatHaveText.indexOf(this.inputElement.type) !== -1) {
+        this.alwaysFloatLabel = true;
+      }
     },
 
     _appendStringWithSpace: function(str, more) {
@@ -10785,6 +11065,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
       /**
        * Gets or sets the selected element. The default is to use the index of the item.
+       * @type {string|number}
        */
       selected: {
         type: String,
@@ -10902,7 +11183,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
      * Selects the given value.
      *
      * @method select
-     * @param {string} value the value to select.
+     * @param {string|number} value the value to select.
      */
     select: function(value) {
       this.selected = value;
@@ -11095,7 +11376,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
      * `value` will be toggled; otherwise the `value` will be selected.
      *
      * @method select
-     * @param {string} value the value to select.
+     * @param {string|number} value the value to select.
      */
     select: function(value) {
       if (this.multi) {
@@ -11222,6 +11503,187 @@ is separate from validation, and `allowed-pattern` does not affect how the input
   });
 
 </script>
+<script>
+  /**
+   * `IronResizableBehavior` is a behavior that can be used in Polymer elements to
+   * coordinate the flow of resize events between "resizers" (elements that control the
+   * size or hidden state of their children) and "resizables" (elements that need to be
+   * notified when they are resized or un-hidden by their parents in order to take
+   * action on their new measurements).
+   * Elements that perform measurement should add the `IronResizableBehavior` behavior to
+   * their element definition and listen for the `iron-resize` event on themselves.
+   * This event will be fired when they become showing after having been hidden,
+   * when they are resized explicitly by another resizable, or when the window has been
+   * resized.
+   * Note, the `iron-resize` event is non-bubbling.
+   *
+   * @polymerBehavior Polymer.IronResizableBehavior
+   * @demo demo/index.html
+   **/
+  Polymer.IronResizableBehavior = {
+    properties: {
+      /**
+       * The closest ancestor element that implements `IronResizableBehavior`.
+       */
+      _parentResizable: {
+        type: Object,
+        observer: '_parentResizableChanged'
+      },
+
+      /**
+       * True if this element is currently notifying its descedant elements of
+       * resize.
+       */
+      _notifyingDescendant: {
+        type: Boolean,
+        value: false
+      }
+    },
+
+    listeners: {
+      'iron-request-resize-notifications': '_onIronRequestResizeNotifications'
+    },
+
+    created: function() {
+      // We don't really need property effects on these, and also we want them
+      // to be created before the `_parentResizable` observer fires:
+      this._interestedResizables = [];
+      this._boundNotifyResize = this.notifyResize.bind(this);
+    },
+
+    attached: function() {
+      this.fire('iron-request-resize-notifications', null, {
+        node: this,
+        bubbles: true,
+        cancelable: true
+      });
+
+      if (!this._parentResizable) {
+        window.addEventListener('resize', this._boundNotifyResize);
+        this.notifyResize();
+      }
+    },
+
+    detached: function() {
+      if (this._parentResizable) {
+        this._parentResizable.stopResizeNotificationsFor(this);
+      } else {
+        window.removeEventListener('resize', this._boundNotifyResize);
+      }
+
+      this._parentResizable = null;
+    },
+
+    /**
+     * Can be called to manually notify a resizable and its descendant
+     * resizables of a resize change.
+     */
+    notifyResize: function() {
+      if (!this.isAttached) {
+        return;
+      }
+
+      this._interestedResizables.forEach(function(resizable) {
+        if (this.resizerShouldNotify(resizable)) {
+          this._notifyDescendant(resizable);
+        }
+      }, this);
+
+      this._fireResize();
+    },
+
+    /**
+     * Used to assign the closest resizable ancestor to this resizable
+     * if the ancestor detects a request for notifications.
+     */
+    assignParentResizable: function(parentResizable) {
+      this._parentResizable = parentResizable;
+    },
+
+    /**
+     * Used to remove a resizable descendant from the list of descendants
+     * that should be notified of a resize change.
+     */
+    stopResizeNotificationsFor: function(target) {
+      var index = this._interestedResizables.indexOf(target);
+
+      if (index > -1) {
+        this._interestedResizables.splice(index, 1);
+        this.unlisten(target, 'iron-resize', '_onDescendantIronResize');
+      }
+    },
+
+    /**
+     * This method can be overridden to filter nested elements that should or
+     * should not be notified by the current element. Return true if an element
+     * should be notified, or false if it should not be notified.
+     *
+     * @param {HTMLElement} element A candidate descendant element that
+     * implements `IronResizableBehavior`.
+     * @return {boolean} True if the `element` should be notified of resize.
+     */
+    resizerShouldNotify: function(element) { return true; },
+
+    _onDescendantIronResize: function(event) {
+      if (this._notifyingDescendant) {
+        event.stopPropagation();
+        return;
+      }
+
+      // NOTE(cdata): In ShadowDOM, event retargetting makes echoing of the
+      // otherwise non-bubbling event "just work." We do it manually here for
+      // the case where Polymer is not using shadow roots for whatever reason:
+      if (!Polymer.Settings.useShadow) {
+        this._fireResize();
+      }
+    },
+
+    _fireResize: function() {
+      this.fire('iron-resize', null, {
+        node: this,
+        bubbles: false
+      });
+    },
+
+    _onIronRequestResizeNotifications: function(event) {
+      var target = event.path ? event.path[0] : event.target;
+
+      if (target === this) {
+        return;
+      }
+
+      if (this._interestedResizables.indexOf(target) === -1) {
+        this._interestedResizables.push(target);
+        this.listen(target, 'iron-resize', '_onDescendantIronResize');
+      }
+
+      target.assignParentResizable(this);
+      this._notifyDescendant(target);
+
+      event.stopPropagation();
+    },
+
+    _parentResizableChanged: function(parentResizable) {
+      if (parentResizable) {
+        window.removeEventListener('resize', this._boundNotifyResize);
+      }
+    },
+
+    _notifyDescendant: function(descendant) {
+      // NOTE(cdata): In IE10, attached is fired on children first, so it's
+      // important not to notify them if the parent is not attached yet (or
+      // else they will get redundantly notified when the parent attaches).
+      if (!this.isAttached) {
+        return;
+      }
+
+      this._notifyingDescendant = true;
+      descendant.notifyResize();
+      this._notifyingDescendant = false;
+    }
+  };
+</script>
+
 <script>
 
   /**
@@ -11425,6 +11887,11 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         return;
       }
 
+      if(this.animationConfig.value && typeof this.animationConfig.value === 'function') {
+      	this._warn(this._logf('playAnimation', "Please put 'animationConfig' inside of your components 'properties' object instead of outside of it."));
+      	return;
+      }
+
       // type is optional
       var thisConfig;
       if (type) {
@@ -11485,187 +11952,6 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
 </script>
 
-
-<script>
-  /**
-   * `IronResizableBehavior` is a behavior that can be used in Polymer elements to
-   * coordinate the flow of resize events between "resizers" (elements that control the
-   * size or hidden state of their children) and "resizables" (elements that need to be
-   * notified when they are resized or un-hidden by their parents in order to take
-   * action on their new measurements).
-   * Elements that perform measurement should add the `IronResizableBehavior` behavior to
-   * their element definition and listen for the `iron-resize` event on themselves.
-   * This event will be fired when they become showing after having been hidden,
-   * when they are resized explicitly by another resizable, or when the window has been
-   * resized.
-   * Note, the `iron-resize` event is non-bubbling.
-   *
-   * @polymerBehavior Polymer.IronResizableBehavior
-   * @demo demo/index.html
-   **/
-  Polymer.IronResizableBehavior = {
-    properties: {
-      /**
-       * The closest ancestor element that implements `IronResizableBehavior`.
-       */
-      _parentResizable: {
-        type: Object,
-        observer: '_parentResizableChanged'
-      },
-
-      /**
-       * True if this element is currently notifying its descedant elements of
-       * resize.
-       */
-      _notifyingDescendant: {
-        type: Boolean,
-        value: false
-      }
-    },
-
-    listeners: {
-      'iron-request-resize-notifications': '_onIronRequestResizeNotifications'
-    },
-
-    created: function() {
-      // We don't really need property effects on these, and also we want them
-      // to be created before the `_parentResizable` observer fires:
-      this._interestedResizables = [];
-      this._boundNotifyResize = this.notifyResize.bind(this);
-    },
-
-    attached: function() {
-      this.fire('iron-request-resize-notifications', null, {
-        node: this,
-        bubbles: true,
-        cancelable: true
-      });
-
-      if (!this._parentResizable) {
-        window.addEventListener('resize', this._boundNotifyResize);
-        this.notifyResize();
-      }
-    },
-
-    detached: function() {
-      if (this._parentResizable) {
-        this._parentResizable.stopResizeNotificationsFor(this);
-      } else {
-        window.removeEventListener('resize', this._boundNotifyResize);
-      }
-
-      this._parentResizable = null;
-    },
-
-    /**
-     * Can be called to manually notify a resizable and its descendant
-     * resizables of a resize change.
-     */
-    notifyResize: function() {
-      if (!this.isAttached) {
-        return;
-      }
-
-      this._interestedResizables.forEach(function(resizable) {
-        if (this.resizerShouldNotify(resizable)) {
-          this._notifyDescendant(resizable);
-        }
-      }, this);
-
-      this._fireResize();
-    },
-
-    /**
-     * Used to assign the closest resizable ancestor to this resizable
-     * if the ancestor detects a request for notifications.
-     */
-    assignParentResizable: function(parentResizable) {
-      this._parentResizable = parentResizable;
-    },
-
-    /**
-     * Used to remove a resizable descendant from the list of descendants
-     * that should be notified of a resize change.
-     */
-    stopResizeNotificationsFor: function(target) {
-      var index = this._interestedResizables.indexOf(target);
-
-      if (index > -1) {
-        this._interestedResizables.splice(index, 1);
-        this.unlisten(target, 'iron-resize', '_onDescendantIronResize');
-      }
-    },
-
-    /**
-     * This method can be overridden to filter nested elements that should or
-     * should not be notified by the current element. Return true if an element
-     * should be notified, or false if it should not be notified.
-     *
-     * @param {HTMLElement} element A candidate descendant element that
-     * implements `IronResizableBehavior`.
-     * @return {boolean} True if the `element` should be notified of resize.
-     */
-    resizerShouldNotify: function(element) { return true; },
-
-    _onDescendantIronResize: function(event) {
-      if (this._notifyingDescendant) {
-        event.stopPropagation();
-        return;
-      }
-
-      // NOTE(cdata): In ShadowDOM, event retargetting makes echoing of the
-      // otherwise non-bubbling event "just work." We do it manually here for
-      // the case where Polymer is not using shadow roots for whatever reason:
-      if (!Polymer.Settings.useShadow) {
-        this._fireResize();
-      }
-    },
-
-    _fireResize: function() {
-      this.fire('iron-resize', null, {
-        node: this,
-        bubbles: false
-      });
-    },
-
-    _onIronRequestResizeNotifications: function(event) {
-      var target = event.path ? event.path[0] : event.target;
-
-      if (target === this) {
-        return;
-      }
-
-      if (this._interestedResizables.indexOf(target) === -1) {
-        this._interestedResizables.push(target);
-        this.listen(target, 'iron-resize', '_onDescendantIronResize');
-      }
-
-      target.assignParentResizable(this);
-      this._notifyDescendant(target);
-
-      event.stopPropagation();
-    },
-
-    _parentResizableChanged: function(parentResizable) {
-      if (parentResizable) {
-        window.removeEventListener('resize', this._boundNotifyResize);
-      }
-    },
-
-    _notifyDescendant: function(descendant) {
-      // NOTE(cdata): In IE10, attached is fired on children first, so it's
-      // important not to notify them if the parent is not attached yet (or
-      // else they will get redundantly notified when the parent attaches).
-      if (!this.isAttached) {
-        return;
-      }
-
-      this._notifyingDescendant = true;
-      descendant.notifyResize();
-      this._notifyingDescendant = false;
-    }
-  };
-</script>
 
 <script>
 
@@ -12259,6 +12545,70 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 
   Polymer({
 
+    is: 'slide-from-top-animation',
+
+    behaviors: [
+      Polymer.NeonAnimationBehavior
+    ],
+
+    configure: function(config) {
+      var node = config.node;
+
+      if (config.transformOrigin) {
+        this.setPrefixedProperty(node, 'transformOrigin', config.transformOrigin);
+      } else {
+        this.setPrefixedProperty(node, 'transformOrigin', '50% 0');
+      }
+
+      this._effect = new KeyframeEffect(node, [
+        {'transform': 'translateY(-100%)'},
+        {'transform': 'translateY(0%)'}
+      ], this.timingFromConfig(config));
+
+      return this._effect;
+    }
+
+  });
+
+</script>
+
+
+<script>
+
+  Polymer({
+
+    is: 'slide-from-bottom-animation',
+
+    behaviors: [
+      Polymer.NeonAnimationBehavior
+    ],
+
+    configure: function(config) {
+      var node = config.node;
+
+      if (config.transformOrigin) {
+        this.setPrefixedProperty(node, 'transformOrigin', config.transformOrigin);
+      } else {
+        this.setPrefixedProperty(node, 'transformOrigin', '50% 0');
+      }
+
+      this._effect = new KeyframeEffect(node, [
+        {'transform': 'translateY(100%)'},
+        {'transform': 'translateY(0)'}
+      ], this.timingFromConfig(config));
+
+      return this._effect;
+    }
+
+  });
+
+</script>
+
+
+<script>
+
+  Polymer({
+
     is: 'slide-left-animation',
 
     behaviors: [
@@ -12371,8 +12721,8 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       }
 
       this._effect = new KeyframeEffect(node, [
-        {'transform': 'translateY(-100%)'},
-        {'transform': 'none'}
+        {'transform': 'translateY(0%)'},
+        {'transform': 'translateY(100%)'}
       ], this.timingFromConfig(config));
 
       return this._effect;
@@ -12494,6 +12844,12 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       box-shadow: 0 8px 10px 1px rgba(0, 0, 0, 0.14),
                   0 3px 14px 2px rgba(0, 0, 0, 0.12),
                   0 5px 5px -3px rgba(0, 0, 0, 0.4);
+    };
+
+    --shadow-elevation-12dp: {
+      box-shadow: 0 12px 16px 1px rgba(0, 0, 0, 0.14),
+                  0 4px 22px 3px rgba(0, 0, 0, 0.12),
+                  0 6px 7px -4px rgba(0, 0, 0, 0.4);
     };
 
     --shadow-elevation-16dp: {
@@ -12888,7 +13244,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
     },
 
     _computeKeyboardClass: function(receivedFocusFromKeyboard) {
-      this.classList.toggle('keyboard-focus', receivedFocusFromKeyboard);
+      this.toggleClass('keyboard-focus', receivedFocusFromKeyboard);
     },
 
     /**
@@ -12899,7 +13255,8 @@ is separate from validation, and `allowed-pattern` does not affect how the input
      */
     _spaceKeyDownHandler: function(event) {
       Polymer.IronButtonStateImpl._spaceKeyDownHandler.call(this, event);
-      if (this.hasRipple()) {
+      // Ensure that there is at most one ripple when the space key is held down.
+      if (this.hasRipple() && this.getRipple().ripples.length < 1) {
         this._ripple.uiDownAction();
       }
     },
@@ -13316,105 +13673,149 @@ CSS properties               | Action
 </script>
 <script>
 
-  Polymer.IronOverlayManager = {
-
-    _overlays: [],
-
-    // iframes have a default z-index of 100, so this default should be at least
-    // that.
-    _minimumZ: 101,
-
-    _backdrops: [],
-
-    _applyOverlayZ: function(overlay, aboveZ) {
-      this._setZ(overlay, aboveZ + 2);
-    },
-
-    _setZ: function(element, z) {
-      element.style.zIndex = z;
-    },
-
-    // track overlays for z-index and focus managemant
-    addOverlay: function(overlay) {
-      var minimumZ = Math.max(this.currentOverlayZ(), this._minimumZ);
-      this._overlays.push(overlay);
-      var newZ = this.currentOverlayZ();
-      if (newZ <= minimumZ) {
-        this._applyOverlayZ(overlay, minimumZ);
-      }
-    },
-
-    removeOverlay: function(overlay) {
-      var i = this._overlays.indexOf(overlay);
-      if (i >= 0) {
-        this._overlays.splice(i, 1);
-        this._setZ(overlay, '');
-      }
-    },
-
-    currentOverlay: function() {
-      var i = this._overlays.length - 1;
-      while (this._overlays[i] && !this._overlays[i].opened) {
-        --i;
-      }
-      return this._overlays[i];
-    },
-
-    currentOverlayZ: function() {
-      var z = this._minimumZ;
-      var current = this.currentOverlay();
-      if (current) {
-        var z1 = window.getComputedStyle(current).zIndex;
-        if (!isNaN(z1)) {
-          z = Number(z1);
-        }
-      }
-      return z;
-    },
-
+  /**
+   * @struct
+   * @constructor
+   */
+  Polymer.IronOverlayManagerClass = function() {
+    this._overlays = [];
     /**
-     * Ensures that the minimum z-index of new overlays is at least `minimumZ`.
-     * This does not effect the z-index of any existing overlays.
-     *
-     * @param {number} minimumZ
+     * iframes have a default z-index of 100, so this default should be at least
+     * that.
+     * @private {number}
      */
-    ensureMinimumZ: function(minimumZ) {
-      this._minimumZ = Math.max(this._minimumZ, minimumZ);
-    },
+    this._minimumZ = 101;
 
-    focusOverlay: function() {
-      var current = this.currentOverlay();
-      // We have to be careful to focus the next overlay _after_ any current
-      // transitions are complete (due to the state being toggled prior to the
-      // transition). Otherwise, we risk infinite recursion when a transitioning
-      // (closed) overlay becomes the current overlay.
-      //
-      // NOTE: We make the assumption that any overlay that completes a transition
-      // will call into focusOverlay to kick the process back off. Currently:
-      // transitionend -> _applyFocus -> focusOverlay.
-      if (current && !current.transitioning) {
-        current._applyFocus();
-      }
-    },
+    this._backdrops = [];
+  }
 
-    trackBackdrop: function(element) {
-      // backdrops contains the overlays with a backdrop that are currently
-      // visible
-      if (element.opened) {
-        this._backdrops.push(element);
-      } else {
-        var index = this._backdrops.indexOf(element);
-        if (index >= 0) {
-          this._backdrops.splice(index, 1);
-        }
-      }
-    },
-
-    getBackdrops: function() {
-      return this._backdrops;
-    }
-
+  Polymer.IronOverlayManagerClass.prototype._applyOverlayZ = function(overlay, aboveZ) {
+    this._setZ(overlay, aboveZ + 2);
   };
+
+  Polymer.IronOverlayManagerClass.prototype._setZ = function(element, z) {
+    element.style.zIndex = z;
+  };
+
+  /**
+   * track overlays for z-index and focus managemant
+   */
+  Polymer.IronOverlayManagerClass.prototype.addOverlay = function(overlay) {
+    var minimumZ = Math.max(this.currentOverlayZ(), this._minimumZ);
+    this._overlays.push(overlay);
+    var newZ = this.currentOverlayZ();
+    if (newZ <= minimumZ) {
+      this._applyOverlayZ(overlay, minimumZ);
+    }
+  };
+
+  Polymer.IronOverlayManagerClass.prototype.removeOverlay = function(overlay) {
+    var i = this._overlays.indexOf(overlay);
+    if (i >= 0) {
+      this._overlays.splice(i, 1);
+      this._setZ(overlay, '');
+    }
+  };
+
+  Polymer.IronOverlayManagerClass.prototype.currentOverlay = function() {
+    var i = this._overlays.length - 1;
+    while (this._overlays[i] && !this._overlays[i].opened) {
+      --i;
+    }
+    return this._overlays[i];
+  };
+
+  Polymer.IronOverlayManagerClass.prototype.currentOverlayZ = function() {
+    return this._getOverlayZ(this.currentOverlay());
+  };
+
+  /**
+   * Ensures that the minimum z-index of new overlays is at least `minimumZ`.
+   * This does not effect the z-index of any existing overlays.
+   *
+   * @param {number} minimumZ
+   */
+  Polymer.IronOverlayManagerClass.prototype.ensureMinimumZ = function(minimumZ) {
+    this._minimumZ = Math.max(this._minimumZ, minimumZ);
+  };
+
+  Polymer.IronOverlayManagerClass.prototype.focusOverlay = function() {
+    var current = this.currentOverlay();
+    // We have to be careful to focus the next overlay _after_ any current
+    // transitions are complete (due to the state being toggled prior to the
+    // transition). Otherwise, we risk infinite recursion when a transitioning
+    // (closed) overlay becomes the current overlay.
+    //
+    // NOTE: We make the assumption that any overlay that completes a transition
+    // will call into focusOverlay to kick the process back off. Currently:
+    // transitionend -> _applyFocus -> focusOverlay.
+    if (current && !current.transitioning) {
+      current._applyFocus();
+    }
+  };
+
+  Polymer.IronOverlayManagerClass.prototype.trackBackdrop = function(element) {
+    // backdrops contains the overlays with a backdrop that are currently
+    // visible
+    var index = this._backdrops.indexOf(element);
+    if (element.opened && element.withBackdrop) {
+      // no duplicates
+      if (index === -1) {
+        this._backdrops.push(element);
+      }
+    } else if (index >= 0) {
+      this._backdrops.splice(index, 1);
+    }
+  };
+
+  Object.defineProperty(Polymer.IronOverlayManagerClass.prototype, "backdropElement", {
+    get: function() {
+      if (!this._backdropElement) {
+        this._backdropElement = document.createElement('iron-overlay-backdrop');
+      }
+      return this._backdropElement;
+    }
+  });
+
+  Polymer.IronOverlayManagerClass.prototype.getBackdrops = function() {
+    return this._backdrops;
+  };
+
+  /**
+   * Returns the z-index for the backdrop.
+   */
+  Polymer.IronOverlayManagerClass.prototype.backdropZ = function() {
+    return this._getOverlayZ(this._overlayWithBackdrop()) - 1;
+  };
+
+  /**
+   * Returns the first opened overlay that has a backdrop.
+   */
+  Polymer.IronOverlayManagerClass.prototype._overlayWithBackdrop = function() {
+    for (var i = 0; i < this._overlays.length; i++) {
+      if (this._overlays[i].opened && this._overlays[i].withBackdrop) {
+        return this._overlays[i];
+      }
+    }
+  };
+
+  /**
+   * Calculates the minimum z-index for the overlay.
+   */
+  Polymer.IronOverlayManagerClass.prototype._getOverlayZ = function(overlay) {
+    var z = this._minimumZ;
+    if (overlay) {
+      var z1 = Number(window.getComputedStyle(overlay).zIndex);
+      // Check if is a number
+      // Number.isNaN not supported in IE 10+
+      if (z1 === z1) {
+        z = z1;
+      }
+    }
+    return z;
+  };
+
+  Polymer.IronOverlayManager = new Polymer.IronOverlayManagerClass();
 
 </script>
 
@@ -13485,8 +13886,8 @@ context. You should place this element as a child of `<body>` whenever possible.
        * Set to true to display a backdrop behind the overlay.
        */
       withBackdrop: {
-        type: Boolean,
-        value: false
+        observer: '_withBackdropChanged',
+        type: Boolean
       },
 
       /**
@@ -13553,15 +13954,11 @@ context. You should place this element as a child of `<body>` whenever possible.
      * @type Node
      */
     get backdropElement() {
-      return this._backdrop;
+      return this._manager.backdropElement;
     },
 
     get _focusNode() {
       return Polymer.dom(this).querySelector('[autofocus]') || this;
-    },
-
-    registered: function() {
-      this._backdrop = document.createElement('iron-overlay-backdrop');
     },
 
     ready: function() {
@@ -13577,7 +13974,7 @@ context. You should place this element as a child of `<body>` whenever possible.
 
     detached: function() {
       this.opened = false;
-      this._completeBackdrop();
+      this._manager.trackBackdrop(this);
       this._manager.removeOverlay(this);
     },
 
@@ -13585,6 +13982,7 @@ context. You should place this element as a child of `<body>` whenever possible.
      * Toggle the opened state of the overlay.
      */
     toggle: function() {
+      this._setCanceled(false);
       this.opened = !this.opened;
     },
 
@@ -13592,16 +13990,16 @@ context. You should place this element as a child of `<body>` whenever possible.
      * Open the overlay.
      */
     open: function() {
+      this._setCanceled(false);
       this.opened = true;
-      this.closingReason = {canceled: false};
     },
 
     /**
      * Close the overlay.
      */
     close: function() {
-      this.opened = false;
       this._setCanceled(false);
+      this.opened = false;
     },
 
     /**
@@ -13613,8 +14011,8 @@ context. You should place this element as a child of `<body>` whenever possible.
         return;
       }
 
-      this.opened = false;
       this._setCanceled(true);
+      this.opened = false;
     },
 
     _ensureSetup: function() {
@@ -13631,6 +14029,7 @@ context. You should place this element as a child of `<body>` whenever possible.
         this.removeAttribute('aria-hidden');
       } else {
         this.setAttribute('aria-hidden', 'true');
+        Polymer.dom(this).unobserveNodes(this._observer);
       }
 
       // wait to call after ready only if we're initially open
@@ -13638,35 +14037,52 @@ context. You should place this element as a child of `<body>` whenever possible.
         this._callOpenedWhenReady = this.opened;
         return;
       }
-      if (this._openChangedAsync) {
-        this.cancelAsync(this._openChangedAsync);
-      }
 
-      this._toggleListeners();
+      this._manager.trackBackdrop(this);
 
       if (this.opened) {
         this._prepareRenderOpened();
       }
 
-      // async here to allow overlay layer to become visible.
+      if (this._openChangedAsync) {
+        this.cancelAsync(this._openChangedAsync);
+      }
+      // Async here to allow overlay layer to become visible, and to avoid
+      // listeners to immediately close via a click.
       this._openChangedAsync = this.async(function() {
         // overlay becomes visible here
         this.style.display = '';
-        // force layout to ensure transitions will go
-        /** @suppress {suspiciousCode} */ this.offsetWidth;
+        // Force layout to ensure transition will go. Set offsetWidth to itself
+        // so that compilers won't remove it.
+        this.offsetWidth = this.offsetWidth;
         if (this.opened) {
           this._renderOpened();
         } else {
           this._renderClosed();
         }
+        this._toggleListeners();
         this._openChangedAsync = null;
-      });
-
+      }, 1);
     },
 
     _canceledChanged: function() {
       this.closingReason = this.closingReason || {};
       this.closingReason.canceled = this.canceled;
+    },
+
+    _withBackdropChanged: function() {
+      if (this.opened) {
+        this._manager.trackBackdrop(this);
+        if (this.withBackdrop) {
+          this.backdropElement.prepare();
+          // Give time to be added to document.
+          this.async(function(){
+            this.backdropElement.open();
+          }, 1);
+        } else {
+          this.backdropElement.close();
+        }
+      }
     },
 
     _toggleListener: function(enable, node, event, boundListener, capture) {
@@ -13685,30 +14101,22 @@ context. You should place this element as a child of `<body>` whenever possible.
       }
     },
 
-    _toggleListeners: function() {
-      if (this._toggleListenersAsync) {
-        this.cancelAsync(this._toggleListenersAsync);
-      }
-      // async so we don't auto-close immediately via a click.
-      this._toggleListenersAsync = this.async(function() {
-        this._toggleListener(this.opened, document, 'tap', this._boundOnCaptureClick, true);
-        this._toggleListener(this.opened, document, 'keydown', this._boundOnCaptureKeydown, true);
-        this._toggleListenersAsync = null;
-      }, 1);
+    _toggleListeners: function () {
+      this._toggleListener(this.opened, document, 'tap', this._boundOnCaptureClick, true);
+      this._toggleListener(this.opened, document, 'keydown', this._boundOnCaptureKeydown, true);
     },
 
     // tasks which must occur before opening; e.g. making the element visible
     _prepareRenderOpened: function() {
       this._manager.addOverlay(this);
 
-      if (this.withBackdrop) {
-        this.backdropElement.prepare();
-        this._manager.trackBackdrop(this);
-      }
-
       this._preparePositioning();
       this.fit();
       this._finishPositioning();
+
+      if (this.withBackdrop) {
+        this.backdropElement.prepare();
+      }
     },
 
     // tasks which cause the overlay to actually open; typically play an
@@ -13727,52 +14135,24 @@ context. You should place this element as a child of `<body>` whenever possible.
       this._finishRenderClosed();
     },
 
-    _onTransitionend: function(event) {
-      // make sure this is our transition event.
-      if (event && event.target !== this) {
-        return;
-      }
-      if (this.opened) {
-        this._finishRenderOpened();
-      } else {
-        this._finishRenderClosed();
-      }
-    },
-
     _finishRenderOpened: function() {
       // focus the child node with [autofocus]
-      if (!this.noAutoFocus) {
-        this._focusNode.focus();
-      }
+      this._applyFocus();
 
+      this._observer = Polymer.dom(this).observeNodes(this.notifyResize);
       this.fire('iron-overlay-opened');
-
-      this._squelchNextResize = true;
-      this.async(this.notifyResize);
     },
 
     _finishRenderClosed: function() {
       // hide the overlay and remove the backdrop
       this.resetFit();
       this.style.display = 'none';
-      this._completeBackdrop();
       this._manager.removeOverlay(this);
 
-      this._focusNode.blur();
-      // focus the next overlay, if there is one
-      this._manager.focusOverlay();
+      this._applyFocus();
 
+      this.notifyResize();
       this.fire('iron-overlay-closed', this.closingReason);
-
-      this._squelchNextResize = true;
-      this.async(this.notifyResize);
-    },
-
-    _completeBackdrop: function() {
-      if (this.withBackdrop) {
-        this._manager.trackBackdrop(this);
-        this.backdropElement.complete();
-      }
     },
 
     _preparePositioning: function() {
@@ -13801,8 +14181,8 @@ context. You should place this element as a child of `<body>` whenever possible.
     },
 
     _onCaptureClick: function(event) {
-      if (!this.noCancelOnOutsideClick &&
-          this._manager.currentOverlay() === this &&
+      if (this._manager.currentOverlay() === this &&
+          !this.noCancelOnOutsideClick &&
           Polymer.dom(event).path.indexOf(this) === -1) {
         this.cancel();
       }
@@ -13810,18 +14190,14 @@ context. You should place this element as a child of `<body>` whenever possible.
 
     _onCaptureKeydown: function(event) {
       var ESC = 27;
-      if (!this.noCancelOnEscKey && (event.keyCode === ESC)) {
+      if (this._manager.currentOverlay() === this &&
+          !this.noCancelOnEscKey &&
+          event.keyCode === ESC) {
         this.cancel();
-        event.stopPropagation();
-        event.stopImmediatePropagation();
       }
     },
 
     _onIronResize: function() {
-      if (this._squelchNextResize) {
-        this._squelchNextResize = false;
-        return;
-      }
       if (this.opened) {
         this.refit();
       }
@@ -13948,25 +14324,13 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
     },
 
     attached: function() {
-      this._observer = this._observe(this);
+      // this._observer is used by iron-overlay-behavior
+      this._ariaObserver = Polymer.dom(this).observeNodes(this._updateAriaLabelledBy);
       this._updateAriaLabelledBy();
     },
 
     detached: function() {
-      if (this._observer) {
-        this._observer.disconnect();
-      }
-    },
-
-    _observe: function(node) {
-      var observer = new MutationObserver(function() {
-        this._updateAriaLabelledBy();
-      }.bind(this));
-      observer.observe(node, {
-        childList: true,
-        subtree: true
-      });
-      return observer;
+      Polymer.dom(this).unobserveNodes(this._ariaObserver);
     },
 
     _modalChanged: function() {
@@ -14010,57 +14374,52 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
     },
 
     _onDialogClick: function(event) {
-      var target = event.target;
+      var target = Polymer.dom(event).rootTarget;
       while (target && target !== this) {
         if (target.hasAttribute) {
           if (target.hasAttribute('dialog-dismiss')) {
             this._updateClosingReasonConfirmed(false);
             this.close();
+            event.stopPropagation();
             break;
           } else if (target.hasAttribute('dialog-confirm')) {
             this._updateClosingReasonConfirmed(true);
             this.close();
+            event.stopPropagation();
             break;
           }
         }
-        target = target.parentNode;
+        target = Polymer.dom(target).parentNode;
       }
     },
 
     _onIronOverlayOpened: function() {
       if (this.modal) {
         document.body.addEventListener('focus', this._boundOnFocus, true);
-        this.backdropElement.addEventListener('click', this._boundOnBackdropClick);
+        document.body.addEventListener('click', this._boundOnBackdropClick, true);
       }
     },
 
     _onIronOverlayClosed: function() {
+      this._lastFocusedElement = null;
       document.body.removeEventListener('focus', this._boundOnFocus, true);
-      this.backdropElement.removeEventListener('click', this._boundOnBackdropClick);
+      document.body.removeEventListener('click', this._boundOnBackdropClick, true);
     },
 
     _onFocus: function(event) {
-      if (this.modal) {
-        var target = event.target;
-        while (target && target !== this && target !== document.body) {
-          target = target.parentNode;
-        }
-        if (target) {
-          if (target === document.body) {
-            if (this._lastFocusedElement) {
-              this._lastFocusedElement.focus();
-            } else {
-              this._focusNode.focus();
-            }
-          } else {
-            this._lastFocusedElement = event.target;
-          }
+      if (this.modal && this._manager.currentOverlay() === this) {
+        if (Polymer.dom(event).path.indexOf(this) !== -1) {
+          this._lastFocusedElement = event.target;
+        } else if (this._lastFocusedElement) {
+          this._lastFocusedElement.focus();
+        } else {
+          this._focusNode.focus();
         }
       }
     },
 
-    _onBackdropClick: function() {
-      if (this.modal) {
+    _onBackdropClick: function(event) {
+      if (this.modal && this._manager.currentOverlay() === this && Polymer.dom(event).path.indexOf(this) === -1) {
         if (this._lastFocusedElement) {
           this._lastFocusedElement.focus();
         } else {
@@ -16673,7 +17032,7 @@ mwcLayout = new PolymerLayout();
     },
 
     _notifyPageResize: function() {
-      var selectedPage = this.selectedItem;
+      var selectedPage = this.selectedItem || this._valueToItem(this.selected);
       this.resizerShouldNotify = function(element) {
         return element == selectedPage;
       }
@@ -18265,13 +18624,18 @@ paper-calendar {
 
     },
 
+    listeners: {
+      'transitionend' : '_onTransitionend'
+    },
+
     /**
      * Appends the backdrop to document body and sets its `z-index` to be below the latest overlay.
      */
     prepare: function() {
+      // Always update z-index
+      this.style.zIndex = this._manager.backdropZ();
       if (!this.parentNode) {
         Polymer.dom(document.body).appendChild(this);
-        this.style.zIndex = this._manager.currentOverlayZ() - 1;
       }
     },
 
@@ -18289,9 +18653,14 @@ paper-calendar {
      * Hides the backdrop if needed.
      */
     close: function() {
-      // only need to make the backdrop invisible if this is called by the last overlay with a backdrop
-      if (this._manager.getBackdrops().length < 2) {
+      // Always update z-index
+      this.style.zIndex = this._manager.backdropZ();
+      // close only if no element with backdrop is left
+      if (this._manager.getBackdrops().length === 0) {
         this._setOpened(false);
+        // complete() will be called after the transition is done.
+        // If animations are disabled via custom-styles, user is expected to call
+        // complete() after close()
       }
     },
 
@@ -18302,6 +18671,12 @@ paper-calendar {
       // only remove the backdrop if there are no more overlays with backdrops
       if (this._manager.getBackdrops().length === 0 && this.parentNode) {
         Polymer.dom(this.parentNode).removeChild(this);
+      }
+    },
+
+    _onTransitionend: function (event) {
+      if (event && event.target === this) {
+        this.complete();
       }
     }
 
@@ -18356,7 +18731,7 @@ paper-calendar {
         padding: 8px 8px 8px 24px;
         margin: 0;
 
-        color: var(--paper-dialog-button-color, --default-primary-color);
+        color: var(--paper-dialog-button-color, --primary-color);
 
         @apply(--layout-horizontal);
         @apply(--layout-end-justified);
@@ -19701,7 +20076,7 @@ paper-calendar {
 
       <label hidden$="[[!label]]">[[label]]</label>
 
-      <input is="iron-input" id="input" aria-labelledby$="[[_ariaLabelledBy]]" aria-describedby$="[[_ariaDescribedBy]]" disabled$="[[disabled]]" bind-value="{{value}}" invalid="{{invalid}}" prevent-invalid-input="[[preventInvalidInput]]" allowed-pattern="[[allowedPattern]]" validator="[[validator]]" type$="[[type]]" pattern$="[[pattern]]" required$="[[required]]" autocomplete$="[[autocomplete]]" autofocus$="[[autofocus]]" inputmode$="[[inputmode]]" minlength$="[[minlength]]" maxlength$="[[maxlength]]" min$="[[min]]" max$="[[max]]" step$="[[step]]" name$="[[name]]" placeholder$="[[placeholder]]" readonly$="[[readonly]]" list$="[[list]]" size$="[[size]]" autocapitalize$="[[autocapitalize]]" autocorrect$="[[autocorrect]]" on-change="_onChange" tabindex$="[[tabindex]]" autosave$="[[autosave]]" results$="[[results]]" accept$="[[accept]]" multiple$="[[multiple]]">
+      <input is="iron-input" id="input" aria-labelledby$="[[_ariaLabelledBy]]" aria-describedby$="[[_ariaDescribedBy]]" disabled$="[[disabled]]" title$="[[title]]" bind-value="{{value}}" invalid="{{invalid}}" prevent-invalid-input="[[preventInvalidInput]]" allowed-pattern="[[allowedPattern]]" validator="[[validator]]" type$="[[type]]" pattern$="[[pattern]]" required$="[[required]]" autocomplete$="[[autocomplete]]" autofocus$="[[autofocus]]" inputmode$="[[inputmode]]" minlength$="[[minlength]]" maxlength$="[[maxlength]]" min$="[[min]]" max$="[[max]]" step$="[[step]]" name$="[[name]]" placeholder$="[[placeholder]]" readonly$="[[readonly]]" list$="[[list]]" size$="[[size]]" autocapitalize$="[[autocapitalize]]" autocorrect$="[[autocorrect]]" on-change="_onChange" tabindex$="[[tabindex]]" autosave$="[[autosave]]" results$="[[results]]" accept$="[[accept]]" multiple$="[[multiple]]">
 
       <content select="[suffix]"></content>
 
@@ -19825,6 +20200,7 @@ paper-calendar {
         background: currentColor;
         opacity: var(--dark-divider-opacity);
         content: '';
+        pointer-events: none;
 
         @apply(--paper-menu-focused-item-after);
       }
@@ -20897,8 +21273,8 @@ paper-calendar {
         -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
         --paper-progress-active-color: var(--paper-slider-active-color, --google-blue-700);
         --paper-progress-secondary-color: var(--paper-slider-secondary-color, --google-blue-300);
-        --paper-progress-disabled-active-color: var(--paper-slider-disabled-active-color, --google-grey-500);
-        --paper-progress-disabled-secondary-color: var(--paper-slider-disabled-secondary-color, --google-grey-300);
+        --paper-progress-disabled-active-color: var(--paper-slider-disabled-active-color, --paper-grey-400);
+        --paper-progress-disabled-secondary-color: var(--paper-slider-disabled-secondary-color, --paper-grey-400);
       }
 
       /* focus shows the ripple */
@@ -20934,7 +21310,7 @@ paper-calendar {
 
       .ring > .bar-container {
         left: calc(5px + var(--paper-slider-height, 2px)/2);
-        transition: left 0.18s ease, width 0.18s ease;
+        transition: left 0.18s ease;
       }
 
       .ring.expand.dragging > .bar-container {
@@ -20942,23 +21318,15 @@ paper-calendar {
       }
 
       .ring.expand:not(.pin) > .bar-container {
-        left: calc(15px + var(--paper-slider-height, 2px)/2);
+        left: calc(8px + var(--paper-slider-height, 2px)/2);
       }
 
       #sliderBar {
         padding: 15px 0;
         width: 100%;
         background-color: var(--paper-slider-bar-color, transparent);
+        --paper-progress-container-color: var(--paper-grey-400);
         --paper-progress-height: var(--paper-slider-height, 2px);
-      }
-
-      .ring #sliderBar {
-        margin-left: calc(-5px - var(--paper-slider-height, 2px)/2);
-        width: calc(100% + 5px + var(--paper-slider-height, 2px)/2);
-      }
-      .ring.expand:not(.pin) #sliderBar {
-        margin-left: calc(-15px - var(--paper-slider-height, 2px)/2);
-        width: calc(100% + 15px + var(--paper-slider-height, 2px)/2);
       }
 
       .slider-markers {
@@ -21016,29 +21384,27 @@ paper-calendar {
         margin: 10px;
         width: calc(100% - 20px);
         height: calc(100% - 20px);
-        border-radius: 50%;
         background-color: var(--paper-slider-knob-color, --google-blue-700);
+        border: 2px solid var(--paper-slider-knob-color, --google-blue-700);
+        border-radius: 50%;
 
         -moz-box-sizing: border-box;
         box-sizing: border-box;
 
-        transition-property: margin, height, width, background-color, border;
-        transition-duration: 0.1s;
+        transition-property: -webkit-transform, background-color, border;
+        transition-property: transform, background-color, border;
+        transition-duration: 0.18s;
         transition-timing-function: ease;
       }
 
       .expand:not(.pin) > #sliderKnob > #sliderKnobInner {
-        margin: 0;
-        width: 100%;
-        height: 100%;
-
-        -webkit-transform: translateZ(0);
-        transform: translateZ(0);
+        -webkit-transform: scale(1.5);
+        transform: scale(1.5);
       }
 
       .ring > #sliderKnob > #sliderKnobInner {
         background-color: var(--paper-slider-knob-start-color, transparent);
-        border: 2px solid var(--paper-slider-knob-start-border-color, #c8c8c8);
+        border: 2px solid var(--paper-slider-knob-start-border-color, --paper-grey-400);
       }
 
       #sliderKnobInner::before {
@@ -21061,12 +21427,12 @@ paper-calendar {
 
       #sliderKnobInner::before,
       #sliderKnobInner::after {
-        transition: -webkit-transform .2s ease, background-color .18s ease;
-        transition: transform .2s ease, background-color .18s ease;
+        transition: -webkit-transform .18s ease, background-color .18s ease;
+        transition: transform .18s ease, background-color .18s ease;
       }
 
       .pin.ring > #sliderKnob > #sliderKnobInner::before {
-        background-color: var(--paper-slider-pin-start-color, #c8c8c8);
+        background-color: var(--paper-slider-pin-start-color, --paper-grey-400);
       }
 
       .pin.expand > #sliderKnob > #sliderKnobInner::before {
@@ -21102,6 +21468,7 @@ paper-calendar {
         --paper-input-container-input: {
           text-align: center;
         };
+        @apply(--paper-slider-input);
       }
 
       /* disabled state */
@@ -21109,26 +21476,23 @@ paper-calendar {
         pointer-events: none;
       }
 
-      .disabled > #sliderKnob {
-        top: 2px;
-        margin-left: calc(-13px - var(--paper-slider-height, 2px)/2);
-        width: calc(26px + var(--paper-slider-height, 2px));
-        height: calc(26px + var(--paper-slider-height, 2px));
-      }
-
       .disabled > #sliderKnob > #sliderKnobInner {
-        background-color: var(--paper-slider-disabled-knob-color, --google-grey-500);
+        background-color: var(--paper-slider-disabled-knob-color, --paper-grey-400);
+        border: 2px solid var(--paper-slider-disabled-knob-color, --paper-grey-400);
+        -webkit-transform: scale3d(0.75, 0.75, 1);
+        transform: scale3d(0.75, 0.75, 1);
       }
 
       .disabled.ring > #sliderKnob > #sliderKnobInner {
-        background-color: transparent;
+        background-color: var(--paper-slider-knob-start-color, transparent);
+        border: 2px solid var(--paper-slider-knob-start-border-color, --paper-grey-400);
       }
 
       paper-ripple {
         color: var(--paper-slider-knob-color, --google-blue-700);
       }
-
     </style>
+
     <div id="sliderContainer" class$="[[_getClassNames(disabled, pin, snaps, immediateValue, min, expand, dragging, transiting, editable)]]">
 
       <div class="bar-container">
@@ -21148,408 +21512,411 @@ paper-calendar {
           <div id="sliderKnobInner" value$="[[immediateValue]]"></div>
       </div>
     </div>
+
     <template is="dom-if" if="[[editable]]">
       <paper-input id="input" type="number" step="[[step]]" min="[[min]]" max="[[max]]" class="slider-input" disabled$="[[disabled]]" value="[[immediateValue]]" on-change="_changeValue" on-keydown="_inputKeyDown" no-label-float="">
       </paper-input>
     </template>
   </template>
-</dom-module>
 
-<script>
+  <script>
+    Polymer({
+      is: 'paper-slider',
 
-  Polymer({
-    is: 'paper-slider',
+      behaviors: [
+        Polymer.IronA11yKeysBehavior,
+        Polymer.IronFormElementBehavior,
+        Polymer.PaperInkyFocusBehavior,
+        Polymer.IronRangeBehavior
+      ],
 
-    behaviors: [
-      Polymer.IronFormElementBehavior,
-      Polymer.PaperInkyFocusBehavior,
-      Polymer.IronRangeBehavior
-    ],
+      properties: {
+        /**
+         * If true, the slider thumb snaps to tick marks evenly spaced based
+         * on the `step` property value.
+         */
+        snaps: {
+          type: Boolean,
+          value: false,
+          notify: true
+        },
 
-    properties: {
+        /**
+         * If true, a pin with numeric value label is shown when the slider thumb
+         * is pressed. Use for settings for which users need to know the exact
+         * value of the setting.
+         */
+        pin: {
+          type: Boolean,
+          value: false,
+          notify: true
+        },
 
-      /**
-       * If true, the slider thumb snaps to tick marks evenly spaced based
-       * on the `step` property value.
-       */
-      snaps: {
-        type: Boolean,
-        value: false,
-        notify: true
+        /**
+         * The number that represents the current secondary progress.
+         */
+        secondaryProgress: {
+          type: Number,
+          value: 0,
+          notify: true,
+          observer: '_secondaryProgressChanged'
+        },
+
+        /**
+         * If true, an input is shown and user can use it to set the slider value.
+         */
+        editable: {
+          type: Boolean,
+          value: false
+        },
+
+        /**
+         * The immediate value of the slider.  This value is updated while the user
+         * is dragging the slider.
+         */
+        immediateValue: {
+          type: Number,
+          value: 0,
+          readOnly: true,
+          notify: true
+        },
+
+        /**
+         * The maximum number of markers
+         */
+        maxMarkers: {
+          type: Number,
+          value: 0,
+          notify: true,
+          observer: '_maxMarkersChanged'
+        },
+
+        /**
+         * If true, the knob is expanded
+         */
+        expand: {
+          type: Boolean,
+          value: false,
+          readOnly: true
+        },
+
+        /**
+         * True when the user is dragging the slider.
+         */
+        dragging: {
+          type: Boolean,
+          value: false,
+          readOnly: true
+        },
+
+        transiting: {
+          type: Boolean,
+          value: false,
+          readOnly: true
+        },
+
+        markers: {
+          type: Array,
+          readOnly: true,
+          value: []
+        },
+      },
+
+      observers: [
+        '_updateKnob(value, min, max, snaps, step)',
+        '_valueChanged(value)',
+        '_immediateValueChanged(immediateValue)'
+      ],
+
+      hostAttributes: {
+        role: 'slider',
+        tabindex: 0
+      },
+
+      keyBindings: {
+        'left down pagedown home': '_decrementKey',
+        'right up pageup end': '_incrementKey'
+      },
+
+      ready: function() {
+        // issue polymer/polymer#1305
+        this.async(function() {
+          this._updateKnob(this.value);
+        }, 1);
       },
 
       /**
-       * If true, a pin with numeric value label is shown when the slider thumb
-       * is pressed. Use for settings for which users need to know the exact
-       * value of the setting.
+       * Increases value by `step` but not above `max`.
+       * @method increment
        */
-      pin: {
-        type: Boolean,
-        value: false,
-        notify: true
+      increment: function() {
+        this.value = this._clampValue(this.value + this.step);
       },
 
       /**
-       * The number that represents the current secondary progress.
+       * Decreases value by `step` but not below `min`.
+       * @method decrement
        */
-      secondaryProgress: {
-        type: Number,
-        value: 0,
-        notify: true,
-        observer: '_secondaryProgressChanged'
+      decrement: function() {
+        this.value = this._clampValue(this.value - this.step);
       },
 
-      /**
-       * If true, an input is shown and user can use it to set the slider value.
-       */
-      editable: {
-        type: Boolean,
-        value: false
+      _updateKnob: function(value, min, max, snaps, step) {
+        this.setAttribute('aria-valuemin', min);
+        this.setAttribute('aria-valuemax', max);
+        this.setAttribute('aria-valuenow', value);
+
+        this._positionKnob(this._calcRatio(value));
       },
 
-      /**
-       * The immediate value of the slider.  This value is updated while the user
-       * is dragging the slider.
-       */
-      immediateValue: {
-        type: Number,
-        value: 0,
-        readOnly: true,
-        notify: true
+      _valueChanged: function() {
+        this.fire('value-change');
       },
 
-      /**
-       * The maximum number of markers
-       */
-      maxMarkers: {
-        type: Number,
-        value: 0,
-        notify: true,
-        observer: '_maxMarkersChanged'
+      _immediateValueChanged: function() {
+        if (this.dragging) {
+          this.fire('immediate-value-change');
+        } else {
+          this.value = this.immediateValue;
+        }
       },
 
-      /**
-       * If true, the knob is expanded
-       */
-      expand: {
-        type: Boolean,
-        value: false,
-        readOnly: true
+      _secondaryProgressChanged: function() {
+        this.secondaryProgress = this._clampValue(this.secondaryProgress);
       },
 
-      /**
-       * True when the user is dragging the slider.
-       */
-      dragging: {
-        type: Boolean,
-        value: false,
-        readOnly: true
+      _expandKnob: function() {
+        this._setExpand(true);
       },
 
-      transiting: {
-        type: Boolean,
-        value: false,
-        readOnly: true
+      _resetKnob: function() {
+        this.cancelDebouncer('expandKnob');
+        this._setExpand(false);
       },
 
-      markers: {
-        type: Array,
-        readOnly: true,
-        value: []
+      _positionKnob: function(ratio) {
+        this._setImmediateValue(this._calcStep(this._calcKnobPosition(ratio)));
+        this._setRatio(this._calcRatio(this.immediateValue));
+
+        this.$.sliderKnob.style.left = (this.ratio * 100) + '%';
+        if (this.dragging) {
+          this._knobstartx = this.ratio * this._w;
+          this.translate3d(0, 0, 0, this.$.sliderKnob);
+        }
       },
-    },
 
-    observers: [
-      '_updateKnob(value, min, max, snaps, step)',
-      '_valueChanged(value)',
-      '_immediateValueChanged(immediateValue)'
-    ],
+      _calcKnobPosition: function(ratio) {
+        return (this.max - this.min) * ratio + this.min;
+      },
 
-    hostAttributes: {
-      role: 'slider',
-      tabindex: 0
-    },
+      _onTrack: function(event) {
+        event.stopPropagation();
+        switch (event.detail.state) {
+          case 'start':
+            this._trackStart(event);
+            break;
+          case 'track':
+            this._trackX(event);
+            break;
+          case 'end':
+            this._trackEnd();
+            break;
+        }
+      },
 
-    keyBindings: {
-      'left down pagedown home': '_decrementKey',
-      'right up pageup end': '_incrementKey'
-    },
+      _trackStart: function(event) {
+        this._w = this.$.sliderBar.offsetWidth;
+        this._x = this.ratio * this._w;
+        this._startx = this._x;
+        this._knobstartx = this._startx;
+        this._minx = - this._startx;
+        this._maxx = this._w - this._startx;
+        this.$.sliderKnob.classList.add('dragging');
+        this._setDragging(true);
+      },
 
-    ready: function() {
-      // issue polymer/polymer#1305
-      this.async(function() {
-        this._updateKnob(this.value);
-      }, 1);
-    },
+      _trackX: function(e) {
+        if (!this.dragging) {
+          this._trackStart(e);
+        }
 
-    /**
-     * Increases value by `step` but not above `max`.
-     * @method increment
-     */
-    increment: function() {
-      this.value = this._clampValue(this.value + this.step);
-    },
+        var dx = Math.min(this._maxx, Math.max(this._minx, e.detail.dx));
+        this._x = this._startx + dx;
 
-    /**
-     * Decreases value by `step` but not below `min`.
-     * @method decrement
-     */
-    decrement: function() {
-      this.value = this._clampValue(this.value - this.step);
-    },
+        var immediateValue = this._calcStep(this._calcKnobPosition(this._x / this._w));
+        this._setImmediateValue(immediateValue);
 
-    _updateKnob: function(value, min, max, snaps, step) {
-      this.setAttribute('aria-valuemin', min);
-      this.setAttribute('aria-valuemax', max);
-      this.setAttribute('aria-valuenow', value);
+        // update knob's position
+        var translateX = ((this._calcRatio(this.immediateValue) * this._w) - this._knobstartx);
+        this.translate3d(translateX + 'px', 0, 0, this.$.sliderKnob);
+      },
 
-      this._positionKnob(this._calcRatio(value));
-    },
+      _trackEnd: function() {
+        var s = this.$.sliderKnob.style;
 
-    _valueChanged: function() {
-      this.fire('value-change');
-    },
-
-    _immediateValueChanged: function() {
-      if (this.dragging) {
-        this.fire('immediate-value-change');
-      } else {
+        this.$.sliderKnob.classList.remove('dragging');
+        this._setDragging(false);
+        this._resetKnob();
         this.value = this.immediateValue;
-      }
-    },
 
-    _secondaryProgressChanged: function() {
-      this.secondaryProgress = this._clampValue(this.secondaryProgress);
-    },
+        s.transform = s.webkitTransform = '';
 
-    _expandKnob: function() {
-      this._setExpand(true);
-    },
-
-    _resetKnob: function() {
-      this.cancelDebouncer('expandKnob');
-      this._setExpand(false);
-    },
-
-    _positionKnob: function(ratio) {
-      this._setImmediateValue(this._calcStep(this._calcKnobPosition(ratio)));
-      this._setRatio(this._calcRatio(this.immediateValue));
-
-      this.$.sliderKnob.style.left = (this.ratio * 100) + '%';
-    },
-
-    _calcKnobPosition: function(ratio) {
-      return (this.max - this.min) * ratio + this.min;
-    },
-
-    _onTrack: function(event) {
-      event.stopPropagation();
-      switch (event.detail.state) {
-        case 'start':
-          this._trackStart(event);
-          break;
-        case 'track':
-          this._trackX(event);
-          break;
-        case 'end':
-          this._trackEnd();
-          break;
-      }
-    },
-
-    _trackStart: function(event) {
-      this._w = this.$.sliderBar.offsetWidth;
-      this._x = this.ratio * this._w;
-      this._startx = this._x || 0;
-      this._minx = - this._startx;
-      this._maxx = this._w - this._startx;
-      this.$.sliderKnob.classList.add('dragging');
-      this._setDragging(true);
-    },
-
-    _trackX: function(e) {
-      if (!this.dragging) {
-        this._trackStart(e);
-      }
-
-      var dx = Math.min(this._maxx, Math.max(this._minx, e.detail.dx));
-      this._x = this._startx + dx;
-
-      var immediateValue = this._calcStep(this._calcKnobPosition(this._x / this._w));
-      this._setImmediateValue(immediateValue);
-
-      // update knob's position
-      var translateX = ((this._calcRatio(immediateValue) * this._w) - this._startx);
-      this.translate3d(translateX + 'px', 0, 0, this.$.sliderKnob);
-    },
-
-    _trackEnd: function() {
-      var s = this.$.sliderKnob.style;
-
-      this.$.sliderKnob.classList.remove('dragging');
-      this._setDragging(false);
-      this._resetKnob();
-      this.value = this.immediateValue;
-
-      s.transform = s.webkitTransform = '';
-
-      this.fire('change');
-    },
-
-    _knobdown: function(event) {
-      this._expandKnob();
-
-      // cancel selection
-      event.preventDefault();
-
-      // set the focus manually because we will called prevent default
-      this.focus();
-    },
-
-    _bardown: function(event) {
-      this._w = this.$.sliderBar.offsetWidth;
-      var rect = this.$.sliderBar.getBoundingClientRect();
-      var ratio = (event.detail.x - rect.left) / this._w;
-      var prevRatio = this.ratio;
-
-      this._setTransiting(true);
-
-      this._positionKnob(ratio);
-
-      this.debounce('expandKnob', this._expandKnob, 60);
-
-      // if the ratio doesn't change, sliderKnob's animation won't start
-      // and `_knobTransitionEnd` won't be called
-      // Therefore, we need to manually update the `transiting` state
-
-      if (prevRatio === this.ratio) {
-        this._setTransiting(false);
-      }
-
-      this.async(function() {
         this.fire('change');
-      });
+      },
 
-      // cancel selection
-      event.preventDefault();
-    },
+      _knobdown: function(event) {
+        this._expandKnob();
 
-    _knobTransitionEnd: function(event) {
-      if (event.target === this.$.sliderKnob) {
-        this._setTransiting(false);
-      }
-    },
+        // cancel selection
+        event.preventDefault();
 
-    _maxMarkersChanged: function(maxMarkers) {
-      if (!this.snaps) {
-        this._setMarkers([]);
-      }
-      var steps = Math.floor((this.max - this.min) / this.step);
-      if (steps > maxMarkers) {
-        steps = maxMarkers;
-      }
-      this._setMarkers(new Array(steps));
-    },
+        // set the focus manually because we will called prevent default
+        this.focus();
+      },
 
-    _mergeClasses: function(classes) {
-      return Object.keys(classes).filter(
-        function(className) {
-          return classes[className];
-        }).join(' ');
-    },
+      _bardown: function(event) {
+        this._w = this.$.sliderBar.offsetWidth;
+        var rect = this.$.sliderBar.getBoundingClientRect();
+        var ratio = (event.detail.x - rect.left) / this._w;
+        var prevRatio = this.ratio;
 
-    _getClassNames: function() {
-      return this._mergeClasses({
-        disabled: this.disabled,
-        pin: this.pin,
-        snaps: this.snaps,
-        ring: this.immediateValue <= this.min,
-        expand: this.expand,
-        dragging: this.dragging,
-        transiting: this.transiting,
-        editable: this.editable
-      });
-    },
+        this._setTransiting(true);
 
-    _incrementKey: function(event) {
-      if (!this.disabled) {
-        if (event.detail.key === 'end') {
-          this.value = this.max;
-        } else {
-          this.increment();
+        this._positionKnob(ratio);
+
+        this.debounce('expandKnob', this._expandKnob, 60);
+
+        // if the ratio doesn't change, sliderKnob's animation won't start
+        // and `_knobTransitionEnd` won't be called
+        // Therefore, we need to manually update the `transiting` state
+
+        if (prevRatio === this.ratio) {
+          this._setTransiting(false);
         }
-        this.fire('change');
-      }
-    },
 
-    _decrementKey: function(event) {
-      if (!this.disabled) {
-        if (event.detail.key === 'home') {
-          this.value = this.min;
-        } else {
-          this.decrement();
+        this.async(function() {
+          this.fire('change');
+        });
+
+        // cancel selection
+        event.preventDefault();
+      },
+
+      _knobTransitionEnd: function(event) {
+        if (event.target === this.$.sliderKnob) {
+          this._setTransiting(false);
         }
+      },
+
+      _maxMarkersChanged: function(maxMarkers) {
+        if (!this.snaps) {
+          this._setMarkers([]);
+        }
+        var steps = Math.floor((this.max - this.min) / this.step);
+        if (steps > maxMarkers) {
+          steps = maxMarkers;
+        }
+        this._setMarkers(new Array(steps));
+      },
+
+      _mergeClasses: function(classes) {
+        return Object.keys(classes).filter(
+          function(className) {
+            return classes[className];
+          }).join(' ');
+      },
+
+      _getClassNames: function() {
+        return this._mergeClasses({
+          disabled: this.disabled,
+          pin: this.pin,
+          snaps: this.snaps,
+          ring: this.immediateValue <= this.min,
+          expand: this.expand,
+          dragging: this.dragging,
+          transiting: this.transiting,
+          editable: this.editable
+        });
+      },
+
+      _incrementKey: function(event) {
+        if (!this.disabled) {
+          if (event.detail.key === 'end') {
+            this.value = this.max;
+          } else {
+            this.increment();
+          }
+          this.fire('change');
+        }
+      },
+
+      _decrementKey: function(event) {
+        if (!this.disabled) {
+          if (event.detail.key === 'home') {
+            this.value = this.min;
+          } else {
+            this.decrement();
+          }
+          this.fire('change');
+        }
+      },
+
+      _changeValue: function(event) {
+        this.value = event.target.value;
         this.fire('change');
-      }
-    },
+      },
 
-    _changeValue: function(event) {
-      this.value = event.target.value;
-      this.fire('change');
-    },
+      _inputKeyDown: function(event) {
+        event.stopPropagation();
+      },
 
-    _inputKeyDown: function(event) {
-      event.stopPropagation();
-    },
+      // create the element ripple inside the `sliderKnob`
+      _createRipple: function() {
+        this._rippleContainer = this.$.sliderKnob;
+        return Polymer.PaperInkyFocusBehaviorImpl._createRipple.call(this);
+      },
 
-    // create the element ripple inside the `sliderKnob`
-    _createRipple: function() {
-      this._rippleContainer = this.$.sliderKnob;
-      return Polymer.PaperInkyFocusBehaviorImpl._createRipple.call(this);
-    },
-
-    // Hide the ripple when user is not interacting with keyboard.
-    // This behavior is different from other ripple-y controls, but is
-    // according to spec: https://www.google.com/design/spec/components/sliders.html
-    _focusedChanged: function(receivedFocusFromKeyboard) {
-      if (receivedFocusFromKeyboard) {
-        this.ensureRipple();
-      }
-      if (this.hasRipple()) {
-        // note, ripple must be un-hidden prior to setting `holdDown`
+      // Hide the ripple when user is not interacting with keyboard.
+      // This behavior is different from other ripple-y controls, but is
+      // according to spec: https://www.google.com/design/spec/components/sliders.html
+      _focusedChanged: function(receivedFocusFromKeyboard) {
         if (receivedFocusFromKeyboard) {
-          this._ripple.removeAttribute('hidden');
-        } else {
-          this._ripple.setAttribute('hidden', '');
+          this.ensureRipple();
         }
-        this._ripple.holdDown = receivedFocusFromKeyboard;
+        if (this.hasRipple()) {
+          // note, ripple must be un-hidden prior to setting `holdDown`
+          if (receivedFocusFromKeyboard) {
+            this._ripple.removeAttribute('hidden');
+          } else {
+            this._ripple.setAttribute('hidden', '');
+          }
+          this._ripple.holdDown = receivedFocusFromKeyboard;
+        }
       }
-    }
+    });
 
-  });
+    /**
+     * Fired when the slider's value changes.
+     *
+     * @event value-change
+     */
 
-  /**
-   * Fired when the slider's value changes.
-   *
-   * @event value-change
-   */
+    /**
+     * Fired when the slider's immediateValue changes.
+     *
+     * @event immediate-value-change
+     */
 
-  /**
-   * Fired when the slider's immediateValue changes.
-   *
-   * @event immediate-value-change
-   */
-
-  /**
-   * Fired when the slider's value changes due to user interaction.
-   *
-   * Changes to the slider's value due to changes in an underlying
-   * bound variable will not trigger this event.
-   *
-   * @event change
-   */
-
-</script>
+    /**
+     * Fired when the slider's value changes due to user interaction.
+     *
+     * Changes to the slider's value due to changes in an underlying
+     * bound variable will not trigger this event.
+     *
+     * @event change
+     */
+  </script>
+</dom-module>
 <dom-module id="iron-a11y-announcer" assetpath="/bower_components/iron-a11y-announcer/">
   <style>
     :host {
@@ -21639,7 +22006,7 @@ paper-calendar {
         color: var(--paper-toast-color, #f1f1f1);
         min-height: 48px;
         min-width: 288px;
-        padding: 16px 24px 12px;
+        padding: 16px 24px;
         box-sizing: border-box;
         box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
         border-radius: 2px;
@@ -21654,6 +22021,7 @@ paper-calendar {
         opacity: 0;
         -webkit-transform: translateY(100px);
         transform: translateY(100px);
+        @apply(--paper-font-common-base);
       }
 
       :host(.capsule) {
@@ -21739,6 +22107,7 @@ paper-calendar {
         },
 
         created: function() {
+          this._autoClose = null;
           Polymer.IronA11yAnnouncer.requestAvailability();
         },
 
@@ -21761,6 +22130,10 @@ paper-calendar {
          * Called when the value of `opened` changes.
          */
         _openedChanged: function() {
+          if (this._autoClose !== null) {
+            this.cancelAsync(this._autoClose);
+            this._autoClose = null;
+          }
           if (this.opened) {
             if (currentToast && currentToast !== this) {
               currentToast.close();
@@ -21770,7 +22143,7 @@ paper-calendar {
               text: this.text
             });
             if (this._canAutoClose) {
-              this.debounce('close', this.close, this.duration);
+              this._autoClose = this.async(this.close, this.duration);
             }
           } else if (currentToast === this) {
             currentToast = null;
@@ -21809,8 +22182,7 @@ paper-calendar {
          * Fired when `paper-toast` is opened.
          *
          * @event 'iron-announce'
-         * @param {Object} detail
-         * @param {String} detail.text The text that will be announced.
+         * @param {{text: string}} detail Contains text that will be announced.
          */
       });
     })();
@@ -22027,8 +22399,8 @@ paper-calendar {
         /* size */
         height: var(--paper-toolbar-height, 64px);
 
-        background: var(--paper-toolbar-background, --default-primary-color);
-        color: var(--paper-toolbar-color, --text-primary-color);
+        background: var(--paper-toolbar-background, --primary-color);
+        color: var(--paper-toolbar-color, --primary-text-color);
 
         @apply(--paper-toolbar);
       }
@@ -23991,427 +24363,454 @@ paper-calendar {
 </dom-module>
 <dom-module id="user-check" assetpath="/linto/">
 
-    <style>
-    gold-email-input.color-white {
-        --paper-input-container-color: white;
-        --paper-input-container-focus-color: #FFEB3B;
-        --paper-input-container-invalid-color: #F44336;
-        --paper-input-container-input-color: white;
-    }
-    
-    paper-button {
-        margin: 0;
-        min-width: 50%;
-        padding: 16px;
-    }
-    
-    .page-body {
-        overflow: auto;
-        padding: 24px;
-    }
-    
-    .page-title {
-        border-bottom: 2px solid #EEE;
-    }
-    
-    .page-title paper-icon-button {
-        margin-right: 8px;
-    }
-    
-    .page-title > div {
-        padding: 16px;
-    }
-    </style>
+  <style>
+  gold-email-input.color-white {
+    --paper-input-container-color: white;
+    --paper-input-container-focus-color: var(--paper-yellow-500);
+    --paper-input-container-invalid-color: var(--paper-red-500);
+    --paper-input-container-input-color: white;
+  }
+  
+  div.button {
+    padding: 16px;
+  }
+  
+  paper-button {
+    margin: 0;
+    min-width: 50%;
+    padding: 16px;
+  }
+  
+  paper-button.button {
+    margin: 8px 0;
+  }
+  
+  .page-body {
+    overflow: auto;
+    padding: 24px;
+  }
+  
+  .page-title {
+    border-bottom: 2px solid #757575;
+  }
+  
+  .page-title paper-icon-button {
+    margin-right: 8px;
+  }
+  
+  .page-title > div {
+    padding: 16px;
+  }
+  
+  .subhead {
+    @apply(--paper-font-subhead);
+  }
+  </style>
 
-    <template>
-        <neon-animated-pages class="fit" selected="{{selected}}">
-            <user-check-layout></user-check-layout>
+  <template>
+    <neon-animated-pages class="fit" selected="[[selected]]">
+      <user-check-layout></user-check-layout>
 
-            <card-route ripple_class="white">
-                <div class="center-justified fit horizontal layout white">
-                    <div class="layout li vertical">
-                        <div class="center horizontal layout page-title">
-                            <div class="cursor-d etc flex">SIGN IN</div>
-                            <paper-icon-button icon="close" on-click="back"></paper-icon-button>
-                        </div>
-
-                        <div class="flex layout page-body vertical">
-                            <gold-email-input auto-validate="" label="email" required="" value="{{email}}"></gold-email-input>
-                            <paper-input auto-validate="" label="password" required="" type="password" value="{{password}}"></paper-input>
-
-                            <br>
-
-                            <div class="end-justified horizontal layout">
-                                <paper-button class="blue-500" on-click="sign_in_submit">submit</paper-button>
-                            </div>
-
-                            <br>
-
-                            <div class="horizontal layout">
-                                <img class="cursor-p" disabled="" src="/img/fb.png" style="opacity: 0.1;">
-                                <img class="cursor-p" on-click="google" src="/img/google-plus.png">
-                                <img class="cursor-p" disabled="" src="/img/twitter.png" style="opacity: 0.1;">
-                            </div>
-                        </div>
-
-                        <div class="cursor-p" on-click="reset_password" style="padding: 16px;">reset password</div>
-                    </div>
-                </div>
-            </card-route>
-
-            <card-route ripple_class="cyan-700">
-                <div class="center-justified cyan-700 fit horizontal layout">
-                    <div class="layout li vertical">
-                        <div class="center horizontal layout page-title" style="border-bottom: 2px solid #006064;">
-                            <div class="cursor-d etc flex">SIGN UP</div>
-                            <paper-icon-button icon="close" on-click="back"></paper-icon-button>
-                        </div>
-
-                        <div class="flex layout page-body vertical">
-                            <gold-email-input auto-validate="" class="color-white" label="email" required="" value="{{email}}"></gold-email-input>
-
-                            <br>
-
-                            <div class="end-justified horizontal layout">
-                                <paper-button class="cyan-900" on-click="sign_up_submit">submit</paper-button>
-                            </div>
-                        </div>
-
-                        <div class="cursor-p" on-click="resend_enrollment_email" style="padding: 16px;">resend enrollment-email</div>
-                    </div>
-                </div>
-            </card-route>
-        </neon-animated-pages>
-
-        <paper-dialog id="request_prompt" style="width: 320px;" with-backdrop="">
-            <div class="layout vertical">
-                <gold-email-input auto-validate="" label="email" required="" value="{{email}}"></gold-email-input>
-
-                <div class="end-justified horizontal layout">
-                    <paper-button class="blue-500" on-click="request_submit" style="margin: 8px 0; width: 50%;">submit</paper-button>
-                </div>
+      <card-route ripple_class="white">
+        <div class="center-justified fit horizontal layout white">
+          <div class="layout li vertical">
+            <div class="center horizontal layout page-title">
+              <div class="cursor-d etc flex subhead">SIGN IN</div>
+              <paper-icon-button icon="close" on-click="back"></paper-icon-button>
             </div>
-        </paper-dialog>
-    </template>
 
-    <script>
-    Polymer({
+            <div class="flex layout page-body vertical">
+              <gold-email-input auto-validate="" label="email" required="" value="{{email}}"></gold-email-input>
+              <paper-input auto-validate="" label="password" required="" type="password" value="{{password}}"></paper-input>
 
-        back: function() {
-            this.selected = 0;
+              <br>
 
+              <div class="end-justified horizontal layout">
+                <paper-button class="blue-500" on-click="sign_in_submit">submit</paper-button>
+              </div>
+
+              <br>
+
+              <div class="horizontal layout">
+                <img class="cursor-p" disabled="" src="/img/fb.png" style="opacity: 0.1;">
+                <img class="cursor-p" on-click="google" src="/img/google-plus.png">
+                <img class="cursor-p" disabled="" src="/img/twitter.png" style="opacity: 0.1;">
+              </div>
+            </div>
+
+            <div class="button cursor-p subhead" on-click="reset_password">reset password</div>
+          </div>
+        </div>
+      </card-route>
+
+      <card-route ripple_class="cyan-700">
+        <div class="center-justified cyan-700 fit horizontal layout">
+          <div class="layout li vertical">
+            <div class="center horizontal layout page-title">
+              <div class="cursor-d etc flex subhead">SIGN UP</div>
+              <paper-icon-button icon="close" on-click="back"></paper-icon-button>
+            </div>
+
+            <div class="flex layout page-body vertical">
+              <gold-email-input auto-validate="" class="color-white" label="email" required="" value="{{email}}"></gold-email-input>
+
+              <br>
+
+              <div class="end-justified horizontal layout">
+                <paper-button class="cyan-900" on-click="sign_up_submit">submit</paper-button>
+              </div>
+            </div>
+
+            <div class="button cursor-p subhead" on-click="resend_enrollment_email">resend enrollment-email</div>
+          </div>
+        </div>
+      </card-route>
+    </neon-animated-pages>
+
+    <paper-dialog id="request_prompt" style="width: 320px;" with-backdrop="">
+      <div class="layout vertical">
+        <gold-email-input auto-validate="" label="email" required="" value="{{email}}"></gold-email-input>
+
+        <div class="end-justified horizontal layout">
+          <paper-button class="button blue-500" on-click="request_submit">submit</paper-button>
+        </div>
+      </div>
+    </paper-dialog>
+  </template>
+
+  <script>
+  Polymer({
+
+    back: function() {
+      this.selected = 0;
+
+      Meteor.setTimeout(function() {
+        FlowRouter.setQueryParams({
+          "route": null
+        });
+      }, 400);
+    },
+
+    google: function() {
+      if (Meteor.status().connected) {
+        if (Meteor.isCordova) {
+          document.querySelector("#load_awesome").active = true;
+
+          Meteor.cordova_g_plus({
+            cordova_g_plus: true,
+            profile: ["email", "email_verified", "gender", "locale", "name", "picture", "sub"]
+          }, function(error) {
             Meteor.setTimeout(function() {
-                FlowRouter.setQueryParams({
-                    "route": null
-                });
-            }, 400);
-        },
+              document.querySelector("#load_awesome").active = false;
+            }, 1000 * 4);
 
-        google: function() {
-            if (Meteor.status().connected) {
-                if (Meteor.isCordova) {
-                    document.querySelector("#load_awesome").active = true;
-
-                    Meteor.cordova_g_plus({
-                        cordova_g_plus: true,
-                        profile: ["email", "email_verified", "gender", "locale", "name", "picture", "sub"]
-                    }, function(error) {
-                        Meteor.setTimeout(function() {
-                            document.querySelector("#load_awesome").active = false;
-                        }, 1000 * 4);
-
-                        if (error) {
-                            document.querySelector("#polymer_toast").toast(error);
-                        }
-                    });
-                } else {
-                    if (Accounts.loginServicesConfigured()) {
-                        Meteor.loginWithGoogle({
-                            requestOfflineToken: true,
-                            requestPermissions: ["email", "profile"]
-                        }, function(error) {
-                            if (error) {
-                                document.querySelector("#polymer_toast").toast("errorNo - " + Accounts.LoginCancelledError.numericError);
-                            }
-                        });
-                    }
-                }
-            } else {
-                document.querySelector("#polymer_toast").toast("server connection required");
+            if (error) {
+              document.querySelector("#polymer_toast").toast(error);
             }
-        },
-
-        is: "user-check",
-
-        properties: {
-            email: {
-                type: String,
-                value: "user@vcompile.com"
-            },
-            password: {
-                type: String,
-                value: "password"
-            },
-            selected: {
-                type: Number,
-                value: 0
-            }
-        },
-
-        request_submit: function() {
-            if (Meteor.status().connected) {
-                var valid_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
-
-                if (valid_email.test(this.email)) {
-                    switch (this.selected) {
-                        case 1:
-                            document.querySelector("#load_awesome").active = true;
-
-                            Accounts.forgotPassword({
-                                email: this.email
-                            }, function(error) {
-                                document.querySelector("#load_awesome").active = false;
-
-                                if (error) {
-                                    document.querySelector("#polymer_toast").toast(error.reason);
-                                } else {
-                                    document.querySelector("#polymer_toast").toast("reset password url sent @ email");
-                                }
-                            });
-                            break;
-
-                        case 2:
-                            document.querySelector("#load_awesome").active = true;
-
-                            Meteor.call("sendEnrollmentEmail", this.email, function(error, res) {
-                                document.querySelector("#load_awesome").active = false;
-
-                                if (error) {
-                                    document.querySelector("#polymer_toast").toast(error.reason);
-                                } else {
-                                    document.querySelector("#polymer_toast").toast(res);
-                                }
-                            });
-                            break;
-                    }
-                } else {
-                    document.querySelector("#polymer_toast").toast("invalid email");
-                }
-            } else {
-                document.querySelector("#polymer_toast").toast("server connection required");
-            }
-
-            this.$.request_prompt.close();
-        },
-
-        resend_enrollment_email: function() {
-            this.$.request_prompt.open();
-        },
-
-        reset_password: function() {
-            this.$.request_prompt.open();
-        },
-
-        "sign_in_submit": function() {
-            if (Meteor.status().connected) {
-                var valid_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
-
-                if (valid_email.test(this.email)) {
-                    if (6 <= this.password.length) {
-                        document.querySelector("#load_awesome").active = true;
-
-                        Meteor.loginWithPassword(this.email, this.password, function(error) {
-                            document.querySelector("#load_awesome").active = false;
-
-                            if (error) {
-                                document.querySelector("#polymer_toast").toast(error.reason);
-                            }
-                        });
-                    } else {
-                        document.querySelector("#polymer_toast").toast("min password length is 6");
-                    }
-                } else {
-                    document.querySelector("#polymer_toast").toast("invalid email");
-                }
-            } else {
-                document.querySelector("#polymer_toast").toast("server connection required");
-            }
-        },
-
-        sign_up_submit: function() {
-            if (Meteor.status().connected) {
-                var valid_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
-
-                if (valid_email.test(this.email)) {
-                    document.querySelector("#load_awesome").active = true;
-
-                    Meteor.call("signUp", this.email, function(error, res) {
-                        document.querySelector("#load_awesome").active = false;
-
-                        if (error) {
-                            document.querySelector("#polymer_toast").toast(error.reason);
-                        } else {
-                            document.querySelector("#polymer_toast").toast(res);
-                        }
-                    });
-                } else {
-                    document.querySelector("#polymer_toast").toast("invalid email");
-                }
-            } else {
-                document.querySelector("#polymer_toast").toast("server connection required");
-            }
+          });
+        } else {
+          if (Accounts.loginServicesConfigured()) {
+            Meteor.loginWithGoogle({
+              requestOfflineToken: true,
+              requestPermissions: ["email", "profile"]
+            }, function(error) {
+              if (error) {
+                document.querySelector("#polymer_toast").toast("errorNo - " + Accounts.LoginCancelledError.numericError);
+              }
+            });
+          }
         }
+      } else {
+        document.querySelector("#polymer_toast").toast("server connection required");
+      }
+    },
 
-    });
-    </script>
+    is: "user-check",
+
+    properties: {
+      email: {
+        type: String,
+        value: "user@vcompile.com"
+      },
+      password: {
+        type: String,
+        value: "password"
+      },
+      selected: {
+        type: Number,
+        value: 0
+      }
+    },
+
+    request_submit: function() {
+      if (Meteor.status().connected) {
+        var valid_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
+
+        if (valid_email.test(this.email)) {
+          switch (this.selected) {
+            case 1:
+              document.querySelector("#load_awesome").active = true;
+
+              Accounts.forgotPassword({
+                email: this.email
+              }, function(error) {
+                document.querySelector("#load_awesome").active = false;
+
+                if (error) {
+                  document.querySelector("#polymer_toast").toast(error.reason);
+                } else {
+                  document.querySelector("#polymer_toast").toast("reset password url sent @ email");
+                }
+              });
+              break;
+
+            case 2:
+              document.querySelector("#load_awesome").active = true;
+
+              Meteor.call("sendEnrollmentEmail", this.email, function(error, res) {
+                document.querySelector("#load_awesome").active = false;
+
+                if (error) {
+                  document.querySelector("#polymer_toast").toast(error.reason);
+                } else {
+                  document.querySelector("#polymer_toast").toast(res);
+                }
+              });
+              break;
+          }
+        } else {
+          document.querySelector("#polymer_toast").toast("invalid email");
+        }
+      } else {
+        document.querySelector("#polymer_toast").toast("server connection required");
+      }
+
+      this.$.request_prompt.close();
+    },
+
+    resend_enrollment_email: function() {
+      this.$.request_prompt.open();
+    },
+
+    reset_password: function() {
+      this.$.request_prompt.open();
+    },
+
+    "sign_in_submit": function() {
+      if (Meteor.status().connected) {
+        var valid_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
+
+        if (valid_email.test(this.email)) {
+          if (6 <= this.password.length) {
+            document.querySelector("#load_awesome").active = true;
+
+            Meteor.loginWithPassword(this.email, this.password, function(error) {
+              document.querySelector("#load_awesome").active = false;
+
+              if (error) {
+                document.querySelector("#polymer_toast").toast(error.reason);
+              }
+            });
+          } else {
+            document.querySelector("#polymer_toast").toast("min password length is 6");
+          }
+        } else {
+          document.querySelector("#polymer_toast").toast("invalid email");
+        }
+      } else {
+        document.querySelector("#polymer_toast").toast("server connection required");
+      }
+    },
+
+    sign_up_submit: function() {
+      if (Meteor.status().connected) {
+        var valid_email = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
+
+        if (valid_email.test(this.email)) {
+          document.querySelector("#load_awesome").active = true;
+
+          Meteor.call("signUp", this.email, function(error, res) {
+            document.querySelector("#load_awesome").active = false;
+
+            if (error) {
+              document.querySelector("#polymer_toast").toast(error.reason);
+            } else {
+              document.querySelector("#polymer_toast").toast(res);
+            }
+          });
+        } else {
+          document.querySelector("#polymer_toast").toast("invalid email");
+        }
+      } else {
+        document.querySelector("#polymer_toast").toast("server connection required");
+      }
+    }
+
+  });
+  </script>
 
 </dom-module>
 <dom-module id="user-check-layout" assetpath="/linto/">
 
-    <style>
-    :host {
-        background: transparent!important;
-    }
-    
-    .swiper-circle {
-        border: 2px solid #0097A7;
-        border-radius: 50%;
-        margin-left: 4px;
-        margin-right: 4px;
-        padding: 4px;
-    }
-    
-    .swiper-img {
-        background-position: top;
-        background-size: cover;
-    }
-    </style>
+  <style>
+  :host {
+    background: transparent!important;
+  }
+  
+  neon-animatable > div {
+    padding: 32px 16px;
+  }
+  
+  .button {
+    padding: 16px;
+    text-align: center;
+  }
+  
+  .subhead {
+    @apply(--paper-font-subhead);
+  }
+  
+  .swiper-circle {
+    border: 2px solid var(--paper-cyan-700);
+    border-radius: 50%;
+    margin-left: 4px;
+    margin-right: 4px;
+    padding: 4px;
+  }
+  
+  .swiper-img {
+    background-position: top;
+    background-size: cover;
+  }
+  </style>
 
-    <template>
-        <div class="center-justified cyan-500 fit horizontal layout" id="container">
-            <div class="layout li vertical">
-                <neon-animated-pages class="flex" on-up="swiper_up" selected="{{selected}}">
-                    <neon-animatable class="cyan-500 layout vertical">
-                        <div class="center-justified horizontal layout" style="padding: 32px 16px;">
-                            <div>Sharing, offline support, etc</div>
-                        </div>
-
-                        <div class="flex layout swiper-img vertical" style="background-image:url(&quot;/img/0.png&quot;);">
-                            <div class="flex"></div>
-                            <div class="center-justified horizontal layout" style="padding: 32px 16px;">
-                                <div class="swiper-circle"></div>
-                                <div class="swiper-circle cyan-500"></div>
-                                <div class="swiper-circle cyan-500"></div>
-                            </div>
-                        </div>
-                    </neon-animatable>
-
-                    <neon-animatable class="cyan-500 layout vertical">
-                        <div class="center-justified horizontal layout" style="padding: 32px 16px;">
-                            <div>100+ site indexing &amp; inbuilt proxy</div>
-                        </div>
-
-                        <div class="flex layout swiper-img vertical" style="background-image:url(&quot;/img/1.png&quot;);">
-                            <div class="flex"></div>
-                            <div class="center-justified horizontal layout" style="padding: 32px 16px;">
-                                <div class="swiper-circle cyan-500"></div>
-                                <div class="swiper-circle"></div>
-                                <div class="swiper-circle cyan-500"></div>
-                            </div>
-                        </div>
-                    </neon-animatable>
-
-                    <neon-animatable class="cyan-500 layout vertical">
-                        <div class="center-justified horizontal layout" style="padding: 32px 16px;">
-                            <div>SemanticSearch in V2</div>
-                        </div>
-                        <div class="flex layout swiper-img vertical" style="background-image:url(&quot;/img/2.png&quot;);">
-                            <div class="flex"></div>
-                            <div class="center-justified horizontal layout" style="padding: 32px 16px;">
-                                <div class="swiper-circle cyan-500"></div>
-                                <div class="swiper-circle cyan-500"></div>
-                                <div class="swiper-circle"></div>
-                            </div>
-                        </div>
-                    </neon-animatable>
-                </neon-animated-pages>
-
-                <div class="horizontal layout">
-                    <div class="cursor-p flex white" id="sign-in" on-click="sign_in" style="padding: 16px; text-align: center;">SIGN IN</div>
-                    <div class="cursor-p flex cyan-700" id="sign-up" on-click="sign_up" style="padding: 16px; text-align: center;">SIGN UP</div>
-                </div>
+  <template>
+    <div class="center-justified cyan-500 fit horizontal layout" id="user-check-layout-body">
+      <div class="layout li vertical">
+        <neon-animated-pages class="flex" on-up="swiper_up" selected="{{selected}}">
+          <neon-animatable class="cyan-500 layout vertical" entry-animation="fade-in-animation" exit-animation="fade-out-animation">
+            <div class="center-justified horizontal layout">
+              <div class="subhead">sharing, offline storing, etc</div>
             </div>
+
+            <div class="flex layout swiper-img vertical" style="background-image:url(&quot;/img/0.png&quot;);">
+              <div class="flex"></div>
+
+              <div class="center-justified horizontal layout">
+                <div class="swiper-circle"></div>
+                <div class="cyan-500 swiper-circle"></div>
+                <div class="cyan-500 swiper-circle"></div>
+              </div>
+            </div>
+          </neon-animatable>
+
+          <neon-animatable class="cyan-500 layout vertical" entry-animation="fade-in-animation" exit-animation="fade-out-animation">
+            <div class="center-justified horizontal layout">
+              <div class="subhead">100+ site indexing &amp; inbuilt proxy</div>
+            </div>
+
+            <div class="flex layout swiper-img vertical" style="background-image:url(&quot;/img/1.png&quot;);">
+              <div class="flex"></div>
+
+              <div class="center-justified horizontal layout">
+                <div class="cyan-500 swiper-circle"></div>
+                <div class="swiper-circle"></div>
+                <div class="cyan-500 swiper-circle"></div>
+              </div>
+            </div>
+          </neon-animatable>
+
+          <neon-animatable class="cyan-500 layout vertical" entry-animation="fade-in-animation" exit-animation="fade-out-animation">
+            <div class="center-justified horizontal layout">
+              <div class="subhead">keyword search</div>
+            </div>
+
+            <div class="flex layout swiper-img vertical" style="background-image:url(&quot;/img/2.png&quot;);">
+              <div class="flex"></div>
+
+              <div class="center-justified horizontal layout">
+                <div class="cyan-500 swiper-circle"></div>
+                <div class="cyan-500 swiper-circle"></div>
+                <div class="swiper-circle"></div>
+              </div>
+            </div>
+          </neon-animatable>
+        </neon-animated-pages>
+
+        <div class="horizontal layout">
+          <div class="button cursor-p flex subhead white" id="sign-in" on-click="sign_in">SIGN IN</div>
+          <div class="button cursor-p cyan-700 flex subhead" id="sign-up" on-click="sign_up">SIGN UP</div>
         </div>
-    </template>
+      </div>
+    </div>
+  </template>
 
-    <script>
-    Polymer({
+  <script>
+  Polymer({
 
-        behaviors: [
-            Polymer.NeonSharedElementAnimatableBehavior
-        ],
+    behaviors: [
+      Polymer.NeonSharedElementAnimatableBehavior
+    ],
 
-        is: "user-check-layout",
+    is: "user-check-layout",
 
-        properties: {
-            animationConfig: {
-                type: Object,
-                value: function() {
-                    return {
-                        "entry": [{
-                            id: "reverse-ripple",
-                            name: "reverse-ripple-animation",
-                            toPage: this
-                        }],
-
-                        "exit": [{
-                            name: "fade-out-animation",
-                            node: this.$.container,
-                            timing: {
-                                delay: 200,
-                                duration: 100
-                            }
-                        }, {
-                            fromPage: this,
-                            id: "ripple",
-                            name: "ripple-animation"
-                        }]
-                    };
-                }
-            },
-
-            selected: {
-                type: Number,
-                value: 2
-            }
-        },
-
-        sign_in: function() {
-            FlowRouter.setQueryParams({
-                "route": "sign-in"
-            });
-        },
-
-        sign_up: function() {
-            FlowRouter.setQueryParams({
-                "route": "sign-up"
-            });
-        },
-
-        swiper_up: function(e, d) {
-            if (d.x < $(window).width() / 2) {
-                if (0 <= this.selected && this.selected < 2) {
-                    this.selected = parseInt(this.selected) + 1;
-                }
-            } else {
-                if (0 < this.selected && this.selected <= 2) {
-                    this.selected = parseInt(this.selected) - 1;
-                }
-            }
+    properties: {
+      animationConfig: {
+        type: Object,
+        value: function() {
+          return {
+            entry: [{
+              id: "reverse-ripple",
+              name: "reverse-ripple-animation",
+              toPage: this
+            }],
+            exit: [{
+              name: "fade-out-animation",
+              node: this.$["user-check-layout-body"],
+              timing: {
+                delay: 200,
+                duration: 100
+              }
+            }, {
+              fromPage: this,
+              id: "ripple",
+              name: "ripple-animation"
+            }]
+          };
         }
+      },
+      selected: {
+        type: Number,
+        value: 2
+      }
+    },
 
-    });
-    </script>
+    sign_in: function() {
+      FlowRouter.setQueryParams({
+        "route": "sign-in"
+      });
+    },
+
+    sign_up: function() {
+      FlowRouter.setQueryParams({
+        "route": "sign-up"
+      });
+    },
+
+    swiper_up: function(e, d) {
+      if (d.x < $(window).width() / 2) {
+        if (0 <= this.selected && this.selected < 2) {
+          this.selected += 1;
+        }
+      } else {
+        if (0 < this.selected && this.selected <= 2) {
+          this.selected -= 1;
+        }
+      }
+    }
+
+  });
+  </script>
 
 </dom-module>
-</div></body></html>
+</div></body></html>          

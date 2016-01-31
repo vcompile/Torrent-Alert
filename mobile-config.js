@@ -1,20 +1,20 @@
 App.accessRule("*://*.googleusercontent.com/*");
 
 App.icons({
-    "android_ldpi": ".build/drawable-ldpi/ic_launcher.png",
-    "android_mdpi": ".build/drawable-mdpi/ic_launcher.png",
-    "android_hdpi": ".build/drawable-hdpi/ic_launcher.png",
-    "android_xhdpi": ".build/drawable-xhdpi/ic_launcher.png"
+  "android_ldpi": ".build/drawable-ldpi/ic_launcher.png",
+  "android_mdpi": ".build/drawable-mdpi/ic_launcher.png",
+  "android_hdpi": ".build/drawable-hdpi/ic_launcher.png",
+  "android_xhdpi": ".build/drawable-xhdpi/ic_launcher.png"
 });
 
 App.info({
-    id: "com.vcompile.torrentz",
-    name: "Torrent Alert",
-    description: "Torrent Search, Keyword Scheduler & Alerter",
-    version: "1.9.2",
-    author: "LintoCheeran",
-    email: "linto.cet@gmail.com",
-    website: "http://vcompile.com/torrentz"
+  id: "com.vcompile.torrentz",
+  name: "Torrent Alert",
+  description: "Torrent Search, Keyword Scheduler & Alerter",
+  version: "1.9.3",
+  author: "LintoCheeran",
+  email: "linto.cet@gmail.com",
+  website: "http://vcompile.com/torrentz"
 });
 
 // App.launchScreens({
