@@ -14511,626 +14511,6 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
 
 <script>
 
-  /**
-   * `Polymer.IronMenuBehavior` implements accessible menu behavior.
-   *
-   * @demo demo/index.html
-   * @polymerBehavior Polymer.IronMenuBehavior
-   */
-  Polymer.IronMenuBehaviorImpl = {
-
-    properties: {
-
-      /**
-       * Returns the currently focused item.
-       * @type {?Object}
-       */
-      focusedItem: {
-        observer: '_focusedItemChanged',
-        readOnly: true,
-        type: Object
-      },
-
-      /**
-       * The attribute to use on menu items to look up the item title. Typing the first
-       * letter of an item when the menu is open focuses that item. If unset, `textContent`
-       * will be used.
-       */
-      attrForItemTitle: {
-        type: String
-      }
-    },
-
-    hostAttributes: {
-      'role': 'menu',
-      'tabindex': '0'
-    },
-
-    observers: [
-      '_updateMultiselectable(multi)'
-    ],
-
-    listeners: {
-      'focus': '_onFocus',
-      'keydown': '_onKeydown',
-      'iron-items-changed': '_onIronItemsChanged'
-    },
-
-    keyBindings: {
-      'up': '_onUpKey',
-      'down': '_onDownKey',
-      'esc': '_onEscKey',
-      'shift+tab:keydown': '_onShiftTabDown'
-    },
-
-    attached: function() {
-      this._resetTabindices();
-    },
-
-    /**
-     * Selects the given value. If the `multi` property is true, then the selected state of the
-     * `value` will be toggled; otherwise the `value` will be selected.
-     *
-     * @param {string} value the value to select.
-     */
-    select: function(value) {
-      if (this._defaultFocusAsync) {
-        this.cancelAsync(this._defaultFocusAsync);
-        this._defaultFocusAsync = null;
-      }
-      var item = this._valueToItem(value);
-      if (item && item.hasAttribute('disabled')) return;
-      this._setFocusedItem(item);
-      Polymer.IronMultiSelectableBehaviorImpl.select.apply(this, arguments);
-    },
-
-    /**
-     * Resets all tabindex attributes to the appropriate value based on the
-     * current selection state. The appropriate value is `0` (focusable) for
-     * the default selected item, and `-1` (not keyboard focusable) for all
-     * other items.
-     */
-    _resetTabindices: function() {
-      var selectedItem = this.multi ? (this.selectedItems && this.selectedItems[0]) : this.selectedItem;
-
-      this.items.forEach(function(item) {
-        item.setAttribute('tabindex', item === selectedItem ? '0' : '-1');
-      }, this);
-    },
-
-    /**
-     * Sets appropriate ARIA based on whether or not the menu is meant to be
-     * multi-selectable.
-     *
-     * @param {boolean} multi True if the menu should be multi-selectable.
-     */
-    _updateMultiselectable: function(multi) {
-      if (multi) {
-        this.setAttribute('aria-multiselectable', 'true');
-      } else {
-        this.removeAttribute('aria-multiselectable');
-      }
-    },
-
-    /**
-     * Given a KeyboardEvent, this method will focus the appropriate item in the
-     * menu (if there is a relevant item, and it is possible to focus it).
-     *
-     * @param {KeyboardEvent} event A KeyboardEvent.
-     */
-    _focusWithKeyboardEvent: function(event) {
-      for (var i = 0, item; item = this.items[i]; i++) {
-        var attr = this.attrForItemTitle || 'textContent';
-        var title = item[attr] || item.getAttribute(attr);
-
-        if (title && title.trim().charAt(0).toLowerCase() === String.fromCharCode(event.keyCode).toLowerCase()) {
-          this._setFocusedItem(item);
-          break;
-        }
-      }
-    },
-
-    /**
-     * Focuses the previous item (relative to the currently focused item) in the
-     * menu.
-     */
-    _focusPrevious: function() {
-      var length = this.items.length;
-      var index = (Number(this.indexOf(this.focusedItem)) - 1 + length) % length;
-      this._setFocusedItem(this.items[index]);
-    },
-
-    /**
-     * Focuses the next item (relative to the currently focused item) in the
-     * menu.
-     */
-    _focusNext: function() {
-      var index = (Number(this.indexOf(this.focusedItem)) + 1) % this.items.length;
-      this._setFocusedItem(this.items[index]);
-    },
-
-    /**
-     * Mutates items in the menu based on provided selection details, so that
-     * all items correctly reflect selection state.
-     *
-     * @param {Element} item An item in the menu.
-     * @param {boolean} isSelected True if the item should be shown in a
-     * selected state, otherwise false.
-     */
-    _applySelection: function(item, isSelected) {
-      if (isSelected) {
-        item.setAttribute('aria-selected', 'true');
-      } else {
-        item.removeAttribute('aria-selected');
-      }
-      Polymer.IronSelectableBehavior._applySelection.apply(this, arguments);
-    },
-
-    /**
-     * Discretely updates tabindex values among menu items as the focused item
-     * changes.
-     *
-     * @param {Element} focusedItem The element that is currently focused.
-     * @param {?Element} old The last element that was considered focused, if
-     * applicable.
-     */
-    _focusedItemChanged: function(focusedItem, old) {
-      old && old.setAttribute('tabindex', '-1');
-      if (focusedItem) {
-        focusedItem.setAttribute('tabindex', '0');
-        focusedItem.focus();
-      }
-    },
-
-    /**
-     * A handler that responds to mutation changes related to the list of items
-     * in the menu.
-     *
-     * @param {CustomEvent} event An event containing mutation records as its
-     * detail.
-     */
-    _onIronItemsChanged: function(event) {
-      var mutations = event.detail;
-      var mutation;
-      var index;
-
-      for (index = 0; index < mutations.length; ++index) {
-        mutation = mutations[index];
-
-        if (mutation.addedNodes.length) {
-          this._resetTabindices();
-          break;
-        }
-      }
-    },
-
-    /**
-     * Handler that is called when a shift+tab keypress is detected by the menu.
-     *
-     * @param {CustomEvent} event A key combination event.
-     */
-    _onShiftTabDown: function(event) {
-      var oldTabIndex = this.getAttribute('tabindex');
-
-      Polymer.IronMenuBehaviorImpl._shiftTabPressed = true;
-
-      this._setFocusedItem(null);
-
-      this.setAttribute('tabindex', '-1');
-
-      this.async(function() {
-        this.setAttribute('tabindex', oldTabIndex);
-        Polymer.IronMenuBehaviorImpl._shiftTabPressed = false;
-        // NOTE(cdata): polymer/polymer#1305
-      }, 1);
-    },
-
-    /**
-     * Handler that is called when the menu receives focus.
-     *
-     * @param {FocusEvent} event A focus event.
-     */
-    _onFocus: function(event) {
-      if (Polymer.IronMenuBehaviorImpl._shiftTabPressed) {
-        // do not focus the menu itself
-        return;
-      }
-
-      this.blur();
-
-      // clear the cached focus item
-      this._defaultFocusAsync = this.async(function() {
-        // focus the selected item when the menu receives focus, or the first item
-        // if no item is selected
-        var selectedItem = this.multi ? (this.selectedItems && this.selectedItems[0]) : this.selectedItem;
-
-        this._setFocusedItem(null);
-
-        if (selectedItem) {
-          this._setFocusedItem(selectedItem);
-        } else {
-          this._setFocusedItem(this.items[0]);
-        }
-      // async 1ms to wait for `select` to get called from `_itemActivate`
-      }, 1);
-    },
-
-    /**
-     * Handler that is called when the up key is pressed.
-     *
-     * @param {CustomEvent} event A key combination event.
-     */
-    _onUpKey: function(event) {
-      // up and down arrows moves the focus
-      this._focusPrevious();
-    },
-
-    /**
-     * Handler that is called when the down key is pressed.
-     *
-     * @param {CustomEvent} event A key combination event.
-     */
-    _onDownKey: function(event) {
-      this._focusNext();
-    },
-
-    /**
-     * Handler that is called when the esc key is pressed.
-     *
-     * @param {CustomEvent} event A key combination event.
-     */
-    _onEscKey: function(event) {
-      // esc blurs the control
-      this.focusedItem.blur();
-    },
-
-    /**
-     * Handler that is called when a keydown event is detected.
-     *
-     * @param {KeyboardEvent} event A keyboard event.
-     */
-    _onKeydown: function(event) {
-      if (!this.keyboardEventMatchesKeys(event, 'up down esc')) {
-        // all other keys focus the menu item starting with that character
-        this._focusWithKeyboardEvent(event);
-      }
-      event.stopPropagation();
-    },
-
-    // override _activateHandler
-    _activateHandler: function(event) {
-      Polymer.IronSelectableBehavior._activateHandler.call(this, event);
-      event.stopPropagation();
-    }
-  };
-
-  Polymer.IronMenuBehaviorImpl._shiftTabPressed = false;
-
-  /** @polymerBehavior Polymer.IronMenuBehavior */
-  Polymer.IronMenuBehavior = [
-    Polymer.IronMultiSelectableBehavior,
-    Polymer.IronA11yKeysBehavior,
-    Polymer.IronMenuBehaviorImpl
-  ];
-
-</script>
-
-
-<script>
-  (function() {
-    'use strict';
-
-    /**
-     * The IronDropdownScrollManager is intended to provide a central source
-     * of authority and control over which elements in a document are currently
-     * allowed to scroll.
-     */
-
-    Polymer.IronDropdownScrollManager = {
-
-      /**
-       * The current element that defines the DOM boundaries of the
-       * scroll lock. This is always the most recently locking element.
-       */
-      get currentLockingElement() {
-        return this._lockingElements[this._lockingElements.length - 1];
-      },
-
-
-      /**
-       * Returns true if the provided element is "scroll locked," which is to
-       * say that it cannot be scrolled via pointer or keyboard interactions.
-       *
-       * @param {HTMLElement} element An HTML element instance which may or may
-       * not be scroll locked.
-       */
-      elementIsScrollLocked: function(element) {
-        var currentLockingElement = this.currentLockingElement;
-
-        if (currentLockingElement === undefined)
-          return false;
-
-        var scrollLocked;
-
-        if (this._hasCachedLockedElement(element)) {
-          return true;
-        }
-
-        if (this._hasCachedUnlockedElement(element)) {
-          return false;
-        }
-
-        scrollLocked = !!currentLockingElement &&
-          currentLockingElement !== element &&
-          !this._composedTreeContains(currentLockingElement, element);
-
-        if (scrollLocked) {
-          this._lockedElementCache.push(element);
-        } else {
-          this._unlockedElementCache.push(element);
-        }
-
-        return scrollLocked;
-      },
-
-      /**
-       * Push an element onto the current scroll lock stack. The most recently
-       * pushed element and its children will be considered scrollable. All
-       * other elements will not be scrollable.
-       *
-       * Scroll locking is implemented as a stack so that cases such as
-       * dropdowns within dropdowns are handled well.
-       *
-       * @param {HTMLElement} element The element that should lock scroll.
-       */
-      pushScrollLock: function(element) {
-        if (this._lockingElements.length === 0) {
-          this._lockScrollInteractions();
-        }
-
-        this._lockingElements.push(element);
-
-        this._lockedElementCache = [];
-        this._unlockedElementCache = [];
-      },
-
-      /**
-       * Remove an element from the scroll lock stack. The element being
-       * removed does not need to be the most recently pushed element. However,
-       * the scroll lock constraints only change when the most recently pushed
-       * element is removed.
-       *
-       * @param {HTMLElement} element The element to remove from the scroll
-       * lock stack.
-       */
-      removeScrollLock: function(element) {
-        var index = this._lockingElements.indexOf(element);
-
-        if (index === -1) {
-          return;
-        }
-
-        this._lockingElements.splice(index, 1);
-
-        this._lockedElementCache = [];
-        this._unlockedElementCache = [];
-
-        if (this._lockingElements.length === 0) {
-          this._unlockScrollInteractions();
-        }
-      },
-
-      _lockingElements: [],
-
-      _lockedElementCache: null,
-
-      _unlockedElementCache: null,
-
-      _originalBodyStyles: {},
-
-      _isScrollingKeypress: function(event) {
-        return Polymer.IronA11yKeysBehavior.keyboardEventMatchesKeys(
-          event, 'pageup pagedown home end up left down right');
-      },
-
-      _hasCachedLockedElement: function(element) {
-        return this._lockedElementCache.indexOf(element) > -1;
-      },
-
-      _hasCachedUnlockedElement: function(element) {
-        return this._unlockedElementCache.indexOf(element) > -1;
-      },
-
-      _composedTreeContains: function(element, child) {
-        // NOTE(cdata): This method iterates over content elements and their
-        // corresponding distributed nodes to implement a contains-like method
-        // that pierces through the composed tree of the ShadowDOM. Results of
-        // this operation are cached (elsewhere) on a per-scroll-lock basis, to
-        // guard against potentially expensive lookups happening repeatedly as
-        // a user scrolls / touchmoves.
-        var contentElements;
-        var distributedNodes;
-        var contentIndex;
-        var nodeIndex;
-
-        if (element.contains(child)) {
-          return true;
-        }
-
-        contentElements = Polymer.dom(element).querySelectorAll('content');
-
-        for (contentIndex = 0; contentIndex < contentElements.length; ++contentIndex) {
-
-          distributedNodes = Polymer.dom(contentElements[contentIndex]).getDistributedNodes();
-
-          for (nodeIndex = 0; nodeIndex < distributedNodes.length; ++nodeIndex) {
-
-            if (this._composedTreeContains(distributedNodes[nodeIndex], child)) {
-              return true;
-            }
-          }
-        }
-
-        return false;
-      },
-
-      _scrollInteractionHandler: function(event) {
-        if (Polymer
-              .IronDropdownScrollManager
-              .elementIsScrollLocked(event.target)) {
-          if (event.type === 'keydown' &&
-              !Polymer.IronDropdownScrollManager._isScrollingKeypress(event)) {
-            return;
-          }
-
-          event.preventDefault();
-        }
-      },
-
-      _lockScrollInteractions: function() {
-        // Memoize body inline styles:
-        this._originalBodyStyles.overflow = document.body.style.overflow;
-        this._originalBodyStyles.overflowX = document.body.style.overflowX;
-        this._originalBodyStyles.overflowY = document.body.style.overflowY;
-
-        // Disable overflow scrolling on body:
-        // TODO(cdata): It is technically not sufficient to hide overflow on
-        // body alone. A better solution might be to traverse all ancestors of
-        // the current scroll locking element and hide overflow on them. This
-        // becomes expensive, though, as it would have to be redone every time
-        // a new scroll locking element is added.
-        document.body.style.overflow = 'hidden';
-        document.body.style.overflowX = 'hidden';
-        document.body.style.overflowY = 'hidden';
-
-        // Modern `wheel` event for mouse wheel scrolling:
-        window.addEventListener('wheel', this._scrollInteractionHandler, true);
-        // Older, non-standard `mousewheel` event for some FF:
-        window.addEventListener('mousewheel', this._scrollInteractionHandler, true);
-        // IE:
-        window.addEventListener('DOMMouseScroll', this._scrollInteractionHandler, true);
-        // Mobile devices can scroll on touch move:
-        window.addEventListener('touchmove', this._scrollInteractionHandler, true);
-        // Capture keydown to prevent scrolling keys (pageup, pagedown etc.)
-        document.addEventListener('keydown', this._scrollInteractionHandler, true);
-      },
-
-      _unlockScrollInteractions: function() {
-        document.body.style.overflow = this._originalBodyStyles.overflow;
-        document.body.style.overflowX = this._originalBodyStyles.overflowX;
-        document.body.style.overflowY = this._originalBodyStyles.overflowY;
-
-        window.removeEventListener('wheel', this._scrollInteractionHandler, true);
-        window.removeEventListener('mousewheel', this._scrollInteractionHandler, true);
-        window.removeEventListener('DOMMouseScroll', this._scrollInteractionHandler, true);
-        window.removeEventListener('touchmove', this._scrollInteractionHandler, true);
-        document.removeEventListener('keydown', this._scrollInteractionHandler, true);
-      }
-    };
-  })();
-</script>
-
-
-<script>
-  Polymer({
-    is: 'paper-menu-grow-height-animation',
-
-    behaviors: [
-      Polymer.NeonAnimationBehavior
-    ],
-
-    configure: function(config) {
-      var node = config.node;
-      var rect = node.getBoundingClientRect();
-      var height = rect.height;
-
-      this._effect = new KeyframeEffect(node, [{
-        height: (height / 2) + 'px'
-      }, {
-        height: height + 'px'
-      }], this.timingFromConfig(config));
-
-      return this._effect;
-    }
-  });
-
-  Polymer({
-    is: 'paper-menu-grow-width-animation',
-
-    behaviors: [
-      Polymer.NeonAnimationBehavior
-    ],
-
-    configure: function(config) {
-      var node = config.node;
-      var rect = node.getBoundingClientRect();
-      var width = rect.width;
-
-      this._effect = new KeyframeEffect(node, [{
-        width: (width / 2) + 'px'
-      }, {
-        width: width + 'px'
-      }], this.timingFromConfig(config));
-
-      return this._effect;
-    }
-  });
-
-  Polymer({
-    is: 'paper-menu-shrink-width-animation',
-
-    behaviors: [
-      Polymer.NeonAnimationBehavior
-    ],
-
-    configure: function(config) {
-      var node = config.node;
-      var rect = node.getBoundingClientRect();
-      var width = rect.width;
-
-      this._effect = new KeyframeEffect(node, [{
-        width: width + 'px'
-      }, {
-        width: width - (width / 20) + 'px'
-      }], this.timingFromConfig(config));
-
-      return this._effect;
-    }
-  });
-
-  Polymer({
-    is: 'paper-menu-shrink-height-animation',
-
-    behaviors: [
-      Polymer.NeonAnimationBehavior
-    ],
-
-    configure: function(config) {
-      var node = config.node;
-      var rect = node.getBoundingClientRect();
-      var height = rect.height;
-      var top = rect.top;
-
-      this.setPrefixedProperty(node, 'transformOrigin', '0 0');
-
-      this._effect = new KeyframeEffect(node, [{
-        height: height + 'px',
-        transform: 'translateY(0)'
-      }, {
-        height: height / 2 + 'px',
-        transform: 'translateY(-20px)'
-      }], this.timingFromConfig(config));
-
-      return this._effect;
-    }
-  });
-</script>
-
-
-
-
-<script>
-
  /**
  * `iron-range-behavior` provides the behavior for something with a minimum to maximum range.
  *
@@ -20174,829 +19554,6 @@ paper-calendar {
     });
   </script>
 </dom-module>
-<dom-module id="paper-menu-shared-styles" assetpath="/bower_components/paper-menu/">
-  <template>
-    <style>
-      /* need a wrapper element to make this higher specificity than the :host rule in paper-item */
-      .selectable-content > ::content > .iron-selected {
-        font-weight: bold;
-
-        @apply(--paper-menu-selected-item);
-      }
-
-      .selectable-content > ::content > [disabled] {
-        color: var(--paper-menu-disabled-color, --disabled-text-color);
-      }
-
-      .selectable-content > ::content > *:focus {
-        position: relative;
-        outline: 0;
-
-        @apply(--paper-menu-focused-item);
-      }
-
-      .selectable-content > ::content > *:focus:after {
-        @apply(--layout-fit);
-        background: currentColor;
-        opacity: var(--dark-divider-opacity);
-        content: '';
-        pointer-events: none;
-
-        @apply(--paper-menu-focused-item-after);
-      }
-
-      .selectable-content > ::content > *[colored]:focus:after {
-        opacity: 0.26;
-      }
-    </style>
-  </template>
-</dom-module>
-<dom-module id="paper-menu" assetpath="/bower_components/paper-menu/">
-  <template>
-    <style include="paper-menu-shared-styles"></style>
-    <style>
-      :host {
-        display: block;
-        padding: 8px 0;
-
-        background: var(--paper-menu-background-color, --primary-background-color);
-        color: var(--paper-menu-color, --primary-text-color);
-
-        @apply(--paper-menu);
-      }
-    </style>
-
-    <div class="selectable-content">
-      <content></content>
-    </div>
-  </template>
-
-  <script>
-    (function() {
-      Polymer({
-        is: 'paper-menu',
-
-        behaviors: [
-          Polymer.IronMenuBehavior
-        ]
-      });
-    })();
-  </script>
-</dom-module>
-<dom-module id="iron-dropdown" assetpath="/bower_components/iron-dropdown/">
-  <style>
-    :host {
-      position: fixed;
-    }
-
-    #contentWrapper ::content > * {
-      overflow: auto;
-    }
-
-    #contentWrapper.animating ::content > * {
-      overflow: hidden;
-    }
-  </style>
-  <template>
-    <div id="contentWrapper">
-      <content id="content" select=".dropdown-content"></content>
-    </div>
-  </template>
-
-  <script>
-    (function() {
-      'use strict';
-
-      Polymer({
-        is: 'iron-dropdown',
-
-        behaviors: [
-          Polymer.IronControlState,
-          Polymer.IronA11yKeysBehavior,
-          Polymer.IronOverlayBehavior,
-          Polymer.NeonAnimationRunnerBehavior
-        ],
-
-        properties: {
-          /**
-           * The orientation against which to align the dropdown content
-           * horizontally relative to the dropdown trigger.
-           */
-          horizontalAlign: {
-            type: String,
-            value: 'left',
-            reflectToAttribute: true
-          },
-
-          /**
-           * The orientation against which to align the dropdown content
-           * vertically relative to the dropdown trigger.
-           */
-          verticalAlign: {
-            type: String,
-            value: 'top',
-            reflectToAttribute: true
-          },
-
-          /**
-           * A pixel value that will be added to the position calculated for the
-           * given `horizontalAlign`, in the direction of alignment. You can think
-           * of it as increasing or decreasing the distance to the side of the
-           * screen given by `horizontalAlign`.
-           *
-           * If `horizontalAlign` is "left", this offset will increase or decrease
-           * the distance to the left side of the screen: a negative offset will
-           * move the dropdown to the left; a positive one, to the right.
-           *
-           * Conversely if `horizontalAlign` is "right", this offset will increase
-           * or decrease the distance to the right side of the screen: a negative
-           * offset will move the dropdown to the right; a positive one, to the left.
-           */
-          horizontalOffset: {
-            type: Number,
-            value: 0,
-            notify: true
-          },
-
-          /**
-           * A pixel value that will be added to the position calculated for the
-           * given `verticalAlign`, in the direction of alignment. You can think
-           * of it as increasing or decreasing the distance to the side of the
-           * screen given by `verticalAlign`.
-           *
-           * If `verticalAlign` is "top", this offset will increase or decrease
-           * the distance to the top side of the screen: a negative offset will
-           * move the dropdown upwards; a positive one, downwards.
-           *
-           * Conversely if `verticalAlign` is "bottom", this offset will increase
-           * or decrease the distance to the bottom side of the screen: a negative
-           * offset will move the dropdown downwards; a positive one, upwards.
-           */
-          verticalOffset: {
-            type: Number,
-            value: 0,
-            notify: true
-          },
-
-          /**
-           * The element that should be used to position the dropdown when
-           * it is opened.
-           */
-          positionTarget: {
-            type: Object,
-            observer: '_positionTargetChanged'
-          },
-
-          /**
-           * An animation config. If provided, this will be used to animate the
-           * opening of the dropdown.
-           */
-          openAnimationConfig: {
-            type: Object
-          },
-
-          /**
-           * An animation config. If provided, this will be used to animate the
-           * closing of the dropdown.
-           */
-          closeAnimationConfig: {
-            type: Object
-          },
-
-          /**
-           * If provided, this will be the element that will be focused when
-           * the dropdown opens.
-           */
-          focusTarget: {
-            type: Object
-          },
-
-          /**
-           * Set to true to disable animations when opening and closing the
-           * dropdown.
-           */
-          noAnimations: {
-            type: Boolean,
-            value: false
-          },
-
-          /**
-           * By default, the dropdown will constrain scrolling on the page
-           * to itself when opened.
-           * Set to true in order to prevent scroll from being constrained
-           * to the dropdown when it opens.
-           */
-          allowOutsideScroll: {
-            type: Boolean,
-            value: false
-          },
-
-          /**
-           * We memoize the positionTarget bounding rectangle so that we can
-           * limit the number of times it is queried per resize / relayout.
-           * @type {?Object}
-           */
-          _positionRectMemo: {
-            type: Object
-          }
-        },
-
-        listeners: {
-          'neon-animation-finish': '_onNeonAnimationFinish'
-        },
-
-        observers: [
-          '_updateOverlayPosition(verticalAlign, horizontalAlign, verticalOffset, horizontalOffset)'
-        ],
-
-        attached: function() {
-          if (this.positionTarget === undefined) {
-            this.positionTarget = this._defaultPositionTarget;
-          }
-        },
-
-        /**
-         * The element that is contained by the dropdown, if any.
-         */
-        get containedElement() {
-          return Polymer.dom(this.$.content).getDistributedNodes()[0];
-        },
-
-        /**
-         * The element that should be focused when the dropdown opens.
-         */
-        get _focusTarget() {
-          return this.focusTarget || this.containedElement;
-        },
-
-        /**
-         * Whether the text direction is RTL
-         */
-        _isRTL: function() {
-          return window.getComputedStyle(this).direction == 'rtl';
-        },
-
-        /**
-         * The element that should be used to position the dropdown when
-         * it opens, if no position target is configured.
-         */
-        get _defaultPositionTarget() {
-          var parent = Polymer.dom(this).parentNode;
-
-          if (parent.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
-            parent = parent.host;
-          }
-
-          return parent;
-        },
-
-        /**
-         * The bounding rect of the position target.
-         */
-        get _positionRect() {
-          if (!this._positionRectMemo && this.positionTarget) {
-            this._positionRectMemo = this.positionTarget.getBoundingClientRect();
-          }
-
-          return this._positionRectMemo;
-        },
-
-        /**
-         * The horizontal offset value used to position the dropdown.
-         */
-        get _horizontalAlignTargetValue() {
-          var target;
-
-          // In RTL, the direction flips, so what is "right" in LTR becomes "left".
-          var isRTL = this._isRTL();
-          if ((!isRTL && this.horizontalAlign === 'right') ||
-              (isRTL && this.horizontalAlign === 'left')) {
-            target = document.documentElement.clientWidth - this._positionRect.right;
-          } else {
-            target = this._positionRect.left;
-          }
-
-          target += this.horizontalOffset;
-
-          return Math.max(target, 0);
-        },
-
-        /**
-         * The vertical offset value used to position the dropdown.
-         */
-        get _verticalAlignTargetValue() {
-          var target;
-
-          if (this.verticalAlign === 'bottom') {
-            target = document.documentElement.clientHeight - this._positionRect.bottom;
-          } else {
-            target = this._positionRect.top;
-          }
-
-          target += this.verticalOffset;
-
-          return Math.max(target, 0);
-        },
-
-        /**
-         * The horizontal align value, accounting for the RTL/LTR text direction.
-         */
-        get _localeHorizontalAlign() {
-          // In RTL, "left" becomes "right".
-          if (this._isRTL()) {
-            return this.horizontalAlign === 'right' ? 'left' : 'right';
-          } else {
-            return this.horizontalAlign;
-          }
-        },
-
-        /**
-         * Called when the value of `opened` changes.
-         *
-         * @param {boolean} opened True if the dropdown is opened.
-         */
-        _openedChanged: function(opened) {
-          if (opened && this.disabled) {
-            this.cancel();
-          } else {
-            this.cancelAnimation();
-            this._prepareDropdown();
-            Polymer.IronOverlayBehaviorImpl._openedChanged.apply(this, arguments);
-          }
-
-          if (this.opened) {
-            this._focusContent();
-          }
-        },
-
-        /**
-         * Overridden from `IronOverlayBehavior`.
-         */
-        _renderOpened: function() {
-          if (!this.allowOutsideScroll) {
-            Polymer.IronDropdownScrollManager.pushScrollLock(this);
-          }
-
-          if (!this.noAnimations && this.animationConfig && this.animationConfig.open) {
-            this.$.contentWrapper.classList.add('animating');
-            this.playAnimation('open');
-          } else {
-            Polymer.IronOverlayBehaviorImpl._renderOpened.apply(this, arguments);
-          }
-        },
-
-        /**
-         * Overridden from `IronOverlayBehavior`.
-         */
-        _renderClosed: function() {
-          Polymer.IronDropdownScrollManager.removeScrollLock(this);
-          if (!this.noAnimations && this.animationConfig && this.animationConfig.close) {
-            this.$.contentWrapper.classList.add('animating');
-            this.playAnimation('close');
-          } else {
-            Polymer.IronOverlayBehaviorImpl._renderClosed.apply(this, arguments);
-          }
-        },
-
-        /**
-         * Called when animation finishes on the dropdown (when opening or
-         * closing). Responsible for "completing" the process of opening or
-         * closing the dropdown by positioning it or setting its display to
-         * none.
-         */
-        _onNeonAnimationFinish: function() {
-          this.$.contentWrapper.classList.remove('animating');
-          if (this.opened) {
-            Polymer.IronOverlayBehaviorImpl._renderOpened.apply(this);
-          } else {
-            Polymer.IronOverlayBehaviorImpl._renderClosed.apply(this);
-          }
-        },
-
-        /**
-         * Called when an `iron-resize` event fires.
-         */
-        _onIronResize: function() {
-          var containedElement = this.containedElement;
-          var scrollTop;
-          var scrollLeft;
-
-          if (containedElement) {
-            scrollTop = containedElement.scrollTop;
-            scrollLeft = containedElement.scrollLeft;
-          }
-
-          if (this.opened) {
-            this._updateOverlayPosition();
-          }
-
-          Polymer.IronOverlayBehaviorImpl._onIronResize.apply(this, arguments);
-
-          if (containedElement) {
-            containedElement.scrollTop = scrollTop;
-            containedElement.scrollLeft = scrollLeft;
-          }
-        },
-
-        /**
-         * Called when the `positionTarget` property changes.
-         */
-        _positionTargetChanged: function() {
-          this._updateOverlayPosition();
-        },
-
-        /**
-         * Constructs the final animation config from different properties used
-         * to configure specific parts of the opening and closing animations.
-         */
-        _updateAnimationConfig: function() {
-          var animationConfig = {};
-          var animations = [];
-
-          if (this.openAnimationConfig) {
-            // NOTE(cdata): When making `display:none` elements visible in Safari,
-            // the element will paint once in a fully visible state, causing the
-            // dropdown to flash before it fades in. We prepend an
-            // `opaque-animation` to fix this problem:
-            animationConfig.open = [{
-              name: 'opaque-animation',
-            }].concat(this.openAnimationConfig);
-            animations = animations.concat(animationConfig.open);
-          }
-
-          if (this.closeAnimationConfig) {
-            animationConfig.close = this.closeAnimationConfig;
-            animations = animations.concat(animationConfig.close);
-          }
-
-          animations.forEach(function(animation) {
-            animation.node = this.containedElement;
-          }, this);
-
-          this.animationConfig = animationConfig;
-        },
-
-        /**
-         * Prepares the dropdown for opening by updating measured layout
-         * values.
-         */
-        _prepareDropdown: function() {
-          this.sizingTarget = this.containedElement || this.sizingTarget;
-          this._updateAnimationConfig();
-          this._updateOverlayPosition();
-        },
-
-        /**
-         * Updates the overlay position based on configured horizontal
-         * and vertical alignment, and re-memoizes these values for the sake
-         * of behavior in `IronFitBehavior`.
-         */
-        _updateOverlayPosition: function() {
-          this._positionRectMemo = null;
-
-          if (!this.positionTarget) {
-            return;
-          }
-
-          this.style[this._localeHorizontalAlign] =
-            this._horizontalAlignTargetValue + 'px';
-
-          this.style[this.verticalAlign] =
-            this._verticalAlignTargetValue + 'px';
-
-          // NOTE(cdata): We re-memoize inline styles here, otherwise
-          // calling `refit` from `IronFitBehavior` will reset inline styles
-          // to whatever they were when the dropdown first opened.
-          if (this._fitInfo) {
-            this._fitInfo.inlineStyle[this.horizontalAlign] =
-              this.style[this.horizontalAlign];
-
-            this._fitInfo.inlineStyle[this.verticalAlign] =
-              this.style[this.verticalAlign];
-          }
-        },
-
-        /**
-         * Focuses the configured focus target.
-         */
-        _focusContent: function() {
-          // NOTE(cdata): This is async so that it can attempt the focus after
-          // `display: none` is removed from the element.
-          this.async(function() {
-            if (this._focusTarget) {
-              this._focusTarget.focus();
-            }
-          });
-        }
-      });
-    })();
-  </script>
-</dom-module>
-<dom-module id="paper-menu-button" assetpath="/bower_components/paper-menu-button/">
-  <style>
-    :host {
-      display: inline-block;
-      position: relative;
-      padding: 8px;
-      outline: none;
-
-      @apply(--paper-menu-button);
-    }
-
-    :host([disabled]) {
-      cursor: auto;
-      color: var(--disabled-text-color);
-
-      @apply(--paper-menu-button-disabled);
-    }
-
-    :host([vertical-align="top"]) paper-material {
-      margin-bottom: 20px;
-      margin-top: -10px;
-      top: 10px;
-    }
-
-    :host([vertical-align="bottom"]) paper-material {
-      bottom: 10px;
-      margin-bottom: -10px;
-      margin-top: 20px;
-    }
-
-    iron-dropdown {
-      @apply(--paper-menu-button-dropdown);
-    }
-
-    .dropdown-content {
-      border-radius: 2px;
-      background-color: var(--paper-menu-button-dropdown-background, --primary-background-color);
-      @apply(--paper-menu-button-content);
-    }
-  </style>
-  <template>
-    <div id="trigger" on-tap="open">
-      <content select=".dropdown-trigger"></content>
-    </div>
-    <iron-dropdown id="dropdown" opened="{{opened}}" horizontal-align="[[horizontalAlign]]" vertical-align="[[verticalAlign]]" horizontal-offset="[[horizontalOffset]]" vertical-offset="[[verticalOffset]]" open-animation-config="[[openAnimationConfig]]" close-animation-config="[[closeAnimationConfig]]" no-animations="[[noAnimations]]" focus-target="[[_dropdownContent]]">
-      <paper-material class="dropdown-content">
-        <content id="content" select=".dropdown-content"></content>
-      </paper-material>
-    </iron-dropdown>
-  </template>
-</dom-module>
-<script>
-  (function() {
-    'use strict';
-
-    var PaperMenuButton = Polymer({
-      is: 'paper-menu-button',
-
-      /**
-       * Fired when the dropdown opens.
-       *
-       * @event paper-dropdown-open
-       */
-
-      /**
-       * Fired when the dropdown closes.
-       *
-       * @event paper-dropdown-close
-       */
-
-      behaviors: [
-        Polymer.IronA11yKeysBehavior,
-        Polymer.IronControlState
-      ],
-
-      properties: {
-
-        /**
-         * True if the content is currently displayed.
-         */
-        opened: {
-          type: Boolean,
-          value: false,
-          notify: true,
-          observer: '_openedChanged'
-        },
-
-        /**
-         * The orientation against which to align the menu dropdown
-         * horizontally relative to the dropdown trigger.
-         */
-        horizontalAlign: {
-          type: String,
-          value: 'left',
-          reflectToAttribute: true
-        },
-
-        /**
-         * The orientation against which to align the menu dropdown
-         * vertically relative to the dropdown trigger.
-         */
-        verticalAlign: {
-          type: String,
-          value: 'top',
-          reflectToAttribute: true
-        },
-
-        /**
-         * A pixel value that will be added to the position calculated for the
-         * given `horizontalAlign`. Use a negative value to offset to the
-         * left, or a positive value to offset to the right.
-         */
-        horizontalOffset: {
-          type: Number,
-          value: 0,
-          notify: true
-        },
-
-        /**
-         * A pixel value that will be added to the position calculated for the
-         * given `verticalAlign`. Use a negative value to offset towards the
-         * top, or a positive value to offset towards the bottom.
-         */
-        verticalOffset: {
-          type: Number,
-          value: 0,
-          notify: true
-        },
-
-        /**
-         * Set to true to disable animations when opening and closing the
-         * dropdown.
-         */
-        noAnimations: {
-          type: Boolean,
-          value: false
-        },
-
-        /**
-         * Set to true to disable automatically closing the dropdown after
-         * a selection has been made.
-         */
-        ignoreSelect: {
-          type: Boolean,
-          value: false
-        },
-
-        /**
-         * An animation config. If provided, this will be used to animate the
-         * opening of the dropdown.
-         */
-        openAnimationConfig: {
-          type: Object,
-          value: function() {
-            return [{
-              name: 'fade-in-animation',
-              timing: {
-                delay: 100,
-                duration: 200
-              }
-            }, {
-              name: 'paper-menu-grow-width-animation',
-              timing: {
-                delay: 100,
-                duration: 150,
-                easing: PaperMenuButton.ANIMATION_CUBIC_BEZIER
-              }
-            }, {
-              name: 'paper-menu-grow-height-animation',
-              timing: {
-                delay: 100,
-                duration: 275,
-                easing: PaperMenuButton.ANIMATION_CUBIC_BEZIER
-              }
-            }];
-          }
-        },
-
-        /**
-         * An animation config. If provided, this will be used to animate the
-         * closing of the dropdown.
-         */
-        closeAnimationConfig: {
-          type: Object,
-          value: function() {
-            return [{
-              name: 'fade-out-animation',
-              timing: {
-                duration: 150
-              }
-            }, {
-              name: 'paper-menu-shrink-width-animation',
-              timing: {
-                delay: 100,
-                duration: 50,
-                easing: PaperMenuButton.ANIMATION_CUBIC_BEZIER
-              }
-            }, {
-              name: 'paper-menu-shrink-height-animation',
-              timing: {
-                duration: 200,
-                easing: 'ease-in'
-              }
-            }];
-          }
-        },
-
-        /**
-         * This is the element intended to be bound as the focus target
-         * for the `iron-dropdown` contained by `paper-menu-button`.
-         */
-        _dropdownContent: {
-          type: Object
-        }
-      },
-
-      hostAttributes: {
-        role: 'group',
-        'aria-haspopup': 'true'
-      },
-
-      listeners: {
-        'iron-select': '_onIronSelect'
-      },
-
-      /**
-       * The content element that is contained by the menu button, if any.
-       */
-      get contentElement() {
-        return Polymer.dom(this.$.content).getDistributedNodes()[0];
-      },
-
-      /**
-       * Make the dropdown content appear as an overlay positioned relative
-       * to the dropdown trigger.
-       */
-      open: function() {
-        if (this.disabled) {
-          return;
-        }
-
-        this.$.dropdown.open();
-      },
-
-      /**
-       * Hide the dropdown content.
-       */
-      close: function() {
-        this.$.dropdown.close();
-      },
-
-      /**
-       * When an `iron-select` event is received, the dropdown should
-       * automatically close on the assumption that a value has been chosen.
-       *
-       * @param {CustomEvent} event A CustomEvent instance with type
-       * set to `"iron-select"`.
-       */
-      _onIronSelect: function(event) {
-        if (!this.ignoreSelect) {
-          this.close();
-        }
-      },
-
-      /**
-       * When the dropdown opens, the `paper-menu-button` fires `paper-open`.
-       * When the dropdown closes, the `paper-menu-button` fires `paper-close`.
-       *
-       * @param {boolean} opened True if the dropdown is opened, otherwise false.
-       * @param {boolean} oldOpened The previous value of `opened`.
-       */
-      _openedChanged: function(opened, oldOpened) {
-        if (opened) {
-          // TODO(cdata): Update this when we can measure changes in distributed
-          // children in an idiomatic way.
-          // We poke this property in case the element has changed. This will
-          // cause the focus target for the `iron-dropdown` to be updated as
-          // necessary:
-          this._dropdownContent = this.contentElement;
-          this.fire('paper-dropdown-open');
-        } else if (oldOpened != null) {
-          this.fire('paper-dropdown-close');
-        }
-      },
-
-      /**
-       * If the dropdown is open when disabled becomes true, close the
-       * dropdown.
-       *
-       * @param {boolean} disabled True if disabled, otherwise false.
-       */
-      _disabledChanged: function(disabled) {
-        Polymer.IronControlState._disabledChanged.apply(this, arguments);
-        if (disabled && this.opened) {
-          this.close();
-        }
-      }
-    });
-
-    PaperMenuButton.ANIMATION_CUBIC_BEZIER = 'cubic-bezier(.3,.95,.5,1)';
-    PaperMenuButton.MAX_ANIMATION_TIME_MS = 400;
-
-    Polymer.PaperMenuButton = PaperMenuButton;
-  })();
-</script>
 <dom-module id="paper-progress" assetpath="/bower_components/paper-progress/">
   <template>
     <style>
@@ -22665,180 +21222,205 @@ paper-calendar {
 </dom-module>
 <dom-module id="add-project" assetpath="/linto/">
 
-    <style>
-    :host {
-        display: none;
-    }
-    
-    :host([active]) {
-        display: block;
-    }
-    
-    paper-button {
-        margin: 0;
-        min-width: 50%;
-        padding: 16px;
-    }
-    
-    paper-toolbar {
-        --paper-toolbar-background: white;
-        --paper-toolbar-color: black;
-    }
-    
-    paper-toolbar paper-icon-button {
-        margin: 0!important;
-    }
-    
-    paper-toolbar .title {
-        padding: 0 12px;
-    }
-    </style>
+  <style>
+  :host {
+    display: none;
+  }
+  
+  :host([active]) {
+    display: block;
+  }
+  
+  paper-button {
+    margin: 0;
+    min-width: 50%;
+    padding: 16px;
+  }
+  
+  paper-toolbar {
+    --paper-toolbar-background: white;
+    --paper-toolbar-color: black;
+  }
+  
+  paper-toolbar paper-icon-button {
+    margin: 0!important;
+  }
+  
+  paper-toolbar .title {
+    padding: 0 12px;
+  }
+  
+  .footer {
+    min-height: 88px;
+  }
+  
+  .right {
+    text-align: right;
+  }
+  
+  .subhead {
+    @apply(--paper-font-subhead);
+  }
+  </style>
 
-    <template>
-        <paper-header-panel class="fit" style="background: white; z-index: 10;">
-            <paper-toolbar>
-                <paper-icon-button icon="arrow-back" on-click="back"></paper-icon-button>
-                <div class="title">scheduler</div>
-            </paper-toolbar>
+  <template>
+    <paper-header-panel class="fit" style="background: white; z-index: 10;">
+      <paper-toolbar>
+        <paper-icon-button icon="arrow-back" on-click="back"></paper-icon-button>
+        <div class="title">scheduler</div>
+      </paper-toolbar>
 
-            <div class="center-justified horizontal layout">
-                <div class="li" style="padding: 24px;">
-                    <paper-input auto-validate="" label="keyword" required="" value="{{keyword}}"></paper-input>
+      <div class="center-justified horizontal layout">
+        <div class="li">
+          <div style="padding: 24px;">
+            <paper-input auto-validate="" label="keyword" required="" value="{{keyword}}"></paper-input>
 
-                    <br>
+            <br>
 
-                    <div class="center horizontal layout">
-                        <div class="cursor-d flex" style="text-align: right;">min leech count</div>
-                        <paper-slider class="flex" editable="" max="1000" min="1" value="{{leech}}"></paper-slider>
-                    </div>
-                    <div class="center horizontal layout">
-                        <div class="cursor-d flex" style="text-align: right;">min seed count</div>
-                        <paper-slider class="flex" editable="" max="1000" min="1" value="{{seed}}"></paper-slider>
-                    </div>
-
-                    <br>
-
-                    <div class="end-justified horizontal layout">
-                        <div class="cursor-p" on-click="date_picker_open">within <span style="border-bottom: 2px solid #AAA;">{{within}}</span> month</div>
-                    </div>
-                    <br>
-
-                    <div class="end-justified horizontal layout">
-                        <paper-button class="blue-500" on-click="add_project">submit</paper-button>
-                    </div>
-                </div>
+            <div class="center horizontal layout">
+              <div class="cursor-d flex right subhead">min leech count</div>
+              <paper-slider class="flex" editable="" max="1000" min="1" value="{{leech}}"></paper-slider>
+            </div>
+            <div class="center horizontal layout">
+              <div class="cursor-d flex right subhead">min seed count</div>
+              <paper-slider class="flex" editable="" max="1000" min="1" value="{{seed}}"></paper-slider>
             </div>
 
-            <div style="min-height: 88px;"></div>
-        </paper-header-panel>
+            <br>
 
-        <paper-dialog class="paper-date-picker-dialog" id="date_picker" modal="" on-iron-overlay-closed="date_picker_close">
-            <paper-date-picker id="date"></paper-date-picker>
-
-            <div class="buttons">
-                <paper-button dialog-dismiss="">cancel</paper-button>
-                <paper-button dialog-confirm="">ok</paper-button>
+            <div class="end-justified horizontal layout">
+              <div class="cursor-p subhead" on-click="date_picker_open">within <span style="border-bottom: 1px solid #757575;">&nbsp;&nbsp;[[within]]&nbsp;&nbsp;</span> month</div>
             </div>
-        </paper-dialog>
-    </template>
+            <br>
 
-    <script>
-    Polymer({
+            <div class="end-justified horizontal layout">
+              <paper-button class="blue-500" on-click="add_project">submit</paper-button>
+            </div>
+          </div>
+        </div>
+      </div>
 
-        add_project: function() {
-            if (Meteor.status().connected) {
-                this.keyword = decodeURIComponent(this.keyword).trim();
-                var keywordArray = (this.keyword.split("/").filter(Boolean).reverse()[0] || "").trim().split(/\?[fq]=/g);
+      <div class="footer"></div>
+    </paper-header-panel>
 
-                if (this.keyword.length) {
-                    var row = {
-                        keyword: (1 < keywordArray.length ? keywordArray[1] : keywordArray[0]),
-                        leech: parseInt(this.leech),
-                        seed: parseInt(this.seed),
-                        url: (1 < keywordArray.length ? keywordArray[0] : "search"),
-                        within: parseInt(this.within),
-                        worker: "schedule"
-                    };
+    <paper-dialog class="paper-date-picker-dialog" id="date_picker" modal="" on-iron-overlay-closed="date_picker_close">
+      <paper-date-picker id="date"></paper-date-picker>
 
-                    Meteor.call("insert_project", row, function(error, response) {
-                        if (error) {
-                            document.querySelector("#polymer_toast").toast((error.reason == "userNotFound") ? "internet/user required" : error.reason);
-                        } else {
-                            if (response == "") {
-                                document.querySelector("#polymer_toast").toast("quota limit reached");
-                            } else {
-                                document.querySelector("#polymer_toast").toast("i keyword added");
+      <div class="buttons">
+        <paper-button dialog-dismiss="">cancel</paper-button>
+        <paper-button dialog-confirm="">ok</paper-button>
+      </div>
+    </paper-dialog>
+  </template>
 
-                                document.querySelector("#main_toolbar").className = document.querySelector("#main_toolbar").className.replace(/ ?[a-z\-]+\-500/g, "") + " " + polymer_color(1 < keywordArray.length ? keywordArray[1] : keywordArray[0]);
+  <script>
+  Polymer({
 
-                                document.querySelector("layout-inbox").menu_selected = response;
-                            }
-                        }
-                    });
+    add_project: function() {
+      if (Meteor.status().connected) {
+        this.keyword = decodeURIComponent(this.keyword).trim();
+        var keywordArray = (this.keyword.split("/").filter(Boolean).reverse()[0] || "").trim().split(/\?[fq]=/g);
 
-                    this.back();
-                } else {
-                    document.querySelector("#polymer_toast").toast("empty keyword");
-                }
+        if (this.keyword.length) {
+          var row = {
+            keyword: (1 < keywordArray.length ? keywordArray[1] : keywordArray[0]),
+            leech: parseInt(this.leech),
+            seed: parseInt(this.seed),
+            url: (1 < keywordArray.length ? keywordArray[0] : "search"),
+            within: parseInt(this.within),
+            worker: "schedule"
+          };
 
-                this.keyword = "";
-                this.leech = 1;
-                this.seed = 1;
-                this.within = 6;
+          Meteor.call("insert_project", row, function(error, response) {
+            if (error) {
+              document.querySelector("#polymer_toast").toast((error.reason == "userNotFound") ? "internet/user required" : error.reason);
             } else {
-                document.querySelector("#polymer_toast").toast("server connection required");
+              if (response == "") {
+                document.querySelector("#polymer_toast").toast("quota limit reached");
+              } else {
+                document.querySelector("#polymer_toast").toast("i keyword added");
+
+                document.querySelector("#main_toolbar").className = document.querySelector("#main_toolbar").className.replace(/ ?[a-z\-]+\-500/g, "") + " " + polymer_color(1 < keywordArray.length ? keywordArray[1] : keywordArray[0]);
+
+                document.querySelector("layout-inbox").menu_selected = response;
+
+                Meteor.setTimeout(function() {
+                  if (document.querySelector('.project_progress[data-id="' + response + '"]')) {
+                    var project_progress = document.querySelector('.project_progress[data-id="' + response + '"]');
+
+                    project_progress.hidden = false;
+
+                    project_progress.max = 50;
+                    project_progress.value = 10;
+                  }
+                }, 1000);
+              }
             }
-        },
+          });
 
-        back: function() {
-            FlowRouter.setQueryParams({
-                "route": null
-            });
-        },
-
-        date_picker_close: function() {
-            if (this.$.date.date) {
-                var A = Math.ceil(moment.duration(moment().diff(moment(this.$.date.date))).asMonths());
-
-                if (0 < A && A < 48) {
-                    this.within = A;
-                }
-            }
-        },
-
-        date_picker_open: function() {
-            this.$.date_picker.open();
-        },
-
-        is: "add-project",
-
-        properties: {
-            active: {
-                notify: true,
-                reflectToAttribute: true,
-                type: Boolean,
-                value: false
-            },
-            input: {
-                type: String,
-                value: ""
-            },
-            leech: {
-                type: Number,
-                value: 1
-            },
-            seed: {
-                type: Number,
-                value: 1
-            },
-            within: {
-                type: Number,
-                value: 6
-            }
+          this.back();
+        } else {
+          document.querySelector("#polymer_toast").toast("empty keyword");
         }
 
-    });
-    </script>
+        this.keyword = "";
+        this.leech = 1;
+        this.seed = 1;
+        this.within = 6;
+      } else {
+        document.querySelector("#polymer_toast").toast("server connection required");
+      }
+    },
+
+    back: function() {
+      FlowRouter.setQueryParams({
+        "route": null
+      });
+    },
+
+    date_picker_close: function() {
+      if (this.$.date.date) {
+        var A = Math.ceil(moment.duration(moment().diff(moment(this.$.date.date))).asMonths());
+
+        if (0 < A && A < 48) {
+          this.within = A;
+        }
+      }
+    },
+
+    date_picker_open: function() {
+      this.$.date_picker.open();
+    },
+
+    is: "add-project",
+
+    properties: {
+      active: {
+        notify: true,
+        reflectToAttribute: true,
+        type: Boolean,
+        value: false
+      },
+      input: {
+        type: String,
+        value: ""
+      },
+      leech: {
+        type: Number,
+        value: 1
+      },
+      seed: {
+        type: Number,
+        value: 1
+      },
+      within: {
+        type: Number,
+        value: 6
+      }
+    }
+
+  });
+  </script>
 
 </dom-module>
 <dom-module id="card-route" assetpath="/linto/">
@@ -23080,13 +21662,13 @@ paper-calendar {
 <dom-module id="layout-inbox" assetpath="/linto/">
 
   <style>
+  paper-dialog {
+    width: 320px;
+  }
+  
   paper-drawer-panel /deep/ #drawer,
   paper-drawer-panel /deep/ #main #scrim {
     z-index: 1;
-  }
-  
-  paper-dialog {
-    width: 320px;
   }
   
   paper-fab {
@@ -23094,18 +21676,8 @@ paper-calendar {
     --paper-fab-keyboard-focus-background: var(--paper-red-700);
   }
   
-  paper-menu-button {
-    padding: 0;
-  }
-  
   paper-progress {
     width: 100%;
-  }
-  
-  paper-toggle-button {
-    --paper-toggle-button-checked-bar-color: var(--paper-green-500);
-    --paper-toggle-button-checked-button-color: var(--paper-green-500);
-    --paper-toggle-button-checked-ink-color: var(--paper-green-500);
   }
   
   paper-toolbar {
@@ -23154,6 +21726,10 @@ paper-calendar {
     color: #757575;
   }
   
+  .footer {
+    min-height: 88px;
+  }
+  
   .menu-li {
     border-bottom: 1px solid #EEE;
     padding: 8px;
@@ -23194,7 +21770,7 @@ paper-calendar {
   
   .trend-li > div {
     margin: 4px;
-    padding: 8px 12px;
+    padding: 4px 12px;
   }
   
   .undo {
@@ -23240,7 +21816,7 @@ paper-calendar {
                     <div class="body1 self-start">[[return_text(trend.keyword.length)]]</div>
                   </div>
 
-                  <div class="body1 etc">[[return_time_s(trend.time)]]</div>
+                  <div class="body1 etc">[[return_time(trend.time)]]</div>
                 </div>
 
                 <paper-ripple></paper-ripple>
@@ -23267,7 +21843,7 @@ paper-calendar {
             </iron-selector>
           </div>
 
-          <div class="cursor-p center-justified horizontal layout menu-li-bottom relative subhead white" onclick="window.open('https://github.com/HedCET/TorrentAlert', '_system')">
+          <div class="cursor-p center center-justified horizontal layout menu-li-bottom relative subhead white" onclick="window.open('https://github.com/HedCET/TorrentAlert', '_system')">
             <div>About TorrentAlert</div>
 
             <paper-ripple></paper-ripple>
@@ -23293,7 +21869,7 @@ paper-calendar {
               <div class="center-justified horizontal layout">
                 <div class="li">
                   <div class="center cursor-d horizontal layout title-li">
-                    <iron-icon icon="trending-up"></iron-icon>
+                    <iron-icon icon="store"></iron-icon>
 
                     <div class="subhead" style="border-bottom: 1px solid #757575;">Trending Top [[return_text(trend.keyword.length)]]</div>
                   </div>
@@ -23304,13 +21880,13 @@ paper-calendar {
                 <div class="li">
                   <div class="horizontal layout trend-li wrap">
                     <template is="dom-repeat" items="[[trend.keyword]]">
-                      <div class="cursor-p grey-500" on-click="trend_opt">[[item]]</div>
+                      <div class="cursor-p grey-500 subhead" on-click="trend_opt">[[item]]</div>
                     </template>
                   </div>
                 </div>
               </div>
 
-              <div style="min-height: 88px;"></div>
+              <div class="footer"></div>
             </paper-header-panel>
           </neon-animatable>
 
@@ -23343,42 +21919,13 @@ paper-calendar {
               </template>
             </iron-selector>
 
-            <div style="min-height: 88px;"></div>
+            <div class="footer"></div>
           </neon-animatable>
         </neon-animated-pages>
       </paper-header-panel>
     </paper-drawer-panel>
 
     <paper-fab class="menu-b" id="fab" icon="add" on-click="add_project"></paper-fab>
-
-    <paper-dialog id="user_prompt" with-backdrop="">
-      <div class="layout vertical">
-        <div style="border-bottom: 2px solid #888; margin: 8px 0; padding: 4px 0;">alerter</div>
-
-        <div class="center horizontal justified layout" style="padding: 8px 0;">
-          <div style="color: #757575;">enable GCM</div>
-          <paper-toggle-button checked="" disabled=""></paper-toggle-button>
-        </div>
-
-        <div class="center horizontal justified layout" style="padding: 8px 0;">
-          <div style="color: #757575;">enable email alert</div>
-          <paper-toggle-button disabled=""></paper-toggle-button>
-        </div>
-
-        <div style="border-bottom: 2px solid #888; margin: 8px 0; padding: 4px 0;">scheduler</div>
-
-        <div class="center horizontal layout">
-          <div class="flex" style="color: #757575;">schedule / day</div>
-          <paper-slider disabled="" editable="" id="seeds" max="96" min="1" style="max-width: 100px;" value="4"></paper-slider>
-        </div>
-
-        <div style="border-bottom: 2px solid #888; margin: 8px 0; padding: 4px 0;">user: <span>{{user.profile.name}}</span></div>
-
-        <div class="end-justified horizontal layout">
-          <paper-button class="blue-500" on-click="sign_out" style="margin: 8px 0; width: 50%;">SIGN OUT</paper-button>
-        </div>
-      </div>
-    </paper-dialog>
 
     <paper-dialog id="remove_prompt" with-backdrop="">
       <div class="subhead">Are you sure to delete this item ?</div>
@@ -23417,13 +21964,15 @@ paper-calendar {
     },
 
     attached: function() {
-      this.user = (Meteor.user() ? Meteor.user() : {});
-
       if ((document.querySelector("#torrent_db").value || []).length) {
         this.project = document.querySelector("#torrent_db").value;
       }
 
       var _this = this;
+
+      Tracker.autorun(function() {
+        _this.user = (Meteor.user() ? Meteor.user() : {});
+      });
 
       Meteor.setTimeout(function() {
         if (6 < moment.duration(moment().diff(moment(_this.trend.time))).asHours() || !_this.trend.keyword.length) {
@@ -23486,7 +22035,7 @@ paper-calendar {
             }
           }
         });
-      }, 1000 * 4);
+      }, 1000);
     },
 
     clear_torrent_selection: function() {
@@ -23573,9 +22122,20 @@ paper-calendar {
 
     refresh: function(e) {
       if (Meteor.status().connected) {
-        var _this = this;
 
-        Meteor.call("refresh", Polymer.dom(e).localTarget.dataset.id, function(error, response) {
+        var _this = this,
+          project_id = Polymer.dom(e).localTarget.dataset.id;
+
+        if (document.querySelector('.project_progress[data-id="' + project_id + '"]')) {
+          var project_progress = document.querySelector('.project_progress[data-id="' + project_id + '"]');
+
+          project_progress.hidden = false;
+
+          project_progress.max = 50;
+          project_progress.value = 10;
+        }
+
+        Meteor.call("refresh", project_id, function(error, response) {
           if (error) {
             document.querySelector("#polymer_toast").toast(error.reason);
           } else {
@@ -23617,9 +22177,9 @@ paper-calendar {
           } else {
             document.querySelector("#polymer_toast").toast(response);
 
-            _this.$.main_toolbar.className = _this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "");
-
             _this.menu_selected = "";
+
+            _this.$.main_toolbar.className = _this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "");
           }
         });
       } else {
@@ -23665,10 +22225,6 @@ paper-calendar {
     },
 
     return_time: function(time) {
-      return (moment(time).isValid() ? moment(time).fromNow() : "#");
-    },
-
-    return_time_s: function(time) {
       return (moment(time).isValid() ? moment(time).format("MMM DD ddd hh:mm A") : "#");
     },
 
@@ -23699,9 +22255,9 @@ paper-calendar {
           } else {
             document.querySelector("#polymer_toast").toast(response);
 
-            _this.$.main_toolbar.className = _this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "");
-
             _this.menu_selected = "";
+
+            _this.$.main_toolbar.className = _this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "");
           }
         });
       } else {
@@ -23741,15 +22297,15 @@ paper-calendar {
       }
     },
 
-    sign_out: function() {
-      if (Meteor.status().connected) {
-        this.project = [];
+    // sign_out: function() {
+    //   if (Meteor.status().connected) {
+    //     this.project = [];
 
-        FlowRouter.go("/inbox/sign-out");
-      } else {
-        document.querySelector("#polymer_toast").toast("server connection required");
-      }
-    },
+    //     FlowRouter.go("/inbox/sign-out");
+    //   } else {
+    //     document.querySelector("#polymer_toast").toast("server connection required");
+    //   }
+    // },
 
     sort: function(A, Z) {
       return (parseInt(moment(Z.time).format("x")) - parseInt(moment(A.time).format("x")));
@@ -23791,6 +22347,17 @@ paper-calendar {
                 _this.$.main_toolbar.className = _this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "") + " " + polymer_color(keyword);
 
                 _this.menu_selected = response;
+
+                Meteor.setTimeout(function() {
+                  if (document.querySelector('.project_progress[data-id="' + response + '"]')) {
+                    var project_progress = document.querySelector('.project_progress[data-id="' + response + '"]');
+
+                    project_progress.hidden = false;
+
+                    project_progress.max = 50;
+                    project_progress.value = 10;
+                  }
+                }, 1000);
               }
             }
           });
@@ -23804,9 +22371,9 @@ paper-calendar {
       }
     },
 
-    user_prompt: function() {
-      this.$.user_prompt.open();
-    },
+    // user_prompt: function() {
+    //   this.$.user_prompt.open();
+    // },
 
     _updater: function() {
       this.debounce("_updater", function() {
@@ -24551,6 +23118,22 @@ paper-calendar {
 
   <script>
   Polymer({
+
+    attached: function() {
+      Meteor.setTimeout(function() {
+        Tracker.autorun(function() {
+          if (Meteor.status().connected) {
+            if (Meteor.user()) {
+              FlowRouter.go("/inbox");
+            }
+          } else {
+            if ((document.querySelector("#torrent_db").value || []).length) {
+              FlowRouter.go("/inbox");
+            }
+          }
+        });
+      }, 1000);
+    },
 
     back: function() {
       this.selected = 0;

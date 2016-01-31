@@ -118,6 +118,22 @@
   <script>
   Polymer({
 
+    attached: function() {
+      Meteor.setTimeout(function() {
+        Tracker.autorun(function() {
+          if (Meteor.status().connected) {
+            if (Meteor.user()) {
+              FlowRouter.go("/inbox");
+            }
+          } else {
+            if ((document.querySelector("#torrent_db").value || []).length) {
+              FlowRouter.go("/inbox");
+            }
+          }
+        });
+      }, 1000);
+    },
+
     back: function() {
       this.selected = 0;
 

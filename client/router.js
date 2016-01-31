@@ -6,22 +6,8 @@ document.addEventListener("WebComponentsReady", function() {
   });
 
   Meteor.setTimeout(function() {
-    Meteor.setTimeout(function() {
-      document.querySelector("#load_awesome").active = false;
-    }, 1000 * (Meteor.isCordova ? 16 : 4));
-
-    Tracker.autorun(function() {
-      if (Meteor.status().connected) {
-        if (Meteor.user() && FlowRouter.current().route.name != "layout-inbox") {
-          FlowRouter.go("/inbox");
-        }
-      } else {
-        if ((document.querySelector("#torrent_db").value || []).length) {
-          FlowRouter.go("/inbox");
-        }
-      }
-    });
-  }, 1000);
+    document.querySelector("#load_awesome").active = false;
+  }, 1000 * (Meteor.isCordova ? 16 : 1));
 });
 
 FlowRouter.route("/", {

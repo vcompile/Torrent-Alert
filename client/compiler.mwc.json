@@ -31,8 +31,6 @@
     "bower_components/paper-icon-button/paper-icon-button.html",
     "bower_components/paper-input/paper-input.html",
     "bower_components/paper-item/paper-item.html",
-    "bower_components/paper-menu/paper-menu.html",
-    "bower_components/paper-menu-button/paper-menu-button.html",
     "bower_components/paper-progress/paper-progress.html",
     "bower_components/paper-ripple/paper-ripple.html",
     "bower_components/paper-slider/paper-slider.html",

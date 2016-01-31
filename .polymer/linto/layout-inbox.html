@@ -1,13 +1,13 @@
 <dom-module id="layout-inbox">
 
   <style>
+  paper-dialog {
+    width: 320px;
+  }
+  
   paper-drawer-panel /deep/ #drawer,
   paper-drawer-panel /deep/ #main #scrim {
     z-index: 1;
-  }
-  
-  paper-dialog {
-    width: 320px;
   }
   
   paper-fab {
@@ -15,18 +15,8 @@
     --paper-fab-keyboard-focus-background: var(--paper-red-700);
   }
   
-  paper-menu-button {
-    padding: 0;
-  }
-  
   paper-progress {
     width: 100%;
-  }
-  
-  paper-toggle-button {
-    --paper-toggle-button-checked-bar-color: var(--paper-green-500);
-    --paper-toggle-button-checked-button-color: var(--paper-green-500);
-    --paper-toggle-button-checked-ink-color: var(--paper-green-500);
   }
   
   paper-toolbar {
@@ -75,6 +65,10 @@
     color: #757575;
   }
   
+  .footer {
+    min-height: 88px;
+  }
+  
   .menu-li {
     border-bottom: 1px solid #EEE;
     padding: 8px;
@@ -115,7 +109,7 @@
   
   .trend-li > div {
     margin: 4px;
-    padding: 8px 12px;
+    padding: 4px 12px;
   }
   
   .undo {
@@ -161,7 +155,7 @@
                     <div class="body1 self-start">[[return_text(trend.keyword.length)]]</div>
                   </div>
 
-                  <div class="body1 etc">[[return_time_s(trend.time)]]</div>
+                  <div class="body1 etc">[[return_time(trend.time)]]</div>
                 </div>
 
                 <paper-ripple></paper-ripple>
@@ -188,7 +182,7 @@
             </iron-selector>
           </div>
 
-          <div class="cursor-p center-justified horizontal layout menu-li-bottom relative subhead white" onclick="window.open('https://github.com/HedCET/TorrentAlert', '_system')">
+          <div class="cursor-p center center-justified horizontal layout menu-li-bottom relative subhead white" onclick="window.open('https://github.com/HedCET/TorrentAlert', '_system')">
             <div>About TorrentAlert</div>
 
             <paper-ripple></paper-ripple>
@@ -214,7 +208,7 @@
               <div class="center-justified horizontal layout">
                 <div class="li">
                   <div class="center cursor-d horizontal layout title-li">
-                    <iron-icon icon="trending-up"></iron-icon>
+                    <iron-icon icon="store"></iron-icon>
 
                     <div class="subhead" style="border-bottom: 1px solid #757575;">Trending Top [[return_text(trend.keyword.length)]]</div>
                   </div>
@@ -225,13 +219,13 @@
                 <div class="li">
                   <div class="horizontal layout trend-li wrap">
                     <template is="dom-repeat" items="[[trend.keyword]]">
-                      <div class="cursor-p grey-500" on-click="trend_opt">[[item]]</div>
+                      <div class="cursor-p grey-500 subhead" on-click="trend_opt">[[item]]</div>
                     </template>
                   </div>
                 </div>
               </div>
 
-              <div style="min-height: 88px;"></div>
+              <div class="footer"></div>
             </paper-header-panel>
           </neon-animatable>
 
@@ -264,42 +258,13 @@
               </template>
             </iron-selector>
 
-            <div style="min-height: 88px;"></div>
+            <div class="footer"></div>
           </neon-animatable>
         </neon-animated-pages>
       </paper-header-panel>
     </paper-drawer-panel>
 
     <paper-fab class="menu-b" id="fab" icon="add" on-click="add_project"></paper-fab>
-
-    <paper-dialog id="user_prompt" with-backdrop>
-      <div class="layout vertical">
-        <div style="border-bottom: 2px solid #888; margin: 8px 0; padding: 4px 0;">alerter</div>
-
-        <div class="center horizontal justified layout" style="padding: 8px 0;">
-          <div style="color: #757575;">enable GCM</div>
-          <paper-toggle-button checked disabled></paper-toggle-button>
-        </div>
-
-        <div class="center horizontal justified layout" style="padding: 8px 0;">
-          <div style="color: #757575;">enable email alert</div>
-          <paper-toggle-button disabled></paper-toggle-button>
-        </div>
-
-        <div style="border-bottom: 2px solid #888; margin: 8px 0; padding: 4px 0;">scheduler</div>
-
-        <div class="center horizontal layout">
-          <div class="flex" style="color: #757575;">schedule / day</div>
-          <paper-slider disabled editable id="seeds" max="96" min="1" style="max-width: 100px;" value="4"></paper-slider>
-        </div>
-
-        <div style="border-bottom: 2px solid #888; margin: 8px 0; padding: 4px 0;">user: <span>{{user.profile.name}}</span></div>
-
-        <div class="end-justified horizontal layout">
-          <paper-button class="blue-500" on-click="sign_out" style="margin: 8px 0; width: 50%;">SIGN OUT</paper-button>
-        </div>
-      </div>
-    </paper-dialog>
 
     <paper-dialog id="remove_prompt" with-backdrop>
       <div class="subhead">Are you sure to delete this item ?</div>
@@ -338,13 +303,15 @@
     },
 
     attached: function() {
-      this.user = (Meteor.user() ? Meteor.user() : {});
-
       if ((document.querySelector("#torrent_db").value || []).length) {
         this.project = document.querySelector("#torrent_db").value;
       }
 
       var _this = this;
+
+      Tracker.autorun(function() {
+        _this.user = (Meteor.user() ? Meteor.user() : {});
+      });
 
       Meteor.setTimeout(function() {
         if (6 < moment.duration(moment().diff(moment(_this.trend.time))).asHours() || !_this.trend.keyword.length) {
@@ -407,7 +374,7 @@
             }
           }
         });
-      }, 1000 * 4);
+      }, 1000);
     },
 
     clear_torrent_selection: function() {
@@ -494,9 +461,20 @@
 
     refresh: function(e) {
       if (Meteor.status().connected) {
-        var _this = this;
 
-        Meteor.call("refresh", Polymer.dom(e).localTarget.dataset.id, function(error, response) {
+        var _this = this,
+          project_id = Polymer.dom(e).localTarget.dataset.id;
+
+        if (document.querySelector('.project_progress[data-id="' + project_id + '"]')) {
+          var project_progress = document.querySelector('.project_progress[data-id="' + project_id + '"]');
+
+          project_progress.hidden = false;
+
+          project_progress.max = 50;
+          project_progress.value = 10;
+        }
+
+        Meteor.call("refresh", project_id, function(error, response) {
           if (error) {
             document.querySelector("#polymer_toast").toast(error.reason);
           } else {
@@ -538,9 +516,9 @@
           } else {
             document.querySelector("#polymer_toast").toast(response);
 
-            _this.$.main_toolbar.className = _this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "");
-
             _this.menu_selected = "";
+
+            _this.$.main_toolbar.className = _this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "");
           }
         });
       } else {
@@ -586,10 +564,6 @@
     },
 
     return_time: function(time) {
-      return (moment(time).isValid() ? moment(time).fromNow() : "#");
-    },
-
-    return_time_s: function(time) {
       return (moment(time).isValid() ? moment(time).format("MMM DD ddd hh:mm A") : "#");
     },
 
@@ -620,9 +594,9 @@
           } else {
             document.querySelector("#polymer_toast").toast(response);
 
-            _this.$.main_toolbar.className = _this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "");
-
             _this.menu_selected = "";
+
+            _this.$.main_toolbar.className = _this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "");
           }
         });
       } else {
@@ -662,15 +636,15 @@
       }
     },
 
-    sign_out: function() {
-      if (Meteor.status().connected) {
-        this.project = [];
+    // sign_out: function() {
+    //   if (Meteor.status().connected) {
+    //     this.project = [];
 
-        FlowRouter.go("/inbox/sign-out");
-      } else {
-        document.querySelector("#polymer_toast").toast("server connection required");
-      }
-    },
+    //     FlowRouter.go("/inbox/sign-out");
+    //   } else {
+    //     document.querySelector("#polymer_toast").toast("server connection required");
+    //   }
+    // },
 
     sort: function(A, Z) {
       return (parseInt(moment(Z.time).format("x")) - parseInt(moment(A.time).format("x")));
@@ -712,6 +686,17 @@
                 _this.$.main_toolbar.className = _this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "") + " " + polymer_color(keyword);
 
                 _this.menu_selected = response;
+
+                Meteor.setTimeout(function() {
+                  if (document.querySelector('.project_progress[data-id="' + response + '"]')) {
+                    var project_progress = document.querySelector('.project_progress[data-id="' + response + '"]');
+
+                    project_progress.hidden = false;
+
+                    project_progress.max = 50;
+                    project_progress.value = 10;
+                  }
+                }, 1000);
               }
             }
           });
@@ -725,9 +710,9 @@
       }
     },
 
-    user_prompt: function() {
-      this.$.user_prompt.open();
-    },
+    // user_prompt: function() {
+    //   this.$.user_prompt.open();
+    // },
 
     _updater: function() {
       this.debounce("_updater", function() {
