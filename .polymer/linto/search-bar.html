@@ -61,7 +61,7 @@
 
       <paper-progress hidden id="progress" indeterminate></paper-progress>
 
-      <template is="dom-repeat" items="{{list}}">
+      <template is="dom-repeat" items="[[list]]">
         <div class="center-justified horizontal layout">
           <div class="li">
             <div class="center cursor-p horizontal layout relative search-li white" on-click="add_project">
@@ -69,7 +69,7 @@
                 <iron-icon icon="launch"></iron-icon>
               </div>
 
-              <div class="flex subhead">{{item}}</div>
+              <div class="flex subhead">[[item]]</div>
 
               <paper-ripple></paper-ripple>
             </div>

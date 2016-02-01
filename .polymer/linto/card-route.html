@@ -4,10 +4,14 @@
   :host {
     background: transparent!important;
   }
+  
+  #animator {
+    opacity: 0;
+  }
   </style>
 
   <template>
-    <div class$="[[get_ripple_class(ripple_class)]]" id="animator" style="opacity: 0;"></div>
+    <div class$="[[get_ripple_class(ripple_class)]]" id="animator"></div>
 
     <div id="container">
       <content select="div"></content>
@@ -32,7 +36,7 @@
         type: Object,
         value: function() {
           return {
-            'entry': [{
+            entry: [{
               name: 'ripple-animation',
               id: 'ripple',
               toPage: this
@@ -40,24 +44,23 @@
               name: 'fade-out-animation',
               node: this.$.animator,
               timing: {
-                delay: 200
+                delay: 250
               }
             }, {
               name: 'fade-in-animation',
               node: this.$.container,
               timing: {
-                delay: 100
+                delay: 50
               }
             }],
-
-            'exit': [{
+            exit: [{
               name: 'opaque-animation',
               node: this.$.animator
             }, {
               name: 'fade-out-animation',
               node: this.$.container,
               timing: {
-                duration: 200
+                duration: 0
               }
             }, {
               name: 'reverse-ripple-animation',

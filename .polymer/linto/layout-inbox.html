@@ -143,7 +143,7 @@
           </template>
 
           <div class="flex" style="overflow: auto;">
-            <iron-selector id="menu_opt" on-iron-select="menu_opt" selected-attribute="selected">
+            <iron-selector id="menu_opt" on-iron-activate="menu_opt" selected-attribute="selected">
               <div class="cursor-p horizontal hover layout menu-li relative" data-id="trend">
                 <div>
                   <selectable-icon icon_class="cyan-700" icon_text="@"></selectable-icon>
@@ -162,7 +162,7 @@
               </div>
 
               <template is="dom-repeat" items="[[project]]">
-                <div class="cursor-p horizontal hover layout menu-li relative" data-id$="[[item._id]]">
+                <div class="cursor-p horizontal hover layout menu-li relative" data-id$="[[item._id]]" data-keyword$="[[item.keyword]]">
                   <div>
                     <selectable-icon icon_class="[[return_class(item.keyword)]]" icon_text="[[return_icon_text(item.keyword)]]"></selectable-icon>
                   </div>
@@ -203,7 +203,7 @@
         </paper-toolbar>
 
         <neon-animated-pages class="fit" id="main_page" selected="1">
-          <neon-animatable entry-animation="slide-from-right-animation" exit-animation="slide-left-animation">
+          <neon-animatable>
             <paper-header-panel>
               <div class="center-justified horizontal layout">
                 <div class="li">
@@ -231,7 +231,7 @@
             </paper-header-panel>
           </neon-animatable>
 
-          <neon-animatable entry-animation="slide-from-right-animation" exit-animation="slide-left-animation">
+          <neon-animatable>
             <iron-selector attr-for-selected="item" multi selectable="inbox-item" selected-attribute="selected" selected-values="{{torrent_selected}}">
               <template is="dom-repeat" items="[[project]]">
                 <template if="[[project_selected(menu_selected, item._id)]]" is="dom-if">
@@ -403,7 +403,7 @@
     menu_opt: function(e, d) {
       this.$.drawer.closeDrawer();
 
-      this.$.main_toolbar.className = this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "") + (d.item.dataset.id == "trend" ? "" : " " + document.querySelector("#menu_opt .iron-selected selectable-icon").icon_class);
+      this.$.main_toolbar.className = this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "") + (d.item.dataset.id == "trend" ? "" : " " + polymer_color(d.item.dataset.keyword));
 
       this.$.main_page.selected = (d.item.dataset.id == "trend" ? 0 : 1);
 
