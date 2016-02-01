@@ -1,6 +1,12 @@
 <dom-module id="layout-inbox">
 
   <style>
+  paper-button {
+    margin: 0;
+    min-width: 50%;
+    padding: 16px;
+  }
+  
   paper-dialog {
     width: 320px;
   }
@@ -99,6 +105,11 @@
     transform: translate3d(0, 88px, 0)!important;
   }
   
+  .prompt-title {
+    border-bottom: 1px solid #757575;
+    padding-bottom: 8px;
+  }
+  
   .subhead {
     @apply(--paper-font-subhead);
   }
@@ -124,7 +135,7 @@
       <paper-header-panel drawer>
         <div class="fit layout vertical">
           <template if="[[user._id]]" is="dom-if">
-            <paper-icon-item class="cursor-p" id="user-li">
+            <paper-icon-item class="cursor-p" onclick="document.querySelector('#user_prompt').open();">
               <selectable-icon icon_img_src="[[user.profile.picture]]" item-icon></selectable-icon>
 
               <paper-item-body two-line>
@@ -281,6 +292,27 @@
 
     <paper-fab class="menu-b" id="fab" icon="add" on-click="add_project"></paper-fab>
 
+
+    <paper-dialog id="user_prompt" with-backdrop>
+      <div class="layout vertical">
+        <div class="flex prompt-title subhead">User option</div>
+
+        <br>
+
+        <div class="center horizontal layout">
+          <div class="body1 flex">enable GCM</div>
+          <paper-toggle-button checked disabled></paper-toggle-button>
+        </div>
+
+        <br>
+
+        <div class="end-justified horizontal layout">
+          <paper-button class="blue-500" on-click="sign_out">SIGN OUT</paper-button>
+        </div>
+      </div>
+    </paper-dialog>
+
+
     <paper-dialog id="remove_prompt" with-backdrop>
       <div class="subhead">Are you sure to delete this item ?</div>
 
@@ -295,14 +327,16 @@
     </paper-dialog>
 
     <paper-dialog id="schedule_prompt" with-backdrop>
-      <div class="subhead">Are you sure to schedule this item ?</div>
+      <div class="layout vertical">
+        <div class="subhead">Are you sure to schedule this item ?</div>
 
-      <div class="center horizontal layout">
-        <div class="body1 flex">schedule / day</div>
-        <paper-slider disabled editable id="seeds" max="96" min="1" value="4"></paper-slider>
+        <br>
+
+        <div class="center horizontal layout">
+          <div class="body1 flex">schedule / day</div>
+          <paper-slider disabled editable id="seeds" max="96" min="1" value="4"></paper-slider>
+        </div>
       </div>
-
-      <br>
 
       <div class="buttons">
         <paper-button onclick="document.querySelector('#schedule_prompt').close();">
