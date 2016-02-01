@@ -1,25 +1,25 @@
 _done = null;
 
 Accounts.onEnrollmentLink(function(token, done) {
-    if (Meteor.user()) {
-        Meteor.logout();
-    }
+  if (Meteor.user()) {
+    Meteor.logout();
+  }
 
-    FlowRouter.go("/set-password", {}, {
-        "password-token": token
-    });
+  FlowRouter.go("/set-password", {}, {
+    "password-token": token
+  });
 
-    _done = done;
+  _done = done;
 });
 
 Accounts.onResetPasswordLink(function(token, done) {
-    if (Meteor.user()) {
-        Meteor.logout();
-    }
+  if (Meteor.user()) {
+    Meteor.logout();
+  }
 
-    FlowRouter.go("/set-password", {}, {
-        "password-token": token
-    });
+  FlowRouter.go("/set-password", {}, {
+    "password-token": token
+  });
 
-    _done = done;
+  _done = done;
 });

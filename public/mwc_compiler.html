@@ -21259,7 +21259,7 @@ mwcLayout = new PolymerLayout();
           </neon-animatable>
 
           <neon-animatable>
-            <iron-selector attr-for-selected="item" multi="" selectable="inbox-item" selected-attribute="selected" selected-values="{{torrent_selected}}">
+            <iron-selector activate-event="click" attr-for-selected="item" multi="" selectable="inbox-item" selected-attribute="selected" selected-values="{{torrent_selected}}">
               <template is="dom-repeat" items="[[project]]">
                 <template if="[[project_selected(menu_selected, item._id)]]" is="dom-if">
                   <div class="center-justified horizontal layout">
@@ -21276,7 +21276,9 @@ mwcLayout = new PolymerLayout();
 
                   <div class="center-justified horizontal layout">
                     <div class="li">
-                      <paper-progress class="project_progress" data-id$="[[item._id]]" hidden=""></paper-progress>
+                      <div style="padding: 0 4px;">
+                        <paper-progress class="project_progress" data-id$="[[item._id]]" hidden=""></paper-progress>
+                      </div>
                     </div>
                   </div>
 
@@ -21960,6 +21962,7 @@ mwcLayout = new PolymerLayout();
     left: 0;
     position: fixed;
     width: 100%;
+    z-index: 1;
     --paper-progress-active-color: var(--paper-red-500);
     --paper-progress-secondary-color: var(--paper-red-100);
   }
@@ -22109,25 +22112,25 @@ mwcLayout = new PolymerLayout();
       if (newValue && oldValue) {
         this.$.progress.hidden = false;
 
-        // this.debounce("search", function() {
-        if (this.search_input.trim().length) {
-          if (Meteor.status().connected) {
-            var _this = this;
+        this.debounce("search", function() {
+          if (this.search_input.trim().length) {
+            if (Meteor.status().connected) {
+              var _this = this;
 
-            Meteor.call("search", _this.search_input.trim(), function(error, response) {
-              _this.$.progress.hidden = true;
+              Meteor.call("search", _this.search_input.trim(), function(error, response) {
+                _this.$.progress.hidden = true;
 
-              if (!error) {
-                _this.list = response;
-              }
-            });
+                if (!error) {
+                  _this.list = response;
+                }
+              });
+            } else {
+              document.querySelector("#polymer_toast").toast("server connection required");
+            }
           } else {
-            document.querySelector("#polymer_toast").toast("server connection required");
+            this.$.progress.hidden = true;
           }
-        } else {
-          this.$.progress.hidden = true;
-        }
-        // }, 1000 * 4);
+        }, 1000 * 4);
       }
     }
 

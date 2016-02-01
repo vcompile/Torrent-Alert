@@ -256,7 +256,7 @@
           </neon-animatable>
 
           <neon-animatable>
-            <iron-selector attr-for-selected="item" multi selectable="inbox-item" selected-attribute="selected" selected-values="{{torrent_selected}}">
+            <iron-selector activate-event="click" attr-for-selected="item" multi selectable="inbox-item" selected-attribute="selected" selected-values="{{torrent_selected}}">
               <template is="dom-repeat" items="[[project]]">
                 <template if="[[project_selected(menu_selected, item._id)]]" is="dom-if">
                   <div class="center-justified horizontal layout">
@@ -273,7 +273,9 @@
 
                   <div class="center-justified horizontal layout">
                     <div class="li">
-                      <paper-progress class="project_progress" data-id$="[[item._id]]" hidden></paper-progress>
+                      <div style="padding: 0 4px;">
+                        <paper-progress class="project_progress" data-id$="[[item._id]]" hidden></paper-progress>
+                      </div>
                     </div>
                   </div>
 
