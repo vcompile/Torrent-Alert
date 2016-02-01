@@ -20626,10 +20626,15 @@ mwcLayout = new PolymerLayout();
     min-height: 88px;
   }
   
+  .page-body {
+    overflow: auto;
+    padding: 24px;
+  }
+  
   .subhead {
     @apply(--paper-font-subhead);
   }
-
+  
   .text-right {
     text-align: right;
   }
@@ -20644,8 +20649,15 @@ mwcLayout = new PolymerLayout();
 
       <div class="center-justified horizontal layout">
         <div class="li">
-          <div style="padding: 24px;">
+          <div class="layout page-body vertical">
             <paper-input auto-validate="" label="keyword" required="" value="{{keyword}}"></paper-input>
+
+            <br>
+
+            <div class="center horizontal layout">
+              <div class="cursor-d flex subhead text-right">max time in month</div>
+              <paper-slider class="flex" editable="" max="48" min="1" value="{{within}}"></paper-slider>
+            </div>
 
             <br>
 
@@ -20661,11 +20673,6 @@ mwcLayout = new PolymerLayout();
             <br>
 
             <div class="end-justified horizontal layout">
-              <div class="cursor-p subhead" on-click="date_picker_open">within <span style="border-bottom: 1px solid #757575;">&nbsp;&nbsp;[[within]]&nbsp;&nbsp;</span> month</div>
-            </div>
-            <br>
-
-            <div class="end-justified horizontal layout">
               <paper-button class="blue-500" on-click="add_project">submit</paper-button>
             </div>
           </div>
@@ -20674,15 +20681,6 @@ mwcLayout = new PolymerLayout();
 
       <div class="footer-li"></div>
     </paper-header-panel>
-
-    <paper-dialog class="paper-date-picker-dialog" id="date_picker" modal="" on-iron-overlay-closed="date_picker_close">
-      <paper-date-picker id="date"></paper-date-picker>
-
-      <div class="buttons">
-        <paper-button dialog-dismiss="">cancel</paper-button>
-        <paper-button dialog-confirm="">ok</paper-button>
-      </div>
-    </paper-dialog>
   </template>
 
   <script>
@@ -20748,20 +20746,6 @@ mwcLayout = new PolymerLayout();
       FlowRouter.setQueryParams({
         "route": null
       });
-    },
-
-    date_picker_close: function() {
-      if (this.$.date.date) {
-        var A = Math.ceil(moment.duration(moment().diff(moment(this.$.date.date))).asMonths());
-
-        if (0 < A && A < 48) {
-          this.within = A;
-        }
-      }
-    },
-
-    date_picker_open: function() {
-      this.$.date_picker.open();
     },
 
     is: "add-project",
@@ -20841,7 +20825,7 @@ mwcLayout = new PolymerLayout();
               name: 'fade-out-animation',
               node: this.$.animator,
               timing: {
-                delay: 250
+                delay: 300
               }
             }, {
               name: 'fade-in-animation',
@@ -20857,7 +20841,7 @@ mwcLayout = new PolymerLayout();
               name: 'fade-out-animation',
               node: this.$.container,
               timing: {
-                duration: 0
+                duration: 250
               }
             }, {
               name: 'reverse-ripple-animation',
@@ -22885,7 +22869,7 @@ mwcLayout = new PolymerLayout();
               name: "fade-out-animation",
               node: this.$["user-check-layout-body"],
               timing: {
-                delay: 150,
+                delay: 300,
                 duration: 0
               }
             }, {
