@@ -80,10 +80,6 @@ inbox.route("/", {
 
       case "search-bar":
         document.querySelector("search-bar").active = true;
-
-        Meteor.setTimeout(function() {
-          document.querySelector("search-bar #input").focus();
-        }, 400);
         break;
 
       case "torrent-view":

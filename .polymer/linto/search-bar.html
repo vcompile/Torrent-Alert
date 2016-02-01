@@ -57,7 +57,7 @@
     <paper-header-panel class="fit">
       <paper-toolbar>
         <paper-icon-button icon="arrow-back" on-click="back"></paper-icon-button>
-        <input class="flex" id="input" on-keyup="search" placeholder="search">
+        <input autofocus bind-value="{{search_input}}" class="flex" is="iron-input" placeholder="search">
       </paper-toolbar>
 
       <paper-progress hidden id="progress" indeterminate></paper-progress>
@@ -155,31 +155,38 @@
         value: function() {
           return [];
         }
+      },
+      search_input: {
+        observer: "search",
+        type: String,
+        value: ""
       }
     },
 
-    search: function() {
-      this.$.progress.hidden = false;
+    search: function(newValue, oldValue) {
+      if (newValue && oldValue) {
+        this.$.progress.hidden = false;
 
-      // this.debounce("search", function() {
-      if (this.$.input.value.trim().length) {
-        if (Meteor.status().connected) {
-          var _this = this;
+        // this.debounce("search", function() {
+        if (this.search_input.trim().length) {
+          if (Meteor.status().connected) {
+            var _this = this;
 
-          Meteor.call("search", this.$.input.value.trim(), function(error, response) {
-            _this.$.progress.hidden = true;
+            Meteor.call("search", _this.search_input.trim(), function(error, response) {
+              _this.$.progress.hidden = true;
 
-            if (!error) {
-              _this.list = response;
-            }
-          });
+              if (!error) {
+                _this.list = response;
+              }
+            });
+          } else {
+            document.querySelector("#polymer_toast").toast("server connection required");
+          }
         } else {
-          document.querySelector("#polymer_toast").toast("server connection required");
+          this.$.progress.hidden = true;
         }
-      } else {
-        this.$.progress.hidden = true;
+        // }, 1000 * 4);
       }
-      // }, 1000 * 4);
     }
 
   });

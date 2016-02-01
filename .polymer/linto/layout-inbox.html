@@ -297,6 +297,13 @@
     <paper-dialog id="schedule_prompt" with-backdrop>
       <div class="subhead">Are you sure to schedule this item ?</div>
 
+      <div class="center horizontal layout">
+        <div class="body1 flex">schedule / day</div>
+        <paper-slider disabled editable id="seeds" max="96" min="1" value="4"></paper-slider>
+      </div>
+
+      <br>
+
       <div class="buttons">
         <paper-button onclick="document.querySelector('#schedule_prompt').close();">
           <iron-icon icon="close"></iron-icon>cancel
@@ -651,15 +658,15 @@
       }
     },
 
-    // sign_out: function() {
-    //   if (Meteor.status().connected) {
-    //     this.project = [];
+    sign_out: function() {
+      if (Meteor.status().connected) {
+        this.project = [];
 
-    //     FlowRouter.go("/inbox/sign-out");
-    //   } else {
-    //     document.querySelector("#polymer_toast").toast("server connection required");
-    //   }
-    // },
+        FlowRouter.go("/inbox/sign-out");
+      } else {
+        document.querySelector("#polymer_toast").toast("server connection required");
+      }
+    },
 
     sort: function(A, Z) {
       return (parseInt(moment(Z.time).format("x")) - parseInt(moment(A.time).format("x")));
