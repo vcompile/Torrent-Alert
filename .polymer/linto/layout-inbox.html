@@ -73,15 +73,15 @@
     border-bottom: 1px solid #EEE;
     padding: 8px;
   }
-  
-  .menu-li-bottom {
+  /*.menu-li-bottom {
     border-top: 1px solid #EEE;
     padding: 8px;
     z-index: 1;
-  }
+  }*/
   
   .menu-li > div,
-  .menu-li-bottom > div,
+  /*.menu-li-bottom > div,*/
+  
   .title-li,
   .title-li > div {
     padding: 8px;
@@ -124,7 +124,18 @@
       <paper-header-panel drawer>
         <div class="fit layout vertical">
           <template if="[[user._id]]" is="dom-if">
-            <div class="cursor-p horizontal hover layout menu-li relative" on-click="user_prompt">
+            <paper-icon-item class="cursor-p" id="user-li">
+              <selectable-icon icon_img_src="[[user.profile.picture]]" item-icon></selectable-icon>
+
+              <paper-item-body two-line>
+                <div>[[user.profile.name]]</div>
+                <div secondary>[[user.profile.email]]</div>
+              </paper-item-body>
+
+              <div class="subhead">[[return_text(project.length)]]</div>
+            </paper-icon-item>
+
+            <!-- <div class="cursor-p horizontal hover layout menu-li relative" on-click="user_prompt">
               <div>
                 <selectable-icon icon_img_src="[[user.profile.picture]]"></selectable-icon>
               </div>
@@ -139,7 +150,7 @@
               </div>
 
               <paper-ripple></paper-ripple>
-            </div>
+            </div> -->
           </template>
 
           <div class="flex" style="overflow: auto;">
@@ -182,11 +193,13 @@
             </iron-selector>
           </div>
 
-          <div class="cursor-p center center-justified horizontal layout menu-li-bottom relative subhead white" onclick="window.open('https://github.com/HedCET/TorrentAlert', '_system')">
+          <paper-item class="cursor-p" style="border-top: 1px solid #EEE;" onclick="window.open('https://github.com/HedCET/TorrentAlert', '_system')">About TorrentAlert</paper-item>
+
+          <!-- <div class="cursor-p center center-justified horizontal layout menu-li-bottom relative subhead white" onclick="window.open('https://github.com/HedCET/TorrentAlert', '_system')">
             <div>About TorrentAlert</div>
 
             <paper-ripple></paper-ripple>
-          </div>
+          </div> -->
         </div>
       </paper-header-panel>
 

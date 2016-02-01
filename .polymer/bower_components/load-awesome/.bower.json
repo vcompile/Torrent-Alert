@@ -32,6 +32,6 @@
     "commit": "48224ca0d453dc0845badb5ff1ad352e1c50fda9"
   },
   "_source": "git://github.com/danielcardoso/Load-Awesome.git",
-  "_target": "~1.1.0",
+  "_target": "^1.0.0",
   "_originalSource": "load-awesome"
 }

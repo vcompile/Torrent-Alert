@@ -54,44 +54,46 @@
     <iron-localstorage name="proxy" on-iron-localstorage-load-empty="initialize_proxy" value="{{proxy}}"></iron-localstorage>
 
     <div class="fit layout vertical">
-      <div class="center-justified horizontal layout">
-        <div class="li">
-          <div class="cursor-p horizontal layout title-li">
-            <div>
-              <paper-icon-button icon="arrow-back" on-click="back"></paper-icon-button>
-            </div>
+      <div class="flex">
+        <div class="center-justified horizontal layout">
+          <div class="li">
+            <div class="cursor-p horizontal layout title-li">
+              <div>
+                <paper-icon-button icon="arrow-back" on-click="back"></paper-icon-button>
+              </div>
 
-            <div class="flex layout vertical">
-              <div class="body1">[[return_description(torrent)]]</div>
+              <div class="flex layout vertical">
+                <div class="body1">[[return_description(torrent)]]</div>
 
-              <div><span class="subhead">[[torrent.title]]</span>&nbsp;&nbsp;<span class$="body2 [[return_class(torrent.category)]]">&nbsp;&nbsp;[[torrent.category]]&nbsp;&nbsp;</span>&nbsp;&nbsp;</div>
+                <div><span class="subhead">[[torrent.title]]</span>&nbsp;&nbsp;<span class$="body2 [[return_class(torrent.category)]]">&nbsp;&nbsp;[[torrent.category]]&nbsp;&nbsp;</span>&nbsp;&nbsp;</div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div class="center-justified horizontal layout">
-        <div class="li">
-          <iron-selector activate-event="click" id="link" on-click="click" selected-attribute="selected">
-            <template is="dom-repeat" items="[[torrent.link]]">
-              <paper-icon-item class="cursor-d white" data-link$="[[item.url]]">
-                <selectable-icon icon_class="[[return_class(item.text)]]" icon_text="[[return_icon_text(item.text)]]" item-icon></selectable-icon>
+        <div class="center-justified horizontal layout">
+          <div class="li">
+            <iron-selector activate-event="click" id="link" on-click="click" selected-attribute="selected">
+              <template is="dom-repeat" items="[[torrent.link]]">
+                <paper-icon-item class="cursor-d white" data-link$="[[item.url]]">
+                  <selectable-icon icon_class="[[return_class(item.text)]]" icon_text="[[return_icon_text(item.text)]]" item-icon></selectable-icon>
 
-                <paper-item-body two-line>
-                  <div>[[item.text]]</div>
-                  <div secondary>[[return_time(item.time)]]</div>
-                </paper-item-body>
-              </paper-icon-item>
-            </template>
-          </iron-selector>
+                  <paper-item-body two-line>
+                    <div>[[item.text]]</div>
+                    <div secondary>[[return_time(item.time)]]</div>
+                  </paper-item-body>
+                </paper-icon-item>
+              </template>
+            </iron-selector>
+          </div>
         </div>
-      </div>
 
-      <div class="center-justified horizontal layout">
-        <div class="li">
-          <div class="center footer-li horizontal layout">
-            <div>
-              <paper-toggle-button checked="{{proxy}}">enable proxy</paper-toggle-button>
+        <div class="center-justified horizontal layout">
+          <div class="li">
+            <div class="center footer-li horizontal layout">
+              <div>
+                <paper-toggle-button checked="{{proxy}}">enable proxy</paper-toggle-button>
+              </div>
             </div>
           </div>
         </div>

@@ -16,6 +16,7 @@ var bump = require('gulp-bump');
 var tagVersion = require('gulp-tag-version');
 var git = require('gulp-git');
 var filter = require('gulp-filter');
+var portfinder = require('portfinder');
 
 function getPackage() {
   return JSON.parse(fs.readFileSync('bower.json', 'utf8')); 
@@ -48,7 +49,10 @@ gulp.task('bower:reload', ['bower'], reload);
 var redirect = function(from, to) {
   return function(req, res, next) {
     if (from === req.url) {
-      res.writeHead(301, {'Location': to});
+      res.writeHead(301, {
+        'Location': to,
+        'Cache-Control': 'cache-control: private, max-age=0, no-cache'
+      });
       res.end();
     }
     next();
@@ -87,11 +91,17 @@ gulp.task('serve', ['bower'], function () {
     }
   };
   opts.server.routes[pkgRoot] = '.';
-  browserSync.init(opts);
+
+  portfinder.basePort = 3000;
+  portfinder.getPort(function (err, port) {
+    opts.port = port;
+    console.log('using port: ' + port);
+    browserSync.init(opts);
+  });
 
   gulp.watch(['**/*.html']).on('change', reload);
   gulp.watch(['**/*.css']).on('change', reload);
-  gulp.watch(['bower.json']).on('change', 'bower:reload');
+  //gulp.watch(['bower.json']).on('change', 'bower:reload');
 });
 
 gulp.task('gh-pages', function() {
@@ -102,7 +112,7 @@ gulp.task('gh-pages', function() {
     bower('.tmp')
       .pipe(add(
         'index.html',
-        '<meta http-equev="refresh" content="0;' + pkgName + '/">'
+        '<meta http-equiv="refresh" content="0;' + pkgName + '/">'
       ))
     ).pipe(ghPages()).on('end', function() {
       del(['.tmp', '.publish']);
