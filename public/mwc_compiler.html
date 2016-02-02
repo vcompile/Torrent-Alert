@@ -11122,6 +11122,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       items: {
         type: Array,
         readOnly: true,
+        notify: true,
         value: function() {
           return [];
         }
@@ -11210,6 +11211,22 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       this.selected = this._indexToValue(index);
     },
 
+    /**
+     * Force a synchronous update of the `items` property.
+     *
+     * NOTE: Consider listening for the `iron-items-changed` event to respond to
+     * updates to the set of selectable items after updates to the DOM list and
+     * selection state have been made.
+     *
+     * WARNING: If you are using this method, you should probably consider an
+     * alternate approach. Synchronously querying for items is potentially
+     * slow for many use cases. The `items` property will update asynchronously
+     * on its own to reflect selectable items in the DOM.
+     */
+    forceSynchronousItemUpdate: function() {
+      this._updateItems();
+    },
+
     get _shouldUpdateSelection() {
       return this.selected != null;
     },
@@ -11294,18 +11311,18 @@ is separate from validation, and `allowed-pattern` does not affect how the input
     // observe items change under the given node.
     _observeItems: function(node) {
       return Polymer.dom(node).observeNodes(function(mutations) {
+        this._updateItems();
+
+        if (this._shouldUpdateSelection) {
+          this._updateSelected();
+        }
+
         // Let other interested parties know about the change so that
         // we don't have to recreate mutation observers everywher.
         this.fire('iron-items-changed', mutations, {
           bubbles: false,
           cancelable: false
         });
-
-        this._updateItems();
-
-        if (this._shouldUpdateSelection) {
-          this._updateSelected();
-        }
       });
     },
 
@@ -20329,14 +20346,14 @@ mwcLayout = new PolymerLayout();
         height: var(--paper-toolbar-height, 64px);
 
         background: var(--paper-toolbar-background, --primary-color);
-        color: var(--paper-toolbar-color, --primary-text-color);
+        color: var(--paper-toolbar-color, --dark-theme-text-color);
 
         @apply(--paper-toolbar);
       }
 
       :host(.animate) {
         /* transition */
-        transition: height 0.18s ease-in;
+        transition: var(--paper-toolbar-transition, height 0.18s ease-in);
       }
 
       :host(.medium-tall) {
@@ -20886,10 +20903,11 @@ mwcLayout = new PolymerLayout();
 
       <div class="buttons">
         <paper-button onclick="document.querySelector('#exit_prompt').close();">
-          <iron-icon icon="close"></iron-icon>cancel
+          <iron-icon icon="close"></iron-icon> cancel
         </paper-button>
+
         <paper-button dialog-confirm="" on-tap="exit">
-          <iron-icon icon="check"></iron-icon>ok
+          <iron-icon icon="check"></iron-icon> ok
         </paper-button>
       </div>
     </paper-dialog>
@@ -21297,7 +21315,6 @@ mwcLayout = new PolymerLayout();
 
     <paper-fab class="menu-b" id="fab" icon="add" on-click="add_project"></paper-fab>
 
-
     <paper-dialog id="user_prompt" with-backdrop="">
       <div class="layout vertical">
         <div class="flex prompt-title subhead">User option</div>
@@ -21308,25 +21325,29 @@ mwcLayout = new PolymerLayout();
           <div class="body1 flex">enable GCM</div>
           <paper-toggle-button checked="" disabled=""></paper-toggle-button>
         </div>
+      </div>
 
-        <br>
+      <div class="buttons">
+        <paper-button on-click="sign_out">
+          <iron-icon icon="check"></iron-icon> sign out
+        </paper-button>
 
-        <div class="end-justified horizontal layout">
-          <paper-button class="blue-500" on-click="sign_out">SIGN OUT</paper-button>
-        </div>
+        <paper-button onclick="document.querySelector('#user_prompt').close();">
+          <iron-icon icon="close"></iron-icon> cancel
+        </paper-button>
       </div>
     </paper-dialog>
-
 
     <paper-dialog id="remove_prompt" with-backdrop="">
       <div class="subhead">Are you sure to delete this item ?</div>
 
       <div class="buttons">
         <paper-button onclick="document.querySelector('#remove_prompt').close();">
-          <iron-icon icon="close"></iron-icon>cancel
+          <iron-icon icon="close"></iron-icon> cancel
         </paper-button>
+
         <paper-button on-click="remove_ok">
-          <iron-icon icon="check"></iron-icon>ok
+          <iron-icon icon="check"></iron-icon> ok
         </paper-button>
       </div>
     </paper-dialog>
@@ -21339,16 +21360,17 @@ mwcLayout = new PolymerLayout();
 
         <div class="center horizontal layout">
           <div class="body1 flex">schedule / day</div>
-          <paper-slider disabled="" editable="" id="seeds" max="96" min="1" value="4"></paper-slider>
+          <paper-slider disabled="" editable="" max="96" min="1" value="4"></paper-slider>
         </div>
       </div>
 
       <div class="buttons">
         <paper-button onclick="document.querySelector('#schedule_prompt').close();">
-          <iron-icon icon="close"></iron-icon>cancel
+          <iron-icon icon="close"></iron-icon> cancel
         </paper-button>
+
         <paper-button on-click="schedule_ok">
-          <iron-icon icon="check"></iron-icon>ok
+          <iron-icon icon="check"></iron-icon> ok
         </paper-button>
       </div>
     </paper-dialog>
@@ -22112,25 +22134,25 @@ mwcLayout = new PolymerLayout();
       if (newValue && oldValue) {
         this.$.progress.hidden = false;
 
-        this.debounce("search", function() {
-          if (this.search_input.trim().length) {
-            if (Meteor.status().connected) {
-              var _this = this;
+        // this.debounce("search", function() {
+        if (this.search_input.trim().length) {
+          if (Meteor.status().connected) {
+            var _this = this;
 
-              Meteor.call("search", _this.search_input.trim(), function(error, response) {
-                _this.$.progress.hidden = true;
+            Meteor.call("search", _this.search_input.trim(), function(error, response) {
+              _this.$.progress.hidden = true;
 
-                if (!error) {
-                  _this.list = response;
-                }
-              });
-            } else {
-              document.querySelector("#polymer_toast").toast("server connection required");
-            }
+              if (!error) {
+                _this.list = response;
+              }
+            });
           } else {
-            this.$.progress.hidden = true;
+            document.querySelector("#polymer_toast").toast("server connection required");
           }
-        }, 1000 * 4);
+        } else {
+          this.$.progress.hidden = true;
+        }
+        // }, 1000 * 4);
       }
     }
 

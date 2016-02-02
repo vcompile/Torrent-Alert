@@ -37,10 +37,14 @@ Custom property | Description | Default
 `--paper-radio-button-unchecked-background-color` | Radio button background color when the input is not checked | `transparent`
 `--paper-radio-button-unchecked-color` | Radio button color when the input is not checked | `--primary-text-color`
 `--paper-radio-button-unchecked-ink-color` | Selected/focus ripple color when the input is not checked | `--primary-text-color`
-`--paper-radio-button-checked-color` | Radio button color when the input is checked | `--default-primary-color`
-`--paper-radio-button-checked-ink-color` | Selected/focus ripple color when the input is checked | `--default-primary-color`
+`--paper-radio-button-checked-color` | Radio button color when the input is checked | `--primary-color`
+`--paper-radio-button-checked-ink-color` | Selected/focus ripple color when the input is checked | `--primary-color`
+`--paper-radio-button-size` | Size of the outer radio button | `16px`
 `--paper-radio-button-label-color` | Label color | `--primary-text-color`
 `--paper-radio-button-label-spacing` | Spacing between the label and the button | `10px`
+
+This element applies the mixin `--paper-font-common-base` but does not import `paper-styles/typography.html`.
+In order to apply the `Roboto` font to this element, make sure you've imported `paper-styles/typography.html`.
 
 @group Paper Elements
 @element paper-radio-button
@@ -55,6 +59,8 @@ Custom property | Description | Default
         display: inline-block;
         white-space: nowrap;
         cursor: pointer;
+        @apply(--paper-font-common-base);
+        --calculated-paper-radio-button-size: var(--paper-radio-button-size, 16px);
       }
 
       :host(:focus) {
@@ -62,41 +68,46 @@ Custom property | Description | Default
       }
 
       #radioContainer {
-        display: inline-block;
+        @apply(--layout-inline);
+        @apply(--layout-center-center);
         position: relative;
-        width: 16px;
-        height: 16px;
+        width: var(--calculated-paper-radio-button-size);
+        height: var(--calculated-paper-radio-button-size);
         vertical-align: middle;
       }
 
       #ink {
         position: absolute;
-        top: -16px;
-        left: -16px;
-        width: 48px;
-        height: 48px;
+        top: 50%;
+        left: 50%;
+        width: calc(2.66 * var(--calculated-paper-radio-button-size));
+        height: calc(2.66 * var(--calculated-paper-radio-button-size));
         color: var(--paper-radio-button-unchecked-ink-color, --primary-text-color);
         opacity: 0.6;
         pointer-events: none;
+        -webkit-transform: translate(-50%, -50%);
+        transform: translate(-50%, -50%);
       }
 
       :host-context([dir="rtl"]) #ink {
-        right: -15px;
+        right: 50%;
         left: auto;
+        -webkit-transform: translate(50%, -50%);
+        transform: translate(50%, -50%);
       }
 
       #ink[checked] {
-        color: var(--paper-radio-button-checked-ink-color, --default-primary-color);
+        color: var(--paper-radio-button-checked-ink-color, --primary-color);
       }
 
       #offRadio {
         position: absolute;
-        box-sizing: content-box;
-        top: 0px;
-        left: 0px;
-        right: 0px;
-        width: 12px;
-        height: 12px;
+        box-sizing: border-box;
+        top: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        height: 100%;
         border-radius: 50%;
         border: solid 2px;
         background-color: var(--paper-radio-button-unchecked-background-color, transparent);
@@ -105,15 +116,11 @@ Custom property | Description | Default
       }
 
       #onRadio {
-        position: absolute;
         box-sizing: content-box;
-        top: 4px;
-        left: 4px;
-        right: 4px;
-        width: 8px;
-        height: 8px;
+        width: 50%;
+        height: 50%;
         border-radius: 50%;
-        background-color: var(--paper-radio-button-checked-color, --default-primary-color);
+        background-color: var(--paper-radio-button-checked-color, --primary-color);
         -webkit-transform: scale(0);
         transform: scale(0);
         transition: -webkit-transform ease 0.28s;
@@ -121,7 +128,7 @@ Custom property | Description | Default
       }
 
       :host([checked]) #offRadio {
-        border-color: var(--paper-radio-button-checked-color, --default-primary-color);
+        border-color: var(--paper-radio-button-checked-color, --primary-color);
       }
 
       :host([checked]) #onRadio {

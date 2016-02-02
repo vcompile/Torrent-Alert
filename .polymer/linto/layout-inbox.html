@@ -294,7 +294,6 @@
 
     <paper-fab class="menu-b" id="fab" icon="add" on-click="add_project"></paper-fab>
 
-
     <paper-dialog id="user_prompt" with-backdrop>
       <div class="layout vertical">
         <div class="flex prompt-title subhead">User option</div>
@@ -305,25 +304,29 @@
           <div class="body1 flex">enable GCM</div>
           <paper-toggle-button checked disabled></paper-toggle-button>
         </div>
+      </div>
 
-        <br>
+      <div class="buttons">
+        <paper-button on-click="sign_out">
+          <iron-icon icon="check"></iron-icon> sign out
+        </paper-button>
 
-        <div class="end-justified horizontal layout">
-          <paper-button class="blue-500" on-click="sign_out">SIGN OUT</paper-button>
-        </div>
+        <paper-button onclick="document.querySelector('#user_prompt').close();">
+          <iron-icon icon="close"></iron-icon> cancel
+        </paper-button>
       </div>
     </paper-dialog>
-
 
     <paper-dialog id="remove_prompt" with-backdrop>
       <div class="subhead">Are you sure to delete this item ?</div>
 
       <div class="buttons">
         <paper-button onclick="document.querySelector('#remove_prompt').close();">
-          <iron-icon icon="close"></iron-icon>cancel
+          <iron-icon icon="close"></iron-icon> cancel
         </paper-button>
+
         <paper-button on-click="remove_ok">
-          <iron-icon icon="check"></iron-icon>ok
+          <iron-icon icon="check"></iron-icon> ok
         </paper-button>
       </div>
     </paper-dialog>
@@ -336,16 +339,17 @@
 
         <div class="center horizontal layout">
           <div class="body1 flex">schedule / day</div>
-          <paper-slider disabled editable id="seeds" max="96" min="1" value="4"></paper-slider>
+          <paper-slider disabled editable max="96" min="1" value="4"></paper-slider>
         </div>
       </div>
 
       <div class="buttons">
         <paper-button onclick="document.querySelector('#schedule_prompt').close();">
-          <iron-icon icon="close"></iron-icon>cancel
+          <iron-icon icon="close"></iron-icon> cancel
         </paper-button>
+
         <paper-button on-click="schedule_ok">
-          <iron-icon icon="check"></iron-icon>ok
+          <iron-icon icon="check"></iron-icon> ok
         </paper-button>
       </div>
     </paper-dialog>
