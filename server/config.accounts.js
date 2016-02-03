@@ -7,7 +7,7 @@ Accounts.config({
 Meteor.methods({
 
   sendEnrollmentEmail: function(email) {
-    // this.unblock();
+    this.unblock();
 
     check(email, String);
 

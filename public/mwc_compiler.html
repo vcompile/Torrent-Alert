@@ -20672,7 +20672,7 @@ mwcLayout = new PolymerLayout();
             <br>
 
             <div class="center horizontal layout">
-              <div class="cursor-d flex subhead text-right">max time in month</div>
+              <div class="cursor-d flex subhead text-right">max torrent time in month</div>
               <paper-slider class="flex" editable="" max="48" min="1" value="{{within}}"></paper-slider>
             </div>
 
@@ -20892,13 +20892,17 @@ mwcLayout = new PolymerLayout();
 <dom-module id="exit-controller" assetpath="/linto/">
 
   <style>
+  paper-dialog {
+    width: 320px;
+  }
+  
   .subhead {
     @apply(--paper-font-subhead);
   }
   </style>
 
   <template>
-    <paper-dialog id="exit_prompt" style="width: 320px;" with-backdrop="">
+    <paper-dialog id="exit_prompt">
       <div class="subhead">Are you sure you want to exit ?</div>
 
       <div class="buttons">
@@ -21175,7 +21179,7 @@ mwcLayout = new PolymerLayout();
       <paper-header-panel drawer="">
         <div class="fit layout vertical">
           <template if="[[user._id]]" is="dom-if">
-            <paper-icon-item class="cursor-p" onclick="document.querySelector('#user_prompt').open();">
+            <paper-icon-item class="cursor-p" onclick="Meteor.setTimeout(function(){document.querySelector('#user_prompt').open()},200);">
               <selectable-icon icon_img_src="[[user.profile.picture]]" item-icon=""></selectable-icon>
 
               <paper-item-body two-line="">
@@ -21229,7 +21233,7 @@ mwcLayout = new PolymerLayout();
             </iron-selector>
           </div>
 
-          <paper-item class="cursor-p" style="border-top: 1px solid #EEE;" onclick="window.open('https://github.com/HedCET/TorrentAlert', '_system')">About TorrentAlert</paper-item>
+          <paper-item class="cursor-p" style="border-top: 1px solid #EEE;" onclick="Meteor.setTimeout(window.open('https://github.com/HedCET/TorrentAlert','_system'),200);">About TorrentAlert</paper-item>
 
           
         </div>
@@ -21315,7 +21319,7 @@ mwcLayout = new PolymerLayout();
 
     <paper-fab class="menu-b" id="fab" icon="add" on-click="add_project"></paper-fab>
 
-    <paper-dialog id="user_prompt" with-backdrop="">
+    <paper-dialog id="user_prompt">
       <div class="layout vertical">
         <div class="flex prompt-title subhead">User option</div>
 
@@ -21329,7 +21333,7 @@ mwcLayout = new PolymerLayout();
 
       <div class="buttons">
         <paper-button on-click="sign_out">
-          <iron-icon icon="check"></iron-icon> sign out
+          <iron-icon icon="social:person-outline"></iron-icon> sign out
         </paper-button>
 
         <paper-button onclick="document.querySelector('#user_prompt').close();">
@@ -21338,7 +21342,7 @@ mwcLayout = new PolymerLayout();
       </div>
     </paper-dialog>
 
-    <paper-dialog id="remove_prompt" with-backdrop="">
+    <paper-dialog id="remove_prompt">
       <div class="subhead">Are you sure to delete this item ?</div>
 
       <div class="buttons">
@@ -21352,7 +21356,7 @@ mwcLayout = new PolymerLayout();
       </div>
     </paper-dialog>
 
-    <paper-dialog id="schedule_prompt" with-backdrop="">
+    <paper-dialog id="schedule_prompt">
       <div class="layout vertical">
         <div class="subhead">Are you sure to schedule this item ?</div>
 

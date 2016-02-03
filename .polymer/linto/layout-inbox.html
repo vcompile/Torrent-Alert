@@ -135,7 +135,7 @@
       <paper-header-panel drawer>
         <div class="fit layout vertical">
           <template if="[[user._id]]" is="dom-if">
-            <paper-icon-item class="cursor-p" onclick="document.querySelector('#user_prompt').open();">
+            <paper-icon-item class="cursor-p" onclick="Meteor.setTimeout(function(){document.querySelector('#user_prompt').open()},200);">
               <selectable-icon icon_img_src="[[user.profile.picture]]" item-icon></selectable-icon>
 
               <paper-item-body two-line>
@@ -204,7 +204,7 @@
             </iron-selector>
           </div>
 
-          <paper-item class="cursor-p" style="border-top: 1px solid #EEE;" onclick="window.open('https://github.com/HedCET/TorrentAlert', '_system')">About TorrentAlert</paper-item>
+          <paper-item class="cursor-p" style="border-top: 1px solid #EEE;" onclick="Meteor.setTimeout(window.open('https://github.com/HedCET/TorrentAlert','_system'),200);">About TorrentAlert</paper-item>
 
           <!-- <div class="cursor-p center center-justified horizontal layout menu-li-bottom relative subhead white" onclick="window.open('https://github.com/HedCET/TorrentAlert', '_system')">
             <div>About TorrentAlert</div>
@@ -294,7 +294,7 @@
 
     <paper-fab class="menu-b" id="fab" icon="add" on-click="add_project"></paper-fab>
 
-    <paper-dialog id="user_prompt" with-backdrop>
+    <paper-dialog id="user_prompt">
       <div class="layout vertical">
         <div class="flex prompt-title subhead">User option</div>
 
@@ -308,7 +308,7 @@
 
       <div class="buttons">
         <paper-button on-click="sign_out">
-          <iron-icon icon="check"></iron-icon> sign out
+          <iron-icon icon="social:person-outline"></iron-icon> sign out
         </paper-button>
 
         <paper-button onclick="document.querySelector('#user_prompt').close();">
@@ -317,7 +317,7 @@
       </div>
     </paper-dialog>
 
-    <paper-dialog id="remove_prompt" with-backdrop>
+    <paper-dialog id="remove_prompt">
       <div class="subhead">Are you sure to delete this item ?</div>
 
       <div class="buttons">
@@ -331,7 +331,7 @@
       </div>
     </paper-dialog>
 
-    <paper-dialog id="schedule_prompt" with-backdrop>
+    <paper-dialog id="schedule_prompt">
       <div class="layout vertical">
         <div class="subhead">Are you sure to schedule this item ?</div>
 

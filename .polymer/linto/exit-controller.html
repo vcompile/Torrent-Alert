@@ -1,13 +1,17 @@
 <dom-module id="exit-controller">
 
   <style>
+  paper-dialog {
+    width: 320px;
+  }
+  
   .subhead {
     @apply(--paper-font-subhead);
   }
   </style>
 
   <template>
-    <paper-dialog id="exit_prompt" style="width: 320px;" with-backdrop>
+    <paper-dialog id="exit_prompt">
       <div class="subhead">Are you sure you want to exit ?</div>
 
       <div class="buttons">

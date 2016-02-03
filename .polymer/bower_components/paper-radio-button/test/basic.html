@@ -22,14 +22,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <link rel="import" href="../paper-radio-button.html">
 
 </head>
-<style is="custom-style">
-  paper-radio-button.giant {
-    --paper-radio-button-size: 50px;
-  }
-  paper-radio-button.tiny {
-    --paper-radio-button-size: 5px;
-  }
-</style>
 <body>
 
   <test-fixture id="NoLabel">
@@ -47,14 +39,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <test-fixture id="AriaLabel">
     <template>
       <paper-radio-button aria-label="Batman">Robin</paper-radio-button>
-    </template>
-  </test-fixture>
-
-  <test-fixture id="WithDifferentSizes">
-    <template>
-      <paper-radio-button checked></paper-radio-button>
-      <paper-radio-button class="giant" checked></paper-radio-button>
-      <paper-radio-button class="tiny" checked></paper-radio-button>
     </template>
   </test-fixture>
 
@@ -96,15 +80,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           done();
         }, 1);
       });
-
-      test('can be styled with different sizes', function() {
-        var r2 = fixture('WithDifferentSizes');
-        var normal = r2[0].getBoundingClientRect();
-        var giant = r2[1].getBoundingClientRect();
-        var tiny = r2[2].getBoundingClientRect();
-        assert.isTrue(5 <= tiny.height < normal.height < giant.height <= 50);
-        assert.isTrue(5 <= tiny.width < normal.width < giant.width <= 50);
-      });
     });
 
     suite('a11y', function() {
@@ -124,7 +99,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       test('button with no label has no aria label', function() {
         assert.isTrue(!r1.getAttribute('aria-label'));
       });
-
+      
       test('button respects the user set aria-label', function() {
         var c = fixture('AriaLabel');
         assert.isTrue(c.getAttribute('aria-label') == "Batman");
