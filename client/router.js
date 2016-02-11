@@ -7,7 +7,7 @@ document.addEventListener("WebComponentsReady", function() {
 
   Meteor.setTimeout(function() {
     document.querySelector("#load_awesome").active = false;
-  }, 1000 * (Meteor.isCordova ? 10 : 1));
+  }, 1000 * 10);
 });
 
 FlowRouter.route("/", {

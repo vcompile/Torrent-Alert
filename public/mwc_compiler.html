@@ -21875,48 +21875,48 @@ mwcLayout = new PolymerLayout();
 </dom-module>
 <dom-module id="load-awesome" assetpath="/linto/">
 
-    <style>
-    :host {
-        display: none;
+  <style>
+  :host {
+    display: none;
+  }
+  
+  :host([active]) {
+    display: block;
+  }
+  </style>
+
+  <template>
+    <div class="center-center fit layout vertical" style="background: black; opacity: 0.5; z-index: 1000;">
+      <div class="la-line-scale-pulse-out-rapid la-2x">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+      </div>
+    </div>
+  </template>
+
+  <script>
+  Polymer({
+
+    is: "load-awesome",
+
+    properties: {
+      active: {
+        notify: true,
+        reflectToAttribute: true,
+        type: Boolean,
+        value: true // false
+      },
+    },
+
+    toggle: function() {
+      this.active = !this.active;
     }
-    
-    :host([active]) {
-        display: block;
-    }
-    </style>
 
-    <template>
-        <div class="center-center fit layout vertical" style="background: black; opacity: 0.4; z-index: 1000;">
-            <div class="la-line-scale-pulse-out-rapid la-2x">
-                <div></div>
-                <div></div>
-                <div></div>
-                <div></div>
-                <div></div>
-            </div>
-        </div>
-    </template>
-
-    <script>
-    Polymer({
-
-        is: "load-awesome",
-
-        properties: {
-            active: {
-                notify: true,
-                reflectToAttribute: true,
-                type: Boolean,
-                value: true // false
-            },
-        },
-
-        toggle: function() {
-            this.active = !this.active;
-        }
-
-    });
-    </script>
+  });
+  </script>
 
 </dom-module>
 <dom-module id="polymer-toast" assetpath="/linto/">

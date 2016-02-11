@@ -122,26 +122,34 @@ _torrentz_worker = function(worker_id) {
 
                 if (worker.type == "schedule") {
                   row.user.forEach(function(A) {
-                    if (!_push.findOne({
-                        project: row._id,
-                        url: torrent.url,
+                    if (_push.find({
+                        date: moment().format("YYYY-MM-DD"),
                         user: A
-                      })) {
-                      Push.send({
-                        from: "TorrentAlert",
-                        notId: _push.find().count(),
-                        query: {
-                          userId: A
-                        },
-                        text: torrent.title,
-                        title: row.keyword
-                      });
+                      }).count() < 10) {
+                      if (!_push.findOne({
+                          project: row._id,
+                          url: torrent.url,
+                          user: A
+                        })) {
+                        Push.send({
+                          from: "TorrentAlert",
+                          notId: _push.find({
+                            user: A
+                          }).count(),
+                          query: {
+                            userId: A
+                          },
+                          text: torrent.title,
+                          title: row.keyword
+                        });
 
-                      _push.insert({
-                        project: row._id,
-                        url: torrent.url,
-                        user: A
-                      });
+                        _push.insert({
+                          date: moment().format("YYYY-MM-DD"),
+                          project: row._id,
+                          url: torrent.url,
+                          user: A
+                        });
+                      }
                     }
                   });
                 }
