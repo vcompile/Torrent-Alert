@@ -35,7 +35,10 @@
           <div class="flex layout vertical">
             <div class="body1">[[return_description(item)]]</div>
             <div class="subhead">[[item.title]]</div>
-            <div class="body1 time">[[return_time(item.time)]]</div>
+            <div class="center horizontal justified layout">
+              <div class="body1 etc flex-3">[[item.category]]</div>
+              <div class="body1 flex-2 time">[[return_time(item.time)]]</div>
+            </div>
           </div>
         </div>
       </div>

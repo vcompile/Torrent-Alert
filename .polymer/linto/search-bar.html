@@ -168,25 +168,25 @@
       if (newValue && oldValue) {
         this.$.progress.hidden = false;
 
-        // this.debounce("search", function() {
-        if (this.search_input.trim().length) {
-          if (Meteor.status().connected) {
-            var _this = this;
+        this.debounce("search", function() {
+          if (this.search_input.trim().length) {
+            if (Meteor.status().connected) {
+              var _this = this;
 
-            Meteor.call("search", _this.search_input.trim(), function(error, response) {
-              _this.$.progress.hidden = true;
+              Meteor.call("search", _this.search_input.trim(), function(error, response) {
+                _this.$.progress.hidden = true;
 
-              if (!error) {
-                _this.list = response;
-              }
-            });
+                if (!error) {
+                  _this.list = response;
+                }
+              });
+            } else {
+              document.querySelector("#polymer_toast").toast("server connection required");
+            }
           } else {
-            document.querySelector("#polymer_toast").toast("server connection required");
+            this.$.progress.hidden = true;
           }
-        } else {
-          this.$.progress.hidden = true;
-        }
-        // }, 1000 * 4);
+        }, 1000 * 2);
       }
     }
 

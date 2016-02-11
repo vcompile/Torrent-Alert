@@ -9,38 +9,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <link rel="import" href="../../polymer/polymer.html">
-<link rel="import" href="../iron-menubar-behavior.html">
 
-<dom-module id="test-menubar">
-
+<dom-module id="x-scrollable-element">
   <template>
-
-    <content></content>
-
-    <div id="extraContent" tabindex="-1">focusable extra content</div>
-
+    <div id="ChildOne">
+      <div id="GrandchildOne"></div>
+    </div>
+    <div id="ChildTwo">
+      <div id="GrandchildTwo"></div>
+    </div>
   </template>
-
+  <script>
+    Polymer({
+      is: 'x-scrollable-element'
+    });
+  </script>
 </dom-module>
-
-<script>
-
-(function() {
-
-  Polymer({
-
-    is: 'test-menubar',
-
-    behaviors: [
-      Polymer.IronMenubarBehavior
-    ],
-
-    get extraContent() {
-      return this.$.extraContent;
-    }
-
-  });
-
-})();
-
-</script>

@@ -71,6 +71,10 @@
     color: #757575;
   }
   
+  .divider {
+    height: 16px;
+  }
+  
   .footer-li {
     min-height: 88px;
   }
@@ -135,18 +139,7 @@
       <paper-header-panel drawer>
         <div class="fit layout vertical">
           <template if="[[user._id]]" is="dom-if">
-            <paper-icon-item class="cursor-p" onclick="Meteor.setTimeout(function(){document.querySelector('#user_prompt').open()},200);">
-              <selectable-icon icon_img_src="[[user.profile.picture]]" item-icon></selectable-icon>
-
-              <paper-item-body two-line>
-                <div>[[user.profile.name]]</div>
-                <div secondary>[[user.profile.email]]</div>
-              </paper-item-body>
-
-              <div class="subhead">[[return_text(project.length)]]</div>
-            </paper-icon-item>
-
-            <!-- <div class="cursor-p horizontal hover layout menu-li relative" on-click="user_prompt">
+            <div class="cursor-p horizontal hover layout menu-li relative" onclick="Meteor.setTimeout(function(){document.querySelector('#user_prompt').open()},200);">
               <div>
                 <selectable-icon icon_img_src="[[user.profile.picture]]"></selectable-icon>
               </div>
@@ -161,7 +154,7 @@
               </div>
 
               <paper-ripple></paper-ripple>
-            </div> -->
+            </div>
           </template>
 
           <div class="flex" style="overflow: auto;">
@@ -205,12 +198,6 @@
           </div>
 
           <paper-item class="cursor-p" style="border-top: 1px solid #EEE;" onclick="Meteor.setTimeout(window.open('https://github.com/HedCET/TorrentAlert','_system'),200);">About TorrentAlert</paper-item>
-
-          <!-- <div class="cursor-p center center-justified horizontal layout menu-li-bottom relative subhead white" onclick="window.open('https://github.com/HedCET/TorrentAlert', '_system')">
-            <div>About TorrentAlert</div>
-
-            <paper-ripple></paper-ripple>
-          </div> -->
         </div>
       </paper-header-panel>
 
@@ -279,6 +266,10 @@
                     </div>
                   </div>
 
+                  <div class="center-center horizontal layout title-li" hidden="[[item.torrent.length]]">
+                    <div class="subhead">noTorrentFound / searching ..</div>
+                  </div>
+
                   <template as="torrent" filter="filter_url" is="dom-repeat" items="[[item.torrent]]" sort="sort">
                     <inbox-item item="[[torrent]]"></inbox-item>
                   </template>
@@ -298,7 +289,7 @@
       <div class="layout vertical">
         <div class="flex prompt-title subhead">User option</div>
 
-        <br>
+        <div class="divider"></div>
 
         <div class="center horizontal layout">
           <div class="body1 flex">enable GCM</div>
@@ -335,7 +326,7 @@
       <div class="layout vertical">
         <div class="subhead">Are you sure to schedule this item ?</div>
 
-        <br>
+        <div class="divider"></div>
 
         <div class="center horizontal layout">
           <div class="body1 flex">schedule / day</div>
