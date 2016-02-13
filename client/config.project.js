@@ -24,9 +24,3 @@ project_progress = _.debounce(function() {
     }
   });
 }, 1000);
-
-project_save = function() {
-  if (document.querySelector("layout-inbox")) {
-    document.querySelector("#torrent_db").value = document.querySelector("layout-inbox").project;
-  }
-};

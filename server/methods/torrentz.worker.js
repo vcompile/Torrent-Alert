@@ -124,8 +124,9 @@ _torrentz_worker = function(worker_id) {
                   row.user.forEach(function(A) {
                     if (_push.find({
                         date: moment().format("YYYY-MM-DD"),
+                        project: row._id,
                         user: A
-                      }).count() < 10) {
+                      }).count() < 5) {
                       if (!_push.findOne({
                           project: row._id,
                           url: torrent.url,

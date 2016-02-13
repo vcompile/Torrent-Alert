@@ -8744,7 +8744,7 @@ this.fire('dom-change');
     };
 
     --layout-around-justified: {
-      -ms-flex-pack: around;
+      -ms-flex-pack: distribute;
       -webkit-justify-content: space-around;
       justify-content: space-around;
     };
@@ -20942,8 +20942,6 @@ mwcLayout = new PolymerLayout();
   Polymer({
 
     exit: function() {
-      project_save();
-
       if (Meteor.isCordova) {
         navigator.app.exitApp();
       }
@@ -21003,8 +21001,8 @@ mwcLayout = new PolymerLayout();
             <div class="body1">[[return_description(item)]]</div>
             <div class="subhead">[[item.title]]</div>
             <div class="center horizontal justified layout">
-              <div class="body1 etc flex-3">[[item.category]]</div>
-              <div class="body1 flex-2 time">[[return_time(item.time)]]</div>
+              <div class="body1 etc flex-5">[[item.category]]</div>
+              <div class="body1 flex-4 time">[[return_time(item.time)]]</div>
             </div>
           </div>
         </div>
@@ -21093,6 +21091,10 @@ mwcLayout = new PolymerLayout();
   
   paper-progress {
     width: 100%;
+  }
+  
+  paper-slider {
+    max-width: 50%;
   }
   
   paper-toolbar {
@@ -21203,66 +21205,48 @@ mwcLayout = new PolymerLayout();
   </style>
 
   <template>
-    <iron-localstorage name="trend" on-iron-localstorage-load-empty="initialize_trend" value="{{trend}}"></iron-localstorage>
+    <iron-localstorage name="trend" on-iron-localstorage-load-empty="initialize_trend" value="[[trend]]"></iron-localstorage>
 
     <paper-drawer-panel id="drawer">
       <paper-header-panel drawer="">
         <div class="fit layout vertical">
           <template if="[[user._id]]" is="dom-if">
-            <div class="cursor-p horizontal hover layout menu-li relative" onclick="Meteor.setTimeout(function(){document.querySelector('#user_prompt').open()},200);">
-              <div>
-                <selectable-icon icon_img_src="[[user.profile.picture]]"></selectable-icon>
-              </div>
+            <paper-icon-item class="cursor-p" onclick="document.querySelector('#user_prompt').open();">
+              <selectable-icon icon_img_src="[[user.profile.picture]]" item-icon=""></selectable-icon>
 
-              <div class="flex layout vertical">
-                <div class="horizontal layout">
-                  <div class="etc flex self-center subhead">[[user.profile.name]]</div>
-                  <div class="body1 self-start">[[return_text(project.length)]]</div>
-                </div>
+              <paper-item-body two-line="">
+                <div>[[user.profile.name]]</div>
+                <div secondary="">[[user.profile.email]]</div>
+              </paper-item-body>
 
-                <div class="body1 etc">[[user.profile.email]]</div>
-              </div>
-
-              <paper-ripple></paper-ripple>
-            </div>
+              <div class="subhead">[[return_text(project.length)]]</div>
+            </paper-icon-item>
           </template>
 
           <div class="flex" style="overflow: auto;">
             <iron-selector id="menu_opt" on-iron-activate="menu_opt" selected-attribute="selected">
-              <div class="cursor-p horizontal hover layout menu-li relative" data-id="trend">
-                <div>
-                  <selectable-icon icon_class="cyan-700" icon_text="@"></selectable-icon>
-                </div>
+              <paper-icon-item class="cursor-p" data-id="trend">
+                <selectable-icon icon_class="cyan-700" icon_text="@" item-icon=""></selectable-icon>
 
-                <div class="flex layout vertical">
-                  <div class="horizontal layout">
-                    <div class="etc flex self-center subhead">Trending</div>
-                    <div class="body1 self-start">[[return_text(trend.keyword.length)]]</div>
-                  </div>
+                <paper-item-body two-line="">
+                  <div>Trending</div>
+                  <div secondary="">[[return_time(trend.time)]]</div>
+                </paper-item-body>
 
-                  <div class="body1 etc">[[return_time(trend.time)]]</div>
-                </div>
-
-                <paper-ripple></paper-ripple>
-              </div>
+                <div class="subhead">[[return_text(trend.keyword.length)]]</div>
+              </paper-icon-item>
 
               <template is="dom-repeat" items="[[project]]">
-                <div class="cursor-p horizontal hover layout menu-li relative" data-id$="[[item._id]]" data-keyword$="[[item.keyword]]">
-                  <div>
-                    <selectable-icon icon_class="[[return_class(item.keyword)]]" icon_text="[[return_icon_text(item.keyword)]]"></selectable-icon>
-                  </div>
+                <paper-icon-item class="cursor-p" data-id$="[[item._id]]" data-keyword$="[[item.keyword]]">
+                  <selectable-icon icon_class="[[return_class(item.keyword)]]" icon_text="[[return_icon_text(item.keyword)]]" item-icon=""></selectable-icon>
 
-                  <div class="flex layout vertical">
-                    <div class="horizontal layout">
-                      <div class="etc flex self-center subhead">[[item.keyword]]</div>
-                      <div class="body1 self-start">[[return_torrent_count(item.torrent)]]</div>
-                    </div>
+                  <paper-item-body two-line="">
+                    <div>[[item.keyword]]</div>
+                    <div secondary="">[[return_project_description(item)]]</div>
+                  </paper-item-body>
 
-                    <div class="body1 etc">[[return_project_description(item)]]</div>
-                  </div>
-
-                  <paper-ripple></paper-ripple>
-                </div>
+                  <div class="subhead">[[return_torrent_count(item.torrent)]]</div>
+                </paper-icon-item>
               </template>
             </iron-selector>
           </div>
@@ -21336,8 +21320,12 @@ mwcLayout = new PolymerLayout();
                     </div>
                   </div>
 
-                  <div class="center-center horizontal layout title-li" hidden="[[item.torrent.length]]">
-                    <div class="subhead">noTorrentFound / searching ..</div>
+                  <div class="center-justified horizontal layout" hidden="[[return_torrent_list_hidden(item.torrent)]]">
+                    <div class="li">
+                      <div class="center-justified cursor-d horizontal layout title-li">
+                        <div class="subhead" style="color: #757575;">noTorrentFoundNow / searching ..</div>
+                      </div>
+                    </div>
                   </div>
 
                   <template as="torrent" filter="filter_url" is="dom-repeat" items="[[item.torrent]]" sort="sort">
@@ -21364,6 +21352,11 @@ mwcLayout = new PolymerLayout();
         <div class="center horizontal layout">
           <div class="body1 flex">enable GCM</div>
           <paper-toggle-button checked="" disabled=""></paper-toggle-button>
+        </div>
+
+        <div class="center horizontal layout">
+          <div class="body1 flex">GCM / project / day</div>
+          <paper-slider disabled="" editable="" max="50" min="1" value="5"></paper-slider>
         </div>
       </div>
 
@@ -21470,6 +21463,10 @@ mwcLayout = new PolymerLayout();
 
             if (-1 < index) {
               _this.splice("project", index, 1);
+
+              Meteor.setTimeout(function() {
+                document.querySelector("#torrent_db").value = _this.project;
+              }, 1000);
             }
           }
         });
@@ -21493,6 +21490,10 @@ mwcLayout = new PolymerLayout();
 
               if (-1 < index) {
                 _this.splice("project." + A + ".torrent", index, 1);
+
+                Meteor.setTimeout(function() {
+                  document.querySelector("#torrent_db").value = _this.project;
+                }, 1000);
               }
             }
           }
@@ -21621,6 +21622,10 @@ mwcLayout = new PolymerLayout();
               }
 
               _this.splice("project", index, 1, response);
+
+              Meteor.setTimeout(function() {
+                document.querySelector("#torrent_db").value = _this.project;
+              }, 1000);
             }
           }
         });
@@ -21700,6 +21705,12 @@ mwcLayout = new PolymerLayout();
 
     return_torrent_description: function(item) {
       return (item.size ? item.size : "#") + " | " + (item.leech ? item.leech + "L" : "#") + " / " + (item.seed ? item.seed + "S" : "#");
+    },
+
+    return_torrent_list_hidden: function(torrent) {
+      return _.find(torrent, function(item) {
+        return item.url;
+      });
     },
 
     schedule: function(e) {
@@ -21833,10 +21844,6 @@ mwcLayout = new PolymerLayout();
       }
     },
 
-    // user_prompt: function() {
-    //   this.$.user_prompt.open();
-    // },
-
     _updater: function() {
       this.debounce("_updater", function() {
         var _this = this;
@@ -21865,6 +21872,10 @@ mwcLayout = new PolymerLayout();
           } else {
             _this.unshift("project", row);
           }
+
+          Meteor.setTimeout(function() {
+            document.querySelector("#torrent_db").value = _this.project;
+          }, 1000);
         });
       }, 1000);
     }
