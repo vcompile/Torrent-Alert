@@ -7,7 +7,7 @@ document.addEventListener("WebComponentsReady", function() {
 
   Meteor.setTimeout(function() {
     document.querySelector("#load_awesome").active = false;
-  }, 1000 * 5);
+  }, 1000 * 4);
 });
 
 FlowRouter.route("/", {

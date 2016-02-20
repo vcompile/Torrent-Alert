@@ -255,7 +255,7 @@
                   <div class="center-justified horizontal layout" hidden="[[return_torrent_list_hidden(item.torrent)]]">
                     <div class="li">
                       <div class="center-justified cursor-d horizontal layout title-li">
-                        <div class="subhead" style="color: #757575;">noTorrentFoundNow / searching ..</div>
+                        <div class="subhead" style="color: #AAA;">noTorrentFoundNow / searching ..</div>
                       </div>
                     </div>
                   </div>
@@ -287,8 +287,8 @@
         </div>
 
         <div class="center horizontal layout">
-          <div class="body1 flex">GCM / keyword / day</div>
-          <paper-slider disabled editable max="50" min="1" value="5"></paper-slider>
+          <div class="body1 flex">max GCM / keyword / day</div>
+          <paper-slider disabled editable max="50" min="1" value="10"></paper-slider>
         </div>
       </div>
 
@@ -395,10 +395,6 @@
 
             if (-1 < index) {
               _this.splice("project", index, 1);
-
-              Meteor.setTimeout(function() {
-                document.querySelector("#torrent_db").value = _this.project;
-              }, 1000);
             }
           }
         });
@@ -422,15 +418,15 @@
 
               if (-1 < index) {
                 _this.splice("project." + A + ".torrent", index, 1);
-
-                Meteor.setTimeout(function() {
-                  document.querySelector("#torrent_db").value = _this.project;
-                }, 1000);
               }
             }
           }
         });
       }, 1000);
+
+      Meteor.setTimeout(function() {
+        document.querySelector("#torrent_db").value = _this.project;
+      }, 1000 * 60);
     },
 
     clear_torrent_selection: function() {
@@ -554,10 +550,6 @@
               }
 
               _this.splice("project", index, 1, response);
-
-              Meteor.setTimeout(function() {
-                document.querySelector("#torrent_db").value = _this.project;
-              }, 1000);
             }
           }
         });
@@ -804,10 +796,6 @@
           } else {
             _this.unshift("project", row);
           }
-
-          Meteor.setTimeout(function() {
-            document.querySelector("#torrent_db").value = _this.project;
-          }, 1000);
         });
       }, 1000);
     }

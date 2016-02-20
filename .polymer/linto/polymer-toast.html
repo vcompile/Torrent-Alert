@@ -1,8 +1,26 @@
 <dom-module id="polymer-toast">
 
+  <style>
+  paper-toast {
+    margin: 8px;
+    padding: 8px 16px;
+    z-index: 1000;
+  }
+  
+  paper-toast > div {
+    color: var(--paper-yellow-500);
+    margin-left: 16px;
+    padding: 8px;
+  }
+  
+  .subhead {
+    @apply(--paper-font-subhead);
+  }
+  </style>
+
   <template>
-    <paper-toast class="cursor-d horizontal justified layout" duration="4000" id="toast" on-transitionend="transition" style="font-size: 16px; margin-right: 12px; padding: 16px; z-index: 1000;" text="">
-      <div class="cursor-p self-start" hidden="[[!undo.torrent]]" on-click="clear_undo" style="color: #FFEB3B; margin-left: 8px;">UNDO</div>
+    <paper-toast class="center cursor-d horizontal justified layout subhead" duration="4000" id="toast" on-iron-announce="toast_open" on-transitionend="transition">
+      <div class="cursor-p self-start subhead" hidden="[[!undo.torrent]]" on-click="clear_undo">UNDO</div>
     </paper-toast>
   </template>
 
@@ -33,7 +51,7 @@
 
       Tracker.autorun(function() {
         if (Meteor.status().connected) {
-          if (_this.$.toast.text != "" && _this.$.toast.text != "server connected") {
+          if (_this.$.toast.text != "server connected") {
             _this.toast("server connected");
           }
         } else {
@@ -53,11 +71,17 @@
       }, 400);
     },
 
+    toast_open: function() {
+      if (document.querySelector(".menu-b")) {
+        this.async(function() {
+          document.querySelector(".menu-b").translate3d(0, "-" + ($("#toast #label").height() + 32) + "px", 0);
+        }, 40);
+      }
+    },
+
     transition: function() {
       if (document.querySelector(".menu-b")) {
-        if (this.$.toast.opened) {
-          document.querySelector(".menu-b").translate3d(0, "-" + ($("#toast #label").height() + 56) + "px", 0);
-        } else {
+        if (!this.$.toast.opened) {
           if (this.undo.torrent) {
             if (Meteor.status().connected) {
               Meteor.call("remove_torrent", this.undo, function(error) {

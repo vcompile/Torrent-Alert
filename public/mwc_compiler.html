@@ -7994,6 +7994,7 @@ this.fire('dom-change');
         this._oldTabIndex = this.tabIndex;
         this.focused = false;
         this.tabIndex = -1;
+        this.blur();
       } else if (this._oldTabIndex !== undefined) {
         this.tabIndex = this._oldTabIndex;
       }
@@ -10636,16 +10637,19 @@ is separate from validation, and `allowed-pattern` does not affect how the input
      */
     setItemSelected: function(item, isSelected) {
       if (item != null) {
-        if (isSelected) {
-          this.selection.push(item);
-        } else {
-          var i = this.selection.indexOf(item);
-          if (i >= 0) {
-            this.selection.splice(i, 1);
+        if (isSelected !== this.isSelected(item)) {
+          // proceed to update selection only if requested state differs from current
+          if (isSelected) {
+            this.selection.push(item);
+          } else {
+            var i = this.selection.indexOf(item);
+            if (i >= 0) {
+              this.selection.splice(i, 1);
+            }
           }
-        }
-        if (this.selectCallback) {
-          this.selectCallback(item, isSelected);
+          if (this.selectCallback) {
+            this.selectCallback(item, isSelected);
+          }
         }
       }
     },
@@ -10806,7 +10810,8 @@ is separate from validation, and `allowed-pattern` does not affect how the input
     },
 
     observers: [
-      '_updateSelected(attrForSelected, selected)'
+      '_updateAttrForSelected(attrForSelected)',
+      '_updateSelected(selected)'
     ],
 
     created: function() {
@@ -10818,7 +10823,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       this._observer = this._observeItems(this);
       this._updateItems();
       if (!this._shouldUpdateSelection) {
-        this._updateSelected(this.attrForSelected,this.selected)
+        this._updateSelected();
       }
       this._addListener(this.activateEvent);
     },
@@ -10911,6 +10916,12 @@ is separate from validation, and `allowed-pattern` does not affect how the input
       this._setItems(nodes);
     },
 
+    _updateAttrForSelected: function() {
+      if (this._shouldUpdateSelection) {
+        this.selected = this._indexToValue(this.indexOf(this.selectedItem));        
+      }
+    },
+
     _updateSelected: function() {
       this._selectSelected(this.selected);
     },
@@ -10980,7 +10991,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         }
 
         // Let other interested parties know about the change so that
-        // we don't have to recreate mutation observers everywher.
+        // we don't have to recreate mutation observers everywhere.
         this.fire('iron-items-changed', mutations, {
           bubbles: false,
           cancelable: false
@@ -11047,7 +11058,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
     },
 
     observers: [
-      '_updateSelected(attrForSelected, selectedValues)'
+      '_updateSelected(selectedValues)'
     ],
 
     /**
@@ -11078,6 +11089,18 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         (this.selectedValues != null && this.selectedValues.length);
     },
 
+    _updateAttrForSelected: function() {
+      if (!this.multi) {
+        Polymer.IronSelectableBehavior._updateAttrForSelected.apply(this);
+      } else if (this._shouldUpdateSelection) {
+        this.selectedValues = this.selectedItems.map(function(selectedItem) {
+          return this._indexToValue(this.indexOf(selectedItem));        
+        }, this).filter(function(unfilteredValue) {
+          return unfilteredValue != null;
+        }, this);
+      }
+    },
+
     _updateSelected: function() {
       if (this.multi) {
         this._selectMulti(this.selectedValues);
@@ -11087,11 +11110,16 @@ is separate from validation, and `allowed-pattern` does not affect how the input
     },
 
     _selectMulti: function(values) {
-      this._selection.clear();
       if (values) {
-        for (var i = 0; i < values.length; i++) {
-          this._selection.setItemSelected(this._valueToItem(values[i]), true);
+        var selectedItems = this._valuesToItems(values);
+        // clear all but the current selected items
+        this._selection.clear(selectedItems);
+        // select only those not selected yet
+        for (var i = 0; i < selectedItems.length; i++) {
+          this._selection.setItemSelected(selectedItems[i], true);
         }
+      } else {
+        this._selection.clear();
       }
     },
 
@@ -11114,6 +11142,12 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         this.splice('selectedValues',i,1);
       }
       this._selection.setItemSelected(this._valueToItem(value), unselected);
+    },
+
+    _valuesToItems: function(values) {
+      return (values == null) ? null : values.map(function(value) {
+        return this._valueToItem(value);
+      }, this);
     }
   };
 
@@ -13531,9 +13565,12 @@ context. You should place this element as a child of `<body>` whenever possible.
       if (this._callOpenedWhenReady) {
         this._openedChanged();
       }
+      this._observer = Polymer.dom(this).observeNodes(this._onNodesChange);
     },
 
     detached: function() {
+      Polymer.dom(this).unobserveNodes(this._observer);
+      this._observer = null;
       this.opened = false;
       this._manager.trackBackdrop(this);
       this._manager.removeOverlay(this);
@@ -13565,9 +13602,10 @@ context. You should place this element as a child of `<body>` whenever possible.
 
     /**
      * Cancels the overlay.
+     * @param {?Event} event The original event
      */
-    cancel: function() {
-      var cancelEvent = this.fire('iron-overlay-canceled', undefined, {cancelable: true});
+    cancel: function(event) {
+      var cancelEvent = this.fire('iron-overlay-canceled', event, {cancelable: true});
       if (cancelEvent.defaultPrevented) {
         return;
       }
@@ -13590,7 +13628,6 @@ context. You should place this element as a child of `<body>` whenever possible.
         this.removeAttribute('aria-hidden');
       } else {
         this.setAttribute('aria-hidden', 'true');
-        Polymer.dom(this).unobserveNodes(this._observer);
       }
 
       // wait to call after ready only if we're initially open
@@ -13678,14 +13715,23 @@ context. You should place this element as a child of `<body>` whenever possible.
 
     // tasks which must occur before opening; e.g. making the element visible
     _prepareRenderOpened: function() {
+
       this._manager.addOverlay(this);
 
+      // Needed to calculate the size of the overlay so that transitions on its size
+      // will have the correct starting points.
       this._preparePositioning();
       this.fit();
       this._finishPositioning();
 
       if (this.withBackdrop) {
         this.backdropElement.prepare();
+      }
+
+      // Safari will apply the focus to the autofocus element when displayed for the first time,
+      // so we blur it. Later, _applyFocus will set the focus if necessary.
+      if (this.noAutoFocus && document.activeElement === this._focusNode) {
+        this._focusNode.blur();
       }
     },
 
@@ -13706,23 +13752,24 @@ context. You should place this element as a child of `<body>` whenever possible.
     },
 
     _finishRenderOpened: function() {
-      // focus the child node with [autofocus]
+      // This ensures the overlay is visible before we set the focus
+      // (by calling _onIronResize -> refit).
+      this.notifyResize();
+      // Focus the child node with [autofocus]
       this._applyFocus();
 
-      this._observer = Polymer.dom(this).observeNodes(this.notifyResize);
       this.fire('iron-overlay-opened');
     },
 
     _finishRenderClosed: function() {
-      // hide the overlay and remove the backdrop
+      // Hide the overlay and remove the backdrop.
       this.resetFit();
       this.style.display = 'none';
       this._manager.removeOverlay(this);
 
-      this._focusedChild = null;
       this._applyFocus();
-
       this.notifyResize();
+
       this.fire('iron-overlay-closed', this.closingReason);
     },
 
@@ -13735,8 +13782,9 @@ context. You should place this element as a child of `<body>` whenever possible.
     _finishPositioning: function() {
       this.style.display = 'none';
       this.style.transform = this.style.webkitTransform = '';
-      // force layout to avoid application of transform
-      /** @suppress {suspiciousCode} */ this.offsetWidth;
+      // Force layout layout to avoid application of transform.
+      // Set offsetWidth to itself so that compilers won't remove it.
+      this.offsetWidth = this.offsetWidth;
       this.style.transition = this.style.webkitTransition = '';
     },
 
@@ -13747,6 +13795,7 @@ context. You should place this element as a child of `<body>` whenever possible.
         }
       } else {
         this._focusNode.blur();
+        this._focusedChild = null;
         this._manager.focusOverlay();
       }
     },
@@ -13757,7 +13806,7 @@ context. You should place this element as a child of `<body>` whenever possible.
         if (this.noCancelOnOutsideClick) {
           this._applyFocus();
         } else {
-          this.cancel();
+          this.cancel(event);
         }
       }
     },
@@ -13767,7 +13816,7 @@ context. You should place this element as a child of `<body>` whenever possible.
       if (this._manager.currentOverlay() === this &&
           !this.noCancelOnEscKey &&
           event.keyCode === ESC) {
-        this.cancel();
+        this.cancel(event);
       }
     },
 
@@ -13788,6 +13837,17 @@ context. You should place this element as a child of `<body>` whenever possible.
       if (this.opened) {
         this.refit();
       }
+    },
+
+    /**
+     * @protected
+     * Will call notifyResize if overlay is opened.
+     * Can be overridden in order to avoid multiple observers on the same node.
+     */
+    _onNodesChange: function() {
+      if (this.opened) {
+        this.notifyResize();
+      }
     }
 
 /**
@@ -13799,6 +13859,7 @@ context. You should place this element as a child of `<body>` whenever possible.
  * Fired when the `iron-overlay` is canceled, but before it is closed.
  * Cancel the event to prevent the `iron-overlay` from closing.
  * @event iron-overlay-canceled
+ * @param {?Event} event The event in case the user pressed ESC or clicked outside the overlay
  */
 
 /**
@@ -19990,9 +20051,8 @@ mwcLayout = new PolymerLayout();
         margin: 12px;
         font-size: 14px;
         cursor: default;
-        -webkit-transition: visibility 0.3s, -webkit-transform 0.3s, opacity 0.3s;
-        transition: visibility 0.3s, transform 0.3s, opacity 0.3s;
-        visibility: hidden;
+        -webkit-transition: -webkit-transform 0.3s, opacity 0.3s;
+        transition: transform 0.3s, opacity 0.3s;
         opacity: 0;
         -webkit-transform: translateY(100px);
         transform: translateY(100px);
@@ -20011,7 +20071,6 @@ mwcLayout = new PolymerLayout();
       }
 
       :host(.paper-toast-open) {
-        visibility: visible;
         opacity: 1;
         -webkit-transform: translateY(0px);
         transform: translateY(0px);
@@ -20060,7 +20119,11 @@ mwcLayout = new PolymerLayout();
           noCancelOnOutsideClick: {
             type: Boolean,
             value: true
-          },
+          }
+        },
+
+        listeners: {
+          'transitionend': '__onTransitionEnd'
         },
 
         /**
@@ -20087,9 +20150,23 @@ mwcLayout = new PolymerLayout();
         },
 
         /**
-         * Show the toast. Same as `open()` from `IronOverlayBehavior`.
+         * Show the toast. Without arguments, this is the same as `open()` from `IronOverlayBehavior`.
+         * @param {Object|string|undefined} properties Properties to be set before opening the toast.
+         * e.g. `toast.show('hello')` or `toast.show({text: 'hello', duration: 3000})`
          */
-        show: function() {
+        show: function(properties) {
+          if (typeof properties == 'string') {
+            properties = { text: properties };
+          }
+          for (var property in properties) {
+            if (property.indexOf('_') === 0) {
+              console.warn('The property "' + property + '" is private and was not set.');
+            } else if (property in this) {
+              this[property] = properties[property];
+            } else {
+              console.warn('The property "' + property + '" is not valid.');
+            }
+          }
           this.open();
         },
 
@@ -20098,6 +20175,38 @@ mwcLayout = new PolymerLayout();
          */
         hide: function() {
           this.close();
+        },
+
+        /**
+         * Overridden from `IronFitBehavior`.
+         * Positions the toast at the bottom left of fitInto.
+         */
+        center: function () {
+          if (this.fitInto === window) {
+            this.style.bottom = this.style.left = '';
+          } else {
+            var rect = this.fitInto.getBoundingClientRect();
+            this.style.left = rect.left + 'px';
+            this.style.bottom = (window.innerHeight - rect.bottom) + 'px';
+          }
+        },
+
+        /**
+         * Called on transitions of the toast, indicating a finished animation
+         * @private
+         */
+        __onTransitionEnd: function(e) {
+          // there are different transitions that are happening when opening and
+          // closing the toast. The last one so far is for `opacity`.
+          // This marks the end of the transition, so we check for this to determine if this
+          // is the correct event.
+          if (e && e.target === this && e.propertyName === 'opacity') {
+            if (this.opened) {
+              this._finishRenderOpened();
+            } else {
+              this._finishRenderClosed();
+            }
+          }
         },
 
         /**
@@ -20171,6 +20280,7 @@ mwcLayout = new PolymerLayout();
         display: inline-block;
         @apply(--layout-horizontal);
         @apply(--layout-center);
+        @apply(--paper-font-common-base);
       }
 
       :host([disabled]) {
@@ -20190,6 +20300,7 @@ mwcLayout = new PolymerLayout();
         opacity: 0.4;
         transition: background-color linear .08s;
         background-color: var(--paper-toggle-button-unchecked-bar-color, #000000);
+
         @apply(--paper-toggle-button-unchecked-bar);
       }
 
@@ -20204,6 +20315,7 @@ mwcLayout = new PolymerLayout();
         transition: transform linear .08s, background-color linear .08s;
         will-change: transform;
         background-color: var(--paper-toggle-button-unchecked-button-color, --paper-grey-50);
+
         @apply(--paper-toggle-button-unchecked-button);
       }
 
@@ -20214,7 +20326,8 @@ mwcLayout = new PolymerLayout();
 
       :host([checked]:not([disabled])) .toggle-bar {
         opacity: 0.5;
-        background-color: var(--paper-toggle-button-checked-bar-color, --default-primary-color);
+        background-color: var(--paper-toggle-button-checked-bar-color, --primary-color);
+
         @apply(--paper-toggle-button-checked-bar);
       }
 
@@ -20229,7 +20342,8 @@ mwcLayout = new PolymerLayout();
       }
 
       :host([checked]:not([disabled])) .toggle-button {
-        background-color: var(--paper-toggle-button-checked-button-color, --default-primary-color);
+        background-color: var(--paper-toggle-button-checked-button-color, --primary-color);
+
         @apply(--paper-toggle-button-checked-button);
       }
 
@@ -20250,7 +20364,7 @@ mwcLayout = new PolymerLayout();
       }
 
       :host([checked]) .toggle-ink {
-        color: var(--paper-toggle-button-checked-ink-color, --default-primary-color);
+        color: var(--paper-toggle-button-checked-ink-color, --primary-color);
       }
 
       .toggle-container {
@@ -21331,7 +21445,7 @@ mwcLayout = new PolymerLayout();
                   <div class="center-justified horizontal layout" hidden="[[return_torrent_list_hidden(item.torrent)]]">
                     <div class="li">
                       <div class="center-justified cursor-d horizontal layout title-li">
-                        <div class="subhead" style="color: #757575;">noTorrentFoundNow / searching ..</div>
+                        <div class="subhead" style="color: #AAA;">noTorrentFoundNow / searching ..</div>
                       </div>
                     </div>
                   </div>
@@ -21363,8 +21477,8 @@ mwcLayout = new PolymerLayout();
         </div>
 
         <div class="center horizontal layout">
-          <div class="body1 flex">GCM / keyword / day</div>
-          <paper-slider disabled="" editable="" max="50" min="1" value="5"></paper-slider>
+          <div class="body1 flex">max GCM / keyword / day</div>
+          <paper-slider disabled="" editable="" max="50" min="1" value="10"></paper-slider>
         </div>
       </div>
 
@@ -21471,10 +21585,6 @@ mwcLayout = new PolymerLayout();
 
             if (-1 < index) {
               _this.splice("project", index, 1);
-
-              Meteor.setTimeout(function() {
-                document.querySelector("#torrent_db").value = _this.project;
-              }, 1000);
             }
           }
         });
@@ -21498,15 +21608,15 @@ mwcLayout = new PolymerLayout();
 
               if (-1 < index) {
                 _this.splice("project." + A + ".torrent", index, 1);
-
-                Meteor.setTimeout(function() {
-                  document.querySelector("#torrent_db").value = _this.project;
-                }, 1000);
               }
             }
           }
         });
       }, 1000);
+
+      Meteor.setTimeout(function() {
+        document.querySelector("#torrent_db").value = _this.project;
+      }, 1000 * 60);
     },
 
     clear_torrent_selection: function() {
@@ -21630,10 +21740,6 @@ mwcLayout = new PolymerLayout();
               }
 
               _this.splice("project", index, 1, response);
-
-              Meteor.setTimeout(function() {
-                document.querySelector("#torrent_db").value = _this.project;
-              }, 1000);
             }
           }
         });
@@ -21880,10 +21986,6 @@ mwcLayout = new PolymerLayout();
           } else {
             _this.unshift("project", row);
           }
-
-          Meteor.setTimeout(function() {
-            document.querySelector("#torrent_db").value = _this.project;
-          }, 1000);
         });
       }, 1000);
     }
@@ -21905,7 +22007,7 @@ mwcLayout = new PolymerLayout();
   </style>
 
   <template>
-    <div class="center-center fit layout vertical" style="background: black; opacity: 0.5; z-index: 1000;">
+    <div class="center-center fit layout vertical" style="background: black; opacity: 0.4; z-index: 1000;">
       <div class="la-line-scale-pulse-out-rapid la-2x">
         <div></div>
         <div></div>
@@ -21940,9 +22042,27 @@ mwcLayout = new PolymerLayout();
 </dom-module>
 <dom-module id="polymer-toast" assetpath="/linto/">
 
+  <style>
+  paper-toast {
+    margin: 8px;
+    padding: 8px 16px;
+    z-index: 1000;
+  }
+  
+  paper-toast > div {
+    color: var(--paper-yellow-500);
+    margin-left: 16px;
+    padding: 8px;
+  }
+  
+  .subhead {
+    @apply(--paper-font-subhead);
+  }
+  </style>
+
   <template>
-    <paper-toast class="cursor-d horizontal justified layout" duration="4000" id="toast" on-transitionend="transition" style="font-size: 16px; margin-right: 12px; padding: 16px; z-index: 1000;" text="">
-      <div class="cursor-p self-start" hidden="[[!undo.torrent]]" on-click="clear_undo" style="color: #FFEB3B; margin-left: 8px;">UNDO</div>
+    <paper-toast class="center cursor-d horizontal justified layout subhead" duration="4000" id="toast" on-iron-announce="toast_open" on-transitionend="transition">
+      <div class="cursor-p self-start subhead" hidden="[[!undo.torrent]]" on-click="clear_undo">UNDO</div>
     </paper-toast>
   </template>
 
@@ -21973,7 +22093,7 @@ mwcLayout = new PolymerLayout();
 
       Tracker.autorun(function() {
         if (Meteor.status().connected) {
-          if (_this.$.toast.text != "" && _this.$.toast.text != "server connected") {
+          if (_this.$.toast.text != "server connected") {
             _this.toast("server connected");
           }
         } else {
@@ -21993,11 +22113,17 @@ mwcLayout = new PolymerLayout();
       }, 400);
     },
 
+    toast_open: function() {
+      if (document.querySelector(".menu-b")) {
+        this.async(function() {
+          document.querySelector(".menu-b").translate3d(0, "-" + ($("#toast #label").height() + 32) + "px", 0);
+        }, 40);
+      }
+    },
+
     transition: function() {
       if (document.querySelector(".menu-b")) {
-        if (this.$.toast.opened) {
-          document.querySelector(".menu-b").translate3d(0, "-" + ($("#toast #label").height() + 56) + "px", 0);
-        } else {
+        if (!this.$.toast.opened) {
           if (this.undo.torrent) {
             if (Meteor.status().connected) {
               Meteor.call("remove_torrent", this.undo, function(error) {

@@ -126,7 +126,7 @@ _torrentz_worker = function(worker_id) {
                         date: moment().format("YYYY-MM-DD"),
                         project: row._id,
                         user: A
-                      }).count() < 5) {
+                      }).count() < 10) {
                       if (!_push.findOne({
                           project: row._id,
                           url: torrent.url,
