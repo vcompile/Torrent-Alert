@@ -10,7 +10,7 @@ App.icons({
 App.info({
   id: "com.vcompile.torrentz",
   name: "Torrent Alert",
-  description: "Torrent Search, Keyword Scheduler & Alerter",
+  description: "Torrent Keyword Scheduler & Alerter",
   version: "1.9.8",
   author: "LintoCheeran",
   email: "linto.cet@gmail.com",

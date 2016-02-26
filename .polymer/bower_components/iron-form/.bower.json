@@ -1,6 +1,6 @@
 {
   "name": "iron-form",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "Makes it easier to manage forms",
   "keywords": [
     "web-components",
@@ -37,11 +37,11 @@
     "paper-item": "PolymerElements/paper-item#^1.0.0",
     "paper-styles": "PolymerElements/paper-styles#^1.0.0"
   },
-  "_release": "1.0.14",
+  "_release": "1.0.15",
   "_resolution": {
     "type": "version",
-    "tag": "v1.0.14",
-    "commit": "13e7ba085677994d54a329fd9a8037d2d2520e1a"
+    "tag": "v1.0.15",
+    "commit": "a1754f1fe3d9683a888bd0019ab56cd1f68fff00"
   },
   "_source": "git://github.com/PolymerElements/iron-form.git",
   "_target": "^1.0.0",
