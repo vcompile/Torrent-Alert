@@ -17,6 +17,7 @@ kadira:flow-router
 meteorhacks:npm
 momentjs:moment
 mwc:compiler
+mwc:mixin
 raix:push
 
 npm-container

@@ -1,0 +1,225 @@
+<dom-module id="old-layout">
+
+  <style>
+  paper-button {
+    margin: 0;
+    min-width: 50%;
+    padding: 16px;
+  }
+  
+  paper-dialog {
+    width: 320px;
+  }
+  
+  paper-drawer-panel /deep/ #drawer,
+  paper-drawer-panel /deep/ #main #scrim {
+    z-index: 1;
+  }
+  
+  paper-icon-item {
+    border-bottom: 1px solid #EEE;
+  }
+  
+  paper-slider {
+    max-width: 50%;
+  }
+  
+  .body1 {
+    @apply(--paper-font-body1);
+    color: #757575;
+  }
+  
+  .divider {
+    height: 16px;
+  }
+  
+  .prompt-title {
+    border-bottom: 1px solid #757575;
+    padding: 8px 0;
+  }
+  
+  .subhead {
+    @apply(--paper-font-subhead);
+  }
+  </style>
+
+
+  <template>
+
+    <paper-drawer-panel id="paper_drawer_panel">
+
+      <paper-header-panel drawer>
+        <div class="fit layout vertical">
+          <template if="[[user._id]]" is="dom-if">
+            <paper-icon-item class="cursor-p" onclick="document.querySelector('#user_prompt').open();">
+              <selectable-icon icon_img_src="[[user.profile.picture]]" item-icon></selectable-icon>
+
+              <paper-item-body two-line>
+                <div>[[user.profile.name]]</div>
+                <div secondary>[[user.profile.email]]</div>
+              </paper-item-body>
+
+              <div class="subhead">[[return_text(mwcData.project.length)]]</div>
+            </paper-icon-item>
+          </template>
+
+          <div class="flex" style="overflow: auto;">
+            <iron-selector on-iron-activate="menu_opt" selected-attribute="selected">
+              <paper-icon-item class="cursor-p" data-id="trending">
+                <selectable-icon icon_class="cyan-700" icon_text="@" item-icon></selectable-icon>
+
+                <paper-item-body two-line>
+                  <div>Trending</div>
+                  <div secondary>[[return_time(trending.time)]]</div>
+                </paper-item-body>
+
+                <div class="subhead">[[return_text(trending.keyword.length)]]</div>
+              </paper-icon-item>
+
+              <template is="dom-repeat" items="[[mwcData.project]]">
+                <paper-icon-item class="cursor-p" data-id$="[[item._id]]">
+                  <selectable-icon icon_class="[[return_class(item.keyword)]]" icon_text="[[return_icon_text(item.keyword)]]" item-icon></selectable-icon>
+
+                  <paper-item-body two-line>
+                    <div>[[item.keyword]]</div>
+                    <div secondary>[[return_project_description(item)]]</div>
+                  </paper-item-body>
+
+                  <div class="subhead">[[return_text(item.torrent.length)]]</div>
+                </paper-icon-item>
+              </template>
+            </iron-selector>
+          </div>
+
+          <paper-item class="cursor-p" onclick="window.open('https://github.com/HedCET/TorrentAlert','_system');" style="border-top: 1px solid #EEE;">About TorrentAlert</paper-item>
+        </div>
+      </paper-header-panel>
+
+      <neon-animated-pages attr-for-selected="data-page" class="fit" main selected="[[selected]]">
+        <add-project data-page="add-project" id="add_project"></add-project>
+        <bookmark-view data-page="bookmark-view" id="bookmark_view"></bookmark-view>
+        <project-view data-page="project-view" id="project_view"></project-view>
+        <searchbar-view data-page="searchbar-view" id="searchbar_view"></searchbar-view>
+        <torrent-view data-page="torrent-view" id="torrent_view"></torrent-view>
+        <trending-view data-page="trending-view" id="trending_view"></trending-view>
+      </neon-animated-pages>
+
+    </paper-drawer-panel>
+
+    <paper-dialog id="user_prompt">
+      <div class="layout vertical">
+        <div class="flex prompt-title subhead">User option</div>
+
+        <div class="divider"></div>
+        <div class="center horizontal layout">
+          <div class="body1 flex">enable GCM</div>
+          <paper-toggle-button checked disabled></paper-toggle-button>
+        </div>
+
+        <div class="divider"></div>
+        <div class="center horizontal layout">
+          <div class="body1 flex">max GCM / keyword / day</div>
+          <paper-slider disabled editable max="50" min="1" value="10"></paper-slider>
+        </div>
+      </div>
+
+      <div class="buttons">
+        <paper-button on-click="sign_out">
+          <iron-icon icon="social:person-outline"></iron-icon> sign out
+        </paper-button>
+
+        <paper-button onclick="document.querySelector('#user_prompt').close();">
+          <iron-icon icon="close"></iron-icon> cancel
+        </paper-button>
+      </div>
+    </paper-dialog>
+
+  </template>
+
+  <script>
+  Polymer({
+
+    attached: function() {
+      var _this = this;
+
+      Tracker.autorun(function() {
+        _this.user = (Meteor.user() ? Meteor.user() : {});
+      });
+    },
+
+    behaviors: [mwcMixin],
+
+    getMeteorData: function() {
+      Meteor.subscribe("project");
+
+      return {
+        project: _project.find().fetch()
+      };
+    },
+
+    is: "old-layout",
+
+    menu_opt: function(e, d) {
+      this.$.paper_drawer_panel.closeDrawer();
+
+      FlowRouter.setQueryParams({
+        project: (d.item.dataset.id == "trending" ? null : d.item.dataset.id),
+        route: (d.item.dataset.id == "trending" ? null : "project-view")
+      });
+    },
+
+    menu_toggle: function() {
+      if (this.$.paper_drawer_panel.narrow && this.$.paper_drawer_panel.getBoundingClientRect().width <= parseInt(this.$.paper_drawer_panel.responsiveWidth)) {
+        this.$.paper_drawer_panel.togglePanel();
+      } else {
+        this.$.paper_drawer_panel.forceNarrow = !this.$.paper_drawer_panel.forceNarrow;
+      }
+    },
+
+    properties: {
+      selected: {
+        type: String,
+        value: "trending-view"
+      },
+      user: {
+        type: Object,
+        value: function() {
+          return {};
+        }
+      }
+    },
+
+    return_class: function(text) {
+      return polymer_color(text ? text : "#");
+    },
+
+    return_icon_text: function(text) {
+      return (isNaN(text.charAt(0)) ? text.charAt(0) : "#");
+    },
+
+    return_project_description: function(item) {
+      return (item.worker == "schedule" ? item.within + "M | " + item.leech + "L / " + item.seed + "S" : moment(item.time).format("MMM DD ddd hh:mm A"));
+    },
+
+    return_text: function(text) {
+      return (text ? text : "#");
+    },
+
+    return_time: function(time) {
+      return (moment(time).isValid() ? moment(time).format("MMM DD ddd hh:mm A") : "#");
+    },
+
+    sign_out: function() {
+      if (Meteor.status().connected) {
+        this.project = [];
+
+        FlowRouter.go("/main/sign-out");
+      } else {
+        document.querySelector("#polymer_toast").toast("server connection required");
+      }
+    }
+
+  });
+  </script>
+
+</dom-module>

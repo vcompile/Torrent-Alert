@@ -53,11 +53,11 @@
 
   <template>
     <div class="icon">
-      <template if="{{icon_img_src}}" is="dom-if">
-        <img class$="{{icon_class}}" src$="{{icon_img_src}}">
+      <template if="[[icon_img_src]]" is="dom-if">
+        <img class$="[[icon_class]]" src$="[[icon_img_src]]">
       </template>
 
-      <span class$="center-center font-title horizontal layout letter {{icon_class}}" hidden$="{{icon_img_src}}">{{icon_text}}</span>
+      <span class$="center-center font-title horizontal layout letter [[icon_class]]" hidden="[[icon_img_src]]">[[icon_text]]</span>
 
       <iron-icon icon="check"></iron-icon>
     </div>

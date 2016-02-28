@@ -1,0 +1,228 @@
+<dom-module id="project-view">
+
+  <style>
+  paper-fab {
+    --paper-fab-background: var(--paper-red-500);
+    --paper-fab-keyboard-focus-background: var(--paper-red-700);
+  }
+  
+  paper-progress {
+    width: 100%;
+  }
+  
+  paper-toolbar {
+    --paper-toolbar-background: var(--paper-cyan-700);
+    --paper-toolbar-color: white;
+  }
+  
+  paper-toolbar paper-icon-button {
+    margin: 0!important;
+  }
+  
+  paper-toolbar paper-icon-button[icon="arrow-back"] {
+    transform: translateX(-42px);
+  }
+  
+  paper-toolbar.selection paper-icon-button[icon="arrow-back"] {
+    transform: translateX(0);
+  }
+  
+  paper-toolbar .selection-hidden {
+    padding: 8px;
+    transform: rotateY(0);
+    transition: transform 400ms ease-in-out;
+    visibility: visible;
+    width: 40px;
+    will-change: transform;
+  }
+  
+  paper-toolbar.selection .selection-hidden {
+    padding: 0;
+    transform: rotateY(90deg);
+    visibility: hidden;
+    width: 0;
+  }
+  
+  paper-toolbar.selection .selection-visible {
+    padding: 8px;
+    transform: rotateY(0);
+    transition: transform 400ms ease-in-out;
+    visibility: visible;
+    width: 40px;
+    will-change: transform;
+  }
+  
+  paper-toolbar .selection-visible {
+    padding: 0;
+    transform: rotateY(90deg);
+    visibility: hidden;
+    width: 0;
+  }
+  
+  paper-toolbar .title {
+    padding: 0 8px;
+  }
+  
+  .body1 {
+    @apply(--paper-font-body1);
+    color: #757575;
+  }
+  
+  .footer-li {
+    min-height: 88px;
+  }
+  
+  .menu-b {
+    bottom: 16px;
+    position: fixed;
+    right: 16px;
+    transition: transform 0.2s ease-in-out;
+    will-change: transform;
+  }
+  
+  .menu-b.move-down {
+    transform: translate3d(0, 88px, 0)!important;
+  }
+  
+  .subhead {
+    @apply(--paper-font-subhead);
+  }
+  
+  .title-li,
+  .title-li > div {
+    padding: 8px;
+  }
+  </style>
+
+  <template>
+    <paper-header-panel>
+      <paper-toolbar id="project_view_toolbar" class$="[[return_class(mwcData.project.keyword)]]">
+        <paper-icon-button class="selection-visible" icon="arrow-back" on-click="clear_torrent_selection"></paper-icon-button>
+        <paper-icon-button class="selection-hidden" icon="menu" on-click="menu_toggle" paper-drawer-toggle></paper-icon-button>
+
+        <div class="title" id="project_view_toolbar_title">TorrentAlert</div>
+
+        <paper-icon-button class="selection-visible" icon="bookmark-border" on-click="bookmark"></paper-icon-button>
+        <paper-icon-button class="selection-visible" icon="delete" on-click="remove_torrent"></paper-icon-button>
+        <paper-icon-button class="selection-visible" icon="social:share" on-click="share"></paper-icon-button>
+        <paper-icon-button class="selection-hidden" icon="search" on-click="searchbar"></paper-icon-button>
+      </paper-toolbar>
+
+      <div class="center-justified horizontal layout">
+        <div class="li">
+          <div class="center horizontal layout title-li">
+            <div class="flex subhead">[[mwcData.project.keyword]]</div>
+
+            <paper-icon-button icon="refresh" on-click="refresh"></paper-icon-button>
+            <paper-icon-button icon="alarm-add" hidden="[[!is_search(mwcData.project.worker)]]" on-click="schedule"></paper-icon-button>
+            <paper-icon-button icon="close" on-click="remove_project"></paper-icon-button>
+          </div>
+        </div>
+      </div>
+
+      <div class="center-justified horizontal layout">
+        <div class="li">
+          <div style="padding: 0 4px;">
+            <paper-progress id="project_progress" indeterminate></paper-progress>
+          </div>
+        </div>
+      </div>
+
+      <div class="center-justified horizontal layout" hidden="[[mwcData.torrent.length]]">
+        <div class="li">
+          <div class="center-justified cursor-d horizontal layout title-li">
+            <div class="subhead" style="color: #AAA;">noTorrentFoundNow / searching ..</div>
+          </div>
+        </div>
+      </div>
+
+      <iron-selector activate-event="click" attr-for-selected="item" multi selected-attribute="selected" selected-values="{{torrent_selected}}">
+        <template filter="filter_url" is="dom-repeat" items="[[mwcData.torrent]]" sort="sort">
+          <torrent-item item="[[item]]"></torrent-item>
+        </template>
+      </iron-selector>
+
+      <div class="footer-li"></div>
+    </paper-header-panel>
+
+    <paper-fab class="menu-b" id="fab" icon="add" on-click="add_project"></paper-fab>
+  </template>
+
+  <script>
+  Polymer({
+
+    add_project: function() {
+      FlowRouter.setQueryParams({
+        "back-route": "project-view",
+        route: "add-project"
+      });
+    },
+
+    behaviors: [mwcMixin],
+
+    filter_url: function(torrent) {
+      return (torrent.url);
+    },
+
+    getMeteorData: function() {
+      Meteor.subscribe("torrent", {
+        field: "project",
+        id: FlowRouter.getQueryParam("project")
+      });
+      Meteor.subscribe("worker", FlowRouter.getQueryParam("project"));
+
+      return {
+        project: _project.findOne({
+          _id: FlowRouter.getQueryParam("project")
+        }),
+        torrent: _torrent.find({
+          project: FlowRouter.getQueryParam("project")
+        }).fetch(),
+        worker: _worker.find().fetch()
+      };
+    },
+
+    is: "project-view",
+
+    is_search: function(worker) {
+      return (worker == "search")
+    },
+
+    menu_toggle: function() {
+      document.querySelector("#old_layout").menu_toggle();
+    },
+
+    observers: [
+      "torrent_selected_change(torrent_selected.splices)"
+    ],
+
+    properties: {
+      torrent_selected: {
+        type: Array,
+        value: function() {
+          return [];
+        }
+      }
+    },
+
+    return_class: function(text) {
+      return polymer_color(text ? text : "#");
+    },
+
+    sort: function(A, Z) {
+      return (parseInt(moment(Z.time).format("x")) - parseInt(moment(A.time).format("x")));
+    },
+
+    torrent_selected_change: function(change) {
+      if (change) {
+        this.$.fab.toggleClass("move-down", this.torrent_selected.length);
+        this.$.project_view_toolbar.toggleClass("selection", this.torrent_selected.length);
+
+        this.$.project_view_toolbar_title.textContent = (this.torrent_selected.length ? this.torrent_selected.length : "TorrentAlert");
+      }
+    }
+
+  });
+  </script>
+
+</dom-module>

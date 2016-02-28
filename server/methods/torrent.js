@@ -7,6 +7,7 @@ Meteor.methods({
     if (!user) throw new Meteor.Error(422, "userNotFound");
 
     check(input, {
+      project: String,
       torrent: [String]
     });
 
@@ -14,10 +15,11 @@ Meteor.methods({
       _id: {
         $in: input.torrent
       },
+      project: input.project,
       user: user._id
     }, {
-      $addToSet: {
-        user_removed: user._id
+      $pull: {
+        user: user._id
       }
     }, {
       multi: true

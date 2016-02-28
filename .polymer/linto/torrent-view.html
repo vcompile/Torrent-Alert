@@ -1,20 +1,6 @@
 <dom-module id="torrent-view">
 
   <style>
-  :host {
-    display: none;
-  }
-  
-  :host([active]) {
-    display: block;
-  }
-  
-  :host > div {
-    background: #EEE;
-    overflow: auto;
-    z-index: 10;
-  }
-  
   paper-icon-item {
     border-bottom: 1px solid #EEE;
   }
@@ -53,52 +39,48 @@
   <template>
     <iron-localstorage name="proxy" on-iron-localstorage-load-empty="initialize_proxy" value="{{proxy}}"></iron-localstorage>
 
-    <div class="fit layout vertical">
-      <div class="flex">
-        <div class="center-justified horizontal layout">
-          <div class="li">
-            <div class="cursor-p horizontal layout title-li">
-              <div>
-                <paper-icon-button icon="arrow-back" on-click="back"></paper-icon-button>
-              </div>
-
-              <div class="flex layout vertical">
-                <div class="body1">[[return_description(torrent)]]</div>
-
-                <div><span class="subhead">[[torrent.title]]</span>&nbsp;&nbsp;<span class$="body2 [[return_class(torrent.category)]]">&nbsp;&nbsp;[[torrent.category]]&nbsp;&nbsp;</span>&nbsp;&nbsp;</div>
-              </div>
+    <paper-header-panel style="background: #EEE;">
+      <div class="center-justified horizontal layout">
+        <div class="li">
+          <div class="cursor-p horizontal layout title-li">
+            <div>
+              <paper-icon-button icon="arrow-back" on-click="back"></paper-icon-button>
             </div>
-          </div>
-        </div>
 
-        <div class="center-justified horizontal layout">
-          <div class="li">
-            <iron-selector activate-event="click" id="link" on-click="click" selected-attribute="selected">
-              <template is="dom-repeat" items="[[torrent.link]]">
-                <paper-icon-item class="cursor-d white" data-link$="[[item.url]]">
-                  <selectable-icon icon_class="[[return_class(item.text)]]" icon_text="[[return_icon_text(item.text)]]" item-icon></selectable-icon>
+            <div class="flex layout vertical">
+              <div class="body1">[[return_description(mwcData.torrent)]]</div>
 
-                  <paper-item-body two-line>
-                    <div>[[item.text]]</div>
-                    <div secondary>[[return_time(item.time)]]</div>
-                  </paper-item-body>
-                </paper-icon-item>
-              </template>
-            </iron-selector>
-          </div>
-        </div>
-
-        <div class="center-justified horizontal layout">
-          <div class="li">
-            <div class="center footer-li horizontal layout">
-              <div>
-                <paper-toggle-button checked="{{proxy}}">enable proxy</paper-toggle-button>
-              </div>
+              <div><span class="subhead">[[mwcData.torrent.title]]</span>&nbsp;&nbsp;<span class$="body2 [[return_class(mwcData.torrent.category)]]">&nbsp;&nbsp;[[mwcData.torrent.category]]&nbsp;&nbsp;</span>&nbsp;&nbsp;</div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+
+      <div class="center-justified horizontal layout">
+        <div class="li">
+          <template is="dom-repeat" items="[[mwcData.torrent.link]]">
+            <paper-icon-item class="cursor-p white" data-link$="[[item.url]]" on-click="click">
+              <selectable-icon icon_class="[[return_class(item.text)]]" icon_text="[[return_icon_text(item.text)]]" item-icon></selectable-icon>
+
+              <paper-item-body two-line>
+                <div>[[item.text]]</div>
+                <div secondary>[[return_time(item.time)]]</div>
+              </paper-item-body>
+            </paper-icon-item>
+          </template>
+        </div>
+      </div>
+
+      <div class="center-justified horizontal layout">
+        <div class="li">
+          <div class="center footer-li horizontal layout">
+            <div>
+              <paper-toggle-button checked="{{proxy}}">enable proxy</paper-toggle-button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </paper-header-panel>
   </template>
 
   <script>
@@ -106,16 +88,29 @@
 
     back: function() {
       FlowRouter.setQueryParams({
-        "route": null
+        "route": (FlowRouter.getQueryParam("back-route") ? FlowRouter.getQueryParam("back-route") : null)
       });
     },
 
-    click: function(e) {
+    behaviors: [mwcMixin],
+
+    click: function(e, d) {
       e.stopPropagation();
 
-      this.async(function() {
-        window.open((this.proxy ? "http://do.vcompile.com/proxy/redirect.php?url=" + encodeURIComponent(document.querySelector("#link").selectedItem.dataset.link) : document.querySelector("#link").selectedItem.dataset.link), "_system");
-      }, 200);
+      window.open((this.proxy ? "http://do.vcompile.com/proxy/redirect.php?url=" + encodeURIComponent(e.model.__data__.item.url) : e.model.__data__.item.url), "_system");
+    },
+
+    getMeteorData: function() {
+      Meteor.subscribe("torrent", {
+        field: "torrent",
+        id: FlowRouter.getQueryParam("torrent")
+      });
+
+      return {
+        torrent: _torrent.findOne({
+          _id: FlowRouter.getQueryParam("torrent")
+        })
+      };
     },
 
     initialize_proxy: function() {
@@ -125,21 +120,9 @@
     is: "torrent-view",
 
     properties: {
-      active: {
-        notify: true,
-        reflectToAttribute: true,
-        type: Boolean,
-        value: false
-      },
       proxy: {
         type: Boolean,
         value: false
-      },
-      torrent: {
-        type: Object,
-        value: function() {
-          return {};
-        }
       }
     },
 
@@ -148,7 +131,7 @@
     },
 
     return_description: function(item) {
-      return (item.size ? item.size : "#") + " | " + (item.leech ? item.leech + "L" : "#") + " / " + (item.seed ? item.seed + "S" : "#");
+      return (item ? (item.size ? item.size : "#") + " | " + (item.leech ? item.leech + "L" : "#") + " / " + (item.seed ? item.seed + "S" : "#") : "#");
     },
 
     return_icon_text: function(text) {

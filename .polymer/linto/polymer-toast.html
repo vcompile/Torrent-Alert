@@ -51,7 +51,7 @@
 
       Tracker.autorun(function() {
         if (Meteor.status().connected) {
-          if (_this.$.toast.text != "server connected") {
+          if (_this.$.toast.text && _this.$.toast.text != "server connected") {
             _this.toast("server connected");
           }
         } else {

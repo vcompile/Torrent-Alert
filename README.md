@@ -1,4 +1,4 @@
-MeteorJS Polymer Project, [Mobile Browser Link](http://do.vcompile.com:16000)
+MeteorJS Polymer Project, [Mobile Browser Version](http://do.vcompile.com:16000)
 
 Install Guide
 ----------
@@ -10,4 +10,4 @@ cd TorrentAlert
 meteor
 ```
 
-MAILTO ```request@vcompile.com``` For Abuse/ContentRemoval/copyright/DMCA/EUCD
+MIT License & MAILTO ```request@vcompile.com``` For Abuse/ContentRemoval/copyright/DMCA/EUCD

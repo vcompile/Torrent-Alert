@@ -42,10 +42,10 @@
   </style>
 
   <template>
-    <neon-animated-pages class="fit" selected="[[selected]]">
-      <user-check-layout></user-check-layout>
+    <neon-animated-pages attr-for-selected="data-page" class="fit" selected="[[selected]]">
+      <user-check-layout data-page="layout"></user-check-layout>
 
-      <card-route ripple_class="white">
+      <card-route data-page="sign-in" ripple_class="white">
         <div class="center-justified fit horizontal layout white">
           <div class="layout li vertical">
             <div class="center horizontal layout page-title">
@@ -77,7 +77,7 @@
         </div>
       </card-route>
 
-      <card-route ripple_class="cyan-700">
+      <card-route data-page="sign-up" ripple_class="cyan-700">
         <div class="center-justified cyan-700 fit horizontal layout">
           <div class="layout li vertical">
             <div class="center horizontal layout page-title">
@@ -120,11 +120,11 @@
         Tracker.autorun(function() {
           if (Meteor.status().connected) {
             if (Meteor.user()) {
-              FlowRouter.go("/inbox");
+              FlowRouter.go("/main");
             }
-          } else {
-            if ((document.querySelector("#torrent_db").value || []).length) {
-              FlowRouter.go("/inbox");
+          } else { // offline
+            if ((document.querySelector("#torrent_db").value || []).length) { // localstorage
+              FlowRouter.go("/main");
             }
           }
         });
@@ -132,7 +132,7 @@
     },
 
     back: function() {
-      this.selected = 0;
+      this.selected = "layout";
 
       Meteor.setTimeout(function() {
         FlowRouter.setQueryParams({
@@ -187,8 +187,8 @@
         value: "password"
       },
       selected: {
-        type: Number,
-        value: 0
+        type: String,
+        value: "layout"
       }
     },
 
@@ -198,7 +198,7 @@
 
         if (valid_email.test(this.email)) {
           switch (this.selected) {
-            case 1:
+            case "sign-in":
               document.querySelector("#load_awesome").active = true;
 
               Accounts.forgotPassword({
@@ -214,7 +214,7 @@
               });
               break;
 
-            case 2:
+            case "sign-up":
               document.querySelector("#load_awesome").active = true;
 
               Meteor.call("sendEnrollmentEmail", this.email, function(error, res) {

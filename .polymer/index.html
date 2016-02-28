@@ -11,15 +11,15 @@
 
   <link href="bower_components/load-awesome/css/line-scale-pulse-out-rapid.min.css" rel="stylesheet">
 
-  <link href="/img/0.png" rel="prefetch">
-  <link href="/img/1.png" rel="prefetch">
-  <link href="/img/2.png" rel="prefetch">
-
 </head>
 
 <body>
 
   <iron-localstorage id="torrent_db" name="torrent_db"></iron-localstorage>
+
+  <exit-controller id="exit_controller"></exit-controller>
+  <load-awesome id="load_awesome"></load-awesome>
+  <polymer-toast id="polymer_toast"></polymer-toast>
 
   <style>
   * {
@@ -89,23 +89,16 @@
   }
   </style>
 
-  <exit-controller id="exit_controller"></exit-controller>
-  <load-awesome id="load_awesome"></load-awesome>
-  <polymer-toast id="polymer_toast"></polymer-toast>
-
-  <mwc-layout id="inbox">
-    <div region="add-project"></div>
-    <div region="layout-inbox"></div>
-    <div region="search-bar"></div>
-    <div region="torrent-view"></div>
-  </mwc-layout>
-
-  <mwc-layout id="main">
+  <mwc-layout id="main-layout">
     <div region="body"></div>
   </mwc-layout>
 
   <mwc-layout id="set-password">
-    <div region="opt"></div>
+    <div region="body"></div>
+  </mwc-layout>
+
+  <mwc-layout id="user-check">
+    <div region="body"></div>
   </mwc-layout>
 
 </body>

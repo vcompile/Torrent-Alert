@@ -37,12 +37,14 @@
 
     is: "exit-controller",
 
-    time: function(time) {
-      if ((parseInt(time) - parseInt(this._time)) < 1000) {
+    prompt: function() {
+      var A = moment().format("x");
+
+      if ((parseInt(A) - parseInt(this._time)) < 1000) {
         this.$.exit_prompt.open();
       }
 
-      this._time = moment().format("x");
+      this._time = A;
     },
 
     _time: moment().format("x")

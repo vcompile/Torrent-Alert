@@ -45,6 +45,7 @@ var useShadow = wantShadow && hasShadow;
 var hasNativeImports = Boolean('import' in document.createElement('link'));
 var useNativeImports = hasNativeImports;
 var useNativeCustomElements = !window.CustomElements || window.CustomElements.useNative;
+var usePolyfillProto = !useNativeCustomElements && !Object.__proto__;
 return {
 wantShadow: wantShadow,
 hasShadow: hasShadow,
@@ -52,7 +53,8 @@ nativeShadow: nativeShadow,
 useShadow: useShadow,
 useNativeShadow: useShadow && nativeShadow,
 useNativeImports: useNativeImports,
-useNativeCustomElements: useNativeCustomElements
+useNativeCustomElements: useNativeCustomElements,
+usePolyfillProto: usePolyfillProto
 };
 }()
 };
@@ -84,7 +86,6 @@ prototype = Polymer.Base.chainObject(prototype, base);
 prototype.registerCallback();
 return prototype.constructor;
 };
-window.Polymer = Polymer;
 if (userPolymer) {
 for (var i in userPolymer) {
 Polymer[i] = userPolymer[i];
@@ -170,7 +171,6 @@ for (var i = 0, h; i < callbacks.length; i++) {
 h = callbacks[i];
 h[1].apply(h[0], h[2] || Polymer.nar);
 }
-;
 }
 };
 if (window.HTMLImports) {
@@ -293,7 +293,7 @@ createdCallback: function () {
 this.register();
 },
 register: function (id) {
-var id = id || this.id || this.getAttribute('name') || this.getAttribute('is');
+id = id || this.id || this.getAttribute('name') || this.getAttribute('is');
 if (id) {
 this.id = id;
 modules[id] = this;
@@ -353,11 +353,16 @@ this.behaviors = this._desugarSomeBehaviors(this.behaviors);
 }
 },
 _desugarSomeBehaviors: function (behaviors) {
+var behaviorSet = [];
 behaviors = this._flattenBehaviorsList(behaviors);
 for (var i = behaviors.length - 1; i >= 0; i--) {
-this._mixinBehavior(behaviors[i]);
+var b = behaviors[i];
+if (behaviorSet.indexOf(b) === -1) {
+this._mixinBehavior(b);
+behaviorSet.unshift(b);
 }
-return behaviors;
+}
+return behaviorSet;
 },
 _flattenBehaviorsList: function (behaviors) {
 var flat = [];
@@ -479,7 +484,6 @@ if (info) {
 return info;
 }
 }
-;
 }
 return info || Polymer.nob;
 },
@@ -495,7 +499,7 @@ return p;
 },
 _prepPropertyInfo: function () {
 this._propertyInfo = {};
-for (var i = 0, p; i < this.behaviors.length; i++) {
+for (var i = 0; i < this.behaviors.length; i++) {
 this._addPropertyInfo(this._propertyInfo, this.behaviors[i].properties);
 }
 this._addPropertyInfo(this._propertyInfo, this.properties);
@@ -530,26 +534,17 @@ t.readOnly = s.readOnly;
 });
 Polymer.CaseMap = {
 _caseMap: {},
+_rx: {
+dashToCamel: /-[a-z]/g,
+camelToDash: /([A-Z])/g
+},
 dashToCamelCase: function (dash) {
-var mapped = Polymer.CaseMap._caseMap[dash];
-if (mapped) {
-return mapped;
-}
-if (dash.indexOf('-') < 0) {
-return Polymer.CaseMap._caseMap[dash] = dash;
-}
-return Polymer.CaseMap._caseMap[dash] = dash.replace(/-([a-z])/g, function (m) {
+return this._caseMap[dash] || (this._caseMap[dash] = dash.indexOf('-') < 0 ? dash : dash.replace(this._rx.dashToCamel, function (m) {
 return m[1].toUpperCase();
-});
+}));
 },
 camelToDashCase: function (camel) {
-var mapped = Polymer.CaseMap._caseMap[camel];
-if (mapped) {
-return mapped;
-}
-return Polymer.CaseMap._caseMap[camel] = camel.replace(/([a-z][A-Z])/g, function (g) {
-return g[0] + '-' + g[1].toLowerCase();
-});
+return this._caseMap[camel] || (this._caseMap[camel] = camel.replace(this._rx.camelToDash, '-$1').toLowerCase());
 }
 };
 Polymer.Base._addFeature({
@@ -589,7 +584,7 @@ this._setAttributeToProperty(model, info.attribute, i, info);
 },
 _setAttributeToProperty: function (model, attribute, property, info) {
 if (!this._serializing) {
-var property = property || Polymer.CaseMap.dashToCamelCase(attribute);
+property = property || Polymer.CaseMap.dashToCamelCase(attribute);
 info = info || this._propertyInfo && this._propertyInfo[property];
 if (info && !info.readOnly) {
 var v = this.getAttribute(attribute);
@@ -619,7 +614,7 @@ case Number:
 value = Number(value);
 break;
 case Boolean:
-value = value !== null;
+value = value != null;
 break;
 case Object:
 try {
@@ -650,7 +645,7 @@ case 'boolean':
 return value ? '' : undefined;
 case 'object':
 if (value instanceof Date) {
-return value;
+return value.toString();
 } else if (value) {
 try {
 return JSON.stringify(value);
@@ -663,7 +658,7 @@ return value != null ? value : undefined;
 }
 }
 });
-Polymer.version = '1.2.4';
+Polymer.version = '1.3.0';
 Polymer.Base._addFeature({
 _registerFeatures: function () {
 this._prepIs();
@@ -804,8 +799,8 @@ distances[i][0] = i;
 }
 for (var j = 0; j < columnCount; j++)
 distances[0][j] = j;
-for (var i = 1; i < rowCount; i++) {
-for (var j = 1; j < columnCount; j++) {
+for (i = 1; i < rowCount; i++) {
+for (j = 1; j < columnCount; j++) {
 if (this.equals(current[currentStart + j - 1], old[oldStart + i - 1]))
 distances[i][j] = distances[i - 1][j - 1];
 else {
@@ -885,7 +880,7 @@ return [splice];
 } else if (oldStart == oldEnd)
 return [newSplice(currentStart, [], currentEnd - currentStart)];
 var ops = this.spliceOperationsFromEditDistances(this.calcEditDistances(current, currentStart, currentEnd, old, oldStart, oldEnd));
-var splice = undefined;
+splice = undefined;
 var splices = [];
 var index = currentStart;
 var oldIndex = oldStart;
@@ -1051,7 +1046,7 @@ return { getInnerHTML: getInnerHTML };
 var nativeInsertBefore = Element.prototype.insertBefore;
 var nativeAppendChild = Element.prototype.appendChild;
 var nativeRemoveChild = Element.prototype.removeChild;
-var TreeApi = Polymer.TreeApi = {
+Polymer.TreeApi = {
 arrayCopyChildNodes: function (parent) {
 var copy = [], i = 0;
 for (var n = parent.firstChild; n; n = n.nextSibling) {
@@ -2108,7 +2103,6 @@ return this.node.classList.contains.apply(this.node.classList, arguments);
 'use strict';
 var DomApi = Polymer.DomApi.ctor;
 var Settings = Polymer.Settings;
-var hasDomApi = Polymer.DomApi.hasDomApi;
 DomApi.EffectiveNodesObserver = function (domApi) {
 this.domApi = domApi;
 this.node = this.domApi.node;
@@ -2161,7 +2155,7 @@ if (this._hasListeners()) {
 this._scheduleNotify();
 }
 },
-_notify: function (mxns) {
+_notify: function () {
 this._beforeCallListeners();
 this._callListeners();
 },
@@ -2232,8 +2226,8 @@ for (var j = 0, n; j < s.removed.length && (n = s.removed[j]); j++) {
 info.removedNodes.push(n);
 }
 }
-for (var i = 0, s; i < splices.length && (s = splices[i]); i++) {
-for (var j = s.index; j < s.index + s.addedCount; j++) {
+for (i = 0, s; i < splices.length && (s = splices[i]); i++) {
+for (j = s.index; j < s.index + s.addedCount; j++) {
 info.addedNodes.push(newNodes[j]);
 }
 }
@@ -2251,7 +2245,6 @@ enableShadowAttributeTracking: function () {
 if (Settings.useShadow) {
 var baseSetup = DomApi.EffectiveNodesObserver.prototype._setup;
 var baseCleanup = DomApi.EffectiveNodesObserver.prototype._cleanup;
-var beforeCallListeners = DomApi.EffectiveNodesObserver.prototype._beforeCallListeners;
 Polymer.Base.extend(DomApi.EffectiveNodesObserver.prototype, {
 _setup: function () {
 if (!this._observer) {
@@ -2566,7 +2559,7 @@ d -= s.addedCount;
 }
 for (var i = 0, s, next; i < splices.length && (s = splices[i]); i++) {
 next = composed[s.index];
-for (var j = s.index, n; j < s.index + s.addedCount; j++) {
+for (j = s.index, n; j < s.index + s.addedCount; j++) {
 n = children[j];
 TreeApi.Composed.insertBefore(container, n, next);
 composed.splice(j, 0, n);
@@ -2843,7 +2836,7 @@ _parseNodeAnnotations: function (node, list, stripWhiteSpace) {
 return node.nodeType === Node.TEXT_NODE ? this._parseTextNodeAnnotation(node, list) : this._parseElementAnnotations(node, list, stripWhiteSpace);
 },
 _bindingRegex: function () {
-var IDENT = '(?:' + '[a-zA-Z_$][\\w.:$-*]*' + ')';
+var IDENT = '(?:' + '[a-zA-Z_$][\\w.:$\\-*]*' + ')';
 var NUMBER = '(?:' + '[-+]?[0-9]*\\.?[0-9]+(?:[eE][-+]?[0-9]+)?' + ')';
 var SQUOTE_STRING = '(?:' + '\'(?:[^\'\\\\]|\\\\.)*\'' + ')';
 var DQUOTE_STRING = '(?:' + '"(?:[^"\\\\]|\\\\.)*"' + ')';
@@ -3022,12 +3015,14 @@ if (node.localName === 'input' && origName === 'value') {
 node.setAttribute(origName, '');
 }
 node.removeAttribute(origName);
+var propertyName = Polymer.CaseMap.dashToCamelCase(name);
 if (kind === 'property') {
-name = Polymer.CaseMap.dashToCamelCase(name);
+name = propertyName;
 }
 return {
 kind: kind,
 name: name,
+propertyName: propertyName,
 parts: parts,
 literal: literal,
 isCompound: parts.length !== 1
@@ -3132,8 +3127,10 @@ var b = note.bindings[j];
 for (var k = 0; k < b.parts.length; k++) {
 var p = b.parts[k];
 if (!p.literal) {
-p.signature = this._parseMethod(p.value);
-if (!p.signature) {
+var signature = this._parseMethod(p.value);
+if (signature) {
+p.signature = signature;
+} else {
 p.model = this._modelForPath(p.value);
 }
 }
@@ -3197,7 +3194,7 @@ this._marshalAnnotatedNodes();
 this._marshalAnnotatedListeners();
 }
 },
-_configureAnnotationReferences: function (config) {
+_configureAnnotationReferences: function () {
 var notes = this._notes;
 var nodes = this._nodes;
 for (var i = 0; i < notes.length; i++) {
@@ -3526,7 +3523,7 @@ if (type === 'touchstart' || type === 'touchmove') {
 Gestures.handleTouchAction(ev);
 }
 }
-if (type === 'touchend') {
+if (type === 'touchend' && !ev.__polymerSimulatedTouch) {
 POINTERSTATE.mouse.target = Polymer.dom(ev).rootTarget;
 ignoreMouse(true);
 }
@@ -3540,14 +3537,12 @@ var recognizers = Gestures.recognizers;
 for (var i = 0, r; i < recognizers.length; i++) {
 r = recognizers[i];
 if (gs[r.name] && !handled[r.name]) {
-if (r.flow && r.flow.start.indexOf(ev.type) > -1) {
-if (r.reset) {
+if (r.flow && r.flow.start.indexOf(ev.type) > -1 && r.reset) {
 r.reset();
 }
 }
 }
-}
-for (var i = 0, r; i < recognizers.length; i++) {
+for (i = 0, r; i < recognizers.length; i++) {
 r = recognizers[i];
 if (gs[r.name] && !handled[r.name]) {
 handled[r.name] = true;
@@ -3812,6 +3807,9 @@ var movefn = function movefn(e) {
 var x = e.clientX, y = e.clientY;
 if (self.hasMovedEnough(x, y)) {
 self.info.state = self.info.started ? e.type === 'mouseup' ? 'end' : 'track' : 'start';
+if (self.info.state === 'start') {
+Gestures.prevent('tap');
+}
 self.info.addMove({
 x: x,
 y: y
@@ -3826,7 +3824,6 @@ self.info.started = true;
 };
 var upfn = function upfn(e) {
 if (self.info.started) {
-Gestures.prevent('tap');
 movefn(e);
 }
 untrackDocument(self.info);
@@ -3845,6 +3842,9 @@ var t = Gestures.findOriginalTarget(e);
 var ct = e.changedTouches[0];
 var x = ct.clientX, y = ct.clientY;
 if (this.hasMovedEnough(x, y)) {
+if (this.info.state === 'start') {
+Gestures.prevent('tap');
+}
 this.info.addMove({
 x: x,
 y: y
@@ -3858,7 +3858,6 @@ touchend: function (e) {
 var t = Gestures.findOriginalTarget(e);
 var ct = e.changedTouches[0];
 if (this.info.started) {
-Gestures.prevent('tap');
 this.info.state = 'end';
 this.info.addMove({
 x: ct.clientX,
@@ -4067,7 +4066,7 @@ return n.nodeType === Node.ELEMENT_NODE;
 fire: function (type, detail, options) {
 options = options || Polymer.nob;
 var node = options.node || this;
-var detail = detail === null || detail === undefined ? {} : detail;
+detail = detail === null || detail === undefined ? {} : detail;
 var bubbles = options.bubbles === undefined ? true : options.bubbles;
 var cancelable = Boolean(options.cancelable);
 var useCache = options._useCache;
@@ -4251,7 +4250,7 @@ _sortPropertyEffects: function () {
 var EFFECT_ORDER = {
 'compute': 0,
 'annotation': 1,
-'computedAnnotation': 2,
+'annotatedComputation': 2,
 'reflect': 3,
 'notify': 4,
 'observer': 5,
@@ -4284,11 +4283,11 @@ Object.defineProperty(model, property, defun);
 upper: function (name) {
 return name[0].toUpperCase() + name.substring(1);
 },
-_addAnnotatedListener: function (model, index, property, path, event) {
+_addAnnotatedListener: function (model, index, property, path, event, negated) {
 if (!model._bindListeners) {
 model._bindListeners = [];
 }
-var fn = this._notedListenerFactory(property, path, this._isStructured(path));
+var fn = this._notedListenerFactory(property, path, this._isStructured(path), negated);
 var eventName = event || Polymer.CaseMap.camelToDashCase(property) + '-changed';
 model._bindListeners.push({
 index: index,
@@ -4304,12 +4303,15 @@ return path.indexOf('.') > 0;
 _isEventBogus: function (e, target) {
 return e.path && e.path[0] !== target;
 },
-_notedListenerFactory: function (property, path, isStructured) {
+_notedListenerFactory: function (property, path, isStructured, negated) {
 return function (target, value, targetPath) {
 if (targetPath) {
 this._notifyPath(this._fixPath(path, property, targetPath), value);
 } else {
 value = target[property];
+if (negated) {
+value = !value;
+}
 if (!isStructured) {
 this[path] = value;
 } else {
@@ -4329,7 +4331,6 @@ for (var i = 0, l = b$.length, info; i < l && (info = b$[i]); i++) {
 var node = inst._nodes[info.index];
 this._addNotifyListener(node, inst, info.event, info.changedFn);
 }
-;
 },
 _addNotifyListener: function (element, context, event, changedFn) {
 element.addEventListener(event, function (e) {
@@ -4339,7 +4340,7 @@ return context._notifyListener(changedFn, e);
 };
 Polymer.Base.extend(Polymer.Bind, {
 _shouldAddListener: function (effect) {
-return effect.name && effect.kind != 'attribute' && effect.kind != 'text' && !effect.isCompound && effect.parts[0].mode === '{' && !effect.parts[0].negate;
+return effect.name && effect.kind != 'attribute' && effect.kind != 'text' && !effect.isCompound && effect.parts[0].mode === '{';
 },
 _annotationEffect: function (source, value, effect) {
 if (source != effect.value) {
@@ -4377,19 +4378,22 @@ var args = Polymer.Bind._marshalArgs(this.__data__, effect, source, value);
 if (args) {
 fn.apply(this, args);
 }
+} else if (effect.dynamicFn) {
 } else {
 this._warn(this._logf('_complexObserverEffect', 'observer method `' + effect.method + '` not defined'));
 }
 },
 _computeEffect: function (source, value, effect) {
-var args = Polymer.Bind._marshalArgs(this.__data__, effect, source, value);
-if (args) {
 var fn = this[effect.method];
 if (fn) {
-this.__setProperty(effect.name, fn.apply(this, args));
+var args = Polymer.Bind._marshalArgs(this.__data__, effect, source, value);
+if (args) {
+var computedvalue = fn.apply(this, args);
+this.__setProperty(effect.name, computedvalue);
+}
+} else if (effect.dynamicFn) {
 } else {
 this._warn(this._logf('_computeEffect', 'compute method `' + effect.method + '` not defined'));
-}
 }
 },
 _annotatedComputationEffect: function (source, value, effect) {
@@ -4404,6 +4408,7 @@ computedvalue = !computedvalue;
 }
 this._applyEffectValue(effect, computedvalue);
 }
+} else if (effect.dynamicFn) {
 } else {
 computedHost._warn(computedHost._logf('_annotatedComputationEffect', 'compute method `' + effect.method + '` not defined'));
 }
@@ -4411,6 +4416,7 @@ computedHost._warn(computedHost._logf('_annotatedComputationEffect', 'compute me
 _marshalArgs: function (model, effect, path, value) {
 var values = [];
 var args = effect.args;
+var bailoutEarly = args.length > 1 || effect.dynamicFn;
 for (var i = 0, l = args.length; i < l; i++) {
 var arg = args[i];
 var name = arg.name;
@@ -4422,7 +4428,7 @@ v = Polymer.Base._get(name, model);
 } else {
 v = model[name];
 }
-if (args.length > 1 && v === undefined) {
+if (bailoutEarly && v === undefined) {
 return;
 }
 if (arg.wildcard) {
@@ -4477,12 +4483,23 @@ Polymer.Bind.ensurePropertyEffects(this, p);
 },
 _addComputedEffect: function (name, expression) {
 var sig = this._parseMethod(expression);
+var dynamicFn = sig.dynamicFn;
 for (var i = 0, arg; i < sig.args.length && (arg = sig.args[i]); i++) {
 this._addPropertyEffect(arg.model, 'compute', {
 method: sig.method,
 args: sig.args,
 trigger: arg,
-name: name
+name: name,
+dynamicFn: dynamicFn
+});
+}
+if (dynamicFn) {
+this._addPropertyEffect(sig.method, 'compute', {
+method: sig.method,
+args: sig.args,
+trigger: null,
+name: name,
+dynamicFn: dynamicFn
 });
 }
 },
@@ -4504,11 +4521,21 @@ var sig = this._parseMethod(observer);
 if (!sig) {
 throw new Error('Malformed observer expression \'' + observer + '\'');
 }
+var dynamicFn = sig.dynamicFn;
 for (var i = 0, arg; i < sig.args.length && (arg = sig.args[i]); i++) {
 this._addPropertyEffect(arg.model, 'complexObserver', {
 method: sig.method,
 args: sig.args,
-trigger: arg
+trigger: arg,
+dynamicFn: dynamicFn
+});
+}
+if (dynamicFn) {
+this._addPropertyEffect(sig.method, 'complexObserver', {
+method: sig.method,
+args: sig.args,
+trigger: null,
+dynamicFn: dynamicFn
 });
 }
 },
@@ -4522,7 +4549,7 @@ this._addAnnotationEffect(binding, i);
 },
 _addAnnotationEffect: function (note, index) {
 if (Polymer.Bind._shouldAddListener(note)) {
-Polymer.Bind._addAnnotatedListener(this, index, note.name, note.parts[0].value, note.parts[0].event);
+Polymer.Bind._addAnnotatedListener(this, index, note.name, note.parts[0].value, note.parts[0].event, note.parts[0].negate);
 }
 for (var i = 0; i < note.parts.length; i++) {
 var part = note.parts[i];
@@ -4533,6 +4560,7 @@ this._addPropertyEffect(part.model, 'annotation', {
 kind: note.kind,
 index: index,
 name: note.name,
+propertyName: note.propertyName,
 value: part.value,
 isCompound: note.isCompound,
 compoundIndex: part.compoundIndex,
@@ -4553,6 +4581,9 @@ if (!arg.literal) {
 this.__addAnnotatedComputationEffect(arg.model, index, note, part, arg);
 }
 }
+if (sig.dynamicFn) {
+this.__addAnnotatedComputationEffect(sig.method, index, note, part, null);
+}
 }
 },
 __addAnnotatedComputationEffect: function (property, index, note, part, trigger) {
@@ -4565,16 +4596,21 @@ name: note.name,
 negate: part.negate,
 method: part.signature.method,
 args: part.signature.args,
-trigger: trigger
+trigger: trigger,
+dynamicFn: part.signature.dynamicFn
 });
 },
 _parseMethod: function (expression) {
-var m = expression.match(/([^\s]+?)\((.*)\)/);
+var m = expression.match(/([^\s]+?)\(([\s\S]*)\)/);
 if (m) {
 var sig = {
 method: m[1],
 static: true
 };
+if (this.getPropertyInfo(sig.method) !== Polymer.nob) {
+sig.static = false;
+sig.dynamicFn = true;
+}
 if (m[2].trim()) {
 var args = m[2].replace(/\\,/g, '&comma;').split(',');
 return this._parseArgs(args, sig);
@@ -4662,6 +4698,8 @@ this._effectEffects('__static__', null, this._propertyEffects.__static__);
 }
 }
 });
+(function () {
+var usePolyfillProto = Polymer.Settings.usePolyfillProto;
 Polymer.Base._addFeature({
 _setupConfigure: function (initialConfig) {
 this._config = {};
@@ -4708,7 +4746,10 @@ this._distributeConfig(this._config);
 _configureProperties: function (properties, config) {
 for (var i in properties) {
 var c = properties[i];
-if (c.value !== undefined) {
+if (!usePolyfillProto && this.hasOwnProperty(i) && this._propertyEffects && this._propertyEffects[i]) {
+config[i] = this[i];
+delete this[i];
+} else if (c.value !== undefined) {
 var value = c.value;
 if (typeof value == 'function') {
 value = value.call(this, this._config);
@@ -4726,9 +4767,15 @@ if (fx) {
 for (var i = 0, l = fx.length, x; i < l && (x = fx[i]); i++) {
 if (x.kind === 'annotation' && !x.isCompound) {
 var node = this._nodes[x.effect.index];
-if (node._configValue) {
+var name = x.effect.propertyName;
+var isAttr = x.effect.kind == 'attribute';
+var hasEffect = node._propertyEffects && node._propertyEffects[name];
+if (node._configValue && (hasEffect || !isAttr)) {
 var value = p === x.effect.value ? config[p] : this._get(x.effect.value, config);
-node._configValue(x.effect.name, value);
+if (isAttr) {
+value = node.deserialize(this.serialize(value), node._propertyInfo[name].type);
+}
+node._configValue(name, value);
 }
 }
 }
@@ -4778,6 +4825,7 @@ h[0].call(this, h[1], h[2], h[3]);
 this._handlers = [];
 }
 });
+}());
 (function () {
 'use strict';
 Polymer.Base._addFeature({
@@ -4835,14 +4883,15 @@ array = Array.isArray(prop) ? prop : null;
 }
 if (array) {
 var coll = Polymer.Collection.get(array);
+var old, key;
 if (last[0] == '#') {
-var key = last;
-var old = coll.getItem(key);
+key = last;
+old = coll.getItem(key);
 last = array.indexOf(old);
 coll.setItem(key, value);
 } else if (parseInt(last, 10) == last) {
-var old = prop[last];
-var key = coll.getKey(old);
+old = prop[last];
+key = coll.getKey(old);
 parts[i] = key;
 coll.setItem(key, value);
 }
@@ -5023,7 +5072,7 @@ this._notifySplice(array, info.path, array.length, 0, [ret]);
 }
 return ret;
 },
-splice: function (path, start, deleteCount) {
+splice: function (path, start) {
 var info = {};
 var array = this._get(path, this, info);
 if (start < 0) {
@@ -5151,6 +5200,7 @@ if (s.indexOf(this.MEDIA_START) === 0) {
 node.type = this.types.MEDIA_RULE;
 } else if (s.match(this._rx.keyframesRule)) {
 node.type = this.types.KEYFRAMES_RULE;
+node.keyframesName = node.selector.split(this._rx.multipleSpaces).pop();
 }
 } else {
 if (s.indexOf(this.VAR_START) === 0) {
@@ -5250,14 +5300,14 @@ if (typeof rules === 'string') {
 rules = this.parser.parse(rules);
 }
 if (callback) {
-this.forEachStyleRule(rules, callback);
+this.forEachRule(rules, callback);
 }
 return this.parser.stringify(rules, preserveProperties);
 },
-forRulesInStyles: function (styles, callback) {
+forRulesInStyles: function (styles, styleRuleCallback, keyframesRuleCallback) {
 if (styles) {
 for (var i = 0, l = styles.length, s; i < l && (s = styles[i]); i++) {
-this.forEachStyleRule(this.rulesForStyle(s), callback);
+this.forEachRule(this.rulesForStyle(s), styleRuleCallback, keyframesRuleCallback);
 }
 }
 },
@@ -5267,20 +5317,25 @@ style.__cssRules = this.parser.parse(style.textContent);
 }
 return style.__cssRules;
 },
-forEachStyleRule: function (node, callback) {
+isKeyframesSelector: function (rule) {
+return rule.parent && rule.parent.type === this.ruleTypes.KEYFRAMES_RULE;
+},
+forEachRule: function (node, styleRuleCallback, keyframesRuleCallback) {
 if (!node) {
 return;
 }
 var skipRules = false;
 if (node.type === this.ruleTypes.STYLE_RULE) {
-callback(node);
-} else if (node.type === this.ruleTypes.KEYFRAMES_RULE || node.type === this.ruleTypes.MIXIN_RULE) {
+styleRuleCallback(node);
+} else if (keyframesRuleCallback && node.type === this.ruleTypes.KEYFRAMES_RULE) {
+keyframesRuleCallback(node);
+} else if (node.type === this.ruleTypes.MIXIN_RULE) {
 skipRules = true;
 }
 var r$ = node.rules;
 if (r$ && !skipRules) {
 for (var i = 0, l = r$.length, r; i < l && (r = r$[i]); i++) {
-this.forEachStyleRule(r, callback);
+this.forEachRule(r, styleRuleCallback, keyframesRuleCallback);
 }
 }
 },
@@ -5429,8 +5484,10 @@ this._transformRule(rule, this._transformComplexSelector, scope, hostScope);
 },
 _transformRule: function (rule, transformer, scope, hostScope) {
 var p$ = rule.selector.split(COMPLEX_SELECTOR_SEP);
+if (!styleUtil.isKeyframesSelector(rule)) {
 for (var i = 0, l = p$.length, p; i < l && (p = p$[i]); i++) {
 p$[i] = transformer.call(this, p, scope, hostScope);
+}
 }
 rule.selector = rule.transformedSelector = p$.join(COMPLEX_SELECTOR_SEP);
 },
@@ -5438,6 +5495,7 @@ _transformComplexSelector: function (selector, scope, hostScope) {
 var stop = false;
 var hostContext = false;
 var self = this;
+selector = selector.replace(CONTENT_START, HOST + ' $1');
 selector = selector.replace(SIMPLE_SELECTOR_SEP, function (m, c, s) {
 if (!stop) {
 var info = self._transformCompoundSelector(s, c, scope, hostScope);
@@ -5510,10 +5568,10 @@ SCOPE_NAME: 'style-scope'
 var SCOPE_NAME = api.SCOPE_NAME;
 var SCOPE_DOC_SELECTOR = ':not([' + SCOPE_NAME + '])' + ':not(.' + SCOPE_NAME + ')';
 var COMPLEX_SELECTOR_SEP = ',';
-var SIMPLE_SELECTOR_SEP = /(^|[\s>+~]+)([^\s>+~]+)/g;
+var SIMPLE_SELECTOR_SEP = /(^|[\s>+~]+)((?:\[.+?\]|[^\s>+~=\[])+)/g;
 var HOST = ':host';
 var ROOT = ':root';
-var HOST_PAREN = /(\:host)(?:\(((?:\([^)(]*\)|[^)(]*)+?)\))/g;
+var HOST_PAREN = /(:host)(?:\(((?:\([^)(]*\)|[^)(]*)+?)\))/g;
 var HOST_CONTEXT = ':host-context';
 var HOST_CONTEXT_PAREN = /(.*)(?::host-context)(?:\(((?:\([^)(]*\)|[^)(]*)+?)\))(.*)/;
 var CONTENT = '::content';
@@ -5523,6 +5581,7 @@ var CSS_ATTR_PREFIX = '[' + SCOPE_NAME + '~=';
 var CSS_ATTR_SUFFIX = ']';
 var PSEUDO_PREFIX = ':';
 var CLASS = 'class';
+var CONTENT_START = new RegExp('^(' + CONTENT + ')');
 return api;
 }();
 Polymer.StyleExtends = function () {
@@ -5534,8 +5593,8 @@ return Boolean(cssText.match(this.rx.EXTEND));
 transform: function (style) {
 var rules = styleUtil.rulesForStyle(style);
 var self = this;
-styleUtil.forEachStyleRule(rules, function (rule) {
-var map = self._mapRule(rule);
+styleUtil.forEachRule(rules, function (rule) {
+self._mapRuleOntoParent(rule);
 if (rule.parent) {
 var m;
 while (m = self.rx.EXTEND.exec(rule.cssText)) {
@@ -5554,7 +5613,7 @@ rule.cssText = '';
 }
 }, true);
 },
-_mapRule: function (rule) {
+_mapRuleOntoParent: function (rule) {
 if (rule.parent) {
 var map = rule.parent.map || (rule.parent.map = {});
 var parts = rule.selector.split(',');
@@ -5616,7 +5675,9 @@ this._encapsulateStyle = !nativeShadow && Boolean(this._template);
 if (this._template) {
 this._styles = this._collectStyles();
 var cssText = styleTransformer.elementStyles(this);
-if (cssText) {
+var needsStatic = this._needsStaticStyles(this._styles);
+if (needsStatic || !nativeShadow) {
+cssText = needsStatic ? cssText : ' ';
 var style = styleUtil.applyCss(cssText, this.is, nativeShadow ? this._template.content : null);
 if (!nativeShadow) {
 this._scopeStyle = style;
@@ -5707,11 +5768,14 @@ var styleUtil = Polymer.StyleUtil;
 var styleTransformer = Polymer.StyleTransformer;
 return {
 decorateStyles: function (styles) {
-var self = this, props = {};
+var self = this, props = {}, keyframes = [];
 styleUtil.forRulesInStyles(styles, function (rule) {
 self.decorateRule(rule);
 self.collectPropertiesInCssText(rule.propertyInfo.cssText, props);
+}, function onKeyframesRule(rule) {
+keyframes.push(rule);
 });
+styles._keyframes = keyframes;
 var names = [];
 for (var i in props) {
 names.push(i);
@@ -5751,17 +5815,9 @@ return any;
 }
 },
 collectCssText: function (rule) {
-var customCssText = '';
 var cssText = rule.parsedCssText;
 cssText = cssText.replace(this.rx.BRACKETED, '').replace(this.rx.VAR_ASSIGN, '');
-var parts = cssText.split(';');
-for (var i = 0, p; i < parts.length; i++) {
-p = parts[i];
-if (p.match(this.rx.MIXIN_MATCH) || p.match(this.rx.VAR_MATCH)) {
-customCssText += p + ';\n';
-}
-}
-return customCssText;
+return cssText;
 },
 collectPropertiesInCssText: function (cssText, props) {
 var m;
@@ -5803,12 +5859,13 @@ m = p.match(this.rx.MIXIN_MATCH);
 if (m) {
 p = this.valueForProperty(props[m[1]], props);
 } else {
-var pp = p.split(':');
-if (pp[1]) {
-pp[1] = pp[1].trim();
-pp[1] = this.valueForProperty(pp[1], props) || pp[1];
+var colon = p.indexOf(':');
+if (colon !== -1) {
+var pp = p.substring(colon);
+pp = pp.trim();
+pp = this.valueForProperty(pp, props) || pp;
+p = p.substring(0, colon) + pp;
 }
-p = pp.join(':');
 }
 parts[i] = p && p.lastIndexOf(';') === p.length - 1 ? p.slice(0, -1) : p || '';
 }
@@ -5822,6 +5879,34 @@ this.decorateRule(rule);
 }
 if (rule.propertyInfo.cssText) {
 output = this.valueForProperties(rule.propertyInfo.cssText, props);
+}
+rule.cssText = output;
+},
+applyKeyframeTransforms: function (rule, keyframeTransforms) {
+var input = rule.cssText;
+var output = rule.cssText;
+if (rule.hasAnimations == null) {
+rule.hasAnimations = this.rx.ANIMATION_MATCH.test(input);
+}
+if (rule.hasAnimations) {
+var transform;
+if (rule.keyframeNamesToTransform == null) {
+rule.keyframeNamesToTransform = [];
+for (var keyframe in keyframeTransforms) {
+transform = keyframeTransforms[keyframe];
+output = transform(input);
+if (input !== output) {
+input = output;
+rule.keyframeNamesToTransform.push(keyframe);
+}
+}
+} else {
+for (var i = 0; i < rule.keyframeNamesToTransform.length; ++i) {
+transform = keyframeTransforms[rule.keyframeNamesToTransform[i]];
+input = transform(input);
+}
+output = input;
+}
 }
 rule.cssText = output;
 },
@@ -5875,12 +5960,36 @@ var self = this;
 var hostSelector = styleTransformer._calcHostScope(element.is, element.extends);
 var rxHostSelector = element.extends ? '\\' + hostSelector.slice(0, -1) + '\\]' : hostSelector;
 var hostRx = new RegExp(this.rx.HOST_PREFIX + rxHostSelector + this.rx.HOST_SUFFIX);
+var keyframeTransforms = this._elementKeyframeTransforms(element, scopeSelector);
 return styleTransformer.elementStyles(element, function (rule) {
 self.applyProperties(rule, properties);
-if (rule.cssText && !nativeShadow) {
+if (!nativeShadow && !Polymer.StyleUtil.isKeyframesSelector(rule) && rule.cssText) {
+self.applyKeyframeTransforms(rule, keyframeTransforms);
 self._scopeSelector(rule, hostRx, hostSelector, element._scopeCssViaAttr, scopeSelector);
 }
 });
+},
+_elementKeyframeTransforms: function (element, scopeSelector) {
+var keyframesRules = element._styles._keyframes;
+var keyframeTransforms = {};
+if (!nativeShadow) {
+for (var i = 0, keyframesRule = keyframesRules[i]; i < keyframesRules.length; keyframesRule = keyframesRules[++i]) {
+this._scopeKeyframes(keyframesRule, scopeSelector);
+keyframeTransforms[keyframesRule.keyframesName] = this._keyframesRuleTransformer(keyframesRule);
+}
+}
+return keyframeTransforms;
+},
+_keyframesRuleTransformer: function (keyframesRule) {
+return function (cssText) {
+return cssText.replace(keyframesRule.keyframesNameRx, keyframesRule.transformedKeyframesName);
+};
+},
+_scopeKeyframes: function (rule, scopeId) {
+rule.keyframesNameRx = new RegExp(rule.keyframesName, 'g');
+rule.transformedKeyframesName = rule.keyframesName + '-' + scopeId;
+rule.transformedSelector = rule.transformedSelector || rule.selector;
+rule.selector = rule.transformedSelector.replace(rule.keyframesName, rule.transformedKeyframesName);
 },
 _scopeSelector: function (rule, hostRx, hostSelector, viaAttr, scopeId) {
 rule.transformedSelector = rule.transformedSelector || rule.selector;
@@ -5888,7 +5997,7 @@ var selector = rule.transformedSelector;
 var scope = viaAttr ? '[' + styleTransformer.SCOPE_NAME + '~=' + scopeId + ']' : '.' + scopeId;
 var parts = selector.split(',');
 for (var i = 0, l = parts.length, p; i < l && (p = parts[i]); i++) {
-parts[i] = p.match(hostRx) ? p.replace(hostSelector, hostSelector + scope) : scope + ' ' + p;
+parts[i] = p.match(hostRx) ? p.replace(hostSelector, scope) : scope + ' ' + p;
 }
 rule.selector = parts.join(',');
 },
@@ -5941,8 +6050,9 @@ props[i] = v;
 rx: {
 VAR_ASSIGN: /(?:^|[;\s{]\s*)(--[\w-]*?)\s*:\s*(?:([^;{]*)|{([^}]*)})(?:(?=[;\s}])|$)/gi,
 MIXIN_MATCH: /(?:^|\W+)@apply[\s]*\(([^)]*)\)/i,
-VAR_MATCH: /(^|\W+)var\([\s]*([^,)]*)[\s]*,?[\s]*((?:[^,)]*)|(?:[^;]*\([^;)]*\)))[\s]*?\)/gi,
+VAR_MATCH: /(^|\W+)var\([\s]*([^,)]*)[\s]*,?[\s]*((?:[^,()]*)|(?:[^;()]*\([^;)]*\)))[\s]*?\)/gi,
 VAR_CAPTURE: /\([\s]*(--[^,\s)]*)(?:,[\s]*(--[^,\s)]*))?(?:\)|,)/gi,
+ANIMATION_MATCH: /(animation\s*:)|(animation-name\s*:)/,
 IS_VAR: /^--/,
 BRACKETED: /\{[^}]*\}/g,
 HOST_PREFIX: '(?:^|[^.#[:])',
@@ -6007,7 +6117,6 @@ return this._objectsEqual(target, source) && this._objectsEqual(source, target);
 }());
 Polymer.StyleDefaults = function () {
 var styleProperties = Polymer.StyleProperties;
-var styleUtil = Polymer.StyleUtil;
 var StyleCache = Polymer.StyleCache;
 var api = {
 _styles: [],
@@ -6052,11 +6161,22 @@ return api;
 'use strict';
 var serializeValueToAttribute = Polymer.Base.serializeValueToAttribute;
 var propertyUtils = Polymer.StyleProperties;
-var styleTransformer = Polymer.StyleTransformer;
 var styleUtil = Polymer.StyleUtil;
+var styleTransformer = Polymer.StyleTransformer;
 var styleDefaults = Polymer.StyleDefaults;
 var nativeShadow = Polymer.Settings.useNativeShadow;
 Polymer.Base._addFeature({
+_needsStaticStyles: function (styles) {
+var needsStatic;
+for (var i = 0, l = styles.length, css; i < l; i++) {
+css = styleUtil.parser._clean(styles[i].textContent);
+needsStatic = needsStatic || Boolean(css);
+if (css.match(propertyUtils.rx.MIXIN_MATCH) || css.match(propertyUtils.rx.VAR_MATCH)) {
+return false;
+}
+}
+return needsStatic;
+},
 _prepStyleProperties: function () {
 this._ownStylePropertyNames = this._styles ? propertyUtils.decorateStyles(this._styles) : null;
 },
@@ -6170,7 +6290,7 @@ serializeValueToAttribute.call(this, value, attribute, node);
 },
 _scopeElementClass: function (element, selector) {
 if (!nativeShadow && !this._scopeCssViaAttr) {
-selector += (selector ? ' ' : '') + SCOPE_NAME + ' ' + this.is + (element._scopeSelector ? ' ' + XSCOPE_NAME + ' ' + element._scopeSelector : '');
+selector = (selector ? selector + ' ' : '') + SCOPE_NAME + ' ' + this.is + (element._scopeSelector ? ' ' + XSCOPE_NAME + ' ' + element._scopeSelector : '');
 }
 return selector;
 },
@@ -6257,7 +6377,6 @@ this._listenListeners(b.listeners);
 }
 });
 (function () {
-var nativeShadow = Polymer.Settings.useNativeShadow;
 var propertyUtils = Polymer.StyleProperties;
 var styleUtil = Polymer.StyleUtil;
 var cssParse = Polymer.CssParse;
@@ -6299,7 +6418,7 @@ if (this.include) {
 e.textContent = styleUtil.cssFromModules(this.include, true) + e.textContent;
 }
 if (e.textContent) {
-styleUtil.forEachStyleRule(styleUtil.rulesForStyle(e), function (rule) {
+styleUtil.forEachRule(styleUtil.rulesForStyle(e), function (rule) {
 styleTransformer.documentRule(rule);
 });
 var self = this;
@@ -6404,7 +6523,7 @@ this.__setPropertyOrig(property, value, fromAbove, node);
 _debounceTemplate: function (fn) {
 Polymer.dom.addDebouncer(this.debounce('_debounceTemplate', fn));
 },
-_flushTemplates: function (debouncerExpired) {
+_flushTemplates: function () {
 Polymer.dom.flush();
 },
 _customPrepEffects: function (archetype) {
@@ -6412,7 +6531,7 @@ var parentProps = archetype._parentProps;
 for (var prop in parentProps) {
 archetype._addPropertyEffect(prop, 'function', this._createHostPropEffector(prop));
 }
-for (var prop in this._instanceProps) {
+for (prop in this._instanceProps) {
 archetype._addPropertyEffect(prop, 'function', this._createInstancePropEffector(prop));
 }
 },
@@ -6497,6 +6616,9 @@ this.dataHost._forwardInstanceProp(this, prop, value);
 },
 _extendTemplate: function (template, proto) {
 var n$ = Object.getOwnPropertyNames(proto);
+if (proto._propertySetter) {
+template._propertySetter = proto._propertySetter;
+}
 for (var i = 0, n; i < n$.length && (n = n$[i]); i++) {
 var val = template[n];
 var pd = Object.getOwnPropertyDescriptor(proto, n);
@@ -6577,7 +6699,9 @@ model = model || {};
 if (this._parentProps) {
 var templatized = this._templatized;
 for (var prop in this._parentProps) {
+if (model[prop] === undefined) {
 model[prop] = templatized[this._parentPropPrefix + prop];
+}
 }
 }
 return new this.ctor(model, this);
@@ -6710,7 +6834,7 @@ for (var j = 0; j < s.removed.length; j++) {
 key = this.getKey(s.removed[j]);
 keyMap[key] = keyMap[key] ? null : -1;
 }
-for (var j = 0; j < s.addedCount; j++) {
+for (j = 0; j < s.addedCount; j++) {
 var item = this.userArray[s.index + j];
 key = this.getKey(item);
 key = key === undefined ? this.add(item) : key;
@@ -6720,7 +6844,7 @@ s.addedKeys.push(key);
 }
 var removed = [];
 var added = [];
-for (var key in keyMap) {
+for (key in keyMap) {
 if (keyMap[key] < 0) {
 this.removeKey(key);
 removed.push(key);
@@ -6917,7 +7041,6 @@ this._debounceTemplate(this._render);
 this._flushTemplates();
 },
 _render: function () {
-var c = this.collection;
 if (this._needFullRefresh) {
 this._applyFullRefresh();
 this._needFullRefresh = false;
@@ -6978,7 +7101,7 @@ keys.sort(function (a, b) {
 return self._sortFn(c.getItem(a), c.getItem(b));
 });
 }
-for (var i = 0; i < keys.length; i++) {
+for (i = 0; i < keys.length; i++) {
 var key = keys[i];
 var inst = this._instances[i];
 if (inst) {
@@ -7001,21 +7124,21 @@ return a - b;
 },
 _applySplicesUserSort: function (splices) {
 var c = this.collection;
-var instances = this._instances;
 var keyMap = {};
+var key;
 for (var i = 0, s; i < splices.length && (s = splices[i]); i++) {
 for (var j = 0; j < s.removed.length; j++) {
-var key = s.removed[j];
+key = s.removed[j];
 keyMap[key] = keyMap[key] ? null : -1;
 }
-for (var j = 0; j < s.added.length; j++) {
-var key = s.added[j];
+for (j = 0; j < s.added.length; j++) {
+key = s.added[j];
 keyMap[key] = keyMap[key] ? null : 1;
 }
 }
 var removedIdxs = [];
 var addedKeys = [];
-for (var key in keyMap) {
+for (key in keyMap) {
 if (keyMap[key] === -1) {
 removedIdxs.push(this._keyToInstIdx[key]);
 }
@@ -7025,7 +7148,7 @@ addedKeys.push(key);
 }
 if (removedIdxs.length) {
 removedIdxs.sort(this._numericSort);
-for (var i = removedIdxs.length - 1; i >= 0; i--) {
+for (i = removedIdxs.length - 1; i >= 0; i--) {
 var idx = removedIdxs[i];
 if (idx !== undefined) {
 this._detachAndRemoveInstance(idx);
@@ -7043,7 +7166,7 @@ addedKeys.sort(function (a, b) {
 return self._sortFn(c.getItem(a), c.getItem(b));
 });
 var start = 0;
-for (var i = 0; i < addedKeys.length; i++) {
+for (i = 0; i < addedKeys.length; i++) {
 start = this._insertRowUserSort(start, addedKeys[i]);
 }
 }
@@ -7073,12 +7196,11 @@ this._insertPlaceholder(idx, key);
 return idx;
 },
 _applySplicesArrayOrder: function (splices) {
-var c = this.collection;
 for (var i = 0, s; i < splices.length && (s = splices[i]); i++) {
 for (var j = 0; j < s.removed.length; j++) {
 this._detachAndRemoveInstance(s.index);
 }
-for (var j = 0; j < s.addedKeys.length; j++) {
+for (j = 0; j < s.addedKeys.length; j++) {
 this._insertPlaceholder(s.index + j, s.addedKeys[j]);
 }
 }
@@ -8836,6 +8958,327 @@ this.fire('dom-change');
   }
 
 </style>
+<style is="custom-style">
+
+  :root {
+
+    /* Material Design color palette for Google products */
+
+    --google-red-100: #f4c7c3;
+    --google-red-300: #e67c73;
+    --google-red-500: #db4437;
+    --google-red-700: #c53929;
+
+    --google-blue-100: #c6dafc;
+    --google-blue-300: #7baaf7;
+    --google-blue-500: #4285f4;
+    --google-blue-700: #3367d6;
+
+    --google-green-100: #b7e1cd;
+    --google-green-300: #57bb8a;
+    --google-green-500: #0f9d58;
+    --google-green-700: #0b8043;
+
+    --google-yellow-100: #fce8b2;
+    --google-yellow-300: #f7cb4d;
+    --google-yellow-500: #f4b400;
+    --google-yellow-700: #f09300;
+
+    --google-grey-100: #f5f5f5;
+    --google-grey-300: #e0e0e0;
+    --google-grey-500: #9e9e9e;
+    --google-grey-700: #616161;
+    
+    /* Material Design color palette from online spec document */
+
+    --paper-red-50: #ffebee;
+    --paper-red-100: #ffcdd2;
+    --paper-red-200: #ef9a9a;
+    --paper-red-300: #e57373;
+    --paper-red-400: #ef5350;
+    --paper-red-500: #f44336;
+    --paper-red-600: #e53935;
+    --paper-red-700: #d32f2f;
+    --paper-red-800: #c62828;
+    --paper-red-900: #b71c1c;
+    --paper-red-a100: #ff8a80;
+    --paper-red-a200: #ff5252;
+    --paper-red-a400: #ff1744;
+    --paper-red-a700: #d50000;
+ 
+    --paper-pink-50: #fce4ec;
+    --paper-pink-100: #f8bbd0;
+    --paper-pink-200: #f48fb1;
+    --paper-pink-300: #f06292;
+    --paper-pink-400: #ec407a;
+    --paper-pink-500: #e91e63;
+    --paper-pink-600: #d81b60;
+    --paper-pink-700: #c2185b;
+    --paper-pink-800: #ad1457;
+    --paper-pink-900: #880e4f;
+    --paper-pink-a100: #ff80ab;
+    --paper-pink-a200: #ff4081;
+    --paper-pink-a400: #f50057;
+    --paper-pink-a700: #c51162;
+ 
+    --paper-purple-50: #f3e5f5;
+    --paper-purple-100: #e1bee7;
+    --paper-purple-200: #ce93d8;
+    --paper-purple-300: #ba68c8;
+    --paper-purple-400: #ab47bc;
+    --paper-purple-500: #9c27b0;
+    --paper-purple-600: #8e24aa;
+    --paper-purple-700: #7b1fa2;
+    --paper-purple-800: #6a1b9a;
+    --paper-purple-900: #4a148c;
+    --paper-purple-a100: #ea80fc;
+    --paper-purple-a200: #e040fb;
+    --paper-purple-a400: #d500f9;
+    --paper-purple-a700: #aa00ff;
+ 
+    --paper-deep-purple-50: #ede7f6;
+    --paper-deep-purple-100: #d1c4e9;
+    --paper-deep-purple-200: #b39ddb;
+    --paper-deep-purple-300: #9575cd;
+    --paper-deep-purple-400: #7e57c2;
+    --paper-deep-purple-500: #673ab7;
+    --paper-deep-purple-600: #5e35b1;
+    --paper-deep-purple-700: #512da8;
+    --paper-deep-purple-800: #4527a0;
+    --paper-deep-purple-900: #311b92;
+    --paper-deep-purple-a100: #b388ff;
+    --paper-deep-purple-a200: #7c4dff;
+    --paper-deep-purple-a400: #651fff;
+    --paper-deep-purple-a700: #6200ea;
+ 
+    --paper-indigo-50: #e8eaf6;
+    --paper-indigo-100: #c5cae9;
+    --paper-indigo-200: #9fa8da;
+    --paper-indigo-300: #7986cb;
+    --paper-indigo-400: #5c6bc0;
+    --paper-indigo-500: #3f51b5;
+    --paper-indigo-600: #3949ab;
+    --paper-indigo-700: #303f9f;
+    --paper-indigo-800: #283593;
+    --paper-indigo-900: #1a237e;
+    --paper-indigo-a100: #8c9eff;
+    --paper-indigo-a200: #536dfe;
+    --paper-indigo-a400: #3d5afe;
+    --paper-indigo-a700: #304ffe;
+ 
+    --paper-blue-50: #e3f2fd;
+    --paper-blue-100: #bbdefb;
+    --paper-blue-200: #90caf9;
+    --paper-blue-300: #64b5f6;
+    --paper-blue-400: #42a5f5;
+    --paper-blue-500: #2196f3;
+    --paper-blue-600: #1e88e5;
+    --paper-blue-700: #1976d2;
+    --paper-blue-800: #1565c0;
+    --paper-blue-900: #0d47a1;
+    --paper-blue-a100: #82b1ff;
+    --paper-blue-a200: #448aff;
+    --paper-blue-a400: #2979ff;
+    --paper-blue-a700: #2962ff;
+ 
+    --paper-light-blue-50: #e1f5fe;
+    --paper-light-blue-100: #b3e5fc;
+    --paper-light-blue-200: #81d4fa;
+    --paper-light-blue-300: #4fc3f7;
+    --paper-light-blue-400: #29b6f6;
+    --paper-light-blue-500: #03a9f4;
+    --paper-light-blue-600: #039be5;
+    --paper-light-blue-700: #0288d1;
+    --paper-light-blue-800: #0277bd;
+    --paper-light-blue-900: #01579b;
+    --paper-light-blue-a100: #80d8ff;
+    --paper-light-blue-a200: #40c4ff;
+    --paper-light-blue-a400: #00b0ff;
+    --paper-light-blue-a700: #0091ea;
+ 
+    --paper-cyan-50: #e0f7fa;
+    --paper-cyan-100: #b2ebf2;
+    --paper-cyan-200: #80deea;
+    --paper-cyan-300: #4dd0e1;
+    --paper-cyan-400: #26c6da;
+    --paper-cyan-500: #00bcd4;
+    --paper-cyan-600: #00acc1;
+    --paper-cyan-700: #0097a7;
+    --paper-cyan-800: #00838f;
+    --paper-cyan-900: #006064;
+    --paper-cyan-a100: #84ffff;
+    --paper-cyan-a200: #18ffff;
+    --paper-cyan-a400: #00e5ff;
+    --paper-cyan-a700: #00b8d4;
+ 
+    --paper-teal-50: #e0f2f1;
+    --paper-teal-100: #b2dfdb;
+    --paper-teal-200: #80cbc4;
+    --paper-teal-300: #4db6ac;
+    --paper-teal-400: #26a69a;
+    --paper-teal-500: #009688;
+    --paper-teal-600: #00897b;
+    --paper-teal-700: #00796b;
+    --paper-teal-800: #00695c;
+    --paper-teal-900: #004d40;
+    --paper-teal-a100: #a7ffeb;
+    --paper-teal-a200: #64ffda;
+    --paper-teal-a400: #1de9b6;
+    --paper-teal-a700: #00bfa5;
+ 
+    --paper-green-50: #e8f5e9;
+    --paper-green-100: #c8e6c9;
+    --paper-green-200: #a5d6a7;
+    --paper-green-300: #81c784;
+    --paper-green-400: #66bb6a;
+    --paper-green-500: #4caf50;
+    --paper-green-600: #43a047;
+    --paper-green-700: #388e3c;
+    --paper-green-800: #2e7d32;
+    --paper-green-900: #1b5e20;
+    --paper-green-a100: #b9f6ca;
+    --paper-green-a200: #69f0ae;
+    --paper-green-a400: #00e676;
+    --paper-green-a700: #00c853;
+ 
+    --paper-light-green-50: #f1f8e9;
+    --paper-light-green-100: #dcedc8;
+    --paper-light-green-200: #c5e1a5;
+    --paper-light-green-300: #aed581;
+    --paper-light-green-400: #9ccc65;
+    --paper-light-green-500: #8bc34a;
+    --paper-light-green-600: #7cb342;
+    --paper-light-green-700: #689f38;
+    --paper-light-green-800: #558b2f;
+    --paper-light-green-900: #33691e;
+    --paper-light-green-a100: #ccff90;
+    --paper-light-green-a200: #b2ff59;
+    --paper-light-green-a400: #76ff03;
+    --paper-light-green-a700: #64dd17;
+ 
+    --paper-lime-50: #f9fbe7;
+    --paper-lime-100: #f0f4c3;
+    --paper-lime-200: #e6ee9c;
+    --paper-lime-300: #dce775;
+    --paper-lime-400: #d4e157;
+    --paper-lime-500: #cddc39;
+    --paper-lime-600: #c0ca33;
+    --paper-lime-700: #afb42b;
+    --paper-lime-800: #9e9d24;
+    --paper-lime-900: #827717;
+    --paper-lime-a100: #f4ff81;
+    --paper-lime-a200: #eeff41;
+    --paper-lime-a400: #c6ff00;
+    --paper-lime-a700: #aeea00;
+ 
+    --paper-yellow-50: #fffde7;
+    --paper-yellow-100: #fff9c4;
+    --paper-yellow-200: #fff59d;
+    --paper-yellow-300: #fff176;
+    --paper-yellow-400: #ffee58;
+    --paper-yellow-500: #ffeb3b;
+    --paper-yellow-600: #fdd835;
+    --paper-yellow-700: #fbc02d;
+    --paper-yellow-800: #f9a825;
+    --paper-yellow-900: #f57f17;
+    --paper-yellow-a100: #ffff8d;
+    --paper-yellow-a200: #ffff00;
+    --paper-yellow-a400: #ffea00;
+    --paper-yellow-a700: #ffd600;
+ 
+    --paper-amber-50: #fff8e1;
+    --paper-amber-100: #ffecb3;
+    --paper-amber-200: #ffe082;
+    --paper-amber-300: #ffd54f;
+    --paper-amber-400: #ffca28;
+    --paper-amber-500: #ffc107;
+    --paper-amber-600: #ffb300;
+    --paper-amber-700: #ffa000;
+    --paper-amber-800: #ff8f00;
+    --paper-amber-900: #ff6f00;
+    --paper-amber-a100: #ffe57f;
+    --paper-amber-a200: #ffd740;
+    --paper-amber-a400: #ffc400;
+    --paper-amber-a700: #ffab00;
+ 
+    --paper-orange-50: #fff3e0;
+    --paper-orange-100: #ffe0b2;
+    --paper-orange-200: #ffcc80;
+    --paper-orange-300: #ffb74d;
+    --paper-orange-400: #ffa726;
+    --paper-orange-500: #ff9800;
+    --paper-orange-600: #fb8c00;
+    --paper-orange-700: #f57c00;
+    --paper-orange-800: #ef6c00;
+    --paper-orange-900: #e65100;
+    --paper-orange-a100: #ffd180;
+    --paper-orange-a200: #ffab40;
+    --paper-orange-a400: #ff9100;
+    --paper-orange-a700: #ff6500;
+ 
+    --paper-deep-orange-50: #fbe9e7;
+    --paper-deep-orange-100: #ffccbc;
+    --paper-deep-orange-200: #ffab91;
+    --paper-deep-orange-300: #ff8a65;
+    --paper-deep-orange-400: #ff7043;
+    --paper-deep-orange-500: #ff5722;
+    --paper-deep-orange-600: #f4511e;
+    --paper-deep-orange-700: #e64a19;
+    --paper-deep-orange-800: #d84315;
+    --paper-deep-orange-900: #bf360c;
+    --paper-deep-orange-a100: #ff9e80;
+    --paper-deep-orange-a200: #ff6e40;
+    --paper-deep-orange-a400: #ff3d00;
+    --paper-deep-orange-a700: #dd2c00;
+ 
+    --paper-brown-50: #efebe9;
+    --paper-brown-100: #d7ccc8;
+    --paper-brown-200: #bcaaa4;
+    --paper-brown-300: #a1887f;
+    --paper-brown-400: #8d6e63;
+    --paper-brown-500: #795548;
+    --paper-brown-600: #6d4c41;
+    --paper-brown-700: #5d4037;
+    --paper-brown-800: #4e342e;
+    --paper-brown-900: #3e2723;
+ 
+    --paper-grey-50: #fafafa;
+    --paper-grey-100: #f5f5f5;
+    --paper-grey-200: #eeeeee;
+    --paper-grey-300: #e0e0e0;
+    --paper-grey-400: #bdbdbd;
+    --paper-grey-500: #9e9e9e;
+    --paper-grey-600: #757575;
+    --paper-grey-700: #616161;
+    --paper-grey-800: #424242;
+    --paper-grey-900: #212121;
+ 
+    --paper-blue-grey-50: #eceff1;
+    --paper-blue-grey-100: #cfd8dc;
+    --paper-blue-grey-200: #b0bec5;
+    --paper-blue-grey-300: #90a4ae;
+    --paper-blue-grey-400: #78909c;
+    --paper-blue-grey-500: #607d8b;
+    --paper-blue-grey-600: #546e7a;
+    --paper-blue-grey-700: #455a64;
+    --paper-blue-grey-800: #37474f;
+    --paper-blue-grey-900: #263238;
+
+    /* opacity for dark text on a light background */
+    --dark-divider-opacity: 0.12;
+    --dark-disabled-opacity: 0.38; /* or hint text or icon */
+    --dark-secondary-opacity: 0.54;
+    --dark-primary-opacity: 0.87;
+
+    /* opacity for light text on a dark background */
+    --light-divider-opacity: 0.12;
+    --light-disabled-opacity: 0.3; /* or hint text or icon */
+    --light-secondary-opacity: 0.7;
+    --light-primary-opacity: 1.0;
+
+  }
+
+</style>
 
 
 <style is="custom-style">
@@ -8852,24 +9295,26 @@ this.fire('dom-change');
     --secondary-text-color: var(--light-theme-secondary-color);
     --disabled-text-color: var(--light-theme-disabled-color);
     --divider-color: var(--light-theme-divider-color);
+    --error-color: var(--paper-deep-orange-a700);
 
     /*
      * Primary and accent colors. Also see color.html for more colors.
      */
-    --primary-color: #3f51b5;  /* --paper-indigo-500 */
-    --light-primary-color: #c5cae9;  /* --paper-indigo-100 */
-    --dark-primary-color: #303f9f;  /* --paper-indigo-700 */
+    --primary-color: var(--paper-indigo-500);
+    --light-primary-color: var(--paper-indigo-100);
+    --dark-primary-color: var(--paper-indigo-700);
 
-    --accent-color: #ff4081;  /* --paper-pink-a200 */
-    --light-accent-color: #ff80ab;  /* --paper-pink-a100 */
-    --dark-accent-color: #f50057;  /* --paper-pink-a400 */
+    --accent-color: var(--paper-pink-a200);
+    --light-accent-color: var(--paper-pink-a100);
+    --dark-accent-color: var(--paper-pink-a400);
+
 
     /*
      * Material Design Light background theme
      */
     --light-theme-background-color: #ffffff;
     --light-theme-base-color: #000000;
-    --light-theme-text-color: #212121;
+    --light-theme-text-color: var(--paper-grey-900);
     --light-theme-secondary-color: #737373;  /* for secondary text and icons */
     --light-theme-disabled-color: #9b9b9b;  /* disabled/hint text */
     --light-theme-divider-color: #dbdbdb;
@@ -8877,7 +9322,7 @@ this.fire('dom-change');
     /*
      * Material Design Dark background theme
      */
-    --dark-theme-background-color: #212121;
+    --dark-theme-background-color: var(--paper-grey-900);
     --dark-theme-base-color: #ffffff;
     --dark-theme-text-color: #ffffff;
     --dark-theme-secondary-color: #bcbcbc;  /* for secondary text and icons */
@@ -9806,594 +10251,6 @@ is separate from validation, and `allowed-pattern` does not affect how the input
 </script>
 
 
-<style>
-
-  /*******************************
-            Flex Layout
-  *******************************/
-
-  html /deep/ .layout.horizontal,
-  html /deep/ .layout.horizontal-reverse,
-  html /deep/ .layout.vertical,
-  html /deep/ .layout.vertical-reverse {
-    display: -ms-flexbox;
-    display: -webkit-flex;
-    display: flex;
-  }
-
-  html /deep/ .layout.inline {
-    display: -ms-inline-flexbox;
-    display: -webkit-inline-flex;
-    display: inline-flex;
-  }
-
-  html /deep/ .layout.horizontal {
-    -ms-flex-direction: row;
-    -webkit-flex-direction: row;
-    flex-direction: row;
-  }
-
-  html /deep/ .layout.horizontal-reverse {
-    -ms-flex-direction: row-reverse;
-    -webkit-flex-direction: row-reverse;
-    flex-direction: row-reverse;
-  }
-
-  html /deep/ .layout.vertical {
-    -ms-flex-direction: column;
-    -webkit-flex-direction: column;
-    flex-direction: column;
-  }
-
-  html /deep/ .layout.vertical-reverse {
-    -ms-flex-direction: column-reverse;
-    -webkit-flex-direction: column-reverse;
-    flex-direction: column-reverse;
-  }
-
-  html /deep/ .layout.wrap {
-    -ms-flex-wrap: wrap;
-    -webkit-flex-wrap: wrap;
-    flex-wrap: wrap;
-  }
-
-  html /deep/ .layout.wrap-reverse {
-    -ms-flex-wrap: wrap-reverse;
-    -webkit-flex-wrap: wrap-reverse;
-    flex-wrap: wrap-reverse;
-  }
-
-  html /deep/ .flex-auto {
-    -ms-flex: 1 1 auto;
-    -webkit-flex: 1 1 auto;
-    flex: 1 1 auto;
-  }
-
-  html /deep/ .flex-none {
-    -ms-flex: none;
-    -webkit-flex: none;
-    flex: none;
-  }
-
-  html /deep/ .flex,
-  html /deep/ .flex-1 {
-    -ms-flex: 1;
-    -webkit-flex: 1;
-    flex: 1;
-  }
-
-  html /deep/ .flex-2 {
-    -ms-flex: 2;
-    -webkit-flex: 2;
-    flex: 2;
-  }
-
-  html /deep/ .flex-3 {
-    -ms-flex: 3;
-    -webkit-flex: 3;
-    flex: 3;
-  }
-
-  html /deep/ .flex-4 {
-    -ms-flex: 4;
-    -webkit-flex: 4;
-    flex: 4;
-  }
-
-  html /deep/ .flex-5 {
-    -ms-flex: 5;
-    -webkit-flex: 5;
-    flex: 5;
-  }
-
-  html /deep/ .flex-6 {
-    -ms-flex: 6;
-    -webkit-flex: 6;
-    flex: 6;
-  }
-
-  html /deep/ .flex-7 {
-    -ms-flex: 7;
-    -webkit-flex: 7;
-    flex: 7;
-  }
-
-  html /deep/ .flex-8 {
-    -ms-flex: 8;
-    -webkit-flex: 8;
-    flex: 8;
-  }
-
-  html /deep/ .flex-9 {
-    -ms-flex: 9;
-    -webkit-flex: 9;
-    flex: 9;
-  }
-
-  html /deep/ .flex-10 {
-    -ms-flex: 10;
-    -webkit-flex: 10;
-    flex: 10;
-  }
-
-  html /deep/ .flex-11 {
-    -ms-flex: 11;
-    -webkit-flex: 11;
-    flex: 11;
-  }
-
-  html /deep/ .flex-12 {
-    -ms-flex: 12;
-    -webkit-flex: 12;
-    flex: 12;
-  }
-
-  /* alignment in cross axis */
-
-  html /deep/ .layout.start {
-    -ms-flex-align: start;
-    -webkit-align-items: flex-start;
-    align-items: flex-start;
-  }
-
-  html /deep/ .layout.center,
-  html /deep/ .layout.center-center {
-    -ms-flex-align: center;
-    -webkit-align-items: center;
-    align-items: center;
-  }
-
-  html /deep/ .layout.end {
-    -ms-flex-align: end;
-    -webkit-align-items: flex-end;
-    align-items: flex-end;
-  }
-
-  /* alignment in main axis */
-
-  html /deep/ .layout.start-justified {
-    -ms-flex-pack: start;
-    -webkit-justify-content: flex-start;
-    justify-content: flex-start;
-  }
-
-  html /deep/ .layout.center-justified,
-  html /deep/ .layout.center-center {
-    -ms-flex-pack: center;
-    -webkit-justify-content: center;
-    justify-content: center;
-  }
-
-  html /deep/ .layout.end-justified {
-    -ms-flex-pack: end;
-    -webkit-justify-content: flex-end;
-    justify-content: flex-end;
-  }
-
-  html /deep/ .layout.around-justified {
-    -ms-flex-pack: around;
-    -webkit-justify-content: space-around;
-    justify-content: space-around;
-  }
-
-  html /deep/ .layout.justified {
-    -ms-flex-pack: justify;
-    -webkit-justify-content: space-between;
-    justify-content: space-between;
-  }
-
-  /* self alignment */
-
-  html /deep/ .self-start {
-    -ms-align-self: flex-start;
-    -webkit-align-self: flex-start;
-    align-self: flex-start;
-  }
-
-  html /deep/ .self-center {
-    -ms-align-self: center;
-    -webkit-align-self: center;
-    align-self: center;
-  }
-
-  html /deep/ .self-end {
-    -ms-align-self: flex-end;
-    -webkit-align-self: flex-end;
-    align-self: flex-end;
-  }
-
-  html /deep/ .self-stretch {
-    -ms-align-self: stretch;
-    -webkit-align-self: stretch;
-    align-self: stretch;
-  }
-
-  /*******************************
-            Other Layout
-  *******************************/
-
-  html /deep/ .block {
-    display: block;
-  }
-
-  /* IE 10 support for HTML5 hidden attr */
-  html /deep/ [hidden] {
-    display: none !important;
-  }
-
-  html /deep/ .invisible {
-    visibility: hidden !important;
-  }
-
-  html /deep/ .relative {
-    position: relative;
-  }
-
-  html /deep/ .fit {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-  }
-
-  body.fullbleed {
-    margin: 0;
-    height: 100vh;
-  }
-
-  html /deep/ .scroll {
-    -webkit-overflow-scrolling: touch;
-    overflow: auto;
-  }
-
-  .fixed-bottom,
-  .fixed-left,
-  .fixed-right,
-  .fixed-top {
-    position: fixed;
-  }
-
-  html /deep/ .fixed-top {
-    top: 0;
-    left: 0;
-    right: 0;
-  }
-
-  html /deep/ .fixed-right {
-    top: 0;
-    right: 0;
-    bottom: 0;
-  }
-
-  html /deep/ .fixed-bottom {
-    right: 0;
-    bottom: 0;
-    left: 0;
-  }
-
-  html /deep/ .fixed-left {
-    top: 0;
-    bottom: 0;
-    left: 0;
-  }
-
-</style>
-<style>
-
-  /*******************************
-            Flex Layout
-  *******************************/
-
-  .layout.horizontal,
-  .layout.horizontal-reverse,
-  .layout.vertical,
-  .layout.vertical-reverse {
-    display: -ms-flexbox;
-    display: -webkit-flex;
-    display: flex;
-  }
-
-  .layout.inline {
-    display: -ms-inline-flexbox;
-    display: -webkit-inline-flex;
-    display: inline-flex;
-  }
-
-  .layout.horizontal {
-    -ms-flex-direction: row;
-    -webkit-flex-direction: row;
-    flex-direction: row;
-  }
-
-  .layout.horizontal-reverse {
-    -ms-flex-direction: row-reverse;
-    -webkit-flex-direction: row-reverse;
-    flex-direction: row-reverse;
-  }
-
-  .layout.vertical {
-    -ms-flex-direction: column;
-    -webkit-flex-direction: column;
-    flex-direction: column;
-  }
-
-  .layout.vertical-reverse {
-    -ms-flex-direction: column-reverse;
-    -webkit-flex-direction: column-reverse;
-    flex-direction: column-reverse;
-  }
-
-  .layout.wrap {
-    -ms-flex-wrap: wrap;
-    -webkit-flex-wrap: wrap;
-    flex-wrap: wrap;
-  }
-
-  .layout.wrap-reverse {
-    -ms-flex-wrap: wrap-reverse;
-    -webkit-flex-wrap: wrap-reverse;
-    flex-wrap: wrap-reverse;
-  }
-
-  .flex-auto {
-    -ms-flex: 1 1 auto;
-    -webkit-flex: 1 1 auto;
-    flex: 1 1 auto;
-  }
-
-  .flex-none {
-    -ms-flex: none;
-    -webkit-flex: none;
-    flex: none;
-  }
-
-  .flex,
-  .flex-1 {
-    -ms-flex: 1;
-    -webkit-flex: 1;
-    flex: 1;
-  }
-
-  .flex-2 {
-    -ms-flex: 2;
-    -webkit-flex: 2;
-    flex: 2;
-  }
-
-  .flex-3 {
-    -ms-flex: 3;
-    -webkit-flex: 3;
-    flex: 3;
-  }
-
-  .flex-4 {
-    -ms-flex: 4;
-    -webkit-flex: 4;
-    flex: 4;
-  }
-
-  .flex-5 {
-    -ms-flex: 5;
-    -webkit-flex: 5;
-    flex: 5;
-  }
-
-  .flex-6 {
-    -ms-flex: 6;
-    -webkit-flex: 6;
-    flex: 6;
-  }
-
-  .flex-7 {
-    -ms-flex: 7;
-    -webkit-flex: 7;
-    flex: 7;
-  }
-
-  .flex-8 {
-    -ms-flex: 8;
-    -webkit-flex: 8;
-    flex: 8;
-  }
-
-  .flex-9 {
-    -ms-flex: 9;
-    -webkit-flex: 9;
-    flex: 9;
-  }
-
-  .flex-10 {
-    -ms-flex: 10;
-    -webkit-flex: 10;
-    flex: 10;
-  }
-
-  .flex-11 {
-    -ms-flex: 11;
-    -webkit-flex: 11;
-    flex: 11;
-  }
-
-  .flex-12 {
-    -ms-flex: 12;
-    -webkit-flex: 12;
-    flex: 12;
-  }
-
-  /* alignment in cross axis */
-
-  .layout.start {
-    -ms-flex-align: start;
-    -webkit-align-items: flex-start;
-    align-items: flex-start;
-  }
-
-  .layout.center,
-  .layout.center-center {
-    -ms-flex-align: center;
-    -webkit-align-items: center;
-    align-items: center;
-  }
-
-  .layout.end {
-    -ms-flex-align: end;
-    -webkit-align-items: flex-end;
-    align-items: flex-end;
-  }
-
-  /* alignment in main axis */
-
-  .layout.start-justified {
-    -ms-flex-pack: start;
-    -webkit-justify-content: flex-start;
-    justify-content: flex-start;
-  }
-
-  .layout.center-justified,
-  .layout.center-center {
-    -ms-flex-pack: center;
-    -webkit-justify-content: center;
-    justify-content: center;
-  }
-
-  .layout.end-justified {
-    -ms-flex-pack: end;
-    -webkit-justify-content: flex-end;
-    justify-content: flex-end;
-  }
-
-  .layout.around-justified {
-    -ms-flex-pack: around;
-    -webkit-justify-content: space-around;
-    justify-content: space-around;
-  }
-
-  .layout.justified {
-    -ms-flex-pack: justify;
-    -webkit-justify-content: space-between;
-    justify-content: space-between;
-  }
-
-  /* self alignment */
-
-  .self-start {
-    -ms-align-self: flex-start;
-    -webkit-align-self: flex-start;
-    align-self: flex-start;
-  }
-
-  .self-center {
-    -ms-align-self: center;
-    -webkit-align-self: center;
-    align-self: center;
-  }
-
-  .self-end {
-    -ms-align-self: flex-end;
-    -webkit-align-self: flex-end;
-    align-self: flex-end;
-  }
-
-  .self-stretch {
-    -ms-align-self: stretch;
-    -webkit-align-self: stretch;
-    align-self: stretch;
-  }
-
-  /*******************************
-            Other Layout
-  *******************************/
-
-  .block {
-    display: block;
-  }
-
-  /* IE 10 support for HTML5 hidden attr */
-  [hidden] {
-    display: none !important;
-  }
-
-  .invisible {
-    visibility: hidden !important;
-  }
-
-  .relative {
-    position: relative;
-  }
-
-  .fit {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-  }
-
-  body.fullbleed {
-    margin: 0;
-    height: 100vh;
-  }
-
-  .scroll {
-    -webkit-overflow-scrolling: touch;
-    overflow: auto;
-  }
-
-  /* fixed position */
-
-  .fixed-bottom,
-  .fixed-left,
-  .fixed-right,
-  .fixed-top {
-    position: fixed;
-  }
-
-  .fixed-top {
-    top: 0;
-    left: 0;
-    right: 0;
-  }
-
-  .fixed-right {
-    top: 0;
-    right: 0;
-    bottom: 0;
-  }
-
-  .fixed-bottom {
-    right: 0;
-    bottom: 0;
-    left: 0;
-  }
-
-  .fixed-left {
-    top: 0;
-    bottom: 0;
-    left: 0;
-  }
-
-</style>
 
 
 <script>
@@ -13163,14 +13020,14 @@ CSS properties               | Action
      * the memoized data.
      */
     resetFit: function() {
-      if (!this._fitInfo || !this._fitInfo.sizedBy.height) {
-        this.sizingTarget.style.maxHeight = '';
-        this.style.top = this._fitInfo ? this._fitInfo.inlineStyle.top : '';
-      }
       if (!this._fitInfo || !this._fitInfo.sizedBy.width) {
         this.sizingTarget.style.maxWidth = '';
-        this.style.left = this._fitInfo ? this._fitInfo.inlineStyle.left : '';
       }
+      if (!this._fitInfo || !this._fitInfo.sizedBy.height) {
+        this.sizingTarget.style.maxHeight = '';
+      }
+      this.style.top = this._fitInfo ? this._fitInfo.inlineStyle.top : '';
+      this.style.left = this._fitInfo ? this._fitInfo.inlineStyle.left : '';
       if (this._fitInfo) {
         this.style.position = this._fitInfo.positionedBy.css;
       }
@@ -13231,18 +13088,30 @@ CSS properties               | Action
      * `position:fixed`.
      */
     center: function() {
-      if (!this._fitInfo.positionedBy.vertically || !this._fitInfo.positionedBy.horizontally) {
-        // need position:fixed to center
-        this.style.position = 'fixed';
+      var positionedBy = this._fitInfo.positionedBy;
+      if (positionedBy.vertically && positionedBy.horizontally) {
+        // Already positioned.
+        return;
       }
-      if (!this._fitInfo.positionedBy.vertically) {
-        var top = (this._fitHeight - this.offsetHeight) / 2 + this._fitTop;
-        top -= this._fitInfo.margin.top;
+      // Need position:fixed to center
+      this.style.position = 'fixed';
+      // Take into account the offset caused by parents that create stacking
+      // contexts (e.g. with transform: translate3d). Translate to 0,0 and
+      // measure the bounding rect.
+      if (!positionedBy.vertically) {
+        this.style.top = '0px';
+      }
+      if (!positionedBy.horizontally) {
+        this.style.left = '0px';
+      }
+      // It will take in consideration margins and transforms
+      var rect = this.getBoundingClientRect();
+      if (!positionedBy.vertically) {
+        var top = this._fitTop - rect.top + (this._fitHeight - rect.height) / 2;
         this.style.top = top + 'px';
       }
-      if (!this._fitInfo.positionedBy.horizontally) {
-        var left = (this._fitWidth - this.offsetWidth) / 2 + this._fitLeft;
-        left -= this._fitInfo.margin.left;
+      if (!positionedBy.horizontally) {
+        var left = this._fitLeft - rect.left + (this._fitWidth - rect.width) / 2;
         this.style.left = left + 'px';
       }
     }
@@ -13258,6 +13127,9 @@ CSS properties               | Action
    */
   Polymer.IronOverlayManagerClass = function() {
     this._overlays = [];
+    // Used to keep track of the last focused node before an overlay gets opened.
+    this._lastFocusedNodes = [];
+
     /**
      * iframes have a default z-index of 100, so this default should be at least
      * that.
@@ -13276,7 +13148,42 @@ CSS properties               | Action
         return this._backdropElement;
       }.bind(this)
     });
-  }
+
+    /**
+     * The deepest active element.
+     * returns {?Node} element the active element
+     */
+    this.deepActiveElement = null;
+    Object.defineProperty(this, 'deepActiveElement', {
+      get: function() {
+        var active = document.activeElement;
+        // document.activeElement can be null
+        // https://developer.mozilla.org/en-US/docs/Web/API/Document/activeElement
+        while (active && active.root && Polymer.dom(active.root).activeElement) {
+          active = Polymer.dom(active.root).activeElement;
+        }
+        return active;
+      }.bind(this)
+    });
+  };
+
+  /**
+   * If a node is contained in an overlay.
+   * @private
+   * @param {Node} node
+   * @returns {Boolean}
+   */
+  Polymer.IronOverlayManagerClass.prototype._isChildOfOverlay = function(node) {
+    while (node && node !== document.body) {
+      // Use logical parentNode, or native ShadowRoot host.
+      node = Polymer.dom(node).parentNode || node.host;
+      // Check if it is an overlay.
+      if (node && node.behaviors && node.behaviors.indexOf(Polymer.IronOverlayBehaviorImpl) !== -1) {
+        return true;
+      }
+    }
+    return false;
+  };
 
   Polymer.IronOverlayManagerClass.prototype._applyOverlayZ = function(overlay, aboveZ) {
     this._setZ(overlay, aboveZ + 2);
@@ -13296,6 +13203,12 @@ CSS properties               | Action
     if (newZ <= minimumZ) {
       this._applyOverlayZ(overlay, minimumZ);
     }
+    var element = this.deepActiveElement;
+    // If already in other overlay, don't reset focus there.
+    if (this._isChildOfOverlay(element)) {
+      element = null;
+    }
+    this._lastFocusedNodes.push(element);
   };
 
   Polymer.IronOverlayManagerClass.prototype.removeOverlay = function(overlay) {
@@ -13303,6 +13216,13 @@ CSS properties               | Action
     if (i >= 0) {
       this._overlays.splice(i, 1);
       this._setZ(overlay, '');
+
+      var node = this._lastFocusedNodes[i];
+      // Focus only if still contained in document.body
+      if (overlay.restoreFocusOnClose && node && Polymer.dom(document.body).deepContains(node)) {
+        node.focus();
+      }
+      this._lastFocusedNodes.splice(i, 1);
     }
   };
 
@@ -13504,6 +13424,23 @@ context. You should place this element as a child of `<body>` whenever possible.
         type: Object
       },
 
+      /**
+       * The HTMLElement that will be firing relevant KeyboardEvents.
+       * Used for capturing esc and tab. Overridden from `IronA11yKeysBehavior`.
+       */
+      keyEventTarget: {
+        type: Object,
+        value: document
+      },
+
+      /**
+       * Set to true to enable restoring of focus when overlay is closed.
+       */
+      restoreFocusOnClose: {
+        type: Boolean,
+        value: false
+      },
+
       _manager: {
         type: Object,
         value: Polymer.IronOverlayManager
@@ -13516,13 +13453,6 @@ context. You should place this element as a child of `<body>` whenever possible.
         }
       },
 
-      _boundOnCaptureKeydown: {
-        type: Function,
-        value: function() {
-          return this._onCaptureKeydown.bind(this);
-        }
-      },
-
       _boundOnCaptureFocus: {
         type: Function,
         value: function() {
@@ -13530,11 +13460,19 @@ context. You should place this element as a child of `<body>` whenever possible.
         }
       },
 
-      /** @type {?Node} */
+      /**
+       * The node being focused.
+       * @type {?Node}
+       */
       _focusedChild: {
         type: Object
       }
 
+    },
+
+    keyBindings: {
+      'esc': '__onEsc',
+      'tab': '__onTab'
     },
 
     listeners: {
@@ -13543,26 +13481,84 @@ context. You should place this element as a child of `<body>` whenever possible.
 
     /**
      * The backdrop element.
-     * @type Node
+     * @type {Node}
      */
     get backdropElement() {
       return this._manager.backdropElement;
     },
 
+    /**
+     * Returns the node to give focus to.
+     * @type {Node}
+     */
     get _focusNode() {
       return this._focusedChild || Polymer.dom(this).querySelector('[autofocus]') || this;
     },
 
+    /**
+     * Array of nodes that can receive focus (overlay included), ordered by `tabindex`.
+     * This is used to retrieve which is the first and last focusable nodes in order
+     * to wrap the focus for overlays `with-backdrop`.
+     *
+     * If you know what is your content (specifically the first and last focusable children),
+     * you can override this method to return only `[firstFocusable, lastFocusable];`
+     * @type {[Node]}
+     * @protected
+     */
+    get _focusableNodes() {
+      // Elements that can be focused even if they have [disabled] attribute.
+      var FOCUSABLE_WITH_DISABLED = [
+        'a[href]',
+        'area[href]',
+        'iframe',
+        '[tabindex]',
+        '[contentEditable=true]'
+      ];
+
+      // Elements that cannot be focused if they have [disabled] attribute.
+      var FOCUSABLE_WITHOUT_DISABLED = [
+        'input',
+        'select',
+        'textarea',
+        'button'
+      ];
+
+      // Discard elements with tabindex=-1 (makes them not focusable).
+      var selector = FOCUSABLE_WITH_DISABLED.join(':not([tabindex="-1"]),') +
+        ':not([tabindex="-1"]),' +
+        FOCUSABLE_WITHOUT_DISABLED.join(':not([disabled]):not([tabindex="-1"]),') +
+        ':not([disabled]):not([tabindex="-1"])';
+
+      var focusables = Polymer.dom(this).querySelectorAll(selector);
+      if (this.tabIndex >= 0) {
+        // Insert at the beginning because we might have all elements with tabIndex = 0,
+        // and the overlay should be the first of the list.
+        focusables.splice(0, 0, this);
+      }
+      // Sort by tabindex.
+      return focusables.sort(function (a, b) {
+        if (a.tabIndex === b.tabIndex) {
+          return 0;
+        }
+        if (a.tabIndex === 0 || a.tabIndex > b.tabIndex) {
+          return 1;
+        }
+        return -1;
+      });
+    },
+
     ready: function() {
-      // with-backdrop need tabindex to be set in order to trap the focus.
+      // with-backdrop needs tabindex to be set in order to trap the focus.
       // If it is not set, IronOverlayBehavior will set it, and remove it if with-backdrop = false.
       this.__shouldRemoveTabIndex = false;
+      // Used for wrapping the focus on TAB / Shift+TAB.
+      this.__firstFocusableNode = this.__lastFocusableNode = null;
       this._ensureSetup();
     },
 
     attached: function() {
       // Call _openedChanged here so that position can be computed correctly.
-      if (this._callOpenedWhenReady) {
+      if (this.opened) {
         this._openedChanged();
       }
       this._observer = Polymer.dom(this).observeNodes(this._onNodesChange);
@@ -13632,7 +13628,6 @@ context. You should place this element as a child of `<body>` whenever possible.
 
       // wait to call after ready only if we're initially open
       if (!this._overlaySetup) {
-        this._callOpenedWhenReady = this.opened;
         return;
       }
 
@@ -13707,9 +13702,8 @@ context. You should place this element as a child of `<body>` whenever possible.
       }
     },
 
-    _toggleListeners: function () {
+    _toggleListeners: function() {
       this._toggleListener(this.opened, document, 'tap', this._boundOnCaptureClick, true);
-      this._toggleListener(this.opened, document, 'keydown', this._boundOnCaptureKeydown, true);
       this._toggleListener(this.opened, document, 'focus', this._boundOnCaptureFocus, true);
     },
 
@@ -13811,18 +13805,8 @@ context. You should place this element as a child of `<body>` whenever possible.
       }
     },
 
-    _onCaptureKeydown: function(event) {
-      var ESC = 27;
-      if (this._manager.currentOverlay() === this &&
-          !this.noCancelOnEscKey &&
-          event.keyCode === ESC) {
-        this.cancel(event);
-      }
-    },
-
     _onCaptureFocus: function (event) {
-      if (this._manager.currentOverlay() === this &&
-          this.withBackdrop) {
+      if (this._manager.currentOverlay() === this && this.withBackdrop) {
         var path = Polymer.dom(event).path;
         if (path.indexOf(this) === -1) {
           event.stopPropagation();
@@ -13848,30 +13832,62 @@ context. You should place this element as a child of `<body>` whenever possible.
       if (this.opened) {
         this.notifyResize();
       }
+      // Store it so we don't query too much.
+      var focusableNodes = this._focusableNodes;
+      this.__firstFocusableNode = focusableNodes[0];
+      this.__lastFocusableNode = focusableNodes[focusableNodes.length - 1];
+    },
+
+    __onEsc: function(event) {
+      // Not opened or not on top, so return.
+      if (this._manager.currentOverlay() !== this) {
+        return;
+      }
+      if (!this.noCancelOnEscKey) {
+        this.cancel(event);
+      }
+    },
+
+    __onTab: function(event) {
+      // Not opened or not on top, so return.
+      if (this._manager.currentOverlay() !== this) {
+        return;
+      }
+      // TAB wraps from last to first focusable.
+      // Shift + TAB wraps from first to last focusable.
+      var shift = event.detail.keyboardEvent.shiftKey;
+      var nodeToCheck = shift ? this.__firstFocusableNode : this.__lastFocusableNode;
+      var nodeToSet = shift ? this.__lastFocusableNode : this.__firstFocusableNode;
+      if (this.withBackdrop && this._focusedChild === nodeToCheck) {
+        // We set here the _focusedChild so that _onCaptureFocus will handle the
+        // wrapping of the focus (the next event after tab is focus).
+        this._focusedChild = nodeToSet;
+      }
     }
-
-/**
- * Fired after the `iron-overlay` opens.
- * @event iron-overlay-opened
- */
-
-/**
- * Fired when the `iron-overlay` is canceled, but before it is closed.
- * Cancel the event to prevent the `iron-overlay` from closing.
- * @event iron-overlay-canceled
- * @param {?Event} event The event in case the user pressed ESC or clicked outside the overlay
- */
-
-/**
- * Fired after the `iron-overlay` closes.
- * @event iron-overlay-closed
- * @param {{canceled: (boolean|undefined)}} set to the `closingReason` attribute
- */
   };
 
   /** @polymerBehavior */
-  Polymer.IronOverlayBehavior = [Polymer.IronFitBehavior, Polymer.IronResizableBehavior, Polymer.IronOverlayBehaviorImpl];
+  Polymer.IronOverlayBehavior = [Polymer.IronA11yKeysBehavior, Polymer.IronFitBehavior, Polymer.IronResizableBehavior, Polymer.IronOverlayBehaviorImpl];
 
+  /**
+  * Fired after the `iron-overlay` opens.
+  * @event iron-overlay-opened
+  */
+
+  /**
+  * Fired when the `iron-overlay` is canceled, but before it is closed.
+  * Cancel the event to prevent the `iron-overlay` from closing.
+  * @event iron-overlay-canceled
+  * @param {Event} event The closing of the `iron-overlay` can be prevented
+  * by calling `event.preventDefault()`. The `event.detail` is the original event that originated
+  * the canceling (e.g. ESC keyboard event or click event outside the `iron-overlay`).
+  */
+
+  /**
+  * Fired after the `iron-overlay` closes.
+  * @event iron-overlay-closed
+  * @param {{canceled: (boolean|undefined)}} closingReason Contains `canceled` (whether the overlay was canceled).
+  */
 
 </script>
 <script>
@@ -14153,327 +14169,6 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
 </script>
 
 
-<style is="custom-style">
-
-  :root {
-
-    /* Material Design color palette for Google products */
-
-    --google-red-100: #f4c7c3;
-    --google-red-300: #e67c73;
-    --google-red-500: #db4437;
-    --google-red-700: #c53929;
-
-    --google-blue-100: #c6dafc;
-    --google-blue-300: #7baaf7;
-    --google-blue-500: #4285f4;
-    --google-blue-700: #3367d6;
-
-    --google-green-100: #b7e1cd;
-    --google-green-300: #57bb8a;
-    --google-green-500: #0f9d58;
-    --google-green-700: #0b8043;
-
-    --google-yellow-100: #fce8b2;
-    --google-yellow-300: #f7cb4d;
-    --google-yellow-500: #f4b400;
-    --google-yellow-700: #f09300;
-
-    --google-grey-100: #f5f5f5;
-    --google-grey-300: #e0e0e0;
-    --google-grey-500: #9e9e9e;
-    --google-grey-700: #616161;
-    
-    /* Material Design color palette from online spec document */
-
-    --paper-red-50: #ffebee;
-    --paper-red-100: #ffcdd2;
-    --paper-red-200: #ef9a9a;
-    --paper-red-300: #e57373;
-    --paper-red-400: #ef5350;
-    --paper-red-500: #f44336;
-    --paper-red-600: #e53935;
-    --paper-red-700: #d32f2f;
-    --paper-red-800: #c62828;
-    --paper-red-900: #b71c1c;
-    --paper-red-a100: #ff8a80;
-    --paper-red-a200: #ff5252;
-    --paper-red-a400: #ff1744;
-    --paper-red-a700: #d50000;
- 
-    --paper-pink-50: #fce4ec;
-    --paper-pink-100: #f8bbd0;
-    --paper-pink-200: #f48fb1;
-    --paper-pink-300: #f06292;
-    --paper-pink-400: #ec407a;
-    --paper-pink-500: #e91e63;
-    --paper-pink-600: #d81b60;
-    --paper-pink-700: #c2185b;
-    --paper-pink-800: #ad1457;
-    --paper-pink-900: #880e4f;
-    --paper-pink-a100: #ff80ab;
-    --paper-pink-a200: #ff4081;
-    --paper-pink-a400: #f50057;
-    --paper-pink-a700: #c51162;
- 
-    --paper-purple-50: #f3e5f5;
-    --paper-purple-100: #e1bee7;
-    --paper-purple-200: #ce93d8;
-    --paper-purple-300: #ba68c8;
-    --paper-purple-400: #ab47bc;
-    --paper-purple-500: #9c27b0;
-    --paper-purple-600: #8e24aa;
-    --paper-purple-700: #7b1fa2;
-    --paper-purple-800: #6a1b9a;
-    --paper-purple-900: #4a148c;
-    --paper-purple-a100: #ea80fc;
-    --paper-purple-a200: #e040fb;
-    --paper-purple-a400: #d500f9;
-    --paper-purple-a700: #aa00ff;
- 
-    --paper-deep-purple-50: #ede7f6;
-    --paper-deep-purple-100: #d1c4e9;
-    --paper-deep-purple-200: #b39ddb;
-    --paper-deep-purple-300: #9575cd;
-    --paper-deep-purple-400: #7e57c2;
-    --paper-deep-purple-500: #673ab7;
-    --paper-deep-purple-600: #5e35b1;
-    --paper-deep-purple-700: #512da8;
-    --paper-deep-purple-800: #4527a0;
-    --paper-deep-purple-900: #311b92;
-    --paper-deep-purple-a100: #b388ff;
-    --paper-deep-purple-a200: #7c4dff;
-    --paper-deep-purple-a400: #651fff;
-    --paper-deep-purple-a700: #6200ea;
- 
-    --paper-indigo-50: #e8eaf6;
-    --paper-indigo-100: #c5cae9;
-    --paper-indigo-200: #9fa8da;
-    --paper-indigo-300: #7986cb;
-    --paper-indigo-400: #5c6bc0;
-    --paper-indigo-500: #3f51b5;
-    --paper-indigo-600: #3949ab;
-    --paper-indigo-700: #303f9f;
-    --paper-indigo-800: #283593;
-    --paper-indigo-900: #1a237e;
-    --paper-indigo-a100: #8c9eff;
-    --paper-indigo-a200: #536dfe;
-    --paper-indigo-a400: #3d5afe;
-    --paper-indigo-a700: #304ffe;
- 
-    --paper-blue-50: #e3f2fd;
-    --paper-blue-100: #bbdefb;
-    --paper-blue-200: #90caf9;
-    --paper-blue-300: #64b5f6;
-    --paper-blue-400: #42a5f5;
-    --paper-blue-500: #2196f3;
-    --paper-blue-600: #1e88e5;
-    --paper-blue-700: #1976d2;
-    --paper-blue-800: #1565c0;
-    --paper-blue-900: #0d47a1;
-    --paper-blue-a100: #82b1ff;
-    --paper-blue-a200: #448aff;
-    --paper-blue-a400: #2979ff;
-    --paper-blue-a700: #2962ff;
- 
-    --paper-light-blue-50: #e1f5fe;
-    --paper-light-blue-100: #b3e5fc;
-    --paper-light-blue-200: #81d4fa;
-    --paper-light-blue-300: #4fc3f7;
-    --paper-light-blue-400: #29b6f6;
-    --paper-light-blue-500: #03a9f4;
-    --paper-light-blue-600: #039be5;
-    --paper-light-blue-700: #0288d1;
-    --paper-light-blue-800: #0277bd;
-    --paper-light-blue-900: #01579b;
-    --paper-light-blue-a100: #80d8ff;
-    --paper-light-blue-a200: #40c4ff;
-    --paper-light-blue-a400: #00b0ff;
-    --paper-light-blue-a700: #0091ea;
- 
-    --paper-cyan-50: #e0f7fa;
-    --paper-cyan-100: #b2ebf2;
-    --paper-cyan-200: #80deea;
-    --paper-cyan-300: #4dd0e1;
-    --paper-cyan-400: #26c6da;
-    --paper-cyan-500: #00bcd4;
-    --paper-cyan-600: #00acc1;
-    --paper-cyan-700: #0097a7;
-    --paper-cyan-800: #00838f;
-    --paper-cyan-900: #006064;
-    --paper-cyan-a100: #84ffff;
-    --paper-cyan-a200: #18ffff;
-    --paper-cyan-a400: #00e5ff;
-    --paper-cyan-a700: #00b8d4;
- 
-    --paper-teal-50: #e0f2f1;
-    --paper-teal-100: #b2dfdb;
-    --paper-teal-200: #80cbc4;
-    --paper-teal-300: #4db6ac;
-    --paper-teal-400: #26a69a;
-    --paper-teal-500: #009688;
-    --paper-teal-600: #00897b;
-    --paper-teal-700: #00796b;
-    --paper-teal-800: #00695c;
-    --paper-teal-900: #004d40;
-    --paper-teal-a100: #a7ffeb;
-    --paper-teal-a200: #64ffda;
-    --paper-teal-a400: #1de9b6;
-    --paper-teal-a700: #00bfa5;
- 
-    --paper-green-50: #e8f5e9;
-    --paper-green-100: #c8e6c9;
-    --paper-green-200: #a5d6a7;
-    --paper-green-300: #81c784;
-    --paper-green-400: #66bb6a;
-    --paper-green-500: #4caf50;
-    --paper-green-600: #43a047;
-    --paper-green-700: #388e3c;
-    --paper-green-800: #2e7d32;
-    --paper-green-900: #1b5e20;
-    --paper-green-a100: #b9f6ca;
-    --paper-green-a200: #69f0ae;
-    --paper-green-a400: #00e676;
-    --paper-green-a700: #00c853;
- 
-    --paper-light-green-50: #f1f8e9;
-    --paper-light-green-100: #dcedc8;
-    --paper-light-green-200: #c5e1a5;
-    --paper-light-green-300: #aed581;
-    --paper-light-green-400: #9ccc65;
-    --paper-light-green-500: #8bc34a;
-    --paper-light-green-600: #7cb342;
-    --paper-light-green-700: #689f38;
-    --paper-light-green-800: #558b2f;
-    --paper-light-green-900: #33691e;
-    --paper-light-green-a100: #ccff90;
-    --paper-light-green-a200: #b2ff59;
-    --paper-light-green-a400: #76ff03;
-    --paper-light-green-a700: #64dd17;
- 
-    --paper-lime-50: #f9fbe7;
-    --paper-lime-100: #f0f4c3;
-    --paper-lime-200: #e6ee9c;
-    --paper-lime-300: #dce775;
-    --paper-lime-400: #d4e157;
-    --paper-lime-500: #cddc39;
-    --paper-lime-600: #c0ca33;
-    --paper-lime-700: #afb42b;
-    --paper-lime-800: #9e9d24;
-    --paper-lime-900: #827717;
-    --paper-lime-a100: #f4ff81;
-    --paper-lime-a200: #eeff41;
-    --paper-lime-a400: #c6ff00;
-    --paper-lime-a700: #aeea00;
- 
-    --paper-yellow-50: #fffde7;
-    --paper-yellow-100: #fff9c4;
-    --paper-yellow-200: #fff59d;
-    --paper-yellow-300: #fff176;
-    --paper-yellow-400: #ffee58;
-    --paper-yellow-500: #ffeb3b;
-    --paper-yellow-600: #fdd835;
-    --paper-yellow-700: #fbc02d;
-    --paper-yellow-800: #f9a825;
-    --paper-yellow-900: #f57f17;
-    --paper-yellow-a100: #ffff8d;
-    --paper-yellow-a200: #ffff00;
-    --paper-yellow-a400: #ffea00;
-    --paper-yellow-a700: #ffd600;
- 
-    --paper-amber-50: #fff8e1;
-    --paper-amber-100: #ffecb3;
-    --paper-amber-200: #ffe082;
-    --paper-amber-300: #ffd54f;
-    --paper-amber-400: #ffca28;
-    --paper-amber-500: #ffc107;
-    --paper-amber-600: #ffb300;
-    --paper-amber-700: #ffa000;
-    --paper-amber-800: #ff8f00;
-    --paper-amber-900: #ff6f00;
-    --paper-amber-a100: #ffe57f;
-    --paper-amber-a200: #ffd740;
-    --paper-amber-a400: #ffc400;
-    --paper-amber-a700: #ffab00;
- 
-    --paper-orange-50: #fff3e0;
-    --paper-orange-100: #ffe0b2;
-    --paper-orange-200: #ffcc80;
-    --paper-orange-300: #ffb74d;
-    --paper-orange-400: #ffa726;
-    --paper-orange-500: #ff9800;
-    --paper-orange-600: #fb8c00;
-    --paper-orange-700: #f57c00;
-    --paper-orange-800: #ef6c00;
-    --paper-orange-900: #e65100;
-    --paper-orange-a100: #ffd180;
-    --paper-orange-a200: #ffab40;
-    --paper-orange-a400: #ff9100;
-    --paper-orange-a700: #ff6500;
- 
-    --paper-deep-orange-50: #fbe9e7;
-    --paper-deep-orange-100: #ffccbc;
-    --paper-deep-orange-200: #ffab91;
-    --paper-deep-orange-300: #ff8a65;
-    --paper-deep-orange-400: #ff7043;
-    --paper-deep-orange-500: #ff5722;
-    --paper-deep-orange-600: #f4511e;
-    --paper-deep-orange-700: #e64a19;
-    --paper-deep-orange-800: #d84315;
-    --paper-deep-orange-900: #bf360c;
-    --paper-deep-orange-a100: #ff9e80;
-    --paper-deep-orange-a200: #ff6e40;
-    --paper-deep-orange-a400: #ff3d00;
-    --paper-deep-orange-a700: #dd2c00;
- 
-    --paper-brown-50: #efebe9;
-    --paper-brown-100: #d7ccc8;
-    --paper-brown-200: #bcaaa4;
-    --paper-brown-300: #a1887f;
-    --paper-brown-400: #8d6e63;
-    --paper-brown-500: #795548;
-    --paper-brown-600: #6d4c41;
-    --paper-brown-700: #5d4037;
-    --paper-brown-800: #4e342e;
-    --paper-brown-900: #3e2723;
- 
-    --paper-grey-50: #fafafa;
-    --paper-grey-100: #f5f5f5;
-    --paper-grey-200: #eeeeee;
-    --paper-grey-300: #e0e0e0;
-    --paper-grey-400: #bdbdbd;
-    --paper-grey-500: #9e9e9e;
-    --paper-grey-600: #757575;
-    --paper-grey-700: #616161;
-    --paper-grey-800: #424242;
-    --paper-grey-900: #212121;
- 
-    --paper-blue-grey-50: #eceff1;
-    --paper-blue-grey-100: #cfd8dc;
-    --paper-blue-grey-200: #b0bec5;
-    --paper-blue-grey-300: #90a4ae;
-    --paper-blue-grey-400: #78909c;
-    --paper-blue-grey-500: #607d8b;
-    --paper-blue-grey-600: #546e7a;
-    --paper-blue-grey-700: #455a64;
-    --paper-blue-grey-800: #37474f;
-    --paper-blue-grey-900: #263238;
-
-    /* opacity for dark text on a light background */
-    --dark-divider-opacity: 0.12;
-    --dark-disabled-opacity: 0.38; /* or hint text or icon */
-    --dark-secondary-opacity: 0.54;
-    --dark-primary-opacity: 0.87;
-
-    /* opacity for light text on a dark background */
-    --light-divider-opacity: 0.12;
-    --light-disabled-opacity: 0.3; /* or hint text or icon */
-    --light-secondary-opacity: 0.7;
-    --light-primary-opacity: 1.0;
-
-  }
-
-</style>
 
 
 
@@ -14653,6 +14348,679 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
 
 
 
+<script>
+
+  /** @polymerBehavior */
+  Polymer.PaperSpinnerBehavior = {
+
+    listeners: {
+      'animationend': '__reset',
+      'webkitAnimationEnd': '__reset'
+    },
+
+    properties: {
+      /**
+       * Displays the spinner.
+       */
+      active: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true,
+        observer: '__activeChanged'
+      },
+
+      /**
+       * Alternative text content for accessibility support.
+       * If alt is present, it will add an aria-label whose content matches alt when active.
+       * If alt is not present, it will default to 'loading' as the alt value.
+       */
+      alt: {
+        type: String,
+        value: 'loading',
+        observer: '__altChanged'
+      },
+
+      __coolingDown: {
+        type: Boolean,
+        value: false
+      }
+    },
+
+    __computeContainerClasses: function(active, coolingDown) {
+      return [
+        active || coolingDown ? 'active' : '',
+        coolingDown ? 'cooldown' : ''
+      ].join(' ');
+    },
+
+    __activeChanged: function(active, old) {
+      this.__setAriaHidden(!active);
+      this.__coolingDown = !active && old;
+    },
+
+    __altChanged: function(alt) {
+      // user-provided `aria-label` takes precedence over prototype default
+      if (alt === this.getPropertyInfo('alt').value) {
+        this.alt = this.getAttribute('aria-label') || alt;
+      } else {
+        this.__setAriaHidden(alt==='');
+        this.setAttribute('aria-label', alt);
+      }
+    },
+
+    __setAriaHidden: function(hidden) {
+      var attr = 'aria-hidden';
+      if (hidden) {
+        this.setAttribute(attr, 'true');
+      } else {
+        this.removeAttribute(attr);
+      }
+    },
+
+    __reset: function() {
+      this.active = false;
+      this.__coolingDown = false;
+    }
+  };
+</script>
+
+
+<script>
+  console.warn('This file is deprecated. Please use `iron-flex-layout/iron-flex-layout-classes.html`, and one of the specific dom-modules instead');
+</script>
+
+<style>
+
+  /*******************************
+            Flex Layout
+  *******************************/
+
+  html /deep/ .layout.horizontal,
+  html /deep/ .layout.horizontal-reverse,
+  html /deep/ .layout.vertical,
+  html /deep/ .layout.vertical-reverse {
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+  }
+
+  html /deep/ .layout.inline {
+    display: -ms-inline-flexbox;
+    display: -webkit-inline-flex;
+    display: inline-flex;
+  }
+
+  html /deep/ .layout.horizontal {
+    -ms-flex-direction: row;
+    -webkit-flex-direction: row;
+    flex-direction: row;
+  }
+
+  html /deep/ .layout.horizontal-reverse {
+    -ms-flex-direction: row-reverse;
+    -webkit-flex-direction: row-reverse;
+    flex-direction: row-reverse;
+  }
+
+  html /deep/ .layout.vertical {
+    -ms-flex-direction: column;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+  }
+
+  html /deep/ .layout.vertical-reverse {
+    -ms-flex-direction: column-reverse;
+    -webkit-flex-direction: column-reverse;
+    flex-direction: column-reverse;
+  }
+
+  html /deep/ .layout.wrap {
+    -ms-flex-wrap: wrap;
+    -webkit-flex-wrap: wrap;
+    flex-wrap: wrap;
+  }
+
+  html /deep/ .layout.wrap-reverse {
+    -ms-flex-wrap: wrap-reverse;
+    -webkit-flex-wrap: wrap-reverse;
+    flex-wrap: wrap-reverse;
+  }
+
+  html /deep/ .flex-auto {
+    -ms-flex: 1 1 auto;
+    -webkit-flex: 1 1 auto;
+    flex: 1 1 auto;
+  }
+
+  html /deep/ .flex-none {
+    -ms-flex: none;
+    -webkit-flex: none;
+    flex: none;
+  }
+
+  html /deep/ .flex,
+  html /deep/ .flex-1 {
+    -ms-flex: 1;
+    -webkit-flex: 1;
+    flex: 1;
+  }
+
+  html /deep/ .flex-2 {
+    -ms-flex: 2;
+    -webkit-flex: 2;
+    flex: 2;
+  }
+
+  html /deep/ .flex-3 {
+    -ms-flex: 3;
+    -webkit-flex: 3;
+    flex: 3;
+  }
+
+  html /deep/ .flex-4 {
+    -ms-flex: 4;
+    -webkit-flex: 4;
+    flex: 4;
+  }
+
+  html /deep/ .flex-5 {
+    -ms-flex: 5;
+    -webkit-flex: 5;
+    flex: 5;
+  }
+
+  html /deep/ .flex-6 {
+    -ms-flex: 6;
+    -webkit-flex: 6;
+    flex: 6;
+  }
+
+  html /deep/ .flex-7 {
+    -ms-flex: 7;
+    -webkit-flex: 7;
+    flex: 7;
+  }
+
+  html /deep/ .flex-8 {
+    -ms-flex: 8;
+    -webkit-flex: 8;
+    flex: 8;
+  }
+
+  html /deep/ .flex-9 {
+    -ms-flex: 9;
+    -webkit-flex: 9;
+    flex: 9;
+  }
+
+  html /deep/ .flex-10 {
+    -ms-flex: 10;
+    -webkit-flex: 10;
+    flex: 10;
+  }
+
+  html /deep/ .flex-11 {
+    -ms-flex: 11;
+    -webkit-flex: 11;
+    flex: 11;
+  }
+
+  html /deep/ .flex-12 {
+    -ms-flex: 12;
+    -webkit-flex: 12;
+    flex: 12;
+  }
+
+  /* alignment in cross axis */
+
+  html /deep/ .layout.start {
+    -ms-flex-align: start;
+    -webkit-align-items: flex-start;
+    align-items: flex-start;
+  }
+
+  html /deep/ .layout.center,
+  html /deep/ .layout.center-center {
+    -ms-flex-align: center;
+    -webkit-align-items: center;
+    align-items: center;
+  }
+
+  html /deep/ .layout.end {
+    -ms-flex-align: end;
+    -webkit-align-items: flex-end;
+    align-items: flex-end;
+  }
+
+  /* alignment in main axis */
+
+  html /deep/ .layout.start-justified {
+    -ms-flex-pack: start;
+    -webkit-justify-content: flex-start;
+    justify-content: flex-start;
+  }
+
+  html /deep/ .layout.center-justified,
+  html /deep/ .layout.center-center {
+    -ms-flex-pack: center;
+    -webkit-justify-content: center;
+    justify-content: center;
+  }
+
+  html /deep/ .layout.end-justified {
+    -ms-flex-pack: end;
+    -webkit-justify-content: flex-end;
+    justify-content: flex-end;
+  }
+
+  html /deep/ .layout.around-justified {
+    -ms-flex-pack: around;
+    -webkit-justify-content: space-around;
+    justify-content: space-around;
+  }
+
+  html /deep/ .layout.justified {
+    -ms-flex-pack: justify;
+    -webkit-justify-content: space-between;
+    justify-content: space-between;
+  }
+
+  /* self alignment */
+
+  html /deep/ .self-start {
+    -ms-align-self: flex-start;
+    -webkit-align-self: flex-start;
+    align-self: flex-start;
+  }
+
+  html /deep/ .self-center {
+    -ms-align-self: center;
+    -webkit-align-self: center;
+    align-self: center;
+  }
+
+  html /deep/ .self-end {
+    -ms-align-self: flex-end;
+    -webkit-align-self: flex-end;
+    align-self: flex-end;
+  }
+
+  html /deep/ .self-stretch {
+    -ms-align-self: stretch;
+    -webkit-align-self: stretch;
+    align-self: stretch;
+  }
+
+  /*******************************
+            Other Layout
+  *******************************/
+
+  html /deep/ .block {
+    display: block;
+  }
+
+  /* IE 10 support for HTML5 hidden attr */
+  html /deep/ [hidden] {
+    display: none !important;
+  }
+
+  html /deep/ .invisible {
+    visibility: hidden !important;
+  }
+
+  html /deep/ .relative {
+    position: relative;
+  }
+
+  html /deep/ .fit {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+  }
+
+  body.fullbleed {
+    margin: 0;
+    height: 100vh;
+  }
+
+  html /deep/ .scroll {
+    -webkit-overflow-scrolling: touch;
+    overflow: auto;
+  }
+
+  .fixed-bottom,
+  .fixed-left,
+  .fixed-right,
+  .fixed-top {
+    position: fixed;
+  }
+
+  html /deep/ .fixed-top {
+    top: 0;
+    left: 0;
+    right: 0;
+  }
+
+  html /deep/ .fixed-right {
+    top: 0;
+    right: 0;
+    bottom: 0;
+  }
+
+  html /deep/ .fixed-bottom {
+    right: 0;
+    bottom: 0;
+    left: 0;
+  }
+
+  html /deep/ .fixed-left {
+    top: 0;
+    bottom: 0;
+    left: 0;
+  }
+
+</style>
+<script>
+  console.warn('This file is deprecated. Please use `iron-flex-layout/iron-flex-layout-classes.html`, and one of the specific dom-modules instead');
+</script>
+
+<style>
+
+  /*******************************
+            Flex Layout
+  *******************************/
+
+  .layout.horizontal,
+  .layout.horizontal-reverse,
+  .layout.vertical,
+  .layout.vertical-reverse {
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+  }
+
+  .layout.inline {
+    display: -ms-inline-flexbox;
+    display: -webkit-inline-flex;
+    display: inline-flex;
+  }
+
+  .layout.horizontal {
+    -ms-flex-direction: row;
+    -webkit-flex-direction: row;
+    flex-direction: row;
+  }
+
+  .layout.horizontal-reverse {
+    -ms-flex-direction: row-reverse;
+    -webkit-flex-direction: row-reverse;
+    flex-direction: row-reverse;
+  }
+
+  .layout.vertical {
+    -ms-flex-direction: column;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+  }
+
+  .layout.vertical-reverse {
+    -ms-flex-direction: column-reverse;
+    -webkit-flex-direction: column-reverse;
+    flex-direction: column-reverse;
+  }
+
+  .layout.wrap {
+    -ms-flex-wrap: wrap;
+    -webkit-flex-wrap: wrap;
+    flex-wrap: wrap;
+  }
+
+  .layout.wrap-reverse {
+    -ms-flex-wrap: wrap-reverse;
+    -webkit-flex-wrap: wrap-reverse;
+    flex-wrap: wrap-reverse;
+  }
+
+  .flex-auto {
+    -ms-flex: 1 1 auto;
+    -webkit-flex: 1 1 auto;
+    flex: 1 1 auto;
+  }
+
+  .flex-none {
+    -ms-flex: none;
+    -webkit-flex: none;
+    flex: none;
+  }
+
+  .flex,
+  .flex-1 {
+    -ms-flex: 1;
+    -webkit-flex: 1;
+    flex: 1;
+  }
+
+  .flex-2 {
+    -ms-flex: 2;
+    -webkit-flex: 2;
+    flex: 2;
+  }
+
+  .flex-3 {
+    -ms-flex: 3;
+    -webkit-flex: 3;
+    flex: 3;
+  }
+
+  .flex-4 {
+    -ms-flex: 4;
+    -webkit-flex: 4;
+    flex: 4;
+  }
+
+  .flex-5 {
+    -ms-flex: 5;
+    -webkit-flex: 5;
+    flex: 5;
+  }
+
+  .flex-6 {
+    -ms-flex: 6;
+    -webkit-flex: 6;
+    flex: 6;
+  }
+
+  .flex-7 {
+    -ms-flex: 7;
+    -webkit-flex: 7;
+    flex: 7;
+  }
+
+  .flex-8 {
+    -ms-flex: 8;
+    -webkit-flex: 8;
+    flex: 8;
+  }
+
+  .flex-9 {
+    -ms-flex: 9;
+    -webkit-flex: 9;
+    flex: 9;
+  }
+
+  .flex-10 {
+    -ms-flex: 10;
+    -webkit-flex: 10;
+    flex: 10;
+  }
+
+  .flex-11 {
+    -ms-flex: 11;
+    -webkit-flex: 11;
+    flex: 11;
+  }
+
+  .flex-12 {
+    -ms-flex: 12;
+    -webkit-flex: 12;
+    flex: 12;
+  }
+
+  /* alignment in cross axis */
+
+  .layout.start {
+    -ms-flex-align: start;
+    -webkit-align-items: flex-start;
+    align-items: flex-start;
+  }
+
+  .layout.center,
+  .layout.center-center {
+    -ms-flex-align: center;
+    -webkit-align-items: center;
+    align-items: center;
+  }
+
+  .layout.end {
+    -ms-flex-align: end;
+    -webkit-align-items: flex-end;
+    align-items: flex-end;
+  }
+
+  /* alignment in main axis */
+
+  .layout.start-justified {
+    -ms-flex-pack: start;
+    -webkit-justify-content: flex-start;
+    justify-content: flex-start;
+  }
+
+  .layout.center-justified,
+  .layout.center-center {
+    -ms-flex-pack: center;
+    -webkit-justify-content: center;
+    justify-content: center;
+  }
+
+  .layout.end-justified {
+    -ms-flex-pack: end;
+    -webkit-justify-content: flex-end;
+    justify-content: flex-end;
+  }
+
+  .layout.around-justified {
+    -ms-flex-pack: around;
+    -webkit-justify-content: space-around;
+    justify-content: space-around;
+  }
+
+  .layout.justified {
+    -ms-flex-pack: justify;
+    -webkit-justify-content: space-between;
+    justify-content: space-between;
+  }
+
+  /* self alignment */
+
+  .self-start {
+    -ms-align-self: flex-start;
+    -webkit-align-self: flex-start;
+    align-self: flex-start;
+  }
+
+  .self-center {
+    -ms-align-self: center;
+    -webkit-align-self: center;
+    align-self: center;
+  }
+
+  .self-end {
+    -ms-align-self: flex-end;
+    -webkit-align-self: flex-end;
+    align-self: flex-end;
+  }
+
+  .self-stretch {
+    -ms-align-self: stretch;
+    -webkit-align-self: stretch;
+    align-self: stretch;
+  }
+
+  /*******************************
+            Other Layout
+  *******************************/
+
+  .block {
+    display: block;
+  }
+
+  /* IE 10 support for HTML5 hidden attr */
+  [hidden] {
+    display: none !important;
+  }
+
+  .invisible {
+    visibility: hidden !important;
+  }
+
+  .relative {
+    position: relative;
+  }
+
+  .fit {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+  }
+
+  body.fullbleed {
+    margin: 0;
+    height: 100vh;
+  }
+
+  .scroll {
+    -webkit-overflow-scrolling: touch;
+    overflow: auto;
+  }
+
+  /* fixed position */
+
+  .fixed-bottom,
+  .fixed-left,
+  .fixed-right,
+  .fixed-top {
+    position: fixed;
+  }
+
+  .fixed-top {
+    top: 0;
+    left: 0;
+    right: 0;
+  }
+
+  .fixed-right {
+    top: 0;
+    right: 0;
+    bottom: 0;
+  }
+
+  .fixed-bottom {
+    right: 0;
+    bottom: 0;
+    left: 0;
+  }
+
+  .fixed-left {
+    top: 0;
+    bottom: 0;
+    left: 0;
+  }
+
+</style>
 
 
 
@@ -18540,7 +18908,8 @@ mwcLayout = new PolymerLayout();
             type: Boolean,
             value: true,
             notify: true,
-            readOnly: true
+            readOnly: true,
+            reflectToAttribute: true
           }
         },
 
@@ -18838,6 +19207,7 @@ mwcLayout = new PolymerLayout();
         @apply(--layout-center);
 
         width: var(--paper-item-icon-width, 56px);
+        @apply(--paper-item-icon);
       }
     </style>
 
@@ -19953,6 +20323,398 @@ mwcLayout = new PolymerLayout();
      */
   </script>
 </dom-module>
+<dom-module id="paper-spinner-styles" assetpath="/bower_components/paper-spinner/">
+  <template>
+    <style>
+      /*
+      /**************************/
+      /* STYLES FOR THE SPINNER */
+      /**************************/
+
+      /*
+       * Constants:
+       *      ARCSIZE     = 270 degrees (amount of circle the arc takes up)
+       *      ARCTIME     = 1333ms (time it takes to expand and contract arc)
+       *      ARCSTARTROT = 216 degrees (how much the start location of the arc
+       *                                should rotate each time, 216 gives us a
+       *                                5 pointed star shape (it's 360/5 * 3).
+       *                                For a 7 pointed star, we might do
+       *                                360/7 * 3 = 154.286)
+       *      CONTAINERWIDTH = 28px
+       *      SHRINK_TIME = 400ms
+       */
+
+      :host {
+        display: inline-block;
+        position: relative;
+        width: 28px; /* CONTAINERWIDTH */
+        height: 28px; /* CONTAINERWIDTH */
+      }
+
+      #spinnerContainer {
+        width: 100%;
+        height: 100%;
+
+        /* The spinner does not have any contents that would have to be
+         * flipped if the direction changes. Always use ltr so that the
+         * style works out correctly in both cases. */
+        direction: ltr;
+      }
+
+      #spinnerContainer.active {
+        /* duration: 360 * ARCTIME / (ARCSTARTROT + (360-ARCSIZE)) */
+        -webkit-animation: container-rotate 1568ms linear infinite;
+        animation: container-rotate 1568ms linear infinite;
+      }
+
+      @-webkit-keyframes container-rotate {
+        to { -webkit-transform: rotate(360deg) }
+      }
+
+      @keyframes container-rotate {
+        to { transform: rotate(360deg) }
+      }
+
+      .spinner-layer {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        white-space: nowrap;
+        border-color: var(--paper-spinner-color, --google-blue-500);
+      }
+
+      .layer-1 {
+        border-color: var(--paper-spinner-layer-1-color, --google-blue-500);
+      }
+
+      .layer-2 {
+        border-color: var(--paper-spinner-layer-2-color, --google-red-500);
+      }
+
+      .layer-3 {
+        border-color: var(--paper-spinner-layer-3-color, --google-yellow-500);
+      }
+
+      .layer-4 {
+        border-color: var(--paper-spinner-layer-4-color, --google-green-500);
+      }
+
+      /**
+       * IMPORTANT NOTE ABOUT CSS ANIMATION PROPERTIES (keanulee):
+       *
+       * iOS Safari (tested on iOS 8.1) does not handle animation-delay very well - it doesn't
+       * guarantee that the animation will start _exactly_ after that value. So we avoid using
+       * animation-delay and instead set custom keyframes for each color (as layer-2undant as it
+       * seems).
+       *
+       * We write out each animation in full (instead of separating animation-name,
+       * animation-duration, etc.) because under the polyfill, Safari does not recognize those
+       * specific properties properly, treats them as -webkit-animation, and overrides the
+       * other animation rules. See https://github.com/Polymer/platform/issues/53.
+       */
+      .active .spinner-layer {
+        /* durations: 4 * ARCTIME */
+        -webkit-animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+        animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+        opacity: 1;
+      }
+
+      .active .spinner-layer.layer-1 {
+        /* durations: 4 * ARCTIME */
+        -webkit-animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-1-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+        animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-1-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+      }
+
+      .active .spinner-layer.layer-2 {
+        /* durations: 4 * ARCTIME */
+        -webkit-animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-2-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+        animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-2-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+      }
+
+      .active .spinner-layer.layer-3 {
+        /* durations: 4 * ARCTIME */
+        -webkit-animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-3-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+        animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-3-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+      }
+
+      .active .spinner-layer.layer-4 {
+        /* durations: 4 * ARCTIME */
+        -webkit-animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-4-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+        animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-4-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+      }
+
+      @-webkit-keyframes fill-unfill-rotate {
+        12.5% { -webkit-transform: rotate(135deg);  } /* 0.5 * ARCSIZE */
+        25%   { -webkit-transform: rotate(270deg);  } /* 1   * ARCSIZE */
+        37.5% { -webkit-transform: rotate(405deg);  } /* 1.5 * ARCSIZE */
+        50%   { -webkit-transform: rotate(540deg);  } /* 2   * ARCSIZE */
+        62.5% { -webkit-transform: rotate(675deg);  } /* 2.5 * ARCSIZE */
+        75%   { -webkit-transform: rotate(810deg);  } /* 3   * ARCSIZE */
+        87.5% { -webkit-transform: rotate(945deg);  } /* 3.5 * ARCSIZE */
+        to    { -webkit-transform: rotate(1080deg); } /* 4   * ARCSIZE */
+      }
+
+      @keyframes fill-unfill-rotate {
+        12.5% { transform: rotate(135deg);  } /* 0.5 * ARCSIZE */
+        25%   { transform: rotate(270deg);  } /* 1   * ARCSIZE */
+        37.5% { transform: rotate(405deg);  } /* 1.5 * ARCSIZE */
+        50%   { transform: rotate(540deg);  } /* 2   * ARCSIZE */
+        62.5% { transform: rotate(675deg);  } /* 2.5 * ARCSIZE */
+        75%   { transform: rotate(810deg);  } /* 3   * ARCSIZE */
+        87.5% { transform: rotate(945deg);  } /* 3.5 * ARCSIZE */
+        to    { transform: rotate(1080deg); } /* 4   * ARCSIZE */
+      }
+
+      /**
+       * HACK: Even though the intention is to have the current .spinner-layer at
+       * `opacity: 1`, we set it to `opacity: 0.99` instead since this forces Chrome
+       * to do proper subpixel rendering for the elements being animated. This is
+       * especially visible in Chrome 39 on Ubuntu 14.04. See:
+       *
+       * - https://github.com/Polymer/paper-spinner/issues/9
+       * - https://code.google.com/p/chromium/issues/detail?id=436255
+       */
+      @-webkit-keyframes layer-1-fade-in-out {
+        from { opacity: 0.99; }
+        25% { opacity: 0.99; }
+        26% { opacity: 0; }
+        89% { opacity: 0; }
+        90% { opacity: 0.99; }
+        100% { opacity: 0.99; }
+      }
+
+      @keyframes layer-1-fade-in-out {
+        from { opacity: 0.99; }
+        25% { opacity: 0.99; }
+        26% { opacity: 0; }
+        89% { opacity: 0; }
+        90% { opacity: 0.99; }
+        100% { opacity: 0.99; }
+      }
+
+      @-webkit-keyframes layer-2-fade-in-out {
+        from { opacity: 0; }
+        15% { opacity: 0; }
+        25% { opacity: 0.99; }
+        50% { opacity: 0.99; }
+        51% { opacity: 0; }
+      }
+
+      @keyframes layer-2-fade-in-out {
+        from { opacity: 0; }
+        15% { opacity: 0; }
+        25% { opacity: 0.99; }
+        50% { opacity: 0.99; }
+        51% { opacity: 0; }
+      }
+
+      @-webkit-keyframes layer-3-fade-in-out {
+        from { opacity: 0; }
+        40% { opacity: 0; }
+        50% { opacity: 0.99; }
+        75% { opacity: 0.99; }
+        76% { opacity: 0; }
+      }
+
+      @keyframes layer-3-fade-in-out {
+        from { opacity: 0; }
+        40% { opacity: 0; }
+        50% { opacity: 0.99; }
+        75% { opacity: 0.99; }
+        76% { opacity: 0; }
+      }
+
+      @-webkit-keyframes layer-4-fade-in-out {
+        from { opacity: 0; }
+        65% { opacity: 0; }
+        75% { opacity: 0.99; }
+        90% { opacity: 0.99; }
+        100% { opacity: 0; }
+      }
+
+      @keyframes layer-4-fade-in-out {
+        from { opacity: 0; }
+        65% { opacity: 0; }
+        75% { opacity: 0.99; }
+        90% { opacity: 0.99; }
+        100% { opacity: 0; }
+      }
+
+      /**
+       * Patch the gap that appear between the two adjacent div.circle-clipper while the
+       * spinner is rotating (appears on Chrome 38, Safari 7.1, and IE 11).
+       *
+       * Update: the gap no longer appears on Chrome when .spinner-layer's opacity is 0.99,
+       * but still does on Safari and IE.
+       */
+      .gap-patch {
+        position: absolute;
+        box-sizing: border-box;
+        top: 0;
+        left: 45%;
+        width: 10%;
+        height: 100%;
+        overflow: hidden;
+        border-color: inherit;
+      }
+
+      .gap-patch .circle {
+        width: 1000%;
+        left: -450%;
+      }
+
+      .circle-clipper {
+        display: inline-block;
+        position: relative;
+        width: 50%;
+        height: 100%;
+        overflow: hidden;
+        border-color: inherit;
+      }
+
+      .circle-clipper .circle {
+        width: 200%;
+      }
+
+      .circle {
+        box-sizing: border-box;
+        height: 100%;
+        border-width: var(--paper-spinner-stroke-width, 3px); /* STROKEWIDTH */
+        border-style: solid;
+        border-color: inherit;
+        border-bottom-color: transparent !important;
+        border-radius: 50%;
+        -webkit-animation: none;
+        animation: none;
+
+        @apply(--layout-fit);
+      }
+
+      .circle-clipper.left .circle {
+        border-right-color: transparent !important;
+        -webkit-transform: rotate(129deg);
+        transform: rotate(129deg);
+      }
+
+      .circle-clipper.right .circle {
+        left: -100%;
+        border-left-color: transparent !important;
+        -webkit-transform: rotate(-129deg);
+        transform: rotate(-129deg);
+      }
+
+      .active .circle-clipper.left .circle {
+        /* duration: ARCTIME */
+        -webkit-animation: left-spin 1333ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+        animation: left-spin 1333ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+      }
+
+      .active .circle-clipper.right .circle {
+        /* duration: ARCTIME */
+        -webkit-animation: right-spin 1333ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+        animation: right-spin 1333ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+      }
+
+      @-webkit-keyframes left-spin {
+        from { -webkit-transform: rotate(130deg); }
+        50% { -webkit-transform: rotate(-5deg); }
+        to { -webkit-transform: rotate(130deg); }
+      }
+
+      @keyframes left-spin {
+        from { transform: rotate(130deg); }
+        50% { transform: rotate(-5deg); }
+        to { transform: rotate(130deg); }
+      }
+
+      @-webkit-keyframes right-spin {
+        from { -webkit-transform: rotate(-130deg); }
+        50% { -webkit-transform: rotate(5deg); }
+        to { -webkit-transform: rotate(-130deg); }
+      }
+
+      @keyframes right-spin {
+        from { transform: rotate(-130deg); }
+        50% { transform: rotate(5deg); }
+        to { transform: rotate(-130deg); }
+      }
+
+      #spinnerContainer.cooldown {
+        /* duration: SHRINK_TIME */
+        -webkit-animation: container-rotate 1568ms linear infinite, fade-out 400ms cubic-bezier(0.4, 0.0, 0.2, 1);
+        animation: container-rotate 1568ms linear infinite, fade-out 400ms cubic-bezier(0.4, 0.0, 0.2, 1);
+      }
+
+      @-webkit-keyframes fade-out {
+        from { opacity: 0.99; }
+        to { opacity: 0; }
+      }
+
+      @keyframes fade-out {
+        from { opacity: 0.99; }
+        to { opacity: 0; }
+      }
+    </style>
+  </template>
+</dom-module>
+<dom-module id="paper-spinner" assetpath="/bower_components/paper-spinner/">
+  <template>
+    <style include="paper-spinner-styles"></style>
+
+    <div id="spinnerContainer" class-name="[[__computeContainerClasses(active, __coolingDown)]]">
+      <div class="spinner-layer layer-1">
+        <div class="circle-clipper left">
+          <div class="circle"></div>
+        </div><div class="gap-patch">
+          <div class="circle"></div>
+        </div><div class="circle-clipper right">
+          <div class="circle"></div>
+        </div>
+      </div>
+
+      <div class="spinner-layer layer-2">
+        <div class="circle-clipper left">
+          <div class="circle"></div>
+        </div><div class="gap-patch">
+          <div class="circle"></div>
+        </div><div class="circle-clipper right">
+          <div class="circle"></div>
+        </div>
+      </div>
+
+      <div class="spinner-layer layer-3">
+        <div class="circle-clipper left">
+          <div class="circle"></div>
+        </div><div class="gap-patch">
+          <div class="circle"></div>
+        </div><div class="circle-clipper right">
+          <div class="circle"></div>
+        </div>
+      </div>
+
+      <div class="spinner-layer layer-4">
+        <div class="circle-clipper left">
+          <div class="circle"></div>
+        </div><div class="gap-patch">
+          <div class="circle"></div>
+        </div><div class="circle-clipper right">
+          <div class="circle"></div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    Polymer({
+      is: 'paper-spinner',
+
+      behaviors: [
+        Polymer.PaperSpinnerBehavior
+      ]
+    });
+  </script>
+</dom-module>
 <dom-module id="iron-a11y-announcer" assetpath="/bower_components/iron-a11y-announcer/">
   <style>
     :host {
@@ -20382,7 +21144,6 @@ mwcLayout = new PolymerLayout();
         display: inline-block;
         vertical-align: middle;
         padding-left: var(--paper-toggle-button-label-spacing, 8px);
-        white-space: normal;
         pointer-events: none;
         color: var(--paper-toggle-button-label-color, --primary-text-color);
       }
@@ -20755,14 +21516,6 @@ mwcLayout = new PolymerLayout();
 <dom-module id="add-project" assetpath="/linto/">
 
   <style>
-  :host {
-    display: none;
-  }
-  
-  :host([active]) {
-    display: block;
-  }
-  
   paper-button {
     margin: 0;
     min-width: 50%;
@@ -20779,7 +21532,11 @@ mwcLayout = new PolymerLayout();
   }
   
   paper-toolbar .title {
-    padding: 0 12px;
+    padding: 0 8px;
+  }
+  
+  .divider {
+    height: 16px;
   }
   
   .footer-li {
@@ -20801,7 +21558,7 @@ mwcLayout = new PolymerLayout();
   </style>
 
   <template>
-    <paper-header-panel class="fit" style="background: white; z-index: 10;">
+    <paper-header-panel class="white">
       <paper-toolbar>
         <paper-icon-button icon="arrow-back" on-click="back"></paper-icon-button>
         <div class="title">scheduler</div>
@@ -20812,26 +21569,23 @@ mwcLayout = new PolymerLayout();
           <div class="layout page-body vertical">
             <paper-input auto-validate="" autofocus="" label="keyword" required="" value="{{keyword}}"></paper-input>
 
-            <br>
-
+            <div class="divider"></div>
             <div class="center horizontal layout">
               <div class="cursor-d flex subhead text-right">max torrent time in month</div>
-              <paper-slider class="flex" editable="" max="48" min="1" value="{{within}}"></paper-slider>
+              <paper-slider class="flex" editable="" max="48" min="1" pin="" value="{{within}}"></paper-slider>
             </div>
 
-            <br>
-
+            <div class="divider"></div>
             <div class="center horizontal layout">
               <div class="cursor-d flex subhead text-right">min leech count</div>
-              <paper-slider class="flex" editable="" max="1000" min="1" value="{{leech}}"></paper-slider>
+              <paper-slider class="flex" editable="" max="1000" min="1" pin="" value="{{leech}}"></paper-slider>
             </div>
             <div class="center horizontal layout">
               <div class="cursor-d flex subhead text-right">min seed count</div>
-              <paper-slider class="flex" editable="" max="1000" min="1" value="{{seed}}"></paper-slider>
+              <paper-slider class="flex" editable="" max="1000" min="1" pin="" value="{{seed}}"></paper-slider>
             </div>
 
-            <br>
-
+            <div class="divider"></div>
             <div class="end-justified horizontal layout">
               <paper-button class="blue-500" on-click="add_project">submit</paper-button>
             </div>
@@ -20870,20 +21624,10 @@ mwcLayout = new PolymerLayout();
               } else {
                 document.querySelector("#polymer_toast").toast("i keyword added");
 
-                document.querySelector("#main_toolbar").className = document.querySelector("#main_toolbar").className.replace(/ ?[a-z\-]+\-500/g, "") + " " + polymer_color(1 < keywordArray.length ? keywordArray[1] : keywordArray[0]);
-
-                document.querySelector("layout-inbox").menu_selected = response;
-
-                Meteor.setTimeout(function() {
-                  if (document.querySelector('.project_progress[data-id="' + response + '"]')) {
-                    var project_progress = document.querySelector('.project_progress[data-id="' + response + '"]');
-
-                    project_progress.hidden = false;
-
-                    project_progress.max = 50;
-                    project_progress.value = 10;
-                  }
-                }, 1000);
+                FlowRouter.setQueryParams({
+                  project: response,
+                  route: "project-view"
+                });
               }
             }
           });
@@ -20904,7 +21648,7 @@ mwcLayout = new PolymerLayout();
 
     back: function() {
       FlowRouter.setQueryParams({
-        "route": null
+        "route": (FlowRouter.getQueryParam("back-route") ? FlowRouter.getQueryParam("back-route") : null)
       });
     },
 
@@ -20952,7 +21696,7 @@ mwcLayout = new PolymerLayout();
   </style>
 
   <template>
-    <div class$="[[get_ripple_class(ripple_class)]]" id="animator"></div>
+    <div class$="fit [[ripple_class]]" id="animator"></div>
 
     <div id="container">
       <content select="div"></content>
@@ -20965,10 +21709,6 @@ mwcLayout = new PolymerLayout();
     behaviors: [
       Polymer.NeonSharedElementAnimatableBehavior
     ],
-
-    get_ripple_class: function(ripple_class) {
-      return "fit " + ripple_class;
-    },
 
     is: "card-route",
 
@@ -21071,924 +21811,17 @@ mwcLayout = new PolymerLayout();
 
     is: "exit-controller",
 
-    time: function(time) {
-      if ((parseInt(time) - parseInt(this._time)) < 1000) {
+    prompt: function() {
+      var A = moment().format("x");
+
+      if ((parseInt(A) - parseInt(this._time)) < 1000) {
         this.$.exit_prompt.open();
       }
 
-      this._time = moment().format("x");
+      this._time = A;
     },
 
     _time: moment().format("x")
-
-  });
-  </script>
-
-</dom-module>
-<dom-module id="inbox-item" assetpath="/linto/">
-
-  <style>
-  .body1 {
-    @apply(--paper-font-body1);
-    color: #757575;
-  }
-  
-  .subhead {
-    @apply(--paper-font-subhead);
-  }
-  
-  .time {
-    text-align: right;
-  }
-  
-  .torrent-li {
-    border-bottom: 1px solid #EEE;
-    padding: 8px;
-  }
-  
-  .torrent-li > div {
-    padding: 8px;
-  }
-  </style>
-
-  <template>
-    <div class="center-justified horizontal layout">
-      <div class="li">
-        <div class="cursor-p horizontal hover layout torrent-li white" on-click="click">
-          <div>
-            <selectable-icon icon_class="[[return_class(item.category)]]" icon_text="[[return_text(item.link.length)]]" id="selectable_icon" selected$="{{selected}}"></selectable-icon>
-          </div>
-
-          <div class="flex layout vertical">
-            <div class="body1">[[return_description(item)]]</div>
-            <div class="subhead">[[item.title]]</div>
-            <div class="center horizontal justified layout">
-              <div class="body1 etc flex-5">[[item.category]]</div>
-              <div class="body1 flex-4 time">[[return_time(item.time)]]</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </template>
-
-  <script>
-  Polymer({
-
-    click: function(e) {
-      if (Polymer.dom(e).localTarget.id != "selectable_icon") {
-        e.stopPropagation();
-
-        if (_.has(this.item, "link") && this.item.link.length) {
-          document.querySelector("torrent-view").torrent = this.item;
-
-          FlowRouter.setQueryParams({
-            "route": "torrent-view"
-          });
-        } else {
-          document.querySelector("#polymer_toast").toast("under processing");
-        }
-      }
-    },
-
-    is: "inbox-item",
-
-    properties: {
-      item: {
-        type: Object,
-        value: function() {
-          return {};
-        }
-      },
-      selected: {
-        notify: true,
-        reflectToAttribute: true,
-        type: Boolean,
-        value: false
-      }
-    },
-
-    return_class: function(text) {
-      return polymer_color(text ? text : "#");
-    },
-
-    return_description: function(item) {
-      return (item.size ? item.size : "#") + " | " + (item.leech ? item.leech + "L" : "#") + " / " + (item.seed ? item.seed + "S" : "#");
-    },
-
-    return_text: function(text) {
-      return (text ? text : "#");
-    },
-
-    return_time: function(time) {
-      return (moment(time).isValid() ? moment(time).format("ddd YYYY MMM DD") : "#");
-    }
-
-  });
-  </script>
-
-</dom-module>
-<dom-module id="layout-inbox" assetpath="/linto/">
-
-  <style>
-  paper-button {
-    margin: 0;
-    min-width: 50%;
-    padding: 16px;
-  }
-  
-  paper-dialog {
-    width: 320px;
-  }
-  
-  paper-drawer-panel /deep/ #drawer,
-  paper-drawer-panel /deep/ #main #scrim {
-    z-index: 1;
-  }
-  
-  paper-fab {
-    --paper-fab-background: var(--paper-red-500);
-    --paper-fab-keyboard-focus-background: var(--paper-red-700);
-  }
-  
-  paper-progress {
-    width: 100%;
-  }
-  
-  paper-slider {
-    max-width: 50%;
-  }
-  
-  paper-toolbar {
-    --paper-toolbar-background: var(--paper-cyan-700);
-    --paper-toolbar-color: white;
-  }
-  
-  paper-toolbar paper-icon-button {
-    margin: 0!important;
-  }
-  
-  paper-toolbar paper-icon-button[icon="arrow-back"] {
-    transform: translateX(-42px);
-  }
-  
-  paper-toolbar.selection paper-icon-button[icon="arrow-back"] {
-    transform: translateX(0);
-  }
-  
-  paper-toolbar.selection .selection-hidden {
-    display: none;
-  }
-  
-  paper-toolbar.selection .selection-visible {
-    padding: 8px;
-    transform: rotateX(0);
-    visibility: visible;
-    width: 40px;
-  }
-  
-  paper-toolbar .selection-visible {
-    padding: 0;
-    transform: rotateX(90deg);
-    transition: transform 400ms ease-in-out;
-    visibility: hidden;
-    width: 0;
-    will-change: transform;
-  }
-  
-  paper-toolbar .title {
-    padding: 0 12px;
-  }
-  
-  .body1 {
-    @apply(--paper-font-body1);
-    color: #757575;
-  }
-  
-  .divider {
-    height: 16px;
-  }
-  
-  .footer-li {
-    min-height: 88px;
-  }
-  
-  .menu-li {
-    border-bottom: 1px solid #EEE;
-    padding: 8px;
-  }
-  /*.menu-li-bottom {
-    border-top: 1px solid #EEE;
-    padding: 8px;
-    z-index: 1;
-  }*/
-  
-  .menu-li > div,
-  /*.menu-li-bottom > div,*/
-  
-  .title-li,
-  .title-li > div {
-    padding: 8px;
-  }
-  
-  .menu-b {
-    bottom: 16px;
-    position: fixed;
-    right: 16px;
-    transition: transform 0.2s ease-in-out;
-    will-change: transform;
-  }
-  
-  .menu-b.move-down {
-    transform: translate3d(0, 88px, 0)!important;
-  }
-  
-  .prompt-title {
-    border-bottom: 1px solid #757575;
-    padding-bottom: 8px;
-  }
-  
-  .subhead {
-    @apply(--paper-font-subhead);
-  }
-  
-  .trend-li {
-    padding: 4px 12px;
-  }
-  
-  .trend-li > div {
-    margin: 4px;
-    padding: 4px 12px;
-  }
-  
-  .undo {
-    display: none!important;
-  }
-  </style>
-
-  <template>
-    <iron-localstorage name="trend" on-iron-localstorage-load-empty="initialize_trend" value="[[trend]]"></iron-localstorage>
-
-    <paper-drawer-panel id="drawer">
-      <paper-header-panel drawer="">
-        <div class="fit layout vertical">
-          <template if="[[user._id]]" is="dom-if">
-            <paper-icon-item class="cursor-p" onclick="document.querySelector('#user_prompt').open();">
-              <selectable-icon icon_img_src="[[user.profile.picture]]" item-icon=""></selectable-icon>
-
-              <paper-item-body two-line="">
-                <div>[[user.profile.name]]</div>
-                <div secondary="">[[user.profile.email]]</div>
-              </paper-item-body>
-
-              <div class="subhead">[[return_text(project.length)]]</div>
-            </paper-icon-item>
-          </template>
-
-          <div class="flex" style="overflow: auto;">
-            <iron-selector id="menu_opt" on-iron-activate="menu_opt" selected-attribute="selected">
-              <paper-icon-item class="cursor-p" data-id="trend">
-                <selectable-icon icon_class="cyan-700" icon_text="@" item-icon=""></selectable-icon>
-
-                <paper-item-body two-line="">
-                  <div>Trending</div>
-                  <div secondary="">[[return_time(trend.time)]]</div>
-                </paper-item-body>
-
-                <div class="subhead">[[return_text(trend.keyword.length)]]</div>
-              </paper-icon-item>
-
-              <template is="dom-repeat" items="[[project]]">
-                <paper-icon-item class="cursor-p" data-id$="[[item._id]]" data-keyword$="[[item.keyword]]">
-                  <selectable-icon icon_class="[[return_class(item.keyword)]]" icon_text="[[return_icon_text(item.keyword)]]" item-icon=""></selectable-icon>
-
-                  <paper-item-body two-line="">
-                    <div>[[item.keyword]]</div>
-                    <div secondary="">[[return_project_description(item)]]</div>
-                  </paper-item-body>
-
-                  <div class="subhead">[[return_torrent_count(item.torrent)]]</div>
-                </paper-icon-item>
-              </template>
-            </iron-selector>
-          </div>
-
-          <paper-item class="cursor-p" style="border-top: 1px solid #EEE;" onclick="Meteor.setTimeout(window.open('https://github.com/HedCET/TorrentAlert','_system'),200);">About TorrentAlert</paper-item>
-        </div>
-      </paper-header-panel>
-
-      <paper-header-panel main="">
-        <paper-toolbar id="main_toolbar">
-          <paper-icon-button class="selection-visible" icon="arrow-back" on-click="clear_torrent_selection"></paper-icon-button>
-          <paper-icon-button class="selection-hidden" icon="menu" paper-drawer-toggle=""></paper-icon-button>
-
-          <div class="title" id="main_toolbar_title">TorrentAlert</div>
-
-          <paper-icon-button class="selection-visible" icon="delete" on-click="remove_torrent"></paper-icon-button>
-          <paper-icon-button class="selection-visible" icon="social:share" on-click="share"></paper-icon-button>
-          <paper-icon-button class="selection-hidden" icon="search" on-click="search_bar"></paper-icon-button>
-        </paper-toolbar>
-
-        <neon-animated-pages class="fit" id="main_page" selected="1">
-          <neon-animatable>
-            <paper-header-panel>
-              <div class="center-justified horizontal layout">
-                <div class="li">
-                  <div class="center cursor-d horizontal layout title-li">
-                    <div>
-                      <iron-icon icon="store"></iron-icon>
-                    </div>
-
-                    <div class="subhead" style="border-bottom: 1px solid #757575;">Trending Top [[return_text(trend.keyword.length)]]</div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="center-justified horizontal layout">
-                <div class="li">
-                  <div class="horizontal layout trend-li wrap">
-                    <template is="dom-repeat" items="[[trend.keyword]]">
-                      <div class="cursor-p grey-500 subhead" on-click="trend_opt">[[item]]</div>
-                    </template>
-                  </div>
-                </div>
-              </div>
-
-              <div class="footer-li"></div>
-            </paper-header-panel>
-          </neon-animatable>
-
-          <neon-animatable>
-            <iron-selector activate-event="click" attr-for-selected="item" multi="" selectable="inbox-item" selected-attribute="selected" selected-values="{{torrent_selected}}">
-              <template is="dom-repeat" items="[[project]]">
-                <template if="[[project_selected(menu_selected, item._id)]]" is="dom-if">
-                  <div class="center-justified horizontal layout">
-                    <div class="li">
-                      <div class="center horizontal layout title-li">
-                        <div class="flex subhead">[[item.keyword]]</div>
-
-                        <paper-icon-button data-id$="[[item._id]]" icon="refresh" on-click="refresh"></paper-icon-button>
-                        <paper-icon-button data-id$="[[item._id]]" icon="alarm-add" hidden="[[!is_search(item.worker)]]" on-click="schedule"></paper-icon-button>
-                        <paper-icon-button data-id$="[[item._id]]" icon="close" on-click="remove_project"></paper-icon-button>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="center-justified horizontal layout">
-                    <div class="li">
-                      <div style="padding: 0 4px;">
-                        <paper-progress class="project_progress" data-id$="[[item._id]]" hidden=""></paper-progress>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="center-justified horizontal layout" hidden="[[return_torrent_list_hidden(item.torrent)]]">
-                    <div class="li">
-                      <div class="center-justified cursor-d horizontal layout title-li">
-                        <div class="subhead" style="color: #AAA;">noTorrentFoundNow / searching ..</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <template as="torrent" filter="filter_url" is="dom-repeat" items="[[item.torrent]]" sort="sort">
-                    <inbox-item item="[[torrent]]"></inbox-item>
-                  </template>
-                </template>
-              </template>
-            </iron-selector>
-
-            <div class="footer-li"></div>
-          </neon-animatable>
-        </neon-animated-pages>
-      </paper-header-panel>
-    </paper-drawer-panel>
-
-    <paper-fab class="menu-b" id="fab" icon="add" on-click="add_project"></paper-fab>
-
-    <paper-dialog id="user_prompt">
-      <div class="layout vertical">
-        <div class="flex prompt-title subhead">User option</div>
-
-        <div class="divider"></div>
-
-        <div class="center horizontal layout">
-          <div class="body1 flex">enable GCM</div>
-          <paper-toggle-button checked="" disabled=""></paper-toggle-button>
-        </div>
-
-        <div class="center horizontal layout">
-          <div class="body1 flex">max GCM / keyword / day</div>
-          <paper-slider disabled="" editable="" max="50" min="1" value="10"></paper-slider>
-        </div>
-      </div>
-
-      <div class="buttons">
-        <paper-button on-click="sign_out">
-          <iron-icon icon="social:person-outline"></iron-icon> sign out
-        </paper-button>
-
-        <paper-button onclick="document.querySelector('#user_prompt').close();">
-          <iron-icon icon="close"></iron-icon> cancel
-        </paper-button>
-      </div>
-    </paper-dialog>
-
-    <paper-dialog id="remove_prompt">
-      <div class="subhead">Are you sure to delete this item ?</div>
-
-      <div class="buttons">
-        <paper-button onclick="document.querySelector('#remove_prompt').close();">
-          <iron-icon icon="close"></iron-icon> cancel
-        </paper-button>
-
-        <paper-button on-click="remove_ok">
-          <iron-icon icon="check"></iron-icon> ok
-        </paper-button>
-      </div>
-    </paper-dialog>
-
-    <paper-dialog id="schedule_prompt">
-      <div class="layout vertical">
-        <div class="subhead">Are you sure to schedule this item ?</div>
-
-        <div class="divider"></div>
-
-        <div class="center horizontal layout">
-          <div class="body1 flex">schedule / day</div>
-          <paper-slider disabled="" editable="" max="96" min="1" value="4"></paper-slider>
-        </div>
-      </div>
-
-      <div class="buttons">
-        <paper-button onclick="document.querySelector('#schedule_prompt').close();">
-          <iron-icon icon="close"></iron-icon> cancel
-        </paper-button>
-
-        <paper-button on-click="schedule_ok">
-          <iron-icon icon="check"></iron-icon> ok
-        </paper-button>
-      </div>
-    </paper-dialog>
-  </template>
-
-  <script>
-  Polymer({
-
-    add_project: function() {
-      FlowRouter.setQueryParams({
-        "route": "add-project"
-      });
-    },
-
-    attached: function() {
-      if ((document.querySelector("#torrent_db").value || []).length) {
-        this.project = document.querySelector("#torrent_db").value;
-      }
-
-      var _this = this;
-
-      Tracker.autorun(function() {
-        _this.user = (Meteor.user() ? Meteor.user() : {});
-      });
-
-      Meteor.setTimeout(function() {
-        if (6 < moment.duration(moment().diff(moment(_this.trend.time))).asHours() || !_this.trend.keyword.length) {
-          Meteor.call("trend", function(error, response) {
-            if (error) {
-              document.querySelector("#polymer_toast").toast(error.reason);
-            } else {
-              if (response.length) {
-                _this.trend = {
-                  keyword: response,
-                  time: moment().format()
-                };
-              }
-            }
-          });
-        }
-      }, 1000);
-
-      Meteor.setTimeout(function() {
-        _project.find().observe({
-          added: function() {
-            _this._updater();
-          },
-
-          changed: function() {
-            _this._updater();
-          },
-
-          removed: function(row) {
-            var index = _.map(_this.project, function(A) {
-              return A._id;
-            }).indexOf(row._id);
-
-            if (-1 < index) {
-              _this.splice("project", index, 1);
-            }
-          }
-        });
-      }, 1000);
-
-      Meteor.setTimeout(function() {
-        _torrent.find().observe({
-          added: function() {
-            _this._updater();
-          },
-
-          changed: function(row) {
-            _this._updater();
-          },
-
-          removed: function(row) {
-            for (var A = 0; A < _this.project.length; A++) {
-              var index = _.map(_this.project[A].torrent, function(item) {
-                return item._id;
-              }).indexOf(row._id);
-
-              if (-1 < index) {
-                _this.splice("project." + A + ".torrent", index, 1);
-              }
-            }
-          }
-        });
-      }, 1000);
-
-      Meteor.setTimeout(function() {
-        document.querySelector("#torrent_db").value = _this.project;
-      }, 1000 * 60);
-    },
-
-    clear_torrent_selection: function() {
-      this.torrent_selected = [];
-    },
-
-    filter_url: function(torrent) {
-      return (torrent.url);
-    },
-
-    initialize_trend: function() {
-      this.trend = {
-        keyword: [],
-        time: moment().format()
-      };
-    },
-
-    is: "layout-inbox",
-
-    is_search: function(worker) {
-      return (worker == "search")
-    },
-
-    menu_opt: function(e, d) {
-      this.$.drawer.closeDrawer();
-
-      this.$.main_toolbar.className = this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "") + (d.item.dataset.id == "trend" ? "" : " " + polymer_color(d.item.dataset.keyword));
-
-      this.$.main_page.selected = (d.item.dataset.id == "trend" ? 0 : 1);
-
-      this.menu_selected = d.item.dataset.id;
-    },
-
-    observers: [
-      "project_change(project.splices)",
-      "torrent_selected_change(torrent_selected.splices)"
-    ],
-
-    project_change: function(change) {
-      this.debounce("project_change", function() {
-        if (this.menu_selected != "trend") {
-          this.$.main_page.selected = (this.project.length ? 1 : 0);
-        }
-      }, 1000);
-    },
-
-    project_selected: function(menu_opt, project_opt) {
-      return (menu_opt == "" ? true : menu_opt == project_opt);
-    },
-
-    properties: {
-      menu_selected: {
-        type: String,
-        value: ""
-      },
-      project: {
-        type: Array,
-        value: function() {
-          return [];
-        }
-      },
-      torrent_selected: {
-        type: Array,
-        value: function() {
-          return [];
-        }
-      },
-      trend: {
-        type: Object,
-        value: function() {
-          return {
-            keyword: [],
-            time: moment().format()
-          };
-        }
-      },
-      user: {
-        type: Object,
-        value: function() {
-          return {};
-        }
-      }
-    },
-
-    refresh: function(e) {
-      if (Meteor.status().connected) {
-
-        var _this = this,
-          project_id = Polymer.dom(e).localTarget.dataset.id;
-
-        if (document.querySelector('.project_progress[data-id="' + project_id + '"]')) {
-          var project_progress = document.querySelector('.project_progress[data-id="' + project_id + '"]');
-
-          project_progress.hidden = false;
-
-          project_progress.max = 50;
-          project_progress.value = 10;
-        }
-
-        Meteor.call("refresh", project_id, function(error, response) {
-          if (error) {
-            document.querySelector("#polymer_toast").toast(error.reason);
-          } else {
-            var index = _.map(_this.project, function(A) {
-              return A._id;
-            }).indexOf(response._id);
-
-            if (-1 < index) {
-              for (var A = 0; A < response.torrent.length; A++) {
-                var item = _torrent.findOne({
-                  _id: response.torrent[A]
-                });
-
-                response.torrent[A] = (item ? item : {
-                  _id: response.torrent[A]
-                });
-
-                response.torrent[A].project = {
-                  _id: response._id
-                };
-              }
-
-              _this.splice("project", index, 1, response);
-            }
-          }
-        });
-      } else {
-        document.querySelector("#polymer_toast").toast("server connection required");
-      }
-    },
-
-    remove_ok: function(e) {
-      if (Meteor.status().connected) {
-        var _this = this;
-
-        Meteor.call("remove_project", _this.$.remove_prompt.dataset.id, function(error, response) {
-          if (error) {
-            document.querySelector("#polymer_toast").toast(error.reason);
-          } else {
-            document.querySelector("#polymer_toast").toast(response);
-
-            _this.menu_selected = "";
-
-            _this.$.main_toolbar.className = _this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "");
-          }
-        });
-      } else {
-        document.querySelector("#polymer_toast").toast("server connection required");
-      }
-
-      this.$.remove_prompt.close();
-    },
-
-    remove_project: function(e) {
-      this.$.remove_prompt.dataset.id = Polymer.dom(e).localTarget.dataset.id;
-      this.$.remove_prompt.open();
-    },
-
-    remove_torrent: function() {
-      $("inbox-item.iron-selected").addClass("undo");
-
-      document.querySelector("#polymer_toast").undo = {
-        torrent: _.map(this.torrent_selected, function(A) {
-          return A._id;
-        })
-      };
-
-      document.querySelector("#polymer_toast").toast(this.torrent_selected.length + " torrent removed");
-
-      this.clear_torrent_selection();
-    },
-
-    return_class: function(text) {
-      return polymer_color(text ? text : "#");
-    },
-
-    return_icon_text: function(text) {
-      return (isNaN(text.charAt(0)) ? text.charAt(0) : "#");
-    },
-
-    return_project_description: function(item) {
-      return (item.worker == "schedule" ? item.within + "M | " + item.leech + "L / " + item.seed + "S" : moment(item.time).format("MMM DD ddd hh:mm A"));
-    },
-
-    return_text: function(text) {
-      return (text ? text : "#");
-    },
-
-    return_time: function(time) {
-      return (moment(time).isValid() ? moment(time).format("MMM DD ddd hh:mm A") : "#");
-    },
-
-    return_torrent_count: function(torrent) {
-      var A = _.countBy(torrent, function(item) {
-        return item.url ? "YES" : "NO";
-      });
-
-      return (A.YES && A.NO ? A.YES + " / " : "") + (torrent.length ? torrent.length : "#");
-    },
-
-    return_torrent_description: function(item) {
-      return (item.size ? item.size : "#") + " | " + (item.leech ? item.leech + "L" : "#") + " / " + (item.seed ? item.seed + "S" : "#");
-    },
-
-    return_torrent_list_hidden: function(torrent) {
-      return _.find(torrent, function(item) {
-        return item.url;
-      });
-    },
-
-    schedule: function(e) {
-      this.$.schedule_prompt.dataset.id = Polymer.dom(e).localTarget.dataset.id;
-      this.$.schedule_prompt.open();
-    },
-
-    schedule_ok: function(e) {
-      if (Meteor.status().connected) {
-        var _this = this;
-
-        Meteor.call("schedule_project", _this.$.schedule_prompt.dataset.id, function(error, response) {
-          if (error) {
-            document.querySelector("#polymer_toast").toast(error.reason);
-          } else {
-            document.querySelector("#polymer_toast").toast(response);
-
-            _this.menu_selected = "";
-
-            _this.$.main_toolbar.className = _this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "");
-          }
-        });
-      } else {
-        document.querySelector("#polymer_toast").toast("server connection required");
-      }
-
-      this.$.schedule_prompt.close();
-    },
-
-    search_bar: function() {
-      FlowRouter.setQueryParams({
-        "route": "search-bar"
-      });
-    },
-
-    share: function() {
-      var body = "";
-
-      for (var A = 0; A < this.torrent_selected.length; A++) {
-        if (this.torrent_selected[A].link.length) {
-          body += "\n\n" + (A + 1) + "\t\t" + this.torrent_selected[A].title + "\n\n";
-
-          for (var Z = 0; Z < this.torrent_selected[A].link.length; Z++) {
-            body += "\t\t" + (Z + 1) + "\t\t" + this.torrent_selected[A].link[Z].url + "\n\n";
-          }
-        }
-      }
-
-      if (body != "") {
-        if (Meteor.isCordova) {
-          window.plugins.socialsharing.share("Hi\n\nTorrentAlert - " + this.user.profile.name + " shared " + this.torrent_selected.length + " torrent" + body);
-        } else {
-          window.open("mailto:" + this.user.profile.email + "?subject=" + encodeURIComponent("TorrentAlert") + "&body=" + encodeURIComponent("Hi\n\n" + this.user.profile.name + " shared " + this.torrent_selected.length + " torrent" + body), "_system");
-        }
-      } else {
-        document.querySelector("#polymer_toast").toast("empty email body");
-      }
-    },
-
-    sign_out: function() {
-      if (Meteor.status().connected) {
-        this.project = [];
-
-        FlowRouter.go("/inbox/sign-out");
-      } else {
-        document.querySelector("#polymer_toast").toast("server connection required");
-      }
-    },
-
-    sort: function(A, Z) {
-      return (parseInt(moment(Z.time).format("x")) - parseInt(moment(A.time).format("x")));
-    },
-
-    torrent_selected_change: function(change) {
-      this.$.main_toolbar_title.textContent = (this.torrent_selected.length ? this.torrent_selected.length : "TorrentAlert");
-
-      this.$.main_toolbar.toggleClass("grey-500", this.torrent_selected.length);
-      this.$.main_toolbar.toggleClass("selection", this.torrent_selected.length);
-
-      this.$.fab.toggleClass("move-down", this.torrent_selected.length);
-    },
-
-    trend_opt: function(e) {
-      if (Meteor.status().connected) {
-        var keyword = Polymer.dom(e).localTarget.textContent.trim();
-
-        if (keyword.length) {
-          var _this = this,
-            row = {
-              keyword: keyword,
-              leech: 1,
-              seed: 1,
-              url: "search",
-              within: 6,
-              worker: "search"
-            };
-
-          Meteor.call("insert_project", row, function(error, response) {
-            if (error) {
-              document.querySelector("#polymer_toast").toast((error.reason == "userNotFound") ? "internet/user required" : error.reason);
-            } else {
-              if (response == "") {
-                document.querySelector("#polymer_toast").toast("unknown issue");
-              } else {
-                document.querySelector("#polymer_toast").toast("i keyword added");
-
-                _this.$.main_toolbar.className = _this.$.main_toolbar.className.replace(/ ?[a-z\-]+\-500/g, "") + " " + polymer_color(keyword);
-
-                _this.menu_selected = response;
-
-                Meteor.setTimeout(function() {
-                  if (document.querySelector('.project_progress[data-id="' + response + '"]')) {
-                    var project_progress = document.querySelector('.project_progress[data-id="' + response + '"]');
-
-                    project_progress.hidden = false;
-
-                    project_progress.max = 50;
-                    project_progress.value = 10;
-                  }
-                }, 1000);
-              }
-            }
-          });
-
-          _this.$.main_page.selected = 1;
-        } else {
-          document.querySelector("#polymer_toast").toast("empty keyword");
-        }
-      } else {
-        document.querySelector("#polymer_toast").toast("server connection required");
-      }
-    },
-
-    _updater: function() {
-      this.debounce("_updater", function() {
-        var _this = this;
-
-        _project.find().forEach(function(row) {
-          for (var A = 0; A < row.torrent.length; A++) {
-            var item = _torrent.findOne({
-              _id: row.torrent[A]
-            });
-
-            row.torrent[A] = (item ? item : {
-              _id: row.torrent[A]
-            });
-
-            row.torrent[A].project = {
-              _id: row._id
-            };
-          }
-
-          var index = _.map(_this.project, function(A) {
-            return A._id;
-          }).indexOf(row._id);
-
-          if (-1 < index) {
-            _this.set("project." + index, row);
-          } else {
-            _this.unshift("project", row);
-          }
-        });
-      }, 1000);
-    }
 
   });
   </script>
@@ -22093,7 +21926,7 @@ mwcLayout = new PolymerLayout();
 
       Tracker.autorun(function() {
         if (Meteor.status().connected) {
-          if (_this.$.toast.text != "server connected") {
+          if (_this.$.toast.text && _this.$.toast.text != "server connected") {
             _this.toast("server connected");
           }
         } else {
@@ -22142,202 +21975,6 @@ mwcLayout = new PolymerLayout();
 
           document.querySelector(".menu-b").translate3d(0, 0, 0);
         }
-      }
-    }
-
-  });
-  </script>
-
-</dom-module>
-<dom-module id="search-bar" assetpath="/linto/">
-
-  <style>
-  :host {
-    display: none;
-  }
-  
-  :host([active]) {
-    display: block;
-  }
-  
-  paper-header-panel {
-    background: rgba(255, 255, 255, 0.5);
-    z-index: 10;
-  }
-  
-  paper-progress {
-    left: 0;
-    position: fixed;
-    width: 100%;
-    z-index: 1;
-    --paper-progress-active-color: var(--paper-red-500);
-    --paper-progress-secondary-color: var(--paper-red-100);
-  }
-  
-  paper-toolbar {
-    --paper-toolbar-background: white;
-    --paper-toolbar-color: black;
-  }
-  
-  input {
-    @apply(--paper-font-title);
-    background: transparent;
-    border: none;
-    color: black;
-    padding: 0 12px;
-  }
-  
-  .footer-li {
-    min-height: 88px;
-  }
-  
-  .search-li {
-    border-bottom: 1px solid #EEE;
-    padding: 8px;
-  }
-  
-  .search-li > div {
-    padding: 8px;
-  }
-  
-  .subhead {
-    @apply(--paper-font-subhead);
-  }
-  </style>
-
-  <template>
-    <paper-header-panel class="fit">
-      <paper-toolbar>
-        <paper-icon-button icon="arrow-back" on-click="back"></paper-icon-button>
-        <input autofocus="" bind-value="{{search_input}}" class="flex" is="iron-input" placeholder="search">
-      </paper-toolbar>
-
-      <paper-progress hidden="" id="progress" indeterminate=""></paper-progress>
-
-      <template is="dom-repeat" items="[[list]]">
-        <div class="center-justified horizontal layout">
-          <div class="li">
-            <div class="center cursor-p horizontal layout relative search-li white" on-click="add_project">
-              <div>
-                <iron-icon icon="launch"></iron-icon>
-              </div>
-
-              <div class="flex subhead">[[item]]</div>
-
-              <paper-ripple></paper-ripple>
-            </div>
-          </div>
-        </div>
-      </template>
-
-      <div class="footer-li"></div>
-    </paper-header-panel>
-  </template>
-
-  <script>
-  Polymer({
-
-    add_project: function(e, d) {
-      if (Meteor.status().connected) {
-        var keyword = Polymer.dom(e).localTarget.textContent.trim();
-
-        if (keyword.length) {
-          var row = {
-            keyword: keyword,
-            leech: 1,
-            seed: 1,
-            url: "search",
-            within: 6,
-            worker: "search"
-          };
-
-          Meteor.call("insert_project", row, function(error, response) {
-            if (error) {
-              document.querySelector("#polymer_toast").toast((error.reason == "userNotFound") ? "internet/user required" : error.reason);
-            } else {
-              if (response == "") {
-                document.querySelector("#polymer_toast").toast("unknown issue");
-              } else {
-                document.querySelector("#polymer_toast").toast("i keyword added");
-
-                document.querySelector("#main_toolbar").className = document.querySelector("#main_toolbar").className.replace(/ ?[a-z\-]+\-500/g, "") + " " + polymer_color(keyword);
-
-                document.querySelector("layout-inbox").menu_selected = response;
-
-                Meteor.setTimeout(function() {
-                  if (document.querySelector('.project_progress[data-id="' + response + '"]')) {
-                    var project_progress = document.querySelector('.project_progress[data-id="' + response + '"]');
-
-                    project_progress.hidden = false;
-
-                    project_progress.max = 50;
-                    project_progress.value = 10;
-                  }
-                }, 1000);
-              }
-            }
-          });
-
-          this.back();
-        } else {
-          document.querySelector("#polymer_toast").toast("empty keyword");
-        }
-      } else {
-        document.querySelector("#polymer_toast").toast("server connection required");
-      }
-    },
-
-    back: function() {
-      FlowRouter.setQueryParams({
-        "route": null
-      });
-    },
-
-    is: "search-bar",
-
-    properties: {
-      active: {
-        notify: true,
-        reflectToAttribute: true,
-        type: Boolean,
-        value: false
-      },
-      list: {
-        type: Array,
-        value: function() {
-          return [];
-        }
-      },
-      search_input: {
-        observer: "search",
-        type: String,
-        value: ""
-      }
-    },
-
-    search: function(newValue, oldValue) {
-      if (newValue && oldValue) {
-        this.$.progress.hidden = false;
-
-        this.debounce("search", function() {
-          if (this.search_input.trim().length) {
-            if (Meteor.status().connected) {
-              var _this = this;
-
-              Meteor.call("search", _this.search_input.trim(), function(error, response) {
-                _this.$.progress.hidden = true;
-
-                if (!error) {
-                  _this.list = response;
-                }
-              });
-            } else {
-              document.querySelector("#polymer_toast").toast("server connection required");
-            }
-          } else {
-            this.$.progress.hidden = true;
-          }
-        }, 1000 * 2);
       }
     }
 
@@ -22400,11 +22037,11 @@ mwcLayout = new PolymerLayout();
 
   <template>
     <div class="icon">
-      <template if="{{icon_img_src}}" is="dom-if">
-        <img class$="{{icon_class}}" src$="{{icon_img_src}}">
+      <template if="[[icon_img_src]]" is="dom-if">
+        <img class$="[[icon_class]]" src$="[[icon_img_src]]">
       </template>
 
-      <span class$="center-center font-title horizontal layout letter {{icon_class}}" hidden$="{{icon_img_src}}">{{icon_text}}</span>
+      <span class$="center-center font-title horizontal layout letter [[icon_class]]" hidden="[[icon_img_src]]">[[icon_text]]</span>
 
       <iron-icon icon="check"></iron-icon>
     </div>
@@ -22431,6 +22068,907 @@ mwcLayout = new PolymerLayout();
       selected: {
         type: Boolean,
         value: false
+      }
+    }
+
+  });
+  </script>
+
+</dom-module>
+<dom-module id="main-layout" assetpath="/linto/">
+
+  <template>
+    <neon-animated-pages attr-for-selected="data-page" class="fit" selected="[[selected]]">
+      <old-layout data-page="old-layout" id="old_layout"></old-layout>
+    </neon-animated-pages>
+  </template>
+
+  <script>
+  Polymer({
+
+    is: "main-layout",
+
+    properties: {
+      selected: {
+        type: String,
+        value: "old-layout"
+      }
+    }
+
+  });
+  </script>
+
+</dom-module>
+<dom-module id="old-layout" assetpath="/linto/">
+
+  <style>
+  paper-button {
+    margin: 0;
+    min-width: 50%;
+    padding: 16px;
+  }
+  
+  paper-dialog {
+    width: 320px;
+  }
+  
+  paper-drawer-panel /deep/ #drawer,
+  paper-drawer-panel /deep/ #main #scrim {
+    z-index: 1;
+  }
+  
+  paper-icon-item {
+    border-bottom: 1px solid #EEE;
+  }
+  
+  paper-slider {
+    max-width: 50%;
+  }
+  
+  .body1 {
+    @apply(--paper-font-body1);
+    color: #757575;
+  }
+  
+  .divider {
+    height: 16px;
+  }
+  
+  .prompt-title {
+    border-bottom: 1px solid #757575;
+    padding: 8px 0;
+  }
+  
+  .subhead {
+    @apply(--paper-font-subhead);
+  }
+  </style>
+
+
+  <template>
+
+    <paper-drawer-panel id="paper_drawer_panel">
+
+      <paper-header-panel drawer="">
+        <div class="fit layout vertical">
+          <template if="[[user._id]]" is="dom-if">
+            <paper-icon-item class="cursor-p" onclick="document.querySelector('#user_prompt').open();">
+              <selectable-icon icon_img_src="[[user.profile.picture]]" item-icon=""></selectable-icon>
+
+              <paper-item-body two-line="">
+                <div>[[user.profile.name]]</div>
+                <div secondary="">[[user.profile.email]]</div>
+              </paper-item-body>
+
+              <div class="subhead">[[return_text(mwcData.project.length)]]</div>
+            </paper-icon-item>
+          </template>
+
+          <div class="flex" style="overflow: auto;">
+            <iron-selector on-iron-activate="menu_opt" selected-attribute="selected">
+              <paper-icon-item class="cursor-p" data-id="trending">
+                <selectable-icon icon_class="cyan-700" icon_text="@" item-icon=""></selectable-icon>
+
+                <paper-item-body two-line="">
+                  <div>Trending</div>
+                  <div secondary="">[[return_time(trending.time)]]</div>
+                </paper-item-body>
+
+                <div class="subhead">[[return_text(trending.keyword.length)]]</div>
+              </paper-icon-item>
+
+              <template is="dom-repeat" items="[[mwcData.project]]">
+                <paper-icon-item class="cursor-p" data-id$="[[item._id]]">
+                  <selectable-icon icon_class="[[return_class(item.keyword)]]" icon_text="[[return_icon_text(item.keyword)]]" item-icon=""></selectable-icon>
+
+                  <paper-item-body two-line="">
+                    <div>[[item.keyword]]</div>
+                    <div secondary="">[[return_project_description(item)]]</div>
+                  </paper-item-body>
+
+                  <div class="subhead">[[return_text(item.torrent.length)]]</div>
+                </paper-icon-item>
+              </template>
+            </iron-selector>
+          </div>
+
+          <paper-item class="cursor-p" onclick="window.open('https://github.com/HedCET/TorrentAlert','_system');" style="border-top: 1px solid #EEE;">About TorrentAlert</paper-item>
+        </div>
+      </paper-header-panel>
+
+      <neon-animated-pages attr-for-selected="data-page" class="fit" main="" selected="[[selected]]">
+        <add-project data-page="add-project" id="add_project"></add-project>
+        <bookmark-view data-page="bookmark-view" id="bookmark_view"></bookmark-view>
+        <project-view data-page="project-view" id="project_view"></project-view>
+        <searchbar-view data-page="searchbar-view" id="searchbar_view"></searchbar-view>
+        <torrent-view data-page="torrent-view" id="torrent_view"></torrent-view>
+        <trending-view data-page="trending-view" id="trending_view"></trending-view>
+      </neon-animated-pages>
+
+    </paper-drawer-panel>
+
+    <paper-dialog id="user_prompt">
+      <div class="layout vertical">
+        <div class="flex prompt-title subhead">User option</div>
+
+        <div class="divider"></div>
+        <div class="center horizontal layout">
+          <div class="body1 flex">enable GCM</div>
+          <paper-toggle-button checked="" disabled=""></paper-toggle-button>
+        </div>
+
+        <div class="divider"></div>
+        <div class="center horizontal layout">
+          <div class="body1 flex">max GCM / keyword / day</div>
+          <paper-slider disabled="" editable="" max="50" min="1" value="10"></paper-slider>
+        </div>
+      </div>
+
+      <div class="buttons">
+        <paper-button on-click="sign_out">
+          <iron-icon icon="social:person-outline"></iron-icon> sign out
+        </paper-button>
+
+        <paper-button onclick="document.querySelector('#user_prompt').close();">
+          <iron-icon icon="close"></iron-icon> cancel
+        </paper-button>
+      </div>
+    </paper-dialog>
+
+  </template>
+
+  <script>
+  Polymer({
+
+    attached: function() {
+      var _this = this;
+
+      Tracker.autorun(function() {
+        _this.user = (Meteor.user() ? Meteor.user() : {});
+      });
+    },
+
+    behaviors: [mwcMixin],
+
+    getMeteorData: function() {
+      Meteor.subscribe("project");
+
+      return {
+        project: _project.find().fetch()
+      };
+    },
+
+    is: "old-layout",
+
+    menu_opt: function(e, d) {
+      this.$.paper_drawer_panel.closeDrawer();
+
+      FlowRouter.setQueryParams({
+        project: (d.item.dataset.id == "trending" ? null : d.item.dataset.id),
+        route: (d.item.dataset.id == "trending" ? null : "project-view")
+      });
+    },
+
+    menu_toggle: function() {
+      if (this.$.paper_drawer_panel.narrow && this.$.paper_drawer_panel.getBoundingClientRect().width <= parseInt(this.$.paper_drawer_panel.responsiveWidth)) {
+        this.$.paper_drawer_panel.togglePanel();
+      } else {
+        this.$.paper_drawer_panel.forceNarrow = !this.$.paper_drawer_panel.forceNarrow;
+      }
+    },
+
+    properties: {
+      selected: {
+        type: String,
+        value: "trending-view"
+      },
+      user: {
+        type: Object,
+        value: function() {
+          return {};
+        }
+      }
+    },
+
+    return_class: function(text) {
+      return polymer_color(text ? text : "#");
+    },
+
+    return_icon_text: function(text) {
+      return (isNaN(text.charAt(0)) ? text.charAt(0) : "#");
+    },
+
+    return_project_description: function(item) {
+      return (item.worker == "schedule" ? item.within + "M | " + item.leech + "L / " + item.seed + "S" : moment(item.time).format("MMM DD ddd hh:mm A"));
+    },
+
+    return_text: function(text) {
+      return (text ? text : "#");
+    },
+
+    return_time: function(time) {
+      return (moment(time).isValid() ? moment(time).format("MMM DD ddd hh:mm A") : "#");
+    },
+
+    sign_out: function() {
+      if (Meteor.status().connected) {
+        this.project = [];
+
+        FlowRouter.go("/main/sign-out");
+      } else {
+        document.querySelector("#polymer_toast").toast("server connection required");
+      }
+    }
+
+  });
+  </script>
+
+</dom-module>
+<dom-module id="project-view" assetpath="/linto/">
+
+  <style>
+  paper-fab {
+    --paper-fab-background: var(--paper-red-500);
+    --paper-fab-keyboard-focus-background: var(--paper-red-700);
+  }
+  
+  paper-progress {
+    width: 100%;
+  }
+  
+  paper-toolbar {
+    --paper-toolbar-background: var(--paper-cyan-700);
+    --paper-toolbar-color: white;
+  }
+  
+  paper-toolbar paper-icon-button {
+    margin: 0!important;
+  }
+  
+  paper-toolbar paper-icon-button[icon="arrow-back"] {
+    transform: translateX(-42px);
+  }
+  
+  paper-toolbar.selection paper-icon-button[icon="arrow-back"] {
+    transform: translateX(0);
+  }
+  
+  paper-toolbar .selection-hidden {
+    padding: 8px;
+    transform: rotateY(0);
+    transition: transform 400ms ease-in-out;
+    visibility: visible;
+    width: 40px;
+    will-change: transform;
+  }
+  
+  paper-toolbar.selection .selection-hidden {
+    padding: 0;
+    transform: rotateY(90deg);
+    visibility: hidden;
+    width: 0;
+  }
+  
+  paper-toolbar.selection .selection-visible {
+    padding: 8px;
+    transform: rotateY(0);
+    transition: transform 400ms ease-in-out;
+    visibility: visible;
+    width: 40px;
+    will-change: transform;
+  }
+  
+  paper-toolbar .selection-visible {
+    padding: 0;
+    transform: rotateY(90deg);
+    visibility: hidden;
+    width: 0;
+  }
+  
+  paper-toolbar .title {
+    padding: 0 8px;
+  }
+  
+  .body1 {
+    @apply(--paper-font-body1);
+    color: #757575;
+  }
+  
+  .footer-li {
+    min-height: 88px;
+  }
+  
+  .menu-b {
+    bottom: 16px;
+    position: fixed;
+    right: 16px;
+    transition: transform 0.2s ease-in-out;
+    will-change: transform;
+  }
+  
+  .menu-b.move-down {
+    transform: translate3d(0, 88px, 0)!important;
+  }
+  
+  .subhead {
+    @apply(--paper-font-subhead);
+  }
+  
+  .title-li,
+  .title-li > div {
+    padding: 8px;
+  }
+  </style>
+
+  <template>
+    <paper-header-panel>
+      <paper-toolbar id="project_view_toolbar" class$="[[return_class(mwcData.project.keyword)]]">
+        <paper-icon-button class="selection-visible" icon="arrow-back" on-click="clear_torrent_selection"></paper-icon-button>
+        <paper-icon-button class="selection-hidden" icon="menu" on-click="menu_toggle" paper-drawer-toggle=""></paper-icon-button>
+
+        <div class="title" id="project_view_toolbar_title">TorrentAlert</div>
+
+        <paper-icon-button class="selection-visible" icon="bookmark-border" on-click="bookmark"></paper-icon-button>
+        <paper-icon-button class="selection-visible" icon="delete" on-click="remove_torrent"></paper-icon-button>
+        <paper-icon-button class="selection-visible" icon="social:share" on-click="share"></paper-icon-button>
+        <paper-icon-button class="selection-hidden" icon="search" on-click="searchbar"></paper-icon-button>
+      </paper-toolbar>
+
+      <div class="center-justified horizontal layout">
+        <div class="li">
+          <div class="center horizontal layout title-li">
+            <div class="flex subhead">[[mwcData.project.keyword]]</div>
+
+            <paper-icon-button icon="refresh" on-click="refresh"></paper-icon-button>
+            <paper-icon-button icon="alarm-add" hidden="[[!is_search(mwcData.project.worker)]]" on-click="schedule"></paper-icon-button>
+            <paper-icon-button icon="close" on-click="remove_project"></paper-icon-button>
+          </div>
+        </div>
+      </div>
+
+      <div class="center-justified horizontal layout">
+        <div class="li">
+          <div style="padding: 0 4px;">
+            <paper-progress id="project_progress" indeterminate=""></paper-progress>
+          </div>
+        </div>
+      </div>
+
+      <div class="center-justified horizontal layout" hidden="[[mwcData.torrent.length]]">
+        <div class="li">
+          <div class="center-justified cursor-d horizontal layout title-li">
+            <div class="subhead" style="color: #AAA;">noTorrentFoundNow / searching ..</div>
+          </div>
+        </div>
+      </div>
+
+      <iron-selector activate-event="click" attr-for-selected="item" multi="" selected-attribute="selected" selected-values="{{torrent_selected}}">
+        <template filter="filter_url" is="dom-repeat" items="[[mwcData.torrent]]" sort="sort">
+          <torrent-item item="[[item]]"></torrent-item>
+        </template>
+      </iron-selector>
+
+      <div class="footer-li"></div>
+    </paper-header-panel>
+
+    <paper-fab class="menu-b" id="fab" icon="add" on-click="add_project"></paper-fab>
+  </template>
+
+  <script>
+  Polymer({
+
+    add_project: function() {
+      FlowRouter.setQueryParams({
+        "back-route": "project-view",
+        route: "add-project"
+      });
+    },
+
+    behaviors: [mwcMixin],
+
+    filter_url: function(torrent) {
+      return (torrent.url);
+    },
+
+    getMeteorData: function() {
+      Meteor.subscribe("torrent", {
+        field: "project",
+        id: FlowRouter.getQueryParam("project")
+      });
+      Meteor.subscribe("worker", FlowRouter.getQueryParam("project"));
+
+      return {
+        project: _project.findOne({
+          _id: FlowRouter.getQueryParam("project")
+        }),
+        torrent: _torrent.find({
+          project: FlowRouter.getQueryParam("project")
+        }).fetch(),
+        worker: _worker.find().fetch()
+      };
+    },
+
+    is: "project-view",
+
+    is_search: function(worker) {
+      return (worker == "search")
+    },
+
+    menu_toggle: function() {
+      document.querySelector("#old_layout").menu_toggle();
+    },
+
+    observers: [
+      "torrent_selected_change(torrent_selected.splices)"
+    ],
+
+    properties: {
+      torrent_selected: {
+        type: Array,
+        value: function() {
+          return [];
+        }
+      }
+    },
+
+    return_class: function(text) {
+      return polymer_color(text ? text : "#");
+    },
+
+    sort: function(A, Z) {
+      return (parseInt(moment(Z.time).format("x")) - parseInt(moment(A.time).format("x")));
+    },
+
+    torrent_selected_change: function(change) {
+      if (change) {
+        this.$.fab.toggleClass("move-down", this.torrent_selected.length);
+        this.$.project_view_toolbar.toggleClass("selection", this.torrent_selected.length);
+
+        this.$.project_view_toolbar_title.textContent = (this.torrent_selected.length ? this.torrent_selected.length : "TorrentAlert");
+      }
+    }
+
+  });
+  </script>
+
+</dom-module>
+<dom-module id="torrent-item" assetpath="/linto/">
+
+  <style>
+  .body1 {
+    @apply(--paper-font-body1);
+    color: #757575;
+  }
+  
+  .subhead {
+    @apply(--paper-font-subhead);
+  }
+  
+  .time {
+    text-align: right;
+  }
+  
+  .torrent-li {
+    border-bottom: 1px solid #EEE;
+    padding: 8px;
+  }
+  
+  .torrent-li > div {
+    padding: 8px;
+  }
+  </style>
+
+  <template>
+    <div class="center-justified horizontal layout">
+      <div class="li">
+        <div class="cursor-p horizontal hover layout torrent-li white" on-click="click">
+          <div>
+            <selectable-icon icon_class="[[return_class(item.category)]]" icon_text="[[return_text(item.link.length)]]" id="selectable_icon" selected$="{{selected}}"></selectable-icon>
+          </div>
+
+          <div class="flex layout vertical">
+            <div class="body1">[[return_description(item)]]</div>
+            <div class="subhead">[[item.title]]</div>
+            <div class="center horizontal justified layout">
+              <div class="body1 etc flex-5">[[item.category]]</div>
+              <div class="body1 flex-4 time">[[return_time(item.time)]]</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <script>
+  Polymer({
+
+    click: function(e) {
+      if (Polymer.dom(e).localTarget.id != "selectable_icon") {
+        e.stopPropagation();
+
+        if (this.item.link.length) {
+          FlowRouter.setQueryParams({
+            "back-route": "project-view",
+            route: "torrent-view",
+            torrent: this.item._id
+          });
+        } else {
+          document.querySelector("#polymer_toast").toast("under processing");
+        }
+      }
+    },
+
+    is: "torrent-item",
+
+    properties: {
+      item: {
+        type: Object,
+        value: function() {
+          return {};
+        }
+      },
+      selected: {
+        notify: true,
+        reflectToAttribute: true,
+        type: Boolean,
+        value: false
+      }
+    },
+
+    return_class: function(text) {
+      return polymer_color(text ? text : "#");
+    },
+
+    return_description: function(item) {
+      return (item.size ? item.size : "#") + " | " + (item.leech ? item.leech + "L" : "#") + " / " + (item.seed ? item.seed + "S" : "#");
+    },
+
+    return_text: function(text) {
+      return (text ? text : "#");
+    },
+
+    return_time: function(time) {
+      return (moment(time).isValid() ? moment(time).format("ddd YYYY MMM DD") : "#");
+    }
+
+  });
+  </script>
+
+</dom-module>
+<dom-module id="torrent-view" assetpath="/linto/">
+
+  <style>
+  paper-icon-item {
+    border-bottom: 1px solid #EEE;
+  }
+  
+  paper-toggle-button {
+    --paper-toggle-button-checked-bar-color: var(--paper-green-500);
+    --paper-toggle-button-checked-button-color: var(--paper-green-500);
+    --paper-toggle-button-checked-ink-color: var(--paper-green-500);
+  }
+  
+  .body1 {
+    @apply(--paper-font-body1);
+    color: #757575;
+  }
+  
+  .body2 {
+    @apply(--paper-font-body2);
+  }
+  
+  .footer-li {
+    min-height: 88px;
+    padding: 8px;
+  }
+  
+  .subhead {
+    @apply(--paper-font-subhead);
+  }
+  
+  .footer-li > div,
+  .title-li,
+  .title-li > div {
+    padding: 8px;
+  }
+  </style>
+
+  <template>
+    <iron-localstorage name="proxy" on-iron-localstorage-load-empty="initialize_proxy" value="{{proxy}}"></iron-localstorage>
+
+    <paper-header-panel style="background: #EEE;">
+      <div class="center-justified horizontal layout">
+        <div class="li">
+          <div class="cursor-p horizontal layout title-li">
+            <div>
+              <paper-icon-button icon="arrow-back" on-click="back"></paper-icon-button>
+            </div>
+
+            <div class="flex layout vertical">
+              <div class="body1">[[return_description(mwcData.torrent)]]</div>
+
+              <div><span class="subhead">[[mwcData.torrent.title]]</span>&nbsp;&nbsp;<span class$="body2 [[return_class(mwcData.torrent.category)]]">&nbsp;&nbsp;[[mwcData.torrent.category]]&nbsp;&nbsp;</span>&nbsp;&nbsp;</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="center-justified horizontal layout">
+        <div class="li">
+          <template is="dom-repeat" items="[[mwcData.torrent.link]]">
+            <paper-icon-item class="cursor-p white" data-link$="[[item.url]]" on-click="click">
+              <selectable-icon icon_class="[[return_class(item.text)]]" icon_text="[[return_icon_text(item.text)]]" item-icon=""></selectable-icon>
+
+              <paper-item-body two-line="">
+                <div>[[item.text]]</div>
+                <div secondary="">[[return_time(item.time)]]</div>
+              </paper-item-body>
+            </paper-icon-item>
+          </template>
+        </div>
+      </div>
+
+      <div class="center-justified horizontal layout">
+        <div class="li">
+          <div class="center footer-li horizontal layout">
+            <div>
+              <paper-toggle-button checked="{{proxy}}">enable proxy</paper-toggle-button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </paper-header-panel>
+  </template>
+
+  <script>
+  Polymer({
+
+    back: function() {
+      FlowRouter.setQueryParams({
+        "route": (FlowRouter.getQueryParam("back-route") ? FlowRouter.getQueryParam("back-route") : null)
+      });
+    },
+
+    behaviors: [mwcMixin],
+
+    click: function(e, d) {
+      e.stopPropagation();
+
+      window.open((this.proxy ? "http://do.vcompile.com/proxy/redirect.php?url=" + encodeURIComponent(e.model.__data__.item.url) : e.model.__data__.item.url), "_system");
+    },
+
+    getMeteorData: function() {
+      Meteor.subscribe("torrent", {
+        field: "torrent",
+        id: FlowRouter.getQueryParam("torrent")
+      });
+
+      return {
+        torrent: _torrent.findOne({
+          _id: FlowRouter.getQueryParam("torrent")
+        })
+      };
+    },
+
+    initialize_proxy: function() {
+      this.proxy = false;
+    },
+
+    is: "torrent-view",
+
+    properties: {
+      proxy: {
+        type: Boolean,
+        value: false
+      }
+    },
+
+    return_class: function(text) {
+      return polymer_color(text ? text : "#");
+    },
+
+    return_description: function(item) {
+      return (item ? (item.size ? item.size : "#") + " | " + (item.leech ? item.leech + "L" : "#") + " / " + (item.seed ? item.seed + "S" : "#") : "#");
+    },
+
+    return_icon_text: function(text) {
+      return (isNaN(text.charAt(0)) ? text.charAt(0) : "#");
+    },
+
+    return_time: function(time) {
+      return (moment(time).isValid() ? moment(time).fromNow() : "#");
+    }
+
+  });
+  </script>
+
+</dom-module>
+<dom-module id="trending-view" assetpath="/linto/">
+
+  <style>
+  paper-fab {
+    --paper-fab-background: var(--paper-red-500);
+    --paper-fab-keyboard-focus-background: var(--paper-red-700);
+  }
+  
+  paper-toolbar {
+    --paper-toolbar-background: var(--paper-cyan-700);
+    --paper-toolbar-color: white;
+  }
+  
+  paper-toolbar paper-icon-button {
+    margin: 0!important;
+  }
+  
+  paper-toolbar .title {
+    padding: 0 8px;
+  }
+  
+  .body1 {
+    @apply(--paper-font-body1);
+    color: #757575;
+  }
+  
+  .footer-li {
+    min-height: 88px;
+  }
+  
+  .menu-b {
+    bottom: 16px;
+    position: fixed;
+    right: 16px;
+    transition: transform 0.2s ease-in-out;
+    will-change: transform;
+  }
+  
+  .menu-b.move-down {
+    transform: translate3d(0, 88px, 0)!important;
+  }
+  
+  .subhead {
+    @apply(--paper-font-subhead);
+  }
+  
+  .title-li,
+  .title-li > div {
+    padding: 8px;
+  }
+  
+  .trending-li {
+    padding: 4px 12px;
+  }
+  
+  .trending-li > div {
+    margin: 4px;
+    padding: 4px 12px;
+  }
+  </style>
+
+  <template>
+    <iron-localstorage name="trending" on-iron-localstorage-load-empty="initialize_trending" value="{{trending}}"></iron-localstorage>
+
+    <paper-header-panel>
+      <paper-toolbar>
+        <paper-icon-button icon="menu" on-click="menu_toggle" paper-drawer-toggle=""></paper-icon-button>
+        <div class="title">TorrentAlert</div>
+        <paper-icon-button icon="search" on-click="searchbar"></paper-icon-button>
+      </paper-toolbar>
+
+      <div class="center-justified horizontal layout">
+        <div class="li">
+          <div class="center cursor-d horizontal layout title-li">
+            <div>
+              <iron-icon icon="store"></iron-icon>
+            </div>
+
+            <div class="subhead" style="border-bottom: 1px solid #757575;">Trending Top [[trending.keyword.length]]</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="center-justified horizontal layout">
+        <div class="li">
+          <div class="horizontal layout trending-li wrap">
+            <template is="dom-repeat" items="[[trending.keyword]]">
+              <div class="cursor-p grey-500 subhead" on-click="click">[[item]]</div>
+            </template>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-li"></div>
+    </paper-header-panel>
+
+    <paper-fab class="menu-b" id="fab" icon="add" on-click="add_project"></paper-fab>
+  </template>
+
+  <script>
+  Polymer({
+
+    add_project: function() {
+      FlowRouter.setQueryParams({
+        route: "add-project"
+      });
+    },
+
+    attached: function() {
+      var _this = this;
+
+      Meteor.setTimeout(function() {
+        if (6 < moment.duration(moment().diff(moment(_this.trending.time))).asHours() || !_this.trending.keyword.length) {
+          Meteor.call("trending", function(error, response) {
+            if (error) {
+              document.querySelector("#polymer_toast").toast(error.reason);
+            } else {
+              if (response.length) {
+                _this.trending = {
+                  keyword: response,
+                  time: moment().format()
+                };
+
+                response.forEach(function(keyword, index) {
+                  Meteor.call("count", keyword, function(error, count) {
+                    if (!error && count) {
+                      _this.set("trending.keyword." + index, keyword + " [" + count + "]")
+                    }
+                  });
+                });
+              }
+            }
+          });
+        }
+      }, 1000);
+    },
+
+    initialize_trending: function() {
+      this.trending = {
+        keyword: [],
+        time: moment().format()
+      };
+    },
+
+    is: "trending-view",
+
+    menu_toggle: function() {
+      document.querySelector("#old_layout").menu_toggle();
+    },
+
+    properties: {
+      trending: {
+        observer: "trending_change",
+        type: Object,
+        value: function() {
+          return {
+            keyword: [],
+            time: moment().format()
+          };
+        }
+      }
+    },
+
+    trending_change: function(newValue, oldValue) {
+      if (newValue && oldValue) {
+        document.querySelector("#old_layout").trending = this.trending;
       }
     }
 
@@ -22527,7 +23065,7 @@ mwcLayout = new PolymerLayout();
                 _done();
               }
 
-              FlowRouter.go("/inbox");
+              FlowRouter.go("/main");
             }
           });
         } else {
@@ -22536,171 +23074,6 @@ mwcLayout = new PolymerLayout();
       } else {
         document.querySelector("#polymer_toast").toast("min password length is 6");
       }
-    }
-
-  });
-  </script>
-
-</dom-module>
-<dom-module id="torrent-view" assetpath="/linto/">
-
-  <style>
-  :host {
-    display: none;
-  }
-  
-  :host([active]) {
-    display: block;
-  }
-  
-  :host > div {
-    background: #EEE;
-    overflow: auto;
-    z-index: 10;
-  }
-  
-  paper-icon-item {
-    border-bottom: 1px solid #EEE;
-  }
-  
-  paper-toggle-button {
-    --paper-toggle-button-checked-bar-color: var(--paper-green-500);
-    --paper-toggle-button-checked-button-color: var(--paper-green-500);
-    --paper-toggle-button-checked-ink-color: var(--paper-green-500);
-  }
-  
-  .body1 {
-    @apply(--paper-font-body1);
-    color: #757575;
-  }
-  
-  .body2 {
-    @apply(--paper-font-body2);
-  }
-  
-  .footer-li {
-    min-height: 88px;
-    padding: 8px;
-  }
-  
-  .subhead {
-    @apply(--paper-font-subhead);
-  }
-  
-  .footer-li > div,
-  .title-li,
-  .title-li > div {
-    padding: 8px;
-  }
-  </style>
-
-  <template>
-    <iron-localstorage name="proxy" on-iron-localstorage-load-empty="initialize_proxy" value="{{proxy}}"></iron-localstorage>
-
-    <div class="fit layout vertical">
-      <div class="flex">
-        <div class="center-justified horizontal layout">
-          <div class="li">
-            <div class="cursor-p horizontal layout title-li">
-              <div>
-                <paper-icon-button icon="arrow-back" on-click="back"></paper-icon-button>
-              </div>
-
-              <div class="flex layout vertical">
-                <div class="body1">[[return_description(torrent)]]</div>
-
-                <div><span class="subhead">[[torrent.title]]</span>&nbsp;&nbsp;<span class$="body2 [[return_class(torrent.category)]]">&nbsp;&nbsp;[[torrent.category]]&nbsp;&nbsp;</span>&nbsp;&nbsp;</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="center-justified horizontal layout">
-          <div class="li">
-            <iron-selector activate-event="click" id="link" on-click="click" selected-attribute="selected">
-              <template is="dom-repeat" items="[[torrent.link]]">
-                <paper-icon-item class="cursor-d white" data-link$="[[item.url]]">
-                  <selectable-icon icon_class="[[return_class(item.text)]]" icon_text="[[return_icon_text(item.text)]]" item-icon=""></selectable-icon>
-
-                  <paper-item-body two-line="">
-                    <div>[[item.text]]</div>
-                    <div secondary="">[[return_time(item.time)]]</div>
-                  </paper-item-body>
-                </paper-icon-item>
-              </template>
-            </iron-selector>
-          </div>
-        </div>
-
-        <div class="center-justified horizontal layout">
-          <div class="li">
-            <div class="center footer-li horizontal layout">
-              <div>
-                <paper-toggle-button checked="{{proxy}}">enable proxy</paper-toggle-button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </template>
-
-  <script>
-  Polymer({
-
-    back: function() {
-      FlowRouter.setQueryParams({
-        "route": null
-      });
-    },
-
-    click: function(e) {
-      e.stopPropagation();
-
-      this.async(function() {
-        window.open((this.proxy ? "http://do.vcompile.com/proxy/redirect.php?url=" + encodeURIComponent(document.querySelector("#link").selectedItem.dataset.link) : document.querySelector("#link").selectedItem.dataset.link), "_system");
-      }, 200);
-    },
-
-    initialize_proxy: function() {
-      this.proxy = false;
-    },
-
-    is: "torrent-view",
-
-    properties: {
-      active: {
-        notify: true,
-        reflectToAttribute: true,
-        type: Boolean,
-        value: false
-      },
-      proxy: {
-        type: Boolean,
-        value: false
-      },
-      torrent: {
-        type: Object,
-        value: function() {
-          return {};
-        }
-      }
-    },
-
-    return_class: function(text) {
-      return polymer_color(text ? text : "#");
-    },
-
-    return_description: function(item) {
-      return (item.size ? item.size : "#") + " | " + (item.leech ? item.leech + "L" : "#") + " / " + (item.seed ? item.seed + "S" : "#");
-    },
-
-    return_icon_text: function(text) {
-      return (isNaN(text.charAt(0)) ? text.charAt(0) : "#");
-    },
-
-    return_time: function(time) {
-      return (moment(time).isValid() ? moment(time).fromNow() : "#");
     }
 
   });
@@ -22751,10 +23124,10 @@ mwcLayout = new PolymerLayout();
   </style>
 
   <template>
-    <neon-animated-pages class="fit" selected="[[selected]]">
-      <user-check-layout></user-check-layout>
+    <neon-animated-pages attr-for-selected="data-page" class="fit" selected="[[selected]]">
+      <user-check-layout data-page="layout"></user-check-layout>
 
-      <card-route ripple_class="white">
+      <card-route data-page="sign-in" ripple_class="white">
         <div class="center-justified fit horizontal layout white">
           <div class="layout li vertical">
             <div class="center horizontal layout page-title">
@@ -22786,7 +23159,7 @@ mwcLayout = new PolymerLayout();
         </div>
       </card-route>
 
-      <card-route ripple_class="cyan-700">
+      <card-route data-page="sign-up" ripple_class="cyan-700">
         <div class="center-justified cyan-700 fit horizontal layout">
           <div class="layout li vertical">
             <div class="center horizontal layout page-title">
@@ -22829,11 +23202,11 @@ mwcLayout = new PolymerLayout();
         Tracker.autorun(function() {
           if (Meteor.status().connected) {
             if (Meteor.user()) {
-              FlowRouter.go("/inbox");
+              FlowRouter.go("/main");
             }
-          } else {
-            if ((document.querySelector("#torrent_db").value || []).length) {
-              FlowRouter.go("/inbox");
+          } else { // offline
+            if ((document.querySelector("#torrent_db").value || []).length) { // localstorage
+              FlowRouter.go("/main");
             }
           }
         });
@@ -22841,7 +23214,7 @@ mwcLayout = new PolymerLayout();
     },
 
     back: function() {
-      this.selected = 0;
+      this.selected = "layout";
 
       Meteor.setTimeout(function() {
         FlowRouter.setQueryParams({
@@ -22896,8 +23269,8 @@ mwcLayout = new PolymerLayout();
         value: "password"
       },
       selected: {
-        type: Number,
-        value: 0
+        type: String,
+        value: "layout"
       }
     },
 
@@ -22907,7 +23280,7 @@ mwcLayout = new PolymerLayout();
 
         if (valid_email.test(this.email)) {
           switch (this.selected) {
-            case 1:
+            case "sign-in":
               document.querySelector("#load_awesome").active = true;
 
               Accounts.forgotPassword({
@@ -22923,7 +23296,7 @@ mwcLayout = new PolymerLayout();
               });
               break;
 
-            case 2:
+            case "sign-up":
               document.querySelector("#load_awesome").active = true;
 
               Meteor.call("sendEnrollmentEmail", this.email, function(error, res) {
@@ -23046,13 +23419,13 @@ mwcLayout = new PolymerLayout();
   <template>
     <div class="center-justified cyan-500 fit horizontal layout" id="user-check-layout-body">
       <div class="layout li vertical">
-        <neon-animated-pages class="flex" on-up="swiper_up" selected="{{selected}}">
-          <neon-animatable class="cyan-500 layout vertical" entry-animation="fade-in-animation" exit-animation="fade-out-animation">
+        <neon-animated-pages attr-for-selected="data-page" class="flex" on-up="swiper_up" selected="{{selected}}">
+          <neon-animatable class="cyan-500 layout vertical" data-page="1" entry-animation="[[entry_animation]]" exit-animation="[[exit_animation]]">
             <div class="center-justified horizontal layout">
               <div class="subhead">sharing, offline storing, etc</div>
             </div>
 
-            <div class="flex layout swiper-img vertical" style="background-image:url(&quot;/img/0.png&quot;);">
+            <div class="flex layout swiper-img vertical" style="background-image:url(&quot;/img/user-check/1.png&quot;);">
               <div class="flex"></div>
 
               <div class="center-justified horizontal layout">
@@ -23063,12 +23436,12 @@ mwcLayout = new PolymerLayout();
             </div>
           </neon-animatable>
 
-          <neon-animatable class="cyan-500 layout vertical" entry-animation="fade-in-animation" exit-animation="fade-out-animation">
+          <neon-animatable class="cyan-500 layout vertical" data-page="2" entry-animation="[[entry_animation]]" exit-animation="[[exit_animation]]">
             <div class="center-justified horizontal layout">
               <div class="subhead">100+ site indexing &amp; inbuilt proxy</div>
             </div>
 
-            <div class="flex layout swiper-img vertical" style="background-image:url(&quot;/img/1.png&quot;);">
+            <div class="flex layout swiper-img vertical" style="background-image:url(&quot;/img/user-check/2.png&quot;);">
               <div class="flex"></div>
 
               <div class="center-justified horizontal layout">
@@ -23079,12 +23452,12 @@ mwcLayout = new PolymerLayout();
             </div>
           </neon-animatable>
 
-          <neon-animatable class="cyan-500 layout vertical" entry-animation="fade-in-animation" exit-animation="fade-out-animation">
+          <neon-animatable class="cyan-500 layout vertical" data-page="3" entry-animation="[[entry_animation]]" exit-animation="[[exit_animation]]">
             <div class="center-justified horizontal layout">
               <div class="subhead">keyword search</div>
             </div>
 
-            <div class="flex layout swiper-img vertical" style="background-image:url(&quot;/img/2.png&quot;);">
+            <div class="flex layout swiper-img vertical" style="background-image:url(&quot;/img/user-check/3.png&quot;);">
               <div class="flex"></div>
 
               <div class="center-justified horizontal layout">
@@ -23138,9 +23511,15 @@ mwcLayout = new PolymerLayout();
           };
         }
       },
+      entry_animation: {
+        type: String
+      },
+      exit_animation: {
+        type: String
+      },
       selected: {
         type: Number,
-        value: 2
+        value: 3
       }
     },
 
@@ -23158,11 +23537,17 @@ mwcLayout = new PolymerLayout();
 
     swiper_up: function(e, d) {
       if (d.x < $(window).width() / 2) {
-        if (0 <= this.selected && this.selected < 2) {
+        if (1 <= this.selected && this.selected < 3) {
+          this.entry_animation = "slide-from-right-animation";
+          this.exit_animation = "slide-left-animation";
+
           this.selected += 1;
         }
       } else {
-        if (0 < this.selected && this.selected <= 2) {
+        if (1 < this.selected && this.selected <= 3) {
+          this.entry_animation = "slide-from-left-animation";
+          this.exit_animation = "slide-right-animation";
+
           this.selected -= 1;
         }
       }

@@ -1,14 +1,6 @@
 <dom-module id="add-project">
 
   <style>
-  :host {
-    display: none;
-  }
-  
-  :host([active]) {
-    display: block;
-  }
-  
   paper-button {
     margin: 0;
     min-width: 50%;
@@ -25,7 +17,11 @@
   }
   
   paper-toolbar .title {
-    padding: 0 12px;
+    padding: 0 8px;
+  }
+  
+  .divider {
+    height: 16px;
   }
   
   .footer-li {
@@ -47,7 +43,7 @@
   </style>
 
   <template>
-    <paper-header-panel class="fit" style="background: white; z-index: 10;">
+    <paper-header-panel class="white">
       <paper-toolbar>
         <paper-icon-button icon="arrow-back" on-click="back"></paper-icon-button>
         <div class="title">scheduler</div>
@@ -58,26 +54,23 @@
           <div class="layout page-body vertical">
             <paper-input auto-validate autofocus label="keyword" required value="{{keyword}}"></paper-input>
 
-            <br>
-
+            <div class="divider"></div>
             <div class="center horizontal layout">
               <div class="cursor-d flex subhead text-right">max torrent time in month</div>
-              <paper-slider class="flex" editable max="48" min="1" value="{{within}}"></paper-slider>
+              <paper-slider class="flex" editable max="48" min="1" pin value="{{within}}"></paper-slider>
             </div>
 
-            <br>
-
+            <div class="divider"></div>
             <div class="center horizontal layout">
               <div class="cursor-d flex subhead text-right">min leech count</div>
-              <paper-slider class="flex" editable max="1000" min="1" value="{{leech}}"></paper-slider>
+              <paper-slider class="flex" editable max="1000" min="1" pin value="{{leech}}"></paper-slider>
             </div>
             <div class="center horizontal layout">
               <div class="cursor-d flex subhead text-right">min seed count</div>
-              <paper-slider class="flex" editable max="1000" min="1" value="{{seed}}"></paper-slider>
+              <paper-slider class="flex" editable max="1000" min="1" pin value="{{seed}}"></paper-slider>
             </div>
 
-            <br>
-
+            <div class="divider"></div>
             <div class="end-justified horizontal layout">
               <paper-button class="blue-500" on-click="add_project">submit</paper-button>
             </div>
@@ -116,20 +109,10 @@
               } else {
                 document.querySelector("#polymer_toast").toast("i keyword added");
 
-                document.querySelector("#main_toolbar").className = document.querySelector("#main_toolbar").className.replace(/ ?[a-z\-]+\-500/g, "") + " " + polymer_color(1 < keywordArray.length ? keywordArray[1] : keywordArray[0]);
-
-                document.querySelector("layout-inbox").menu_selected = response;
-
-                Meteor.setTimeout(function() {
-                  if (document.querySelector('.project_progress[data-id="' + response + '"]')) {
-                    var project_progress = document.querySelector('.project_progress[data-id="' + response + '"]');
-
-                    project_progress.hidden = false;
-
-                    project_progress.max = 50;
-                    project_progress.value = 10;
-                  }
-                }, 1000);
+                FlowRouter.setQueryParams({
+                  project: response,
+                  route: "project-view"
+                });
               }
             }
           });
@@ -150,7 +133,7 @@
 
     back: function() {
       FlowRouter.setQueryParams({
-        "route": null
+        "route": (FlowRouter.getQueryParam("back-route") ? FlowRouter.getQueryParam("back-route") : null)
       });
     },
 

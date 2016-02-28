@@ -20,7 +20,7 @@ _torrentz_worker = function(worker_id) {
     _torrent_instance[worker.project] = "#";
 
     while (_.size(_torrent_queue[worker.project])) {
-      var key = _.keys(_torrent_queue[worker.project])[0];
+      var key = _.first(_.keys(_torrent_queue[worker.project]).sort());
 
       var row = (key == "#" ? _project.findOne({
         _id: worker.project
@@ -61,6 +61,7 @@ _torrentz_worker = function(worker_id) {
                     _id: item._id
                   }, {
                     $addToSet: {
+                      project: row._id,
                       user: {
                         $each: row.user
                       }
@@ -92,6 +93,7 @@ _torrentz_worker = function(worker_id) {
                   });
                 } else {
                   torrent.link = [];
+                  torrent.project = [row._id];
                   torrent.user = row.user;
 
                   torrent._id = _torrent.insert(torrent);
@@ -120,18 +122,25 @@ _torrentz_worker = function(worker_id) {
                   });
                 }
 
-                if (worker.type == "schedule") {
+                if (row.type == "schedule") {
                   row.user.forEach(function(A) {
-                    if (_push.find({
+                    if (!_push.findOne({
+                        project: row._id,
+                        url: torrent.url,
+                        user: A
+                      })) {
+                      _push.insert({
                         date: moment().format("YYYY-MM-DD"),
                         project: row._id,
+                        url: torrent.url,
                         user: A
-                      }).count() < 10) {
-                      if (!_push.findOne({
+                      });
+
+                      if (_push.find({
+                          date: moment().format("YYYY-MM-DD"),
                           project: row._id,
-                          url: torrent.url,
                           user: A
-                        })) {
+                        }).count() < 10) {
                         Push.send({
                           from: "TorrentAlert",
                           notId: _push.find({
@@ -142,13 +151,6 @@ _torrentz_worker = function(worker_id) {
                           },
                           text: torrent.title,
                           title: row.keyword
-                        });
-
-                        _push.insert({
-                          date: moment().format("YYYY-MM-DD"),
-                          project: row._id,
-                          url: torrent.url,
-                          user: A
                         });
                       }
                     }
@@ -208,16 +210,3 @@ _torrentz_worker = function(worker_id) {
     _torrent_instance[worker.project] = "";
   }
 };
-
-_worker.find({
-  status: "",
-  type: {
-    $in: ["schedule", "search", "torrent"]
-  }
-}).observe({
-  added: function(row) {
-    Meteor.setTimeout(function() {
-      _torrentz_worker(row._id);
-    });
-  }
-});

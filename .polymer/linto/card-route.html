@@ -11,7 +11,7 @@
   </style>
 
   <template>
-    <div class$="[[get_ripple_class(ripple_class)]]" id="animator"></div>
+    <div class$="fit [[ripple_class]]" id="animator"></div>
 
     <div id="container">
       <content select="div"></content>
@@ -24,10 +24,6 @@
     behaviors: [
       Polymer.NeonSharedElementAnimatableBehavior
     ],
-
-    get_ripple_class: function(ripple_class) {
-      return "fit " + ripple_class;
-    },
 
     is: "card-route",
 

@@ -10,99 +10,54 @@ document.addEventListener("WebComponentsReady", function() {
   }, 1000 * 4);
 });
 
-FlowRouter.route("/", {
-  action: function(p, q) {
-    mwcLayout.render("main", {
-      body: "user-check"
-    });
-
-    switch (FlowRouter.getQueryParam("route")) {
-      case "sign-in":
-        document.querySelector("user-check-layout").sharedElements = {
-          'ripple': document.querySelector("#sign-in"),
-          'reverse-ripple': document.querySelector("#sign-in")
-        };
-
-        document.querySelector("user-check").selected = 1;
-        break;
-
-      case "sign-up":
-        document.querySelector("user-check-layout").sharedElements = {
-          'ripple': document.querySelector("#sign-up"),
-          'reverse-ripple': document.querySelector("#sign-up")
-        };
-
-        document.querySelector("user-check").selected = 2;
-        break;
-    }
-  },
-  name: "user-check"
-});
-
-FlowRouter.route("/set-password", {
-  action: function(p, q) {
-    mwcLayout.render("set-password", {
-      opt: "set-password"
-    });
-  },
-  name: "set-password"
-});
-
-var inbox = FlowRouter.group({
-  name: "inbox",
-  prefix: "/inbox",
+var main = FlowRouter.group({
+  name: "main",
+  prefix: "/main",
   triggersEnter: [function(context, redirect) {
     if (Meteor.status().connected) {
       if (!Meteor.user()) {
         FlowRouter.go("/");
       }
-    } else {
-      if (!(document.querySelector("#torrent_db").value || []).length) {
+    } else { // offline
+      if (!(document.querySelector("#torrent_db").value || []).length) { // localstorage
         FlowRouter.go("/");
       }
     }
   }]
 });
 
-inbox.route("/", {
+main.route("/", {
   action: function(p, q) {
-    mwcLayout.render("inbox", {
-      "add-project": "add-project",
-      "layout-inbox": "layout-inbox",
-      "search-bar": "search-bar",
-      "torrent-view": "torrent-view"
+    mwcLayout.render("main-layout", {
+      "body": "main-layout"
     });
 
     switch (FlowRouter.getQueryParam("route")) {
       case "add-project":
-        document.querySelector("add-project").active = true;
+        document.querySelector("#old_layout").selected = "add-project";
         break;
 
-      case "search-bar":
-        document.querySelector("search-bar").active = true;
+      case "project-view":
+        if (FlowRouter.getQueryParam("project")) {
+          document.querySelector("#old_layout").selected = "project-view";
+        }
         break;
 
       case "torrent-view":
-        if (document.querySelector("torrent-view").torrent && _.has(document.querySelector("torrent-view").torrent, "_id")) {
-          document.querySelector("torrent-view").active = true;
-        } else {
-          FlowRouter.setQueryParams({
-            "route": null
-          });
+        if (FlowRouter.getQueryParam("torrent")) {
+          document.querySelector("#old_layout").selected = "torrent-view";
         }
         break;
 
       default:
-        document.querySelector("add-project").active = false;
-        document.querySelector("search-bar").active = false;
-        document.querySelector("torrent-view").active = false;
+        document.querySelector("#old_layout").selected = "trending-view";
         break;
     }
   },
-  name: "layout-inbox"
+  name: "main-layout"
 });
 
-inbox.route("/sign-out", {
+main.route("/sign-out", {
   action: function(p, q) {
     if (Meteor.status().connected) {
       document.querySelector("#torrent_db").value = [];
@@ -119,4 +74,42 @@ inbox.route("/sign-out", {
     }
   },
   name: "sign-out"
+});
+
+FlowRouter.route("/set-password", {
+  action: function(p, q) {
+    mwcLayout.render("set-password", {
+      body: "set-password"
+    });
+  },
+  name: "set-password"
+});
+
+FlowRouter.route("/", {
+  action: function(p, q) {
+    mwcLayout.render("user-check", {
+      body: "user-check"
+    });
+
+    switch (FlowRouter.getQueryParam("route")) {
+      case "sign-in":
+        document.querySelector("user-check-layout").sharedElements = {
+          'ripple': document.querySelector("#sign-in"),
+          'reverse-ripple': document.querySelector("#sign-in")
+        };
+
+        document.querySelector("user-check").selected = "sign-in";
+        break;
+
+      case "sign-up":
+        document.querySelector("user-check-layout").sharedElements = {
+          'ripple': document.querySelector("#sign-up"),
+          'reverse-ripple': document.querySelector("#sign-up")
+        };
+
+        document.querySelector("user-check").selected = "sign-up";
+        break;
+    }
+  },
+  name: "user-check"
 });

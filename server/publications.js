@@ -5,40 +5,53 @@ Meteor.publish("project", function() {
     fields: {
       user: false
     },
-    limit: 8,
+    limit: 25,
     sort: {
       time: -1
     }
   });
 });
 
-Meteor.publish("torrent", function() {
-  return _torrent.find({
-    user: this.userId,
-    user_removed: {
-      $ne: this.userId
-    }
-  }, {
+Meteor.publish("torrent", function(input) {
+  check(input, {
+    field: String,
+    id: String
+  });
+
+  var query = {
+    user: this.userId
+  };
+
+  if (input.field == "torrent") {
+    query._id = input.id;
+  } else {
+    query.project = input.id;
+  }
+
+  return _torrent.find(query, {
     fields: {
-      user: false,
-      user_removed: false
+      project: false,
+      user: false
     },
-    limit: 400,
+    limit: 250,
     sort: {
       time: -1
     }
   });
 });
 
-Meteor.publish("worker", function() {
+Meteor.publish("worker", function(project) {
+  check(project, String);
+
   return _worker.find({
+    project: project,
     status: "",
     user: this.userId
   }, {
     fields: {
       user: false
     },
-    limit: 200,
+    limit: 50,
     sort: {
       time_insert: -1
     }
