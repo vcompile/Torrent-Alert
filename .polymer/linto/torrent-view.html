@@ -37,7 +37,7 @@
   </style>
 
   <template>
-    <iron-localstorage name="proxy" on-iron-localstorage-load-empty="initialize_proxy" value="{{proxy}}"></iron-localstorage>
+    <iron-localstorage name="proxy" on-iron-localstorage-load-empty="initialize_proxy" value="[[proxy]]"></iron-localstorage>
 
     <paper-header-panel style="background: #EEE;">
       <div class="center-justified horizontal layout">
@@ -103,7 +103,7 @@
     getMeteorData: function() {
       Meteor.subscribe("torrent", {
         field: "torrent",
-        id: FlowRouter.getQueryParam("torrent")
+        id: [FlowRouter.getQueryParam("torrent") ? FlowRouter.getQueryParam("torrent") : "#"]
       });
 
       return {

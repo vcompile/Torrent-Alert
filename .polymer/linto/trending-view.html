@@ -60,13 +60,13 @@
   </style>
 
   <template>
-    <iron-localstorage name="trending" on-iron-localstorage-load-empty="initialize_trending" value="{{trending}}"></iron-localstorage>
+    <iron-localstorage name="trending" on-iron-localstorage-load-empty="initialize_trending" value="[[trending]]"></iron-localstorage>
 
     <paper-header-panel>
       <paper-toolbar>
         <paper-icon-button icon="menu" on-click="menu_toggle" paper-drawer-toggle></paper-icon-button>
         <div class="title">TorrentAlert</div>
-        <paper-icon-button icon="search" on-click="searchbar"></paper-icon-button>
+        <paper-icon-button icon="search" on-click="search"></paper-icon-button>
       </paper-toolbar>
 
       <div class="center-justified horizontal layout">
@@ -76,7 +76,7 @@
               <iron-icon icon="store"></iron-icon>
             </div>
 
-            <div class="subhead" style="border-bottom: 1px solid #757575;">Trending Top [[trending.keyword.length]]</div>
+            <div class="subhead" style="border-bottom: 1px solid #757575;">Trending Top [[return_text(trending.keyword.length)]]</div>
           </div>
         </div>
       </div>
@@ -135,6 +135,44 @@
       }, 1000);
     },
 
+    click: function(e) {
+      if (Meteor.status().connected) {
+        var keyword = Polymer.dom(e).localTarget.textContent.split(" [")[0];
+
+        if (keyword.length) {
+          var row = {
+            keyword: keyword,
+            leech: 1,
+            seed: 1,
+            url: "search",
+            within: 6,
+            worker: "search"
+          };
+
+          Meteor.call("insert_project", row, function(error, response) {
+            if (error) {
+              document.querySelector("#polymer_toast").toast((error.reason == "userNotFound") ? "internet/user required" : error.reason);
+            } else {
+              if (response == "") {
+                document.querySelector("#polymer_toast").toast("unknown issue");
+              } else {
+                document.querySelector("#polymer_toast").toast("i keyword added");
+
+                FlowRouter.setQueryParams({
+                  project: response,
+                  route: "project-view"
+                });
+              }
+            }
+          });
+        } else {
+          document.querySelector("#polymer_toast").toast("empty keyword");
+        }
+      } else {
+        document.querySelector("#polymer_toast").toast("server connection required");
+      }
+    },
+
     initialize_trending: function() {
       this.trending = {
         keyword: [],
@@ -150,7 +188,6 @@
 
     properties: {
       trending: {
-        observer: "trending_change",
         type: Object,
         value: function() {
           return {
@@ -161,10 +198,15 @@
       }
     },
 
-    trending_change: function(newValue, oldValue) {
-      if (newValue && oldValue) {
-        document.querySelector("#old_layout").trending = this.trending;
-      }
+    return_text: function(text) {
+      return (text ? text : "#");
+    },
+
+    search: function() {
+      FlowRouter.setQueryParams({
+        "back-route": "trending",
+        route: "search-view"
+      });
     }
 
   });

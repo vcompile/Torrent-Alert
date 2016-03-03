@@ -1,17 +1,16 @@
-<dom-module id="search-bar">
+<dom-module id="search-view">
 
   <style>
-  :host {
-    display: none;
+  input {
+    @apply(--paper-font-title);
+    background: transparent;
+    border: none;
+    color: black;
+    padding: 0 8px;
   }
   
-  :host([active]) {
-    display: block;
-  }
-  
-  paper-header-panel {
-    background: rgba(255, 255, 255, 0.5);
-    z-index: 10;
+  paper-icon-item {
+    border-bottom: 1px solid #EEE;
   }
   
   paper-progress {
@@ -26,14 +25,6 @@
   paper-toolbar {
     --paper-toolbar-background: white;
     --paper-toolbar-color: black;
-  }
-  
-  input {
-    @apply(--paper-font-title);
-    background: transparent;
-    border: none;
-    color: black;
-    padding: 0 12px;
   }
   
   .footer-li {
@@ -55,26 +46,24 @@
   </style>
 
   <template>
-    <paper-header-panel class="fit">
+    <iron-localstorage name="search" on-iron-localstorage-load-empty="initialize_search_db" value="[[search_db]]"></iron-localstorage>
+
+    <paper-header-panel style="background: #EEE;">
       <paper-toolbar>
         <paper-icon-button icon="arrow-back" on-click="back"></paper-icon-button>
         <input autofocus bind-value="{{search_input}}" class="flex" is="iron-input" placeholder="search">
       </paper-toolbar>
 
-      <paper-progress hidden id="progress" indeterminate></paper-progress>
+      <paper-progress hidden id="search_progress" indeterminate></paper-progress>
 
-      <template is="dom-repeat" items="[[list]]">
+      <template is="dom-repeat" items="[[search_db]]">
         <div class="center-justified horizontal layout">
           <div class="li">
-            <div class="center cursor-p horizontal layout relative search-li white" on-click="add_project">
-              <div>
-                <iron-icon icon="launch"></iron-icon>
-              </div>
+            <paper-icon-item class="cursor-p white" on-click="add_project">
+              <iron-icon icon="launch" item-icon></iron-icon>
 
-              <div class="flex subhead">[[item]]</div>
-
-              <paper-ripple></paper-ripple>
-            </div>
+              <paper-item-body>[[item]]</paper-item-body>
+            </paper-icon-item>
           </div>
         </div>
       </template>
@@ -86,7 +75,7 @@
   <script>
   Polymer({
 
-    add_project: function(e, d) {
+    add_project: function(e) {
       if (Meteor.status().connected) {
         var keyword = Polymer.dom(e).localTarget.textContent.trim();
 
@@ -109,25 +98,13 @@
               } else {
                 document.querySelector("#polymer_toast").toast("i keyword added");
 
-                document.querySelector("#main_toolbar").className = document.querySelector("#main_toolbar").className.replace(/ ?[a-z\-]+\-500/g, "") + " " + polymer_color(keyword);
-
-                document.querySelector("layout-inbox").menu_selected = response;
-
-                Meteor.setTimeout(function() {
-                  if (document.querySelector('.project_progress[data-id="' + response + '"]')) {
-                    var project_progress = document.querySelector('.project_progress[data-id="' + response + '"]');
-
-                    project_progress.hidden = false;
-
-                    project_progress.max = 50;
-                    project_progress.value = 10;
-                  }
-                }, 1000);
+                FlowRouter.setQueryParams({
+                  project: response,
+                  route: "project-view"
+                });
               }
             }
           });
-
-          this.back();
         } else {
           document.querySelector("#polymer_toast").toast("empty keyword");
         }
@@ -138,20 +115,18 @@
 
     back: function() {
       FlowRouter.setQueryParams({
-        "route": null
+        "route": (FlowRouter.getQueryParam("back-route") ? FlowRouter.getQueryParam("back-route") : null)
       });
     },
 
-    is: "search-bar",
+    initialize_search_db: function() {
+      this.search_db = [];
+    },
+
+    is: "search-view",
 
     properties: {
-      active: {
-        notify: true,
-        reflectToAttribute: true,
-        type: Boolean,
-        value: false
-      },
-      list: {
+      search_db: {
         type: Array,
         value: function() {
           return [];
@@ -166,27 +141,27 @@
 
     search: function(newValue, oldValue) {
       if (newValue && oldValue) {
-        this.$.progress.hidden = false;
+        if (Meteor.status().connected) {
+          this.$.search_progress.hidden = false;
 
-        this.debounce("search", function() {
-          if (this.search_input.trim().length) {
-            if (Meteor.status().connected) {
+          this.debounce("search", function() {
+            if (this.search_input.trim().length) {
               var _this = this;
 
               Meteor.call("search", _this.search_input.trim(), function(error, response) {
-                _this.$.progress.hidden = true;
+                _this.$.search_progress.hidden = true;
 
                 if (!error) {
-                  _this.list = response;
+                  _this.search_db = response;
                 }
               });
             } else {
-              document.querySelector("#polymer_toast").toast("server connection required");
+              this.$.search_progress.hidden = true;
             }
-          } else {
-            this.$.progress.hidden = true;
-          }
-        }, 1000 * 2);
+          }, 1000 * 2);
+        } else {
+          document.querySelector("#polymer_toast").toast("server connection required");
+        }
       }
     }
 

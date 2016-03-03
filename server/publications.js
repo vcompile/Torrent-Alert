@@ -15,7 +15,7 @@ Meteor.publish("project", function() {
 Meteor.publish("torrent", function(input) {
   check(input, {
     field: String,
-    id: String
+    id: [String]
   });
 
   var query = {
@@ -23,14 +23,17 @@ Meteor.publish("torrent", function(input) {
   };
 
   if (input.field == "torrent") {
-    query._id = input.id;
+    query._id = {
+      $in: input.id
+    };
   } else {
-    query.project = input.id;
+    query.project = {
+      $in: input.id
+    };
   }
 
   return _torrent.find(query, {
     fields: {
-      project: false,
       user: false
     },
     limit: 250,

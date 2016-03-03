@@ -37,10 +37,18 @@ main.route("/", {
         document.querySelector("#old_layout").selected = "add-project";
         break;
 
+      case "favorite":
+        document.querySelector("#old_layout").selected = "favorite-view";
+        break;
+
       case "project-view":
         if (FlowRouter.getQueryParam("project")) {
           document.querySelector("#old_layout").selected = "project-view";
         }
+        break;
+
+      case "search-view":
+        document.querySelector("#old_layout").selected = "search-view";
         break;
 
       case "torrent-view":

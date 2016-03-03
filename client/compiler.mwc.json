@@ -34,9 +34,7 @@
     "bower_components/paper-input/paper-input.html",
     "bower_components/paper-item/paper-item.html",
     "bower_components/paper-progress/paper-progress.html",
-    "bower_components/paper-ripple/paper-ripple.html",
     "bower_components/paper-slider/paper-slider.html",
-    "bower_components/paper-spinner/paper-spinner.html",
     "bower_components/paper-styles/paper-styles.html",
     "bower_components/paper-toast/paper-toast.html",
     "bower_components/paper-toggle-button/paper-toggle-button.html",
@@ -45,7 +43,7 @@
     "bower_components/polymer/polymer.html",
 
     "linto/add-project.html",
-    "linto/bookmark-view.html",
+    "linto/favorite-view.html",
     "linto/card-route.html",
     "linto/exit-controller.html",
     "linto/load-awesome.html",
@@ -57,7 +55,7 @@
     "linto/torrent-item.html",
     "linto/torrent-view.html",
     "linto/trending-view.html",
-    "linto/searchbar-view.html",
+    "linto/search-view.html",
     "linto/set-password.html",
     "linto/user-check.html",
     "linto/user-check-layout.html"

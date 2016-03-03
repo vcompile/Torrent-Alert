@@ -1,6 +1,16 @@
 <dom-module id="project-view">
 
   <style>
+  paper-button {
+    margin: 0;
+    min-width: 50%;
+    padding: 16px;
+  }
+  
+  paper-dialog {
+    width: 320px;
+  }
+  
   paper-fab {
     --paper-fab-background: var(--paper-red-500);
     --paper-fab-keyboard-focus-background: var(--paper-red-700);
@@ -102,10 +112,10 @@
 
         <div class="title" id="project_view_toolbar_title">TorrentAlert</div>
 
-        <paper-icon-button class="selection-visible" icon="bookmark-border" on-click="bookmark"></paper-icon-button>
+        <paper-icon-button class="selection-visible" icon="favorite-border" on-click="favorite"></paper-icon-button>
         <paper-icon-button class="selection-visible" icon="delete" on-click="remove_torrent"></paper-icon-button>
         <paper-icon-button class="selection-visible" icon="social:share" on-click="share"></paper-icon-button>
-        <paper-icon-button class="selection-hidden" icon="search" on-click="searchbar"></paper-icon-button>
+        <paper-icon-button class="selection-hidden" icon="search" on-click="search"></paper-icon-button>
       </paper-toolbar>
 
       <div class="center-justified horizontal layout">
@@ -114,8 +124,8 @@
             <div class="flex subhead">[[mwcData.project.keyword]]</div>
 
             <paper-icon-button icon="refresh" on-click="refresh"></paper-icon-button>
-            <paper-icon-button icon="alarm-add" hidden="[[!is_search(mwcData.project.worker)]]" on-click="schedule"></paper-icon-button>
-            <paper-icon-button icon="close" on-click="remove_project"></paper-icon-button>
+            <paper-icon-button icon="alarm-add" hidden="[[!is_search(mwcData.project.worker)]]" onclick="document.querySelector('#schedule_prompt').open();"></paper-icon-button>
+            <paper-icon-button icon="close" onclick="document.querySelector('#remove_prompt').open();"></paper-icon-button>
           </div>
         </div>
       </div>
@@ -123,7 +133,7 @@
       <div class="center-justified horizontal layout">
         <div class="li">
           <div style="padding: 0 4px;">
-            <paper-progress id="project_progress" indeterminate></paper-progress>
+            <paper-progress hidden="[[!mwcData.worker.length]]" indeterminate="[[!mwcData.torrent.length]]" max="50" min="10" value="[[return_progress(mwcData.worker.length)]]"></paper-progress>
           </div>
         </div>
       </div>
@@ -131,14 +141,14 @@
       <div class="center-justified horizontal layout" hidden="[[mwcData.torrent.length]]">
         <div class="li">
           <div class="center-justified cursor-d horizontal layout title-li">
-            <div class="subhead" style="color: #AAA;">noTorrentFoundNow / searching ..</div>
+            <div class="subhead" style="color: #AAA;">noItemFoundNow / searching ..</div>
           </div>
         </div>
       </div>
 
-      <iron-selector activate-event="click" attr-for-selected="item" multi selected-attribute="selected" selected-values="{{torrent_selected}}">
+      <iron-selector activate-event="click" attr-for-selected="data-id" multi selected-attribute="selected" selected-values="{{torrent_selected}}">
         <template filter="filter_url" is="dom-repeat" items="[[mwcData.torrent]]" sort="sort">
-          <torrent-item item="[[item]]"></torrent-item>
+          <torrent-item class$="[[item._id]]" data-id$="[[item._id]]" item="[[item]]"></torrent-item>
         </template>
       </iron-selector>
 
@@ -146,6 +156,41 @@
     </paper-header-panel>
 
     <paper-fab class="menu-b" id="fab" icon="add" on-click="add_project"></paper-fab>
+
+    <paper-dialog id="remove_prompt">
+      <div class="subhead">Are you sure to delete this item ?</div>
+
+      <div class="buttons">
+        <paper-button onclick="document.querySelector('#remove_prompt').close();">
+          <iron-icon icon="close"></iron-icon> cancel
+        </paper-button>
+
+        <paper-button on-click="remove_ok">
+          <iron-icon icon="check"></iron-icon> ok
+        </paper-button>
+      </div>
+    </paper-dialog>
+
+    <paper-dialog id="schedule_prompt">
+      <div class="layout vertical">
+        <div class="subhead">Are you sure to schedule this item ?</div>
+
+        <div class="center horizontal layout">
+          <div class="body1 flex">schedule / day</div>
+          <paper-slider disabled editable max="96" min="1" value="4"></paper-slider>
+        </div>
+      </div>
+
+      <div class="buttons">
+        <paper-button onclick="document.querySelector('#schedule_prompt').close();">
+          <iron-icon icon="close"></iron-icon> cancel
+        </paper-button>
+
+        <paper-button on-click="schedule_ok">
+          <iron-icon icon="check"></iron-icon> ok
+        </paper-button>
+      </div>
+    </paper-dialog>
   </template>
 
   <script>
@@ -160,6 +205,22 @@
 
     behaviors: [mwcMixin],
 
+    clear_torrent_selection: function() {
+      this.torrent_selected = [];
+    },
+
+    favorite: function() {
+      if (Meteor.status().connected) {
+        Meteor.call("insert_favorite", this.torrent_selected, function(error, response) {
+          document.querySelector("#polymer_toast").toast(error ? error.reason : response);
+        });
+
+        this.clear_torrent_selection();
+      } else {
+        document.querySelector("#polymer_toast").toast("server connection required");
+      }
+    },
+
     filter_url: function(torrent) {
       return (torrent.url);
     },
@@ -167,16 +228,17 @@
     getMeteorData: function() {
       Meteor.subscribe("torrent", {
         field: "project",
-        id: FlowRouter.getQueryParam("project")
+        id: [FlowRouter.getQueryParam("project") ? FlowRouter.getQueryParam("project") : "#"]
       });
-      Meteor.subscribe("worker", FlowRouter.getQueryParam("project"));
+
+      Meteor.subscribe("worker", (FlowRouter.getQueryParam("project") ? FlowRouter.getQueryParam("project") : "#"));
 
       return {
         project: _project.findOne({
-          _id: FlowRouter.getQueryParam("project")
+          _id: (FlowRouter.getQueryParam("project") ? FlowRouter.getQueryParam("project") : "#")
         }),
         torrent: _torrent.find({
-          project: FlowRouter.getQueryParam("project")
+          project: (FlowRouter.getQueryParam("project") ? FlowRouter.getQueryParam("project") : "#")
         }).fetch(),
         worker: _worker.find().fetch()
       };
@@ -205,8 +267,105 @@
       }
     },
 
+    refresh: function() {
+      if (Meteor.status().connected) {
+        Meteor.call("refresh", this.mwcData.project._id, function(error, response) {
+          document.querySelector("#polymer_toast").toast(error ? error.reason : response);
+        });
+      } else {
+        document.querySelector("#polymer_toast").toast("server connection required");
+      }
+    },
+
+    remove_ok: function() {
+      if (Meteor.status().connected) {
+        Meteor.call("remove_project", this.mwcData.project._id, function(error, response) {
+          if (error) {
+            document.querySelector("#polymer_toast").toast(error.reason);
+          } else {
+            document.querySelector("#polymer_toast").toast(response);
+
+            FlowRouter.setQueryParams({
+              "back-route": null,
+              project: null,
+              route: null,
+              torrent: null
+            });
+          }
+        });
+      } else {
+        document.querySelector("#polymer_toast").toast("server connection required");
+      }
+
+      this.$.remove_prompt.close();
+    },
+
+    remove_torrent: function() {
+      $("torrent-item." + this.torrent_selected.join(", torrent-item.")).addClass("undo");
+
+      document.querySelector("#polymer_toast").undo = {
+        torrent: this.torrent_selected
+      };
+
+      document.querySelector("#polymer_toast").toast(this.torrent_selected.length + " torrent removed");
+
+      this.clear_torrent_selection();
+    },
+
     return_class: function(text) {
       return polymer_color(text ? text : "#");
+    },
+
+    return_progress: function(count) {
+      return (50 - parseInt(count));
+    },
+
+    schedule_ok: function(e) {
+      if (Meteor.status().connected) {
+        Meteor.call("schedule_project", this.mwcData.project._id, function(error, response) {
+          document.querySelector("#polymer_toast").toast(error ? error.reason : response);
+        });
+      } else {
+        document.querySelector("#polymer_toast").toast("server connection required");
+      }
+
+      this.$.schedule_prompt.close();
+    },
+
+    search: function() {
+      FlowRouter.setQueryParams({
+        "back-route": "project-view",
+        route: "search-view"
+      });
+    },
+
+    share: function() {
+      var body = "",
+        torrent_selected = _torrent.find({
+          _id: {
+            $in: this.torrent_selected
+          }
+        }).fetch();
+
+      for (var A = 0; A < torrent_selected.length; A++) {
+        if (torrent_selected[A].link.length) {
+          body += "\n\nT" + (A + 1) + "\t\t" + torrent_selected[A].title + "\n\n";
+
+          for (var Z = 0; Z < torrent_selected[A].link.length; Z++) {
+            body += "\t\tL" + (Z + 1) + "\t\t" + torrent_selected[A].link[Z].url + "\n\n";
+          }
+        }
+      }
+
+      if (body != "") {
+        if (Meteor.isCordova) {
+          window.plugins.socialsharing.share("Hi\n\n" + (Meteor.user() ? Meteor.user().profile.name : "TorrentAlert") + " shared " + torrent_selected.length + " torrent" + body);
+        } else {
+          window.open("mailto:?subject=" + encodeURIComponent("TorrentAlert") + "&body=" + encodeURIComponent("Hi\n\n" + (Meteor.user() ? Meteor.user().profile.name : "TorrentAlert") + " shared " + torrent_selected.length + " torrent" + body), "_system");
+        }
+      } else {
+        document.querySelector("#polymer_toast").toast("empty body");
+      }
     },
 
     sort: function(A, Z) {
@@ -214,12 +373,9 @@
     },
 
     torrent_selected_change: function(change) {
-      if (change) {
-        this.$.fab.toggleClass("move-down", this.torrent_selected.length);
-        this.$.project_view_toolbar.toggleClass("selection", this.torrent_selected.length);
-
-        this.$.project_view_toolbar_title.textContent = (this.torrent_selected.length ? this.torrent_selected.length : "TorrentAlert");
-      }
+      this.$.fab.toggleClass("move-down", this.torrent_selected.length);
+      this.$.project_view_toolbar.toggleClass("selection", this.torrent_selected.length);
+      this.$.project_view_toolbar_title.textContent = (this.torrent_selected.length ? this.torrent_selected.length : "TorrentAlert");
     }
 
   });

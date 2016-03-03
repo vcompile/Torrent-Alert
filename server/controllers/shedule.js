@@ -2,8 +2,8 @@ Meteor.setInterval(function() {
   new fibers(function() {
     _project.find({
       worker: "schedule"
-    }).fetch().forEach(function(item) {
-      if (6 < moment.duration(moment().diff(moment(item.time))).asHours()) {
+    }).forEach(function(item) {
+      if (!(moment.duration(moment().diff(moment(item.time))).asHours() % 6)) {
         item.torrent.forEach(function(torrent_id) {
           var torrent = _torrent.findOne({
             _id: torrent_id
@@ -17,14 +17,14 @@ Meteor.setInterval(function() {
                 torrent: torrent_id
               }
             });
-          }
-        });
 
-        _project.update({
-          _id: item._id
-        }, {
-          $set: {
-            time: moment().format()
+            _torrent.update({
+              _id: torrent._id
+            }, {
+              $pull: {
+                project: item._id
+              }
+            });
           }
         });
 
@@ -44,4 +44,4 @@ Meteor.setInterval(function() {
       }
     });
   }).run();
-}, 1000 * 60 * 15);
+}, 1000 * 60 * 60);

@@ -28,9 +28,9 @@
   Polymer({
 
     clear_undo: function() {
-      $("inbox-item.undo").removeClass("undo");
+      $("torrent-item." + this.undo.torrent.join(", torrent-item.")).removeClass("undo");
 
-      this.set("undo", {});
+      this.undo = {};
 
       this.$.toast.hide();
     },
@@ -74,7 +74,9 @@
     toast_open: function() {
       if (document.querySelector(".menu-b")) {
         this.async(function() {
-          document.querySelector(".menu-b").translate3d(0, "-" + ($("#toast #label").height() + 32) + "px", 0);
+          for (A = 0; A < document.querySelectorAll(".menu-b").length; A++) {
+            document.querySelectorAll(".menu-b")[A].translate3d("0", "-" + ($("#toast #label").height() + 32) + "px", "0");
+          }
         }, 40);
       }
     },
@@ -87,18 +89,22 @@
               Meteor.call("remove_torrent", this.undo, function(error) {
                 if (error) {
                   console.log(error);
-                } else {
-                  $("inbox-item.undo").remove();
                 }
               });
+
+              this.undo = {};
             } else {
+              $("torrent-item." + this.torrent_selected.join(", torrent-item.")).removeClass("undo");
+
+              this.undo = {};
+
               document.querySelector("#polymer_toast").toast("server connection required");
             }
-
-            this.set("undo", {});
           }
 
-          document.querySelector(".menu-b").translate3d(0, 0, 0);
+          for (A = 0; A < document.querySelectorAll(".menu-b").length; A++) {
+            document.querySelectorAll(".menu-b")[A].translate3d("0", "0", "0");
+          }
         }
       }
     }

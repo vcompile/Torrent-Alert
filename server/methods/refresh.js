@@ -9,12 +9,14 @@ Meteor.methods({
     check(id, String);
 
     var row = _project.findOne({
-      _id: id
+      _id: id,
+      user: user._id
     });
 
     if (row) {
       _project.update({
-        _id: row._id
+        _id: row._id,
+        user: user._id
       }, {
         $set: {
           time: moment().format()
@@ -35,8 +37,8 @@ Meteor.methods({
         });
       }
 
-      return row;
-    } else throw new Meteor.Error(422, "itemNotFound");
+      return "refreshing";
+    } else return "itemNotFound";
   }
 
 });

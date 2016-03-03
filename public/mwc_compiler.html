@@ -658,7 +658,7 @@ return value != null ? value : undefined;
 }
 }
 });
-Polymer.version = '1.3.0';
+Polymer.version = '1.3.1';
 Polymer.Base._addFeature({
 _registerFeatures: function () {
 this._prepIs();
@@ -5675,7 +5675,8 @@ this._encapsulateStyle = !nativeShadow && Boolean(this._template);
 if (this._template) {
 this._styles = this._collectStyles();
 var cssText = styleTransformer.elementStyles(this);
-var needsStatic = this._needsStaticStyles(this._styles);
+this._prepStyleProperties();
+var needsStatic = this._styles.length && !this._needsStyleProperties();
 if (needsStatic || !nativeShadow) {
 cssText = needsStatic ? cssText : ' ';
 var style = styleUtil.applyCss(cssText, this.is, nativeShadow ? this._template.content : null);
@@ -5815,9 +5816,10 @@ return any;
 }
 },
 collectCssText: function (rule) {
-var cssText = rule.parsedCssText;
-cssText = cssText.replace(this.rx.BRACKETED, '').replace(this.rx.VAR_ASSIGN, '');
-return cssText;
+return this.collectConsumingCssText(rule.parsedCssText);
+},
+collectConsumingCssText: function (cssText) {
+return cssText.replace(this.rx.BRACKETED, '').replace(this.rx.VAR_ASSIGN, '');
 },
 collectPropertiesInCssText: function (cssText, props) {
 var m;
@@ -5972,7 +5974,7 @@ self._scopeSelector(rule, hostRx, hostSelector, element._scopeCssViaAttr, scopeS
 _elementKeyframeTransforms: function (element, scopeSelector) {
 var keyframesRules = element._styles._keyframes;
 var keyframeTransforms = {};
-if (!nativeShadow) {
+if (!nativeShadow && keyframesRules) {
 for (var i = 0, keyframesRule = keyframesRules[i]; i < keyframesRules.length; keyframesRule = keyframesRules[++i]) {
 this._scopeKeyframes(keyframesRule, scopeSelector);
 keyframeTransforms[keyframesRule.keyframesName] = this._keyframesRuleTransformer(keyframesRule);
@@ -6161,24 +6163,12 @@ return api;
 'use strict';
 var serializeValueToAttribute = Polymer.Base.serializeValueToAttribute;
 var propertyUtils = Polymer.StyleProperties;
-var styleUtil = Polymer.StyleUtil;
 var styleTransformer = Polymer.StyleTransformer;
 var styleDefaults = Polymer.StyleDefaults;
 var nativeShadow = Polymer.Settings.useNativeShadow;
 Polymer.Base._addFeature({
-_needsStaticStyles: function (styles) {
-var needsStatic;
-for (var i = 0, l = styles.length, css; i < l; i++) {
-css = styleUtil.parser._clean(styles[i].textContent);
-needsStatic = needsStatic || Boolean(css);
-if (css.match(propertyUtils.rx.MIXIN_MATCH) || css.match(propertyUtils.rx.VAR_MATCH)) {
-return false;
-}
-}
-return needsStatic;
-},
 _prepStyleProperties: function () {
-this._ownStylePropertyNames = this._styles ? propertyUtils.decorateStyles(this._styles) : null;
+this._ownStylePropertyNames = this._styles && this._styles.length ? propertyUtils.decorateStyles(this._styles) : null;
 },
 customStyle: null,
 getComputedStyleValue: function (property) {
@@ -6337,7 +6327,6 @@ this._prepIs();
 this._prepConstructor();
 this._prepTemplate();
 this._prepStyles();
-this._prepStyleProperties();
 this._prepAnnotations();
 this._prepEffects();
 this._prepBehaviors();
@@ -7533,7 +7522,13 @@ _template: null,
 created: function () {
 var self = this;
 Polymer.RenderStatus.whenReady(function () {
+if (document.readyState == 'loading') {
+document.addEventListener('DOMContentLoaded', function () {
 self._markImportsReady();
+});
+} else {
+self._markImportsReady();
+}
 });
 },
 _ensureReady: function () {
@@ -14349,83 +14344,6 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
 
 
 <script>
-
-  /** @polymerBehavior */
-  Polymer.PaperSpinnerBehavior = {
-
-    listeners: {
-      'animationend': '__reset',
-      'webkitAnimationEnd': '__reset'
-    },
-
-    properties: {
-      /**
-       * Displays the spinner.
-       */
-      active: {
-        type: Boolean,
-        value: false,
-        reflectToAttribute: true,
-        observer: '__activeChanged'
-      },
-
-      /**
-       * Alternative text content for accessibility support.
-       * If alt is present, it will add an aria-label whose content matches alt when active.
-       * If alt is not present, it will default to 'loading' as the alt value.
-       */
-      alt: {
-        type: String,
-        value: 'loading',
-        observer: '__altChanged'
-      },
-
-      __coolingDown: {
-        type: Boolean,
-        value: false
-      }
-    },
-
-    __computeContainerClasses: function(active, coolingDown) {
-      return [
-        active || coolingDown ? 'active' : '',
-        coolingDown ? 'cooldown' : ''
-      ].join(' ');
-    },
-
-    __activeChanged: function(active, old) {
-      this.__setAriaHidden(!active);
-      this.__coolingDown = !active && old;
-    },
-
-    __altChanged: function(alt) {
-      // user-provided `aria-label` takes precedence over prototype default
-      if (alt === this.getPropertyInfo('alt').value) {
-        this.alt = this.getAttribute('aria-label') || alt;
-      } else {
-        this.__setAriaHidden(alt==='');
-        this.setAttribute('aria-label', alt);
-      }
-    },
-
-    __setAriaHidden: function(hidden) {
-      var attr = 'aria-hidden';
-      if (hidden) {
-        this.setAttribute(attr, 'true');
-      } else {
-        this.removeAttribute(attr);
-      }
-    },
-
-    __reset: function() {
-      this.active = false;
-      this.__coolingDown = false;
-    }
-  };
-</script>
-
-
-<script>
   console.warn('This file is deprecated. Please use `iron-flex-layout/iron-flex-layout-classes.html`, and one of the specific dom-modules instead');
 </script>
 
@@ -20323,398 +20241,6 @@ mwcLayout = new PolymerLayout();
      */
   </script>
 </dom-module>
-<dom-module id="paper-spinner-styles" assetpath="/bower_components/paper-spinner/">
-  <template>
-    <style>
-      /*
-      /**************************/
-      /* STYLES FOR THE SPINNER */
-      /**************************/
-
-      /*
-       * Constants:
-       *      ARCSIZE     = 270 degrees (amount of circle the arc takes up)
-       *      ARCTIME     = 1333ms (time it takes to expand and contract arc)
-       *      ARCSTARTROT = 216 degrees (how much the start location of the arc
-       *                                should rotate each time, 216 gives us a
-       *                                5 pointed star shape (it's 360/5 * 3).
-       *                                For a 7 pointed star, we might do
-       *                                360/7 * 3 = 154.286)
-       *      CONTAINERWIDTH = 28px
-       *      SHRINK_TIME = 400ms
-       */
-
-      :host {
-        display: inline-block;
-        position: relative;
-        width: 28px; /* CONTAINERWIDTH */
-        height: 28px; /* CONTAINERWIDTH */
-      }
-
-      #spinnerContainer {
-        width: 100%;
-        height: 100%;
-
-        /* The spinner does not have any contents that would have to be
-         * flipped if the direction changes. Always use ltr so that the
-         * style works out correctly in both cases. */
-        direction: ltr;
-      }
-
-      #spinnerContainer.active {
-        /* duration: 360 * ARCTIME / (ARCSTARTROT + (360-ARCSIZE)) */
-        -webkit-animation: container-rotate 1568ms linear infinite;
-        animation: container-rotate 1568ms linear infinite;
-      }
-
-      @-webkit-keyframes container-rotate {
-        to { -webkit-transform: rotate(360deg) }
-      }
-
-      @keyframes container-rotate {
-        to { transform: rotate(360deg) }
-      }
-
-      .spinner-layer {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        opacity: 0;
-        white-space: nowrap;
-        border-color: var(--paper-spinner-color, --google-blue-500);
-      }
-
-      .layer-1 {
-        border-color: var(--paper-spinner-layer-1-color, --google-blue-500);
-      }
-
-      .layer-2 {
-        border-color: var(--paper-spinner-layer-2-color, --google-red-500);
-      }
-
-      .layer-3 {
-        border-color: var(--paper-spinner-layer-3-color, --google-yellow-500);
-      }
-
-      .layer-4 {
-        border-color: var(--paper-spinner-layer-4-color, --google-green-500);
-      }
-
-      /**
-       * IMPORTANT NOTE ABOUT CSS ANIMATION PROPERTIES (keanulee):
-       *
-       * iOS Safari (tested on iOS 8.1) does not handle animation-delay very well - it doesn't
-       * guarantee that the animation will start _exactly_ after that value. So we avoid using
-       * animation-delay and instead set custom keyframes for each color (as layer-2undant as it
-       * seems).
-       *
-       * We write out each animation in full (instead of separating animation-name,
-       * animation-duration, etc.) because under the polyfill, Safari does not recognize those
-       * specific properties properly, treats them as -webkit-animation, and overrides the
-       * other animation rules. See https://github.com/Polymer/platform/issues/53.
-       */
-      .active .spinner-layer {
-        /* durations: 4 * ARCTIME */
-        -webkit-animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
-        animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
-        opacity: 1;
-      }
-
-      .active .spinner-layer.layer-1 {
-        /* durations: 4 * ARCTIME */
-        -webkit-animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-1-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
-        animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-1-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
-      }
-
-      .active .spinner-layer.layer-2 {
-        /* durations: 4 * ARCTIME */
-        -webkit-animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-2-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
-        animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-2-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
-      }
-
-      .active .spinner-layer.layer-3 {
-        /* durations: 4 * ARCTIME */
-        -webkit-animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-3-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
-        animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-3-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
-      }
-
-      .active .spinner-layer.layer-4 {
-        /* durations: 4 * ARCTIME */
-        -webkit-animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-4-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
-        animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-4-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
-      }
-
-      @-webkit-keyframes fill-unfill-rotate {
-        12.5% { -webkit-transform: rotate(135deg);  } /* 0.5 * ARCSIZE */
-        25%   { -webkit-transform: rotate(270deg);  } /* 1   * ARCSIZE */
-        37.5% { -webkit-transform: rotate(405deg);  } /* 1.5 * ARCSIZE */
-        50%   { -webkit-transform: rotate(540deg);  } /* 2   * ARCSIZE */
-        62.5% { -webkit-transform: rotate(675deg);  } /* 2.5 * ARCSIZE */
-        75%   { -webkit-transform: rotate(810deg);  } /* 3   * ARCSIZE */
-        87.5% { -webkit-transform: rotate(945deg);  } /* 3.5 * ARCSIZE */
-        to    { -webkit-transform: rotate(1080deg); } /* 4   * ARCSIZE */
-      }
-
-      @keyframes fill-unfill-rotate {
-        12.5% { transform: rotate(135deg);  } /* 0.5 * ARCSIZE */
-        25%   { transform: rotate(270deg);  } /* 1   * ARCSIZE */
-        37.5% { transform: rotate(405deg);  } /* 1.5 * ARCSIZE */
-        50%   { transform: rotate(540deg);  } /* 2   * ARCSIZE */
-        62.5% { transform: rotate(675deg);  } /* 2.5 * ARCSIZE */
-        75%   { transform: rotate(810deg);  } /* 3   * ARCSIZE */
-        87.5% { transform: rotate(945deg);  } /* 3.5 * ARCSIZE */
-        to    { transform: rotate(1080deg); } /* 4   * ARCSIZE */
-      }
-
-      /**
-       * HACK: Even though the intention is to have the current .spinner-layer at
-       * `opacity: 1`, we set it to `opacity: 0.99` instead since this forces Chrome
-       * to do proper subpixel rendering for the elements being animated. This is
-       * especially visible in Chrome 39 on Ubuntu 14.04. See:
-       *
-       * - https://github.com/Polymer/paper-spinner/issues/9
-       * - https://code.google.com/p/chromium/issues/detail?id=436255
-       */
-      @-webkit-keyframes layer-1-fade-in-out {
-        from { opacity: 0.99; }
-        25% { opacity: 0.99; }
-        26% { opacity: 0; }
-        89% { opacity: 0; }
-        90% { opacity: 0.99; }
-        100% { opacity: 0.99; }
-      }
-
-      @keyframes layer-1-fade-in-out {
-        from { opacity: 0.99; }
-        25% { opacity: 0.99; }
-        26% { opacity: 0; }
-        89% { opacity: 0; }
-        90% { opacity: 0.99; }
-        100% { opacity: 0.99; }
-      }
-
-      @-webkit-keyframes layer-2-fade-in-out {
-        from { opacity: 0; }
-        15% { opacity: 0; }
-        25% { opacity: 0.99; }
-        50% { opacity: 0.99; }
-        51% { opacity: 0; }
-      }
-
-      @keyframes layer-2-fade-in-out {
-        from { opacity: 0; }
-        15% { opacity: 0; }
-        25% { opacity: 0.99; }
-        50% { opacity: 0.99; }
-        51% { opacity: 0; }
-      }
-
-      @-webkit-keyframes layer-3-fade-in-out {
-        from { opacity: 0; }
-        40% { opacity: 0; }
-        50% { opacity: 0.99; }
-        75% { opacity: 0.99; }
-        76% { opacity: 0; }
-      }
-
-      @keyframes layer-3-fade-in-out {
-        from { opacity: 0; }
-        40% { opacity: 0; }
-        50% { opacity: 0.99; }
-        75% { opacity: 0.99; }
-        76% { opacity: 0; }
-      }
-
-      @-webkit-keyframes layer-4-fade-in-out {
-        from { opacity: 0; }
-        65% { opacity: 0; }
-        75% { opacity: 0.99; }
-        90% { opacity: 0.99; }
-        100% { opacity: 0; }
-      }
-
-      @keyframes layer-4-fade-in-out {
-        from { opacity: 0; }
-        65% { opacity: 0; }
-        75% { opacity: 0.99; }
-        90% { opacity: 0.99; }
-        100% { opacity: 0; }
-      }
-
-      /**
-       * Patch the gap that appear between the two adjacent div.circle-clipper while the
-       * spinner is rotating (appears on Chrome 38, Safari 7.1, and IE 11).
-       *
-       * Update: the gap no longer appears on Chrome when .spinner-layer's opacity is 0.99,
-       * but still does on Safari and IE.
-       */
-      .gap-patch {
-        position: absolute;
-        box-sizing: border-box;
-        top: 0;
-        left: 45%;
-        width: 10%;
-        height: 100%;
-        overflow: hidden;
-        border-color: inherit;
-      }
-
-      .gap-patch .circle {
-        width: 1000%;
-        left: -450%;
-      }
-
-      .circle-clipper {
-        display: inline-block;
-        position: relative;
-        width: 50%;
-        height: 100%;
-        overflow: hidden;
-        border-color: inherit;
-      }
-
-      .circle-clipper .circle {
-        width: 200%;
-      }
-
-      .circle {
-        box-sizing: border-box;
-        height: 100%;
-        border-width: var(--paper-spinner-stroke-width, 3px); /* STROKEWIDTH */
-        border-style: solid;
-        border-color: inherit;
-        border-bottom-color: transparent !important;
-        border-radius: 50%;
-        -webkit-animation: none;
-        animation: none;
-
-        @apply(--layout-fit);
-      }
-
-      .circle-clipper.left .circle {
-        border-right-color: transparent !important;
-        -webkit-transform: rotate(129deg);
-        transform: rotate(129deg);
-      }
-
-      .circle-clipper.right .circle {
-        left: -100%;
-        border-left-color: transparent !important;
-        -webkit-transform: rotate(-129deg);
-        transform: rotate(-129deg);
-      }
-
-      .active .circle-clipper.left .circle {
-        /* duration: ARCTIME */
-        -webkit-animation: left-spin 1333ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
-        animation: left-spin 1333ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
-      }
-
-      .active .circle-clipper.right .circle {
-        /* duration: ARCTIME */
-        -webkit-animation: right-spin 1333ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
-        animation: right-spin 1333ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
-      }
-
-      @-webkit-keyframes left-spin {
-        from { -webkit-transform: rotate(130deg); }
-        50% { -webkit-transform: rotate(-5deg); }
-        to { -webkit-transform: rotate(130deg); }
-      }
-
-      @keyframes left-spin {
-        from { transform: rotate(130deg); }
-        50% { transform: rotate(-5deg); }
-        to { transform: rotate(130deg); }
-      }
-
-      @-webkit-keyframes right-spin {
-        from { -webkit-transform: rotate(-130deg); }
-        50% { -webkit-transform: rotate(5deg); }
-        to { -webkit-transform: rotate(-130deg); }
-      }
-
-      @keyframes right-spin {
-        from { transform: rotate(-130deg); }
-        50% { transform: rotate(5deg); }
-        to { transform: rotate(-130deg); }
-      }
-
-      #spinnerContainer.cooldown {
-        /* duration: SHRINK_TIME */
-        -webkit-animation: container-rotate 1568ms linear infinite, fade-out 400ms cubic-bezier(0.4, 0.0, 0.2, 1);
-        animation: container-rotate 1568ms linear infinite, fade-out 400ms cubic-bezier(0.4, 0.0, 0.2, 1);
-      }
-
-      @-webkit-keyframes fade-out {
-        from { opacity: 0.99; }
-        to { opacity: 0; }
-      }
-
-      @keyframes fade-out {
-        from { opacity: 0.99; }
-        to { opacity: 0; }
-      }
-    </style>
-  </template>
-</dom-module>
-<dom-module id="paper-spinner" assetpath="/bower_components/paper-spinner/">
-  <template>
-    <style include="paper-spinner-styles"></style>
-
-    <div id="spinnerContainer" class-name="[[__computeContainerClasses(active, __coolingDown)]]">
-      <div class="spinner-layer layer-1">
-        <div class="circle-clipper left">
-          <div class="circle"></div>
-        </div><div class="gap-patch">
-          <div class="circle"></div>
-        </div><div class="circle-clipper right">
-          <div class="circle"></div>
-        </div>
-      </div>
-
-      <div class="spinner-layer layer-2">
-        <div class="circle-clipper left">
-          <div class="circle"></div>
-        </div><div class="gap-patch">
-          <div class="circle"></div>
-        </div><div class="circle-clipper right">
-          <div class="circle"></div>
-        </div>
-      </div>
-
-      <div class="spinner-layer layer-3">
-        <div class="circle-clipper left">
-          <div class="circle"></div>
-        </div><div class="gap-patch">
-          <div class="circle"></div>
-        </div><div class="circle-clipper right">
-          <div class="circle"></div>
-        </div>
-      </div>
-
-      <div class="spinner-layer layer-4">
-        <div class="circle-clipper left">
-          <div class="circle"></div>
-        </div><div class="gap-patch">
-          <div class="circle"></div>
-        </div><div class="circle-clipper right">
-          <div class="circle"></div>
-        </div>
-      </div>
-    </div>
-  </template>
-
-  <script>
-    Polymer({
-      is: 'paper-spinner',
-
-      behaviors: [
-        Polymer.PaperSpinnerBehavior
-      ]
-    });
-  </script>
-</dom-module>
 <dom-module id="iron-a11y-announcer" assetpath="/bower_components/iron-a11y-announcer/">
   <style>
     :host {
@@ -21631,8 +21157,6 @@ mwcLayout = new PolymerLayout();
               }
             }
           });
-
-          this.back();
         } else {
           document.querySelector("#polymer_toast").toast("empty keyword");
         }
@@ -21677,6 +21201,274 @@ mwcLayout = new PolymerLayout();
         type: Number,
         value: 6
       }
+    }
+
+  });
+  </script>
+
+</dom-module>
+<dom-module id="favorite-view" assetpath="/linto/">
+
+  <style>
+  paper-fab {
+    --paper-fab-background: var(--paper-red-500);
+    --paper-fab-keyboard-focus-background: var(--paper-red-700);
+  }
+  
+  paper-toolbar {
+    --paper-toolbar-background: var(--paper-blue-700);
+    --paper-toolbar-color: white;
+  }
+  
+  paper-toolbar paper-icon-button {
+    margin: 0!important;
+  }
+  
+  paper-toolbar paper-icon-button[icon="arrow-back"] {
+    transform: translateX(-42px);
+  }
+  
+  paper-toolbar.selection paper-icon-button[icon="arrow-back"] {
+    transform: translateX(0);
+  }
+  
+  paper-toolbar .selection-hidden {
+    padding: 8px;
+    transform: rotateY(0);
+    transition: transform 400ms ease-in-out;
+    visibility: visible;
+    width: 40px;
+    will-change: transform;
+  }
+  
+  paper-toolbar.selection .selection-hidden {
+    padding: 0;
+    transform: rotateY(90deg);
+    visibility: hidden;
+    width: 0;
+  }
+  
+  paper-toolbar.selection .selection-visible {
+    padding: 8px;
+    transform: rotateY(0);
+    transition: transform 400ms ease-in-out;
+    visibility: visible;
+    width: 40px;
+    will-change: transform;
+  }
+  
+  paper-toolbar .selection-visible {
+    padding: 0;
+    transform: rotateY(90deg);
+    visibility: hidden;
+    width: 0;
+  }
+  
+  paper-toolbar .title {
+    padding: 0 8px;
+  }
+  
+  .body1 {
+    @apply(--paper-font-body1);
+    color: #757575;
+  }
+  
+  .footer-li {
+    min-height: 88px;
+  }
+  
+  .menu-b {
+    bottom: 16px;
+    position: fixed;
+    right: 16px;
+    transition: transform 0.2s ease-in-out;
+    will-change: transform;
+  }
+  
+  .menu-b.move-down {
+    transform: translate3d(0, 88px, 0)!important;
+  }
+  
+  .subhead {
+    @apply(--paper-font-subhead);
+  }
+  
+  .title-li,
+  .title-li > div {
+    padding: 8px;
+  }
+  </style>
+
+  <template>
+    <iron-localstorage name="favorite" value="[[mwcData.favorite]]"></iron-localstorage>
+
+    <paper-header-panel>
+      <paper-toolbar id="favorite_view_toolbar">
+        <paper-icon-button class="selection-visible" icon="arrow-back" on-click="clear_torrent_selection"></paper-icon-button>
+        <paper-icon-button class="selection-hidden" icon="menu" on-click="menu_toggle" paper-drawer-toggle=""></paper-icon-button>
+
+        <div class="title" id="favorite_view_toolbar_title">TorrentAlert</div>
+
+        <paper-icon-button class="selection-visible" icon="delete" onclick="document.querySelector('#remove_prompt').open();"></paper-icon-button>
+        <paper-icon-button class="selection-visible" icon="social:share" on-click="share"></paper-icon-button>
+        <paper-icon-button class="selection-hidden" icon="search" on-click="search"></paper-icon-button>
+      </paper-toolbar>
+
+      <div class="center-justified horizontal layout">
+        <div class="li">
+          <div class="center horizontal layout title-li">
+            <div class="flex subhead">My Favorite [[return_favorite_count(mwcData.favorite.length)]]</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="center-justified horizontal layout" hidden="[[mwcData.favorite.length]]">
+        <div class="li">
+          <div class="center-justified cursor-d horizontal layout title-li">
+            <div class="subhead" style="color: #AAA;">noItemFound</div>
+          </div>
+        </div>
+      </div>
+
+      <iron-selector activate-event="click" attr-for-selected="item" multi="" selected-attribute="selected" selected-values="{{torrent_selected}}">
+        <template filter="filter_url" is="dom-repeat" items="[[mwcData.favorite]]" sort="sort">
+          <torrent-item class$="[[item._id]]" item="[[item]]"></torrent-item>
+        </template>
+      </iron-selector>
+
+      <div class="footer-li"></div>
+    </paper-header-panel>
+
+    <paper-fab class="menu-b" id="fab" icon="add" on-click="add_project"></paper-fab>
+
+    <paper-dialog id="remove_prompt">
+      <div class="subhead">Are you sure to delete [[torrent_selected.length]] favorite ?</div>
+
+      <div class="buttons">
+        <paper-button onclick="document.querySelector('#remove_prompt').close();">
+          <iron-icon icon="close"></iron-icon> cancel
+        </paper-button>
+
+        <paper-button on-click="remove_ok">
+          <iron-icon icon="check"></iron-icon> ok
+        </paper-button>
+      </div>
+    </paper-dialog>
+  </template>
+
+  <script>
+  Polymer({
+
+    add_project: function() {
+      FlowRouter.setQueryParams({
+        "back-route": "favorite",
+        route: "add-project"
+      });
+    },
+
+    behaviors: [mwcMixin],
+
+    clear_torrent_selection: function() {
+      this.torrent_selected = [];
+    },
+
+    filter_url: function(torrent) {
+      return (torrent.url);
+    },
+
+    getMeteorData: function() {
+      Meteor.subscribe("torrent", {
+        field: "torrent",
+        id: (Meteor.user() ? Meteor.user().profile.favorite : [])
+      });
+
+      return {
+        favorite: _torrent.find({
+          _id: {
+            $in: Meteor.user().profile.favorite
+          }
+        }).fetch()
+      };
+    },
+
+    is: "favorite-view",
+
+    menu_toggle: function() {
+      document.querySelector("#old_layout").menu_toggle();
+    },
+
+    observers: [
+      "torrent_selected_change(torrent_selected.splices)"
+    ],
+
+    properties: {
+      torrent_selected: {
+        type: Array,
+        value: function() {
+          return [];
+        }
+      }
+    },
+
+    remove_ok: function() {
+      if (Meteor.status().connected) {
+        Meteor.call("remove_favorite", _.map(this.torrent_selected, function(A) {
+          return A._id;
+        }), function(error, response) {
+          document.querySelector("#polymer_toast").toast(error ? error.reason : response);
+        });
+
+        this.clear_torrent_selection();
+      } else {
+        document.querySelector("#polymer_toast").toast("server connection required");
+      }
+
+      this.$.remove_prompt.close();
+    },
+
+    return_favorite_count: function(count) {
+      return (count ? "#" + count : "List");
+    },
+
+    search: function() {
+      FlowRouter.setQueryParams({
+        "back-route": "favorite",
+        route: "search-view"
+      });
+    },
+
+    share: function() {
+      var body = "";
+
+      for (var A = 0; A < this.torrent_selected.length; A++) {
+        if (this.torrent_selected[A].link.length) {
+          body += "\n\nT" + (A + 1) + "\t\t" + this.torrent_selected[A].title + "\n\n";
+
+          for (var Z = 0; Z < this.torrent_selected[A].link.length; Z++) {
+            body += "\t\tL" + (Z + 1) + "\t\t" + this.torrent_selected[A].link[Z].url + "\n\n";
+          }
+        }
+      }
+
+      if (body != "") {
+        if (Meteor.isCordova) {
+          window.plugins.socialsharing.share("Hi\n\n" + (Meteor.user() ? Meteor.user().profile.name : "TorrentAlert") + " shared " + this.torrent_selected.length + " torrent" + body);
+        } else {
+          window.open("mailto:?subject=" + encodeURIComponent("TorrentAlert") + "&body=" + encodeURIComponent("Hi\n\n" + (Meteor.user() ? Meteor.user().profile.name : "TorrentAlert") + " shared " + this.torrent_selected.length + " torrent" + body), "_system");
+        }
+      } else {
+        document.querySelector("#polymer_toast").toast("empty body");
+      }
+    },
+
+    sort: function(A, Z) {
+      return (parseInt(moment(Z.time).format("x")) - parseInt(moment(A.time).format("x")));
+    },
+
+    torrent_selected_change: function(change) {
+      this.$.fab.toggleClass("move-down", this.torrent_selected.length);
+      this.$.favorite_view_toolbar.toggleClass("selection", this.torrent_selected.length);
+      this.$.favorite_view_toolbar_title.textContent = (this.torrent_selected.length ? this.torrent_selected.length : "TorrentAlert");
     }
 
   });
@@ -21751,12 +21543,10 @@ mwcLayout = new PolymerLayout();
           };
         }
       },
-
       ripple_class: {
         type: String,
         value: "white"
       },
-
       sharedElements: {
         type: Object,
         value: function() {
@@ -21840,7 +21630,7 @@ mwcLayout = new PolymerLayout();
   </style>
 
   <template>
-    <div class="center-center fit layout vertical" style="background: black; opacity: 0.4; z-index: 1000;">
+    <div class="center-center fit layout vertical" style="background: black; opacity: 0.5; z-index: 1000;">
       <div class="la-line-scale-pulse-out-rapid la-2x">
         <div></div>
         <div></div>
@@ -21903,9 +21693,9 @@ mwcLayout = new PolymerLayout();
   Polymer({
 
     clear_undo: function() {
-      $("inbox-item.undo").removeClass("undo");
+      $("torrent-item." + this.undo.torrent.join(", torrent-item.")).removeClass("undo");
 
-      this.set("undo", {});
+      this.undo = {};
 
       this.$.toast.hide();
     },
@@ -21949,7 +21739,9 @@ mwcLayout = new PolymerLayout();
     toast_open: function() {
       if (document.querySelector(".menu-b")) {
         this.async(function() {
-          document.querySelector(".menu-b").translate3d(0, "-" + ($("#toast #label").height() + 32) + "px", 0);
+          for (A = 0; A < document.querySelectorAll(".menu-b").length; A++) {
+            document.querySelectorAll(".menu-b")[A].translate3d("0", "-" + ($("#toast #label").height() + 32) + "px", "0");
+          }
         }, 40);
       }
     },
@@ -21962,18 +21754,22 @@ mwcLayout = new PolymerLayout();
               Meteor.call("remove_torrent", this.undo, function(error) {
                 if (error) {
                   console.log(error);
-                } else {
-                  $("inbox-item.undo").remove();
                 }
               });
+
+              this.undo = {};
             } else {
+              $("torrent-item." + this.torrent_selected.join(", torrent-item.")).removeClass("undo");
+
+              this.undo = {};
+
               document.querySelector("#polymer_toast").toast("server connection required");
             }
-
-            this.set("undo", {});
           }
 
-          document.querySelector(".menu-b").translate3d(0, 0, 0);
+          for (A = 0; A < document.querySelectorAll(".menu-b").length; A++) {
+            document.querySelectorAll(".menu-b")[A].translate3d("0", "0", "0");
+          }
         }
       }
     }
@@ -22117,10 +21913,6 @@ mwcLayout = new PolymerLayout();
     z-index: 1;
   }
   
-  paper-icon-item {
-    border-bottom: 1px solid #EEE;
-  }
-  
   paper-slider {
     max-width: 50%;
   }
@@ -22128,6 +21920,14 @@ mwcLayout = new PolymerLayout();
   .body1 {
     @apply(--paper-font-body1);
     color: #757575;
+  }
+  
+  .border-bottom {
+    border-bottom: 1px solid #EEE;
+  }
+  
+  .border-top {
+    border-top: 1px solid #EEE;
   }
   
   .divider {
@@ -22148,11 +21948,10 @@ mwcLayout = new PolymerLayout();
   <template>
 
     <paper-drawer-panel id="paper_drawer_panel">
-
       <paper-header-panel drawer="">
         <div class="fit layout vertical">
           <template if="[[user._id]]" is="dom-if">
-            <paper-icon-item class="cursor-p" onclick="document.querySelector('#user_prompt').open();">
+            <paper-icon-item class="border-bottom cursor-p" onclick="document.querySelector('#user_prompt').open();">
               <selectable-icon icon_img_src="[[user.profile.picture]]" item-icon=""></selectable-icon>
 
               <paper-item-body two-line="">
@@ -22166,19 +21965,11 @@ mwcLayout = new PolymerLayout();
 
           <div class="flex" style="overflow: auto;">
             <iron-selector on-iron-activate="menu_opt" selected-attribute="selected">
-              <paper-icon-item class="cursor-p" data-id="trending">
-                <selectable-icon icon_class="cyan-700" icon_text="@" item-icon=""></selectable-icon>
-
-                <paper-item-body two-line="">
-                  <div>Trending</div>
-                  <div secondary="">[[return_time(trending.time)]]</div>
-                </paper-item-body>
-
-                <div class="subhead">[[return_text(trending.keyword.length)]]</div>
-              </paper-icon-item>
+              <paper-item class="blue-700 border-bottom cursor-p" data-id="favorite">Favorite</paper-item>
+              <paper-item class="cyan-700 border-bottom cursor-p" data-id="trending">Trending</paper-item>
 
               <template is="dom-repeat" items="[[mwcData.project]]">
-                <paper-icon-item class="cursor-p" data-id$="[[item._id]]">
+                <paper-icon-item class="border-bottom cursor-p" data-id$="[[item._id]]">
                   <selectable-icon icon_class="[[return_class(item.keyword)]]" icon_text="[[return_icon_text(item.keyword)]]" item-icon=""></selectable-icon>
 
                   <paper-item-body two-line="">
@@ -22192,19 +21983,18 @@ mwcLayout = new PolymerLayout();
             </iron-selector>
           </div>
 
-          <paper-item class="cursor-p" onclick="window.open('https://github.com/HedCET/TorrentAlert','_system');" style="border-top: 1px solid #EEE;">About TorrentAlert</paper-item>
+          <paper-item class="border-top cursor-p" onclick="window.open('https://github.com/HedCET/TorrentAlert','_system');">About TorrentAlert</paper-item>
         </div>
       </paper-header-panel>
 
       <neon-animated-pages attr-for-selected="data-page" class="fit" main="" selected="[[selected]]">
         <add-project data-page="add-project" id="add_project"></add-project>
-        <bookmark-view data-page="bookmark-view" id="bookmark_view"></bookmark-view>
+        <favorite-view data-page="favorite-view" id="favorite_view"></favorite-view>
         <project-view data-page="project-view" id="project_view"></project-view>
-        <searchbar-view data-page="searchbar-view" id="searchbar_view"></searchbar-view>
+        <search-view data-page="search-view" id="search_view"></search-view>
         <torrent-view data-page="torrent-view" id="torrent_view"></torrent-view>
         <trending-view data-page="trending-view" id="trending_view"></trending-view>
       </neon-animated-pages>
-
     </paper-drawer-panel>
 
     <paper-dialog id="user_prompt">
@@ -22264,8 +22054,8 @@ mwcLayout = new PolymerLayout();
       this.$.paper_drawer_panel.closeDrawer();
 
       FlowRouter.setQueryParams({
-        project: (d.item.dataset.id == "trending" ? null : d.item.dataset.id),
-        route: (d.item.dataset.id == "trending" ? null : "project-view")
+        project: (d.item.dataset.id == "favorite" || d.item.dataset.id == "trending" ? null : d.item.dataset.id),
+        route: (d.item.dataset.id == "favorite" || d.item.dataset.id == "trending" ? d.item.dataset.id : "project-view")
       });
     },
 
@@ -22327,6 +22117,16 @@ mwcLayout = new PolymerLayout();
 <dom-module id="project-view" assetpath="/linto/">
 
   <style>
+  paper-button {
+    margin: 0;
+    min-width: 50%;
+    padding: 16px;
+  }
+  
+  paper-dialog {
+    width: 320px;
+  }
+  
   paper-fab {
     --paper-fab-background: var(--paper-red-500);
     --paper-fab-keyboard-focus-background: var(--paper-red-700);
@@ -22428,10 +22228,10 @@ mwcLayout = new PolymerLayout();
 
         <div class="title" id="project_view_toolbar_title">TorrentAlert</div>
 
-        <paper-icon-button class="selection-visible" icon="bookmark-border" on-click="bookmark"></paper-icon-button>
+        <paper-icon-button class="selection-visible" icon="favorite-border" on-click="favorite"></paper-icon-button>
         <paper-icon-button class="selection-visible" icon="delete" on-click="remove_torrent"></paper-icon-button>
         <paper-icon-button class="selection-visible" icon="social:share" on-click="share"></paper-icon-button>
-        <paper-icon-button class="selection-hidden" icon="search" on-click="searchbar"></paper-icon-button>
+        <paper-icon-button class="selection-hidden" icon="search" on-click="search"></paper-icon-button>
       </paper-toolbar>
 
       <div class="center-justified horizontal layout">
@@ -22440,8 +22240,8 @@ mwcLayout = new PolymerLayout();
             <div class="flex subhead">[[mwcData.project.keyword]]</div>
 
             <paper-icon-button icon="refresh" on-click="refresh"></paper-icon-button>
-            <paper-icon-button icon="alarm-add" hidden="[[!is_search(mwcData.project.worker)]]" on-click="schedule"></paper-icon-button>
-            <paper-icon-button icon="close" on-click="remove_project"></paper-icon-button>
+            <paper-icon-button icon="alarm-add" hidden="[[!is_search(mwcData.project.worker)]]" onclick="document.querySelector('#schedule_prompt').open();"></paper-icon-button>
+            <paper-icon-button icon="close" onclick="document.querySelector('#remove_prompt').open();"></paper-icon-button>
           </div>
         </div>
       </div>
@@ -22449,7 +22249,7 @@ mwcLayout = new PolymerLayout();
       <div class="center-justified horizontal layout">
         <div class="li">
           <div style="padding: 0 4px;">
-            <paper-progress id="project_progress" indeterminate=""></paper-progress>
+            <paper-progress hidden="[[!mwcData.worker.length]]" indeterminate="[[!mwcData.torrent.length]]" max="50" min="10" value="[[return_progress(mwcData.worker.length)]]"></paper-progress>
           </div>
         </div>
       </div>
@@ -22457,14 +22257,14 @@ mwcLayout = new PolymerLayout();
       <div class="center-justified horizontal layout" hidden="[[mwcData.torrent.length]]">
         <div class="li">
           <div class="center-justified cursor-d horizontal layout title-li">
-            <div class="subhead" style="color: #AAA;">noTorrentFoundNow / searching ..</div>
+            <div class="subhead" style="color: #AAA;">noItemFoundNow / searching ..</div>
           </div>
         </div>
       </div>
 
-      <iron-selector activate-event="click" attr-for-selected="item" multi="" selected-attribute="selected" selected-values="{{torrent_selected}}">
+      <iron-selector activate-event="click" attr-for-selected="data-id" multi="" selected-attribute="selected" selected-values="{{torrent_selected}}">
         <template filter="filter_url" is="dom-repeat" items="[[mwcData.torrent]]" sort="sort">
-          <torrent-item item="[[item]]"></torrent-item>
+          <torrent-item class$="[[item._id]]" data-id$="[[item._id]]" item="[[item]]"></torrent-item>
         </template>
       </iron-selector>
 
@@ -22472,6 +22272,41 @@ mwcLayout = new PolymerLayout();
     </paper-header-panel>
 
     <paper-fab class="menu-b" id="fab" icon="add" on-click="add_project"></paper-fab>
+
+    <paper-dialog id="remove_prompt">
+      <div class="subhead">Are you sure to delete this item ?</div>
+
+      <div class="buttons">
+        <paper-button onclick="document.querySelector('#remove_prompt').close();">
+          <iron-icon icon="close"></iron-icon> cancel
+        </paper-button>
+
+        <paper-button on-click="remove_ok">
+          <iron-icon icon="check"></iron-icon> ok
+        </paper-button>
+      </div>
+    </paper-dialog>
+
+    <paper-dialog id="schedule_prompt">
+      <div class="layout vertical">
+        <div class="subhead">Are you sure to schedule this item ?</div>
+
+        <div class="center horizontal layout">
+          <div class="body1 flex">schedule / day</div>
+          <paper-slider disabled="" editable="" max="96" min="1" value="4"></paper-slider>
+        </div>
+      </div>
+
+      <div class="buttons">
+        <paper-button onclick="document.querySelector('#schedule_prompt').close();">
+          <iron-icon icon="close"></iron-icon> cancel
+        </paper-button>
+
+        <paper-button on-click="schedule_ok">
+          <iron-icon icon="check"></iron-icon> ok
+        </paper-button>
+      </div>
+    </paper-dialog>
   </template>
 
   <script>
@@ -22486,6 +22321,22 @@ mwcLayout = new PolymerLayout();
 
     behaviors: [mwcMixin],
 
+    clear_torrent_selection: function() {
+      this.torrent_selected = [];
+    },
+
+    favorite: function() {
+      if (Meteor.status().connected) {
+        Meteor.call("insert_favorite", this.torrent_selected, function(error, response) {
+          document.querySelector("#polymer_toast").toast(error ? error.reason : response);
+        });
+
+        this.clear_torrent_selection();
+      } else {
+        document.querySelector("#polymer_toast").toast("server connection required");
+      }
+    },
+
     filter_url: function(torrent) {
       return (torrent.url);
     },
@@ -22493,16 +22344,17 @@ mwcLayout = new PolymerLayout();
     getMeteorData: function() {
       Meteor.subscribe("torrent", {
         field: "project",
-        id: FlowRouter.getQueryParam("project")
+        id: [FlowRouter.getQueryParam("project") ? FlowRouter.getQueryParam("project") : "#"]
       });
-      Meteor.subscribe("worker", FlowRouter.getQueryParam("project"));
+
+      Meteor.subscribe("worker", (FlowRouter.getQueryParam("project") ? FlowRouter.getQueryParam("project") : "#"));
 
       return {
         project: _project.findOne({
-          _id: FlowRouter.getQueryParam("project")
+          _id: (FlowRouter.getQueryParam("project") ? FlowRouter.getQueryParam("project") : "#")
         }),
         torrent: _torrent.find({
-          project: FlowRouter.getQueryParam("project")
+          project: (FlowRouter.getQueryParam("project") ? FlowRouter.getQueryParam("project") : "#")
         }).fetch(),
         worker: _worker.find().fetch()
       };
@@ -22531,8 +22383,105 @@ mwcLayout = new PolymerLayout();
       }
     },
 
+    refresh: function() {
+      if (Meteor.status().connected) {
+        Meteor.call("refresh", this.mwcData.project._id, function(error, response) {
+          document.querySelector("#polymer_toast").toast(error ? error.reason : response);
+        });
+      } else {
+        document.querySelector("#polymer_toast").toast("server connection required");
+      }
+    },
+
+    remove_ok: function() {
+      if (Meteor.status().connected) {
+        Meteor.call("remove_project", this.mwcData.project._id, function(error, response) {
+          if (error) {
+            document.querySelector("#polymer_toast").toast(error.reason);
+          } else {
+            document.querySelector("#polymer_toast").toast(response);
+
+            FlowRouter.setQueryParams({
+              "back-route": null,
+              project: null,
+              route: null,
+              torrent: null
+            });
+          }
+        });
+      } else {
+        document.querySelector("#polymer_toast").toast("server connection required");
+      }
+
+      this.$.remove_prompt.close();
+    },
+
+    remove_torrent: function() {
+      $("torrent-item." + this.torrent_selected.join(", torrent-item.")).addClass("undo");
+
+      document.querySelector("#polymer_toast").undo = {
+        torrent: this.torrent_selected
+      };
+
+      document.querySelector("#polymer_toast").toast(this.torrent_selected.length + " torrent removed");
+
+      this.clear_torrent_selection();
+    },
+
     return_class: function(text) {
       return polymer_color(text ? text : "#");
+    },
+
+    return_progress: function(count) {
+      return (50 - parseInt(count));
+    },
+
+    schedule_ok: function(e) {
+      if (Meteor.status().connected) {
+        Meteor.call("schedule_project", this.mwcData.project._id, function(error, response) {
+          document.querySelector("#polymer_toast").toast(error ? error.reason : response);
+        });
+      } else {
+        document.querySelector("#polymer_toast").toast("server connection required");
+      }
+
+      this.$.schedule_prompt.close();
+    },
+
+    search: function() {
+      FlowRouter.setQueryParams({
+        "back-route": "project-view",
+        route: "search-view"
+      });
+    },
+
+    share: function() {
+      var body = "",
+        torrent_selected = _torrent.find({
+          _id: {
+            $in: this.torrent_selected
+          }
+        }).fetch();
+
+      for (var A = 0; A < torrent_selected.length; A++) {
+        if (torrent_selected[A].link.length) {
+          body += "\n\nT" + (A + 1) + "\t\t" + torrent_selected[A].title + "\n\n";
+
+          for (var Z = 0; Z < torrent_selected[A].link.length; Z++) {
+            body += "\t\tL" + (Z + 1) + "\t\t" + torrent_selected[A].link[Z].url + "\n\n";
+          }
+        }
+      }
+
+      if (body != "") {
+        if (Meteor.isCordova) {
+          window.plugins.socialsharing.share("Hi\n\n" + (Meteor.user() ? Meteor.user().profile.name : "TorrentAlert") + " shared " + torrent_selected.length + " torrent" + body);
+        } else {
+          window.open("mailto:?subject=" + encodeURIComponent("TorrentAlert") + "&body=" + encodeURIComponent("Hi\n\n" + (Meteor.user() ? Meteor.user().profile.name : "TorrentAlert") + " shared " + torrent_selected.length + " torrent" + body), "_system");
+        }
+      } else {
+        document.querySelector("#polymer_toast").toast("empty body");
+      }
     },
 
     sort: function(A, Z) {
@@ -22540,12 +22489,9 @@ mwcLayout = new PolymerLayout();
     },
 
     torrent_selected_change: function(change) {
-      if (change) {
-        this.$.fab.toggleClass("move-down", this.torrent_selected.length);
-        this.$.project_view_toolbar.toggleClass("selection", this.torrent_selected.length);
-
-        this.$.project_view_toolbar_title.textContent = (this.torrent_selected.length ? this.torrent_selected.length : "TorrentAlert");
-      }
+      this.$.fab.toggleClass("move-down", this.torrent_selected.length);
+      this.$.project_view_toolbar.toggleClass("selection", this.torrent_selected.length);
+      this.$.project_view_toolbar_title.textContent = (this.torrent_selected.length ? this.torrent_selected.length : "TorrentAlert");
     }
 
   });
@@ -22694,7 +22640,7 @@ mwcLayout = new PolymerLayout();
   </style>
 
   <template>
-    <iron-localstorage name="proxy" on-iron-localstorage-load-empty="initialize_proxy" value="{{proxy}}"></iron-localstorage>
+    <iron-localstorage name="proxy" on-iron-localstorage-load-empty="initialize_proxy" value="[[proxy]]"></iron-localstorage>
 
     <paper-header-panel style="background: #EEE;">
       <div class="center-justified horizontal layout">
@@ -22760,7 +22706,7 @@ mwcLayout = new PolymerLayout();
     getMeteorData: function() {
       Meteor.subscribe("torrent", {
         field: "torrent",
-        id: FlowRouter.getQueryParam("torrent")
+        id: [FlowRouter.getQueryParam("torrent") ? FlowRouter.getQueryParam("torrent") : "#"]
       });
 
       return {
@@ -22865,13 +22811,13 @@ mwcLayout = new PolymerLayout();
   </style>
 
   <template>
-    <iron-localstorage name="trending" on-iron-localstorage-load-empty="initialize_trending" value="{{trending}}"></iron-localstorage>
+    <iron-localstorage name="trending" on-iron-localstorage-load-empty="initialize_trending" value="[[trending]]"></iron-localstorage>
 
     <paper-header-panel>
       <paper-toolbar>
         <paper-icon-button icon="menu" on-click="menu_toggle" paper-drawer-toggle=""></paper-icon-button>
         <div class="title">TorrentAlert</div>
-        <paper-icon-button icon="search" on-click="searchbar"></paper-icon-button>
+        <paper-icon-button icon="search" on-click="search"></paper-icon-button>
       </paper-toolbar>
 
       <div class="center-justified horizontal layout">
@@ -22881,7 +22827,7 @@ mwcLayout = new PolymerLayout();
               <iron-icon icon="store"></iron-icon>
             </div>
 
-            <div class="subhead" style="border-bottom: 1px solid #757575;">Trending Top [[trending.keyword.length]]</div>
+            <div class="subhead" style="border-bottom: 1px solid #757575;">Trending Top [[return_text(trending.keyword.length)]]</div>
           </div>
         </div>
       </div>
@@ -22940,6 +22886,44 @@ mwcLayout = new PolymerLayout();
       }, 1000);
     },
 
+    click: function(e) {
+      if (Meteor.status().connected) {
+        var keyword = Polymer.dom(e).localTarget.textContent.split(" [")[0];
+
+        if (keyword.length) {
+          var row = {
+            keyword: keyword,
+            leech: 1,
+            seed: 1,
+            url: "search",
+            within: 6,
+            worker: "search"
+          };
+
+          Meteor.call("insert_project", row, function(error, response) {
+            if (error) {
+              document.querySelector("#polymer_toast").toast((error.reason == "userNotFound") ? "internet/user required" : error.reason);
+            } else {
+              if (response == "") {
+                document.querySelector("#polymer_toast").toast("unknown issue");
+              } else {
+                document.querySelector("#polymer_toast").toast("i keyword added");
+
+                FlowRouter.setQueryParams({
+                  project: response,
+                  route: "project-view"
+                });
+              }
+            }
+          });
+        } else {
+          document.querySelector("#polymer_toast").toast("empty keyword");
+        }
+      } else {
+        document.querySelector("#polymer_toast").toast("server connection required");
+      }
+    },
+
     initialize_trending: function() {
       this.trending = {
         keyword: [],
@@ -22955,7 +22939,6 @@ mwcLayout = new PolymerLayout();
 
     properties: {
       trending: {
-        observer: "trending_change",
         type: Object,
         value: function() {
           return {
@@ -22966,9 +22949,185 @@ mwcLayout = new PolymerLayout();
       }
     },
 
-    trending_change: function(newValue, oldValue) {
+    return_text: function(text) {
+      return (text ? text : "#");
+    },
+
+    search: function() {
+      FlowRouter.setQueryParams({
+        "back-route": "trending",
+        route: "search-view"
+      });
+    }
+
+  });
+  </script>
+
+</dom-module>
+<dom-module id="search-view" assetpath="/linto/">
+
+  <style>
+  input {
+    @apply(--paper-font-title);
+    background: transparent;
+    border: none;
+    color: black;
+    padding: 0 8px;
+  }
+  
+  paper-icon-item {
+    border-bottom: 1px solid #EEE;
+  }
+  
+  paper-progress {
+    left: 0;
+    position: fixed;
+    width: 100%;
+    z-index: 1;
+    --paper-progress-active-color: var(--paper-red-500);
+    --paper-progress-secondary-color: var(--paper-red-100);
+  }
+  
+  paper-toolbar {
+    --paper-toolbar-background: white;
+    --paper-toolbar-color: black;
+  }
+  
+  .footer-li {
+    min-height: 88px;
+  }
+  
+  .search-li {
+    border-bottom: 1px solid #EEE;
+    padding: 8px;
+  }
+  
+  .search-li > div {
+    padding: 8px;
+  }
+  
+  .subhead {
+    @apply(--paper-font-subhead);
+  }
+  </style>
+
+  <template>
+    <iron-localstorage name="search" on-iron-localstorage-load-empty="initialize_search_db" value="[[search_db]]"></iron-localstorage>
+
+    <paper-header-panel style="background: #EEE;">
+      <paper-toolbar>
+        <paper-icon-button icon="arrow-back" on-click="back"></paper-icon-button>
+        <input autofocus="" bind-value="{{search_input}}" class="flex" is="iron-input" placeholder="search">
+      </paper-toolbar>
+
+      <paper-progress hidden="" id="search_progress" indeterminate=""></paper-progress>
+
+      <template is="dom-repeat" items="[[search_db]]">
+        <div class="center-justified horizontal layout">
+          <div class="li">
+            <paper-icon-item class="cursor-p white" on-click="add_project">
+              <iron-icon icon="launch" item-icon=""></iron-icon>
+
+              <paper-item-body>[[item]]</paper-item-body>
+            </paper-icon-item>
+          </div>
+        </div>
+      </template>
+
+      <div class="footer-li"></div>
+    </paper-header-panel>
+  </template>
+
+  <script>
+  Polymer({
+
+    add_project: function(e) {
+      if (Meteor.status().connected) {
+        var keyword = Polymer.dom(e).localTarget.textContent.trim();
+
+        if (keyword.length) {
+          var row = {
+            keyword: keyword,
+            leech: 1,
+            seed: 1,
+            url: "search",
+            within: 6,
+            worker: "search"
+          };
+
+          Meteor.call("insert_project", row, function(error, response) {
+            if (error) {
+              document.querySelector("#polymer_toast").toast((error.reason == "userNotFound") ? "internet/user required" : error.reason);
+            } else {
+              if (response == "") {
+                document.querySelector("#polymer_toast").toast("unknown issue");
+              } else {
+                document.querySelector("#polymer_toast").toast("i keyword added");
+
+                FlowRouter.setQueryParams({
+                  project: response,
+                  route: "project-view"
+                });
+              }
+            }
+          });
+        } else {
+          document.querySelector("#polymer_toast").toast("empty keyword");
+        }
+      } else {
+        document.querySelector("#polymer_toast").toast("server connection required");
+      }
+    },
+
+    back: function() {
+      FlowRouter.setQueryParams({
+        "route": (FlowRouter.getQueryParam("back-route") ? FlowRouter.getQueryParam("back-route") : null)
+      });
+    },
+
+    initialize_search_db: function() {
+      this.search_db = [];
+    },
+
+    is: "search-view",
+
+    properties: {
+      search_db: {
+        type: Array,
+        value: function() {
+          return [];
+        }
+      },
+      search_input: {
+        observer: "search",
+        type: String,
+        value: ""
+      }
+    },
+
+    search: function(newValue, oldValue) {
       if (newValue && oldValue) {
-        document.querySelector("#old_layout").trending = this.trending;
+        if (Meteor.status().connected) {
+          this.$.search_progress.hidden = false;
+
+          this.debounce("search", function() {
+            if (this.search_input.trim().length) {
+              var _this = this;
+
+              Meteor.call("search", _this.search_input.trim(), function(error, response) {
+                _this.$.search_progress.hidden = true;
+
+                if (!error) {
+                  _this.search_db = response;
+                }
+              });
+            } else {
+              this.$.search_progress.hidden = true;
+            }
+          }, 1000 * 2);
+        } else {
+          document.querySelector("#polymer_toast").toast("server connection required");
+        }
       }
     }
 
