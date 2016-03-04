@@ -1,4 +1,4 @@
-<dom-module id="favorite-view">
+<dom-module id="favorite-list">
 
   <style>
   paper-fab {
@@ -91,16 +91,16 @@
   </style>
 
   <template>
-    <iron-localstorage name="favorite" value="[[mwcData.favorite]]"></iron-localstorage>
+    <iron-localstorage name="favorite" on-iron-localstorage-load-empty="initialize_favorite" value="{{favorite}}"></iron-localstorage>
 
     <paper-header-panel>
-      <paper-toolbar id="favorite_view_toolbar">
+      <paper-toolbar id="favorite_list_toolbar">
         <paper-icon-button class="selection-visible" icon="arrow-back" on-click="clear_torrent_selection"></paper-icon-button>
         <paper-icon-button class="selection-hidden" icon="menu" on-click="menu_toggle" paper-drawer-toggle></paper-icon-button>
 
-        <div class="title" id="favorite_view_toolbar_title">TorrentAlert</div>
+        <div class="title" id="favorite_list_toolbar_title">TorrentAlert</div>
 
-        <paper-icon-button class="selection-visible" icon="delete" onclick="document.querySelector('#remove_prompt').open();"></paper-icon-button>
+        <paper-icon-button class="selection-visible" icon="delete" onclick="document.querySelector('#remove_favorite').open();"></paper-icon-button>
         <paper-icon-button class="selection-visible" icon="social:share" on-click="share"></paper-icon-button>
         <paper-icon-button class="selection-hidden" icon="search" on-click="search"></paper-icon-button>
       </paper-toolbar>
@@ -108,12 +108,12 @@
       <div class="center-justified horizontal layout">
         <div class="li">
           <div class="center horizontal layout title-li">
-            <div class="flex subhead">My Favorite [[return_favorite_count(mwcData.favorite.length)]]</div>
+            <div class="flex subhead">My Favorite [[return_favorite_count(favorite.length)]]</div>
           </div>
         </div>
       </div>
 
-      <div class="center-justified horizontal layout" hidden="[[mwcData.favorite.length]]">
+      <div class="center-justified horizontal layout" hidden="[[favorite.length]]">
         <div class="li">
           <div class="center-justified cursor-d horizontal layout title-li">
             <div class="subhead" style="color: #AAA;">noItemFound</div>
@@ -122,8 +122,8 @@
       </div>
 
       <iron-selector activate-event="click" attr-for-selected="item" multi selected-attribute="selected" selected-values="{{torrent_selected}}">
-        <template filter="filter_url" is="dom-repeat" items="[[mwcData.favorite]]" sort="sort">
-          <torrent-item class$="[[item._id]]" item="[[item]]"></torrent-item>
+        <template filter="filter_url" is="dom-repeat" items="[[favorite]]" sort="sort">
+          <torrent-item item="[[item]]"></torrent-item>
         </template>
       </iron-selector>
 
@@ -132,11 +132,11 @@
 
     <paper-fab class="menu-b" id="fab" icon="add" on-click="add_project"></paper-fab>
 
-    <paper-dialog id="remove_prompt">
+    <paper-dialog id="remove_favorite">
       <div class="subhead">Are you sure to delete [[torrent_selected.length]] favorite ?</div>
 
       <div class="buttons">
-        <paper-button onclick="document.querySelector('#remove_prompt').close();">
+        <paper-button onclick="document.querySelector('#remove_favorite').close();">
           <iron-icon icon="close"></iron-icon> cancel
         </paper-button>
 
@@ -152,12 +152,31 @@
 
     add_project: function() {
       FlowRouter.setQueryParams({
-        "back-route": "favorite",
+        "back-route": "favorite-list",
         route: "add-project"
       });
     },
 
-    behaviors: [mwcMixin],
+    attached: function() {
+      if (Meteor.status().connected) {
+        var _this = this;
+
+        Tracker.autorun(function() {
+          if (Meteor.user()) {
+            Meteor.subscribe("torrent", {
+              field: "torrent",
+              id: (Meteor.user().profile.favorite ? Meteor.user().profile.favorite : [])
+            });
+
+            _this.favorite = _torrent.find({
+              _id: {
+                $in: (Meteor.user().profile.favorite ? Meteor.user().profile.favorite : [])
+              }
+            }).fetch();
+          }
+        });
+      }
+    },
 
     clear_torrent_selection: function() {
       this.torrent_selected = [];
@@ -167,22 +186,11 @@
       return (torrent.url);
     },
 
-    getMeteorData: function() {
-      Meteor.subscribe("torrent", {
-        field: "torrent",
-        id: (Meteor.user() ? Meteor.user().profile.favorite : [])
-      });
-
-      return {
-        favorite: _torrent.find({
-          _id: {
-            $in: Meteor.user().profile.favorite
-          }
-        }).fetch()
-      };
+    initialize_favorite: function() {
+      this.favorite = [];
     },
 
-    is: "favorite-view",
+    is: "favorite-list",
 
     menu_toggle: function() {
       document.querySelector("#old_layout").menu_toggle();
@@ -193,6 +201,12 @@
     ],
 
     properties: {
+      favorite: {
+        type: Array,
+        value: function() {
+          return [];
+        }
+      },
       torrent_selected: {
         type: Array,
         value: function() {
@@ -214,7 +228,7 @@
         document.querySelector("#polymer_toast").toast("server connection required");
       }
 
-      this.$.remove_prompt.close();
+      this.$.remove_favorite.close();
     },
 
     return_favorite_count: function(count) {
@@ -223,8 +237,8 @@
 
     search: function() {
       FlowRouter.setQueryParams({
-        "back-route": "favorite",
-        route: "search-view"
+        "back-route": "favorite-list",
+        route: "search-list"
       });
     },
 
@@ -258,8 +272,8 @@
 
     torrent_selected_change: function(change) {
       this.$.fab.toggleClass("move-down", this.torrent_selected.length);
-      this.$.favorite_view_toolbar.toggleClass("selection", this.torrent_selected.length);
-      this.$.favorite_view_toolbar_title.textContent = (this.torrent_selected.length ? this.torrent_selected.length : "TorrentAlert");
+      this.$.favorite_list_toolbar.toggleClass("selection", this.torrent_selected.length);
+      this.$.favorite_list_toolbar_title.textContent = (this.torrent_selected.length ? this.torrent_selected.length : "TorrentAlert");
     }
 
   });

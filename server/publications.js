@@ -54,9 +54,6 @@ Meteor.publish("worker", function(project) {
     fields: {
       user: false
     },
-    limit: 50,
-    sort: {
-      time_insert: -1
-    }
+    limit: 50
   });
 });

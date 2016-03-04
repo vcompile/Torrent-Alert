@@ -68,8 +68,8 @@
 
           <div class="flex" style="overflow: auto;">
             <iron-selector on-iron-activate="menu_opt" selected-attribute="selected">
-              <paper-item class="blue-700 border-bottom cursor-p" data-id="favorite">Favorite</paper-item>
-              <paper-item class="cyan-700 border-bottom cursor-p" data-id="trending">Trending</paper-item>
+              <paper-item class="blue-700 border-bottom cursor-p" data-id="favorite-list">Favorite</paper-item>
+              <paper-item class="cyan-700 border-bottom cursor-p" data-id="trending-list">Trending</paper-item>
 
               <template is="dom-repeat" items="[[mwcData.project]]">
                 <paper-icon-item class="border-bottom cursor-p" data-id$="[[item._id]]">
@@ -92,11 +92,11 @@
 
       <neon-animated-pages attr-for-selected="data-page" class="fit" main selected="[[selected]]">
         <add-project data-page="add-project" id="add_project"></add-project>
-        <favorite-view data-page="favorite-view" id="favorite_view"></favorite-view>
-        <project-view data-page="project-view" id="project_view"></project-view>
-        <search-view data-page="search-view" id="search_view"></search-view>
-        <torrent-view data-page="torrent-view" id="torrent_view"></torrent-view>
-        <trending-view data-page="trending-view" id="trending_view"></trending-view>
+        <favorite-list data-page="favorite-list" id="favorite_list"></favorite-list>
+        <project-list data-page="project-list" id="project_list"></project-list>
+        <search-list data-page="search-list" id="search_list"></search-list>
+        <torrent-list data-page="torrent-list" id="torrent_list"></torrent-list>
+        <trending-list data-page="trending-list" id="trending_list"></trending-list>
       </neon-animated-pages>
     </paper-drawer-panel>
 
@@ -157,8 +157,8 @@
       this.$.paper_drawer_panel.closeDrawer();
 
       FlowRouter.setQueryParams({
-        project: (d.item.dataset.id == "favorite" || d.item.dataset.id == "trending" ? null : d.item.dataset.id),
-        route: (d.item.dataset.id == "favorite" || d.item.dataset.id == "trending" ? d.item.dataset.id : "project-view")
+        project: (d.item.dataset.id == "favorite-list" || d.item.dataset.id == "trending-list" ? null : d.item.dataset.id),
+        route: (d.item.dataset.id == "favorite-list" || d.item.dataset.id == "trending-list" ? d.item.dataset.id : "project-list")
       });
     },
 
@@ -173,7 +173,7 @@
     properties: {
       selected: {
         type: String,
-        value: "trending-view"
+        value: "trending-list"
       },
       user: {
         type: Object,
@@ -205,8 +205,6 @@
 
     sign_out: function() {
       if (Meteor.status().connected) {
-        this.project = [];
-
         FlowRouter.go("/main/sign-out");
       } else {
         document.querySelector("#polymer_toast").toast("server connection required");

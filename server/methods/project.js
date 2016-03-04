@@ -94,19 +94,13 @@ Meteor.methods({
     });
 
     if (row) {
-      if (row.user.length == 1 && row.worker == "schedule") {
-        _project.remove({
-          _id: row._id
-        });
-      } else {
-        _project.update({
-          _id: row._id
-        }, {
-          $pull: {
-            user: user._id
-          }
-        });
-      }
+      _project.update({
+        _id: row._id
+      }, {
+        $pull: {
+          user: user._id
+        }
+      });
 
       return "1 keyword removed";
     } else return "notFound";

@@ -1,4 +1,4 @@
-<dom-module id="search-view">
+<dom-module id="search-list">
 
   <style>
   input {
@@ -46,7 +46,7 @@
   </style>
 
   <template>
-    <iron-localstorage name="search" on-iron-localstorage-load-empty="initialize_search_db" value="[[search_db]]"></iron-localstorage>
+    <iron-localstorage name="search" on-iron-localstorage-load-empty="initialize_search" value="{{search}}"></iron-localstorage>
 
     <paper-header-panel style="background: #EEE;">
       <paper-toolbar>
@@ -56,7 +56,7 @@
 
       <paper-progress hidden id="search_progress" indeterminate></paper-progress>
 
-      <template is="dom-repeat" items="[[search_db]]">
+      <template is="dom-repeat" items="[[search]]">
         <div class="center-justified horizontal layout">
           <div class="li">
             <paper-icon-item class="cursor-p white" on-click="add_project">
@@ -100,7 +100,7 @@
 
                 FlowRouter.setQueryParams({
                   project: response,
-                  route: "project-view"
+                  route: "project-list"
                 });
               }
             }
@@ -119,27 +119,27 @@
       });
     },
 
-    initialize_search_db: function() {
-      this.search_db = [];
+    initialize_search: function() {
+      this.search = [];
     },
 
-    is: "search-view",
+    is: "search-list",
 
     properties: {
-      search_db: {
+      search: {
         type: Array,
         value: function() {
           return [];
         }
       },
       search_input: {
-        observer: "search",
+        observer: "search_input_change",
         type: String,
         value: ""
       }
     },
 
-    search: function(newValue, oldValue) {
+    search_input_change: function(newValue, oldValue) {
       if (newValue && oldValue) {
         if (Meteor.status().connected) {
           this.$.search_progress.hidden = false;
@@ -152,7 +152,7 @@
                 _this.$.search_progress.hidden = true;
 
                 if (!error) {
-                  _this.search_db = response;
+                  _this.search = response;
                 }
               });
             } else {

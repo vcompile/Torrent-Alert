@@ -128,10 +128,12 @@
         }
       },
       entry_animation: {
-        type: String
+        type: String,
+        value: "fade-in-animation"
       },
       exit_animation: {
-        type: String
+        type: String,
+        value: "fade-out-animation"
       },
       selected: {
         type: Number,
@@ -154,15 +156,15 @@
     swiper_up: function(e, d) {
       if (d.x < $(window).width() / 2) {
         if (1 <= this.selected && this.selected < 3) {
-          this.entry_animation = "slide-from-right-animation";
-          this.exit_animation = "slide-left-animation";
+          // this.entry_animation = "slide-from-right-animation";
+          // this.exit_animation = "slide-left-animation";
 
           this.selected += 1;
         }
       } else {
         if (1 < this.selected && this.selected <= 3) {
-          this.entry_animation = "slide-from-left-animation";
-          this.exit_animation = "slide-right-animation";
+          // this.entry_animation = "slide-from-left-animation";
+          // this.exit_animation = "slide-right-animation";
 
           this.selected -= 1;
         }

@@ -19,7 +19,7 @@ var main = FlowRouter.group({
         FlowRouter.go("/");
       }
     } else { // offline
-      if (!(document.querySelector("#torrent_db").value || []).length) { // localstorage
+      if (!(localStorage.favorite || []).length) { // localstorage
         FlowRouter.go("/");
       }
     }
@@ -34,31 +34,20 @@ main.route("/", {
 
     switch (FlowRouter.getQueryParam("route")) {
       case "add-project":
-        document.querySelector("#old_layout").selected = "add-project";
+      case "favorite-list":
+      case "search-list":
+      case "torrent-list":
+        document.querySelector("#old_layout").selected = FlowRouter.getQueryParam("route");
         break;
 
-      case "favorite":
-        document.querySelector("#old_layout").selected = "favorite-view";
-        break;
-
-      case "project-view":
+      case "project-list":
         if (FlowRouter.getQueryParam("project")) {
-          document.querySelector("#old_layout").selected = "project-view";
-        }
-        break;
-
-      case "search-view":
-        document.querySelector("#old_layout").selected = "search-view";
-        break;
-
-      case "torrent-view":
-        if (FlowRouter.getQueryParam("torrent")) {
-          document.querySelector("#old_layout").selected = "torrent-view";
+          document.querySelector("#old_layout").selected = "project-list";
         }
         break;
 
       default:
-        document.querySelector("#old_layout").selected = "trending-view";
+        document.querySelector("#old_layout").selected = "trending-list";
         break;
     }
   },
@@ -68,7 +57,15 @@ main.route("/", {
 main.route("/sign-out", {
   action: function(p, q) {
     if (Meteor.status().connected) {
-      document.querySelector("#torrent_db").value = [];
+      localStorage.clear();
+
+      if (Meteor.isCordova) {
+        window.plugins.googleplus.disconnect(
+          function(response) {
+            console.log(response);
+          }
+        );
+      }
 
       Meteor.logout(function(error) {
         if (error) {

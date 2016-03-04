@@ -1,4 +1,4 @@
-<dom-module id="project-view">
+<dom-module id="project-list">
 
   <style>
   paper-button {
@@ -106,11 +106,11 @@
 
   <template>
     <paper-header-panel>
-      <paper-toolbar id="project_view_toolbar" class$="[[return_class(mwcData.project.keyword)]]">
+      <paper-toolbar id="project_list_toolbar" class$="[[return_class(mwcData.project.keyword)]]">
         <paper-icon-button class="selection-visible" icon="arrow-back" on-click="clear_torrent_selection"></paper-icon-button>
         <paper-icon-button class="selection-hidden" icon="menu" on-click="menu_toggle" paper-drawer-toggle></paper-icon-button>
 
-        <div class="title" id="project_view_toolbar_title">TorrentAlert</div>
+        <div class="title" id="project_list_toolbar_title">TorrentAlert</div>
 
         <paper-icon-button class="selection-visible" icon="favorite-border" on-click="favorite"></paper-icon-button>
         <paper-icon-button class="selection-visible" icon="delete" on-click="remove_torrent"></paper-icon-button>
@@ -198,7 +198,7 @@
 
     add_project: function() {
       FlowRouter.setQueryParams({
-        "back-route": "project-view",
+        "back-route": "project-list",
         route: "add-project"
       });
     },
@@ -244,7 +244,7 @@
       };
     },
 
-    is: "project-view",
+    is: "project-list",
 
     is_search: function(worker) {
       return (worker == "search")
@@ -334,8 +334,8 @@
 
     search: function() {
       FlowRouter.setQueryParams({
-        "back-route": "project-view",
-        route: "search-view"
+        "back-route": "project-list",
+        route: "search-list"
       });
     },
 
@@ -374,8 +374,8 @@
 
     torrent_selected_change: function(change) {
       this.$.fab.toggleClass("move-down", this.torrent_selected.length);
-      this.$.project_view_toolbar.toggleClass("selection", this.torrent_selected.length);
-      this.$.project_view_toolbar_title.textContent = (this.torrent_selected.length ? this.torrent_selected.length : "TorrentAlert");
+      this.$.project_list_toolbar.toggleClass("selection", this.torrent_selected.length);
+      this.$.project_list_toolbar_title.textContent = (this.torrent_selected.length ? this.torrent_selected.length : "TorrentAlert");
     }
 
   });

@@ -1,7 +1,6 @@
 if (Meteor.isCordova) {
   document.addEventListener("deviceready", function() {
     document.addEventListener("backbutton", backbutton, false);
-    // document.addEventListener("pause", pause, false);
   }, false);
 
   function backbutton() {
@@ -9,8 +8,4 @@ if (Meteor.isCordova) {
       document.querySelector("#exit_controller").prompt();
     }
   }
-
-  // function pause() {}
-} else {
-  // $(window).on("beforeunload", function() {});
 }

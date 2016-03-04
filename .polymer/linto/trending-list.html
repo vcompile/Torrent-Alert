@@ -1,4 +1,4 @@
-<dom-module id="trending-view">
+<dom-module id="trending-list">
 
   <style>
   paper-fab {
@@ -60,7 +60,7 @@
   </style>
 
   <template>
-    <iron-localstorage name="trending" on-iron-localstorage-load-empty="initialize_trending" value="[[trending]]"></iron-localstorage>
+    <iron-localstorage name="trending" on-iron-localstorage-load-empty="initialize_trending" value="{{trending}}"></iron-localstorage>
 
     <paper-header-panel>
       <paper-toolbar>
@@ -76,7 +76,7 @@
               <iron-icon icon="store"></iron-icon>
             </div>
 
-            <div class="subhead" style="border-bottom: 1px solid #757575;">Trending Top [[return_text(trending.keyword.length)]]</div>
+            <div class="subhead" style="border-bottom: 1px solid #757575;">Trending [[return_trending_count(trending.keyword.length)]]</div>
           </div>
         </div>
       </div>
@@ -102,6 +102,7 @@
 
     add_project: function() {
       FlowRouter.setQueryParams({
+        "back-route": "trending-list",
         route: "add-project"
       });
     },
@@ -120,14 +121,6 @@
                   keyword: response,
                   time: moment().format()
                 };
-
-                response.forEach(function(keyword, index) {
-                  Meteor.call("count", keyword, function(error, count) {
-                    if (!error && count) {
-                      _this.set("trending.keyword." + index, keyword + " [" + count + "]")
-                    }
-                  });
-                });
               }
             }
           });
@@ -137,7 +130,7 @@
 
     click: function(e) {
       if (Meteor.status().connected) {
-        var keyword = Polymer.dom(e).localTarget.textContent.split(" [")[0];
+        var keyword = Polymer.dom(e).localTarget.textContent;
 
         if (keyword.length) {
           var row = {
@@ -160,7 +153,7 @@
 
                 FlowRouter.setQueryParams({
                   project: response,
-                  route: "project-view"
+                  route: "project-list"
                 });
               }
             }
@@ -180,7 +173,7 @@
       };
     },
 
-    is: "trending-view",
+    is: "trending-list",
 
     menu_toggle: function() {
       document.querySelector("#old_layout").menu_toggle();
@@ -198,14 +191,14 @@
       }
     },
 
-    return_text: function(text) {
-      return (text ? text : "#");
+    return_trending_count: function(count) {
+      return (count ? "#" + count : "List");
     },
 
     search: function() {
       FlowRouter.setQueryParams({
-        "back-route": "trending",
-        route: "search-view"
+        "back-route": "trending-list",
+        route: "search-list"
       });
     }
 

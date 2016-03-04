@@ -123,8 +123,10 @@
               FlowRouter.go("/main");
             }
           } else { // offline
-            if ((document.querySelector("#torrent_db").value || []).length) { // localstorage
-              FlowRouter.go("/main");
+            if ((localStorage.favorite || []).length) { // localstorage
+              FlowRouter.go("/main", {}, {
+                route: "favorite-list"
+              });
             }
           }
         });

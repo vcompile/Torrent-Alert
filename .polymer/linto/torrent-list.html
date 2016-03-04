@@ -1,4 +1,4 @@
-<dom-module id="torrent-view">
+<dom-module id="torrent-list">
 
   <style>
   paper-icon-item {
@@ -37,7 +37,7 @@
   </style>
 
   <template>
-    <iron-localstorage name="proxy" on-iron-localstorage-load-empty="initialize_proxy" value="[[proxy]]"></iron-localstorage>
+    <iron-localstorage name="proxy" on-iron-localstorage-load-empty="initialize_proxy" value="{{proxy}}"></iron-localstorage>
 
     <paper-header-panel style="background: #EEE;">
       <div class="center-justified horizontal layout">
@@ -48,9 +48,9 @@
             </div>
 
             <div class="flex layout vertical">
-              <div class="body1">[[return_description(mwcData.torrent)]]</div>
+              <div class="body1">[[return_description(item)]]</div>
 
-              <div><span class="subhead">[[mwcData.torrent.title]]</span>&nbsp;&nbsp;<span class$="body2 [[return_class(mwcData.torrent.category)]]">&nbsp;&nbsp;[[mwcData.torrent.category]]&nbsp;&nbsp;</span>&nbsp;&nbsp;</div>
+              <div><span class="subhead">[[item.title]]</span>&nbsp;&nbsp;<span class$="body2 [[return_class(item.category)]]">&nbsp;&nbsp;[[item.category]]&nbsp;&nbsp;</span>&nbsp;&nbsp;</div>
             </div>
           </div>
         </div>
@@ -58,7 +58,7 @@
 
       <div class="center-justified horizontal layout">
         <div class="li">
-          <template is="dom-repeat" items="[[mwcData.torrent.link]]">
+          <template is="dom-repeat" items="[[item.link]]">
             <paper-icon-item class="cursor-p white" data-link$="[[item.url]]" on-click="click">
               <selectable-icon icon_class="[[return_class(item.text)]]" icon_text="[[return_icon_text(item.text)]]" item-icon></selectable-icon>
 
@@ -92,34 +92,25 @@
       });
     },
 
-    behaviors: [mwcMixin],
-
     click: function(e, d) {
       e.stopPropagation();
 
       window.open((this.proxy ? "http://do.vcompile.com/proxy/redirect.php?url=" + encodeURIComponent(e.model.__data__.item.url) : e.model.__data__.item.url), "_system");
     },
 
-    getMeteorData: function() {
-      Meteor.subscribe("torrent", {
-        field: "torrent",
-        id: [FlowRouter.getQueryParam("torrent") ? FlowRouter.getQueryParam("torrent") : "#"]
-      });
-
-      return {
-        torrent: _torrent.findOne({
-          _id: FlowRouter.getQueryParam("torrent")
-        })
-      };
-    },
-
     initialize_proxy: function() {
       this.proxy = false;
     },
 
-    is: "torrent-view",
+    is: "torrent-list",
 
     properties: {
+      item: {
+        type: Object,
+        value: function() {
+          return {};
+        }
+      },
       proxy: {
         type: Boolean,
         value: false

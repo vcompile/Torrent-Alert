@@ -15859,7 +15859,8 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
          * @type {!Polymer.IronMeta}
          */
         _meta: {
-          value: Polymer.Base.create('iron-meta', {type: 'iconset'})
+          value: Polymer.Base.create('iron-meta', {type: 'iconset'}),
+          observer: '_updateIcon'
         }
 
       },
@@ -15884,7 +15885,14 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
       /** @suppress {visibility} */
       _updateIcon: function() {
         if (this._usesIconset()) {
-          if (this._iconsetName) {
+          if (this._img && this._img.parentNode) {
+            Polymer.dom(this.root).removeChild(this._img);
+          }
+          if (this._iconName === "") {
+            if (this._iconset) {
+              this._iconset.removeIcon(this);
+            }
+          } else if (this._iconsetName && this._meta) {
             this._iconset = /** @type {?Polymer.Iconset} */ (
               this._meta.byKey(this._iconsetName));
             if (this._iconset) {
@@ -15895,6 +15903,9 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
             }
           }
         } else {
+          if (this._iconset) {
+            this._iconset.removeIcon(this);
+          }
           if (!this._img) {
             this._img = document.createElement('img');
             this._img.style.width = '100%';
@@ -17937,6 +17948,8 @@ mwcLayout = new PolymerLayout();
       }
 
       .left-drawer.narrow-layout > #drawer:not(.iron-selected) {
+        visibility: hidden;
+
         -webkit-transform: translateX(-100%);
         transform: translateX(-100%);
       }
@@ -17949,8 +17962,10 @@ mwcLayout = new PolymerLayout();
         transform: translateX(100%);
       }
 
-      .right-drawer.narrow-layout.dragging > #drawer:not(.iron-selected),
-      .right-drawer.narrow-layout.peeking > #drawer:not(.iron-selected) {
+      .left-drawer.dragging > #drawer:not(.iron-selected),
+      .left-drawer.peeking > #drawer:not(.iron-selected),
+      .right-drawer.dragging > #drawer:not(.iron-selected),
+      .right-drawer.peeking > #drawer:not(.iron-selected) {
         visibility: visible;
       }
 
@@ -17979,7 +17994,7 @@ mwcLayout = new PolymerLayout();
         box-sizing: border-box;
       }
 
-      iron-selector:not(.narrow-layout) #main ::content [paper-drawer-toggle] {
+      iron-selector:not(.narrow-layout) ::content [paper-drawer-toggle] {
         display: none;
       }
     </style>
@@ -17989,13 +18004,13 @@ mwcLayout = new PolymerLayout();
 
     <iron-selector attr-for-selected="id" class$="[[_computeIronSelectorClass(narrow, _transition, dragging, rightDrawer, peeking)]]" activate-event="" selected="[[selected]]">
 
-      <div id="main" style$="[[_computeMainStyle(narrow, rightDrawer, drawerWidth)]]" on-transitionend="_onMainTransitionEnd">
+      <div id="main" style$="[[_computeMainStyle(narrow, rightDrawer, drawerWidth)]]">
         <content select="[main]"></content>
         <div id="scrim" on-tap="closeDrawer"></div>
       </div>
 
       <div id="drawer" style$="[[_computeDrawerStyle(drawerWidth)]]">
-        <content select="[drawer]"></content>
+        <content id="drawerContent" select="[drawer]"></content>
       </div>
 
     </iron-selector>
@@ -18193,6 +18208,25 @@ mwcLayout = new PolymerLayout();
           },
 
           /**
+           * The CSS selector for the element that should receive focus when the drawer is open.
+           * By default, when the drawer opens, it focuses the first tabbable element. That is,
+           * the first element that can receive focus.
+           */
+          drawerFocusSelector: {
+            type: String,
+            value:
+                'a[href]:not([tabindex="-1"]),'+
+                'area[href]:not([tabindex="-1"]),'+
+                'input:not([disabled]):not([tabindex="-1"]),'+
+                'select:not([disabled]):not([tabindex="-1"]),'+
+                'textarea:not([disabled]):not([tabindex="-1"]),'+
+                'button:not([disabled]):not([tabindex="-1"]),'+
+                'iframe:not([tabindex="-1"]),'+
+                '[tabindex]:not([tabindex="-1"]),'+
+                '[contentEditable=true]:not([tabindex="-1"])'
+          },
+
+          /**
            * Whether the transition is enabled.
            */
           _transition: {
@@ -18206,12 +18240,21 @@ mwcLayout = new PolymerLayout();
           tap: '_onTap',
           track: '_onTrack',
           down: '_downHandler',
-          up: '_upHandler'
+          up: '_upHandler',
+          transitionend: '_onTransitionEnd'
         },
 
         observers: [
-          '_forceNarrowChanged(forceNarrow, defaultSelected)'
+          '_forceNarrowChanged(forceNarrow, defaultSelected)',
+          '_toggleFocusListener(selected)'
         ],
+
+        ready: function() {
+          // Avoid transition at the beginning e.g. page loads and enable
+          // transitions only after the element is rendered and ready.
+          this._transition = true;
+          this._boundFocusListener = this._didFocus.bind(this);
+        },
 
         /**
          * Toggles the panel open and closed.
@@ -18244,15 +18287,18 @@ mwcLayout = new PolymerLayout();
           this.selected = 'main';
         },
 
-        ready: function() {
-          // Avoid transition at the beginning e.g. page loads and enable
-          // transitions only after the element is rendered and ready.
-          this._transition = true;
-        },
-
-        _onMainTransitionEnd: function (e) {
-          if (e.currentTarget === this.$.main && (e.propertyName === 'left' || e.propertyName === 'right')) {
+        _onTransitionEnd: function (e) {
+          var target = Polymer.dom(e).localTarget;
+          if (target !== this) {
+            // ignore events coming from the light dom
+            return;
+          }
+          if (e.propertyName === 'left' || e.propertyName === 'right') {
             this.notifyResize();
+          }
+          if (e.propertyName === 'transform' && this.selected === 'drawer') {
+            var focusedChild = this._getAutoFocusedNode();
+            focusedChild && focusedChild.focus();
           }
         },
 
@@ -18306,15 +18352,12 @@ mwcLayout = new PolymerLayout();
               this._trackEnd(event);
               break;
           }
-
         },
 
         _responsiveChange: function(narrow) {
           this._setNarrow(narrow);
 
-          if (this.narrow) {
-            this.selected = this.defaultSelected;
-          }
+          this.selected = this.narrow ? this.defaultSelected : null;
 
           this.setScrollDirection(this._swipeAllowed() ? 'y' : 'all');
           this.fire('paper-responsive-change', {narrow: this.narrow});
@@ -18450,16 +18493,51 @@ mwcLayout = new PolymerLayout();
           if (translateX === null) {
             return '';
           }
-
           return this.hasWillChange ? 'translateX(' + translateX + 'px)' :
               'translate3d(' + translateX + 'px, 0, 0)';
         },
 
         _moveDrawer: function(translateX) {
           this.transform(this._transformForTranslateX(translateX), this.$.drawer);
-        }
+        },
 
+        _getDrawerContent: function() {
+          return Polymer.dom(this.$.drawerContent).getDistributedNodes()[0];
+        },
+
+        _getAutoFocusedNode: function() {
+          var drawerContent = this._getDrawerContent();
+          return Polymer.dom(drawerContent).querySelector(this.drawerFocusSelector) || drawerContent;
+        },
+
+        _toggleFocusListener: function(selected) {
+          if (selected === 'drawer') {
+            document.addEventListener('focus', this._boundFocusListener, true);
+          } else {
+            document.removeEventListener('focus', this._boundFocusListener, true);
+          }
+        },
+
+        _didFocus: function(event) {
+          var path = Polymer.dom(event).path;
+          var focusedChild = path[0];
+          var drawerContent = this._getDrawerContent();
+          var focusedChildCameFromDrawer = false;
+          var autoFocusedNode = this._getAutoFocusedNode();
+
+          while (!focusedChildCameFromDrawer && path[0] && path[0].hasAttribute) {
+            focusedChildCameFromDrawer = path.shift() === drawerContent;
+          }
+          if (!focusedChildCameFromDrawer && autoFocusedNode) {
+            autoFocusedNode.focus();
+          }
+        },
+
+        _isDrawerClosed: function(narrow, selected) {
+          return !narrow || selected !== 'drawer';
+        }
       });
+
     }());
   </script>
 </dom-module>
@@ -21152,7 +21230,7 @@ mwcLayout = new PolymerLayout();
 
                 FlowRouter.setQueryParams({
                   project: response,
-                  route: "project-view"
+                  route: "project-list"
                 });
               }
             }
@@ -21207,7 +21285,7 @@ mwcLayout = new PolymerLayout();
   </script>
 
 </dom-module>
-<dom-module id="favorite-view" assetpath="/linto/">
+<dom-module id="favorite-list" assetpath="/linto/">
 
   <style>
   paper-fab {
@@ -21300,16 +21378,16 @@ mwcLayout = new PolymerLayout();
   </style>
 
   <template>
-    <iron-localstorage name="favorite" value="[[mwcData.favorite]]"></iron-localstorage>
+    <iron-localstorage name="favorite" on-iron-localstorage-load-empty="initialize_favorite" value="{{favorite}}"></iron-localstorage>
 
     <paper-header-panel>
-      <paper-toolbar id="favorite_view_toolbar">
+      <paper-toolbar id="favorite_list_toolbar">
         <paper-icon-button class="selection-visible" icon="arrow-back" on-click="clear_torrent_selection"></paper-icon-button>
         <paper-icon-button class="selection-hidden" icon="menu" on-click="menu_toggle" paper-drawer-toggle=""></paper-icon-button>
 
-        <div class="title" id="favorite_view_toolbar_title">TorrentAlert</div>
+        <div class="title" id="favorite_list_toolbar_title">TorrentAlert</div>
 
-        <paper-icon-button class="selection-visible" icon="delete" onclick="document.querySelector('#remove_prompt').open();"></paper-icon-button>
+        <paper-icon-button class="selection-visible" icon="delete" onclick="document.querySelector('#remove_favorite').open();"></paper-icon-button>
         <paper-icon-button class="selection-visible" icon="social:share" on-click="share"></paper-icon-button>
         <paper-icon-button class="selection-hidden" icon="search" on-click="search"></paper-icon-button>
       </paper-toolbar>
@@ -21317,12 +21395,12 @@ mwcLayout = new PolymerLayout();
       <div class="center-justified horizontal layout">
         <div class="li">
           <div class="center horizontal layout title-li">
-            <div class="flex subhead">My Favorite [[return_favorite_count(mwcData.favorite.length)]]</div>
+            <div class="flex subhead">My Favorite [[return_favorite_count(favorite.length)]]</div>
           </div>
         </div>
       </div>
 
-      <div class="center-justified horizontal layout" hidden="[[mwcData.favorite.length]]">
+      <div class="center-justified horizontal layout" hidden="[[favorite.length]]">
         <div class="li">
           <div class="center-justified cursor-d horizontal layout title-li">
             <div class="subhead" style="color: #AAA;">noItemFound</div>
@@ -21331,8 +21409,8 @@ mwcLayout = new PolymerLayout();
       </div>
 
       <iron-selector activate-event="click" attr-for-selected="item" multi="" selected-attribute="selected" selected-values="{{torrent_selected}}">
-        <template filter="filter_url" is="dom-repeat" items="[[mwcData.favorite]]" sort="sort">
-          <torrent-item class$="[[item._id]]" item="[[item]]"></torrent-item>
+        <template filter="filter_url" is="dom-repeat" items="[[favorite]]" sort="sort">
+          <torrent-item item="[[item]]"></torrent-item>
         </template>
       </iron-selector>
 
@@ -21341,11 +21419,11 @@ mwcLayout = new PolymerLayout();
 
     <paper-fab class="menu-b" id="fab" icon="add" on-click="add_project"></paper-fab>
 
-    <paper-dialog id="remove_prompt">
+    <paper-dialog id="remove_favorite">
       <div class="subhead">Are you sure to delete [[torrent_selected.length]] favorite ?</div>
 
       <div class="buttons">
-        <paper-button onclick="document.querySelector('#remove_prompt').close();">
+        <paper-button onclick="document.querySelector('#remove_favorite').close();">
           <iron-icon icon="close"></iron-icon> cancel
         </paper-button>
 
@@ -21361,12 +21439,31 @@ mwcLayout = new PolymerLayout();
 
     add_project: function() {
       FlowRouter.setQueryParams({
-        "back-route": "favorite",
+        "back-route": "favorite-list",
         route: "add-project"
       });
     },
 
-    behaviors: [mwcMixin],
+    attached: function() {
+      if (Meteor.status().connected) {
+        var _this = this;
+
+        Tracker.autorun(function() {
+          if (Meteor.user()) {
+            Meteor.subscribe("torrent", {
+              field: "torrent",
+              id: (Meteor.user().profile.favorite ? Meteor.user().profile.favorite : [])
+            });
+
+            _this.favorite = _torrent.find({
+              _id: {
+                $in: (Meteor.user().profile.favorite ? Meteor.user().profile.favorite : [])
+              }
+            }).fetch();
+          }
+        });
+      }
+    },
 
     clear_torrent_selection: function() {
       this.torrent_selected = [];
@@ -21376,22 +21473,11 @@ mwcLayout = new PolymerLayout();
       return (torrent.url);
     },
 
-    getMeteorData: function() {
-      Meteor.subscribe("torrent", {
-        field: "torrent",
-        id: (Meteor.user() ? Meteor.user().profile.favorite : [])
-      });
-
-      return {
-        favorite: _torrent.find({
-          _id: {
-            $in: Meteor.user().profile.favorite
-          }
-        }).fetch()
-      };
+    initialize_favorite: function() {
+      this.favorite = [];
     },
 
-    is: "favorite-view",
+    is: "favorite-list",
 
     menu_toggle: function() {
       document.querySelector("#old_layout").menu_toggle();
@@ -21402,6 +21488,12 @@ mwcLayout = new PolymerLayout();
     ],
 
     properties: {
+      favorite: {
+        type: Array,
+        value: function() {
+          return [];
+        }
+      },
       torrent_selected: {
         type: Array,
         value: function() {
@@ -21423,7 +21515,7 @@ mwcLayout = new PolymerLayout();
         document.querySelector("#polymer_toast").toast("server connection required");
       }
 
-      this.$.remove_prompt.close();
+      this.$.remove_favorite.close();
     },
 
     return_favorite_count: function(count) {
@@ -21432,8 +21524,8 @@ mwcLayout = new PolymerLayout();
 
     search: function() {
       FlowRouter.setQueryParams({
-        "back-route": "favorite",
-        route: "search-view"
+        "back-route": "favorite-list",
+        route: "search-list"
       });
     },
 
@@ -21467,8 +21559,8 @@ mwcLayout = new PolymerLayout();
 
     torrent_selected_change: function(change) {
       this.$.fab.toggleClass("move-down", this.torrent_selected.length);
-      this.$.favorite_view_toolbar.toggleClass("selection", this.torrent_selected.length);
-      this.$.favorite_view_toolbar_title.textContent = (this.torrent_selected.length ? this.torrent_selected.length : "TorrentAlert");
+      this.$.favorite_list_toolbar.toggleClass("selection", this.torrent_selected.length);
+      this.$.favorite_list_toolbar_title.textContent = (this.torrent_selected.length ? this.torrent_selected.length : "TorrentAlert");
     }
 
   });
@@ -21565,6 +21657,12 @@ mwcLayout = new PolymerLayout();
 <dom-module id="exit-controller" assetpath="/linto/">
 
   <style>
+  paper-button {
+    margin: 0;
+    min-width: 50%;
+    padding: 16px;
+  }
+  
   paper-dialog {
     width: 320px;
   }
@@ -21594,6 +21692,8 @@ mwcLayout = new PolymerLayout();
   Polymer({
 
     exit: function() {
+      this.$.exit_prompt.close();
+
       if (Meteor.isCordova) {
         navigator.app.exitApp();
       }
@@ -21740,7 +21840,7 @@ mwcLayout = new PolymerLayout();
       if (document.querySelector(".menu-b")) {
         this.async(function() {
           for (A = 0; A < document.querySelectorAll(".menu-b").length; A++) {
-            document.querySelectorAll(".menu-b")[A].translate3d("0", "-" + ($("#toast #label").height() + 32) + "px", "0");
+            document.querySelectorAll(".menu-b")[A].translate3d(0, "-" + ($("#toast #label").height() + 32) + "px", 0);
           }
         }, 40);
       }
@@ -21768,7 +21868,7 @@ mwcLayout = new PolymerLayout();
           }
 
           for (A = 0; A < document.querySelectorAll(".menu-b").length; A++) {
-            document.querySelectorAll(".menu-b")[A].translate3d("0", "0", "0");
+            document.querySelectorAll(".menu-b")[A].translate3d(0, 0, 0);
           }
         }
       }
@@ -21965,8 +22065,8 @@ mwcLayout = new PolymerLayout();
 
           <div class="flex" style="overflow: auto;">
             <iron-selector on-iron-activate="menu_opt" selected-attribute="selected">
-              <paper-item class="blue-700 border-bottom cursor-p" data-id="favorite">Favorite</paper-item>
-              <paper-item class="cyan-700 border-bottom cursor-p" data-id="trending">Trending</paper-item>
+              <paper-item class="blue-700 border-bottom cursor-p" data-id="favorite-list">Favorite</paper-item>
+              <paper-item class="cyan-700 border-bottom cursor-p" data-id="trending-list">Trending</paper-item>
 
               <template is="dom-repeat" items="[[mwcData.project]]">
                 <paper-icon-item class="border-bottom cursor-p" data-id$="[[item._id]]">
@@ -21989,11 +22089,11 @@ mwcLayout = new PolymerLayout();
 
       <neon-animated-pages attr-for-selected="data-page" class="fit" main="" selected="[[selected]]">
         <add-project data-page="add-project" id="add_project"></add-project>
-        <favorite-view data-page="favorite-view" id="favorite_view"></favorite-view>
-        <project-view data-page="project-view" id="project_view"></project-view>
-        <search-view data-page="search-view" id="search_view"></search-view>
-        <torrent-view data-page="torrent-view" id="torrent_view"></torrent-view>
-        <trending-view data-page="trending-view" id="trending_view"></trending-view>
+        <favorite-list data-page="favorite-list" id="favorite_list"></favorite-list>
+        <project-list data-page="project-list" id="project_list"></project-list>
+        <search-list data-page="search-list" id="search_list"></search-list>
+        <torrent-list data-page="torrent-list" id="torrent_list"></torrent-list>
+        <trending-list data-page="trending-list" id="trending_list"></trending-list>
       </neon-animated-pages>
     </paper-drawer-panel>
 
@@ -22054,8 +22154,8 @@ mwcLayout = new PolymerLayout();
       this.$.paper_drawer_panel.closeDrawer();
 
       FlowRouter.setQueryParams({
-        project: (d.item.dataset.id == "favorite" || d.item.dataset.id == "trending" ? null : d.item.dataset.id),
-        route: (d.item.dataset.id == "favorite" || d.item.dataset.id == "trending" ? d.item.dataset.id : "project-view")
+        project: (d.item.dataset.id == "favorite-list" || d.item.dataset.id == "trending-list" ? null : d.item.dataset.id),
+        route: (d.item.dataset.id == "favorite-list" || d.item.dataset.id == "trending-list" ? d.item.dataset.id : "project-list")
       });
     },
 
@@ -22070,7 +22170,7 @@ mwcLayout = new PolymerLayout();
     properties: {
       selected: {
         type: String,
-        value: "trending-view"
+        value: "trending-list"
       },
       user: {
         type: Object,
@@ -22102,8 +22202,6 @@ mwcLayout = new PolymerLayout();
 
     sign_out: function() {
       if (Meteor.status().connected) {
-        this.project = [];
-
         FlowRouter.go("/main/sign-out");
       } else {
         document.querySelector("#polymer_toast").toast("server connection required");
@@ -22114,7 +22212,7 @@ mwcLayout = new PolymerLayout();
   </script>
 
 </dom-module>
-<dom-module id="project-view" assetpath="/linto/">
+<dom-module id="project-list" assetpath="/linto/">
 
   <style>
   paper-button {
@@ -22222,11 +22320,11 @@ mwcLayout = new PolymerLayout();
 
   <template>
     <paper-header-panel>
-      <paper-toolbar id="project_view_toolbar" class$="[[return_class(mwcData.project.keyword)]]">
+      <paper-toolbar id="project_list_toolbar" class$="[[return_class(mwcData.project.keyword)]]">
         <paper-icon-button class="selection-visible" icon="arrow-back" on-click="clear_torrent_selection"></paper-icon-button>
         <paper-icon-button class="selection-hidden" icon="menu" on-click="menu_toggle" paper-drawer-toggle=""></paper-icon-button>
 
-        <div class="title" id="project_view_toolbar_title">TorrentAlert</div>
+        <div class="title" id="project_list_toolbar_title">TorrentAlert</div>
 
         <paper-icon-button class="selection-visible" icon="favorite-border" on-click="favorite"></paper-icon-button>
         <paper-icon-button class="selection-visible" icon="delete" on-click="remove_torrent"></paper-icon-button>
@@ -22314,7 +22412,7 @@ mwcLayout = new PolymerLayout();
 
     add_project: function() {
       FlowRouter.setQueryParams({
-        "back-route": "project-view",
+        "back-route": "project-list",
         route: "add-project"
       });
     },
@@ -22360,7 +22458,7 @@ mwcLayout = new PolymerLayout();
       };
     },
 
-    is: "project-view",
+    is: "project-list",
 
     is_search: function(worker) {
       return (worker == "search")
@@ -22450,8 +22548,8 @@ mwcLayout = new PolymerLayout();
 
     search: function() {
       FlowRouter.setQueryParams({
-        "back-route": "project-view",
-        route: "search-view"
+        "back-route": "project-list",
+        route: "search-list"
       });
     },
 
@@ -22490,481 +22588,15 @@ mwcLayout = new PolymerLayout();
 
     torrent_selected_change: function(change) {
       this.$.fab.toggleClass("move-down", this.torrent_selected.length);
-      this.$.project_view_toolbar.toggleClass("selection", this.torrent_selected.length);
-      this.$.project_view_toolbar_title.textContent = (this.torrent_selected.length ? this.torrent_selected.length : "TorrentAlert");
+      this.$.project_list_toolbar.toggleClass("selection", this.torrent_selected.length);
+      this.$.project_list_toolbar_title.textContent = (this.torrent_selected.length ? this.torrent_selected.length : "TorrentAlert");
     }
 
   });
   </script>
 
 </dom-module>
-<dom-module id="torrent-item" assetpath="/linto/">
-
-  <style>
-  .body1 {
-    @apply(--paper-font-body1);
-    color: #757575;
-  }
-  
-  .subhead {
-    @apply(--paper-font-subhead);
-  }
-  
-  .time {
-    text-align: right;
-  }
-  
-  .torrent-li {
-    border-bottom: 1px solid #EEE;
-    padding: 8px;
-  }
-  
-  .torrent-li > div {
-    padding: 8px;
-  }
-  </style>
-
-  <template>
-    <div class="center-justified horizontal layout">
-      <div class="li">
-        <div class="cursor-p horizontal hover layout torrent-li white" on-click="click">
-          <div>
-            <selectable-icon icon_class="[[return_class(item.category)]]" icon_text="[[return_text(item.link.length)]]" id="selectable_icon" selected$="{{selected}}"></selectable-icon>
-          </div>
-
-          <div class="flex layout vertical">
-            <div class="body1">[[return_description(item)]]</div>
-            <div class="subhead">[[item.title]]</div>
-            <div class="center horizontal justified layout">
-              <div class="body1 etc flex-5">[[item.category]]</div>
-              <div class="body1 flex-4 time">[[return_time(item.time)]]</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </template>
-
-  <script>
-  Polymer({
-
-    click: function(e) {
-      if (Polymer.dom(e).localTarget.id != "selectable_icon") {
-        e.stopPropagation();
-
-        if (this.item.link.length) {
-          FlowRouter.setQueryParams({
-            "back-route": "project-view",
-            route: "torrent-view",
-            torrent: this.item._id
-          });
-        } else {
-          document.querySelector("#polymer_toast").toast("under processing");
-        }
-      }
-    },
-
-    is: "torrent-item",
-
-    properties: {
-      item: {
-        type: Object,
-        value: function() {
-          return {};
-        }
-      },
-      selected: {
-        notify: true,
-        reflectToAttribute: true,
-        type: Boolean,
-        value: false
-      }
-    },
-
-    return_class: function(text) {
-      return polymer_color(text ? text : "#");
-    },
-
-    return_description: function(item) {
-      return (item.size ? item.size : "#") + " | " + (item.leech ? item.leech + "L" : "#") + " / " + (item.seed ? item.seed + "S" : "#");
-    },
-
-    return_text: function(text) {
-      return (text ? text : "#");
-    },
-
-    return_time: function(time) {
-      return (moment(time).isValid() ? moment(time).format("ddd YYYY MMM DD") : "#");
-    }
-
-  });
-  </script>
-
-</dom-module>
-<dom-module id="torrent-view" assetpath="/linto/">
-
-  <style>
-  paper-icon-item {
-    border-bottom: 1px solid #EEE;
-  }
-  
-  paper-toggle-button {
-    --paper-toggle-button-checked-bar-color: var(--paper-green-500);
-    --paper-toggle-button-checked-button-color: var(--paper-green-500);
-    --paper-toggle-button-checked-ink-color: var(--paper-green-500);
-  }
-  
-  .body1 {
-    @apply(--paper-font-body1);
-    color: #757575;
-  }
-  
-  .body2 {
-    @apply(--paper-font-body2);
-  }
-  
-  .footer-li {
-    min-height: 88px;
-    padding: 8px;
-  }
-  
-  .subhead {
-    @apply(--paper-font-subhead);
-  }
-  
-  .footer-li > div,
-  .title-li,
-  .title-li > div {
-    padding: 8px;
-  }
-  </style>
-
-  <template>
-    <iron-localstorage name="proxy" on-iron-localstorage-load-empty="initialize_proxy" value="[[proxy]]"></iron-localstorage>
-
-    <paper-header-panel style="background: #EEE;">
-      <div class="center-justified horizontal layout">
-        <div class="li">
-          <div class="cursor-p horizontal layout title-li">
-            <div>
-              <paper-icon-button icon="arrow-back" on-click="back"></paper-icon-button>
-            </div>
-
-            <div class="flex layout vertical">
-              <div class="body1">[[return_description(mwcData.torrent)]]</div>
-
-              <div><span class="subhead">[[mwcData.torrent.title]]</span>&nbsp;&nbsp;<span class$="body2 [[return_class(mwcData.torrent.category)]]">&nbsp;&nbsp;[[mwcData.torrent.category]]&nbsp;&nbsp;</span>&nbsp;&nbsp;</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="center-justified horizontal layout">
-        <div class="li">
-          <template is="dom-repeat" items="[[mwcData.torrent.link]]">
-            <paper-icon-item class="cursor-p white" data-link$="[[item.url]]" on-click="click">
-              <selectable-icon icon_class="[[return_class(item.text)]]" icon_text="[[return_icon_text(item.text)]]" item-icon=""></selectable-icon>
-
-              <paper-item-body two-line="">
-                <div>[[item.text]]</div>
-                <div secondary="">[[return_time(item.time)]]</div>
-              </paper-item-body>
-            </paper-icon-item>
-          </template>
-        </div>
-      </div>
-
-      <div class="center-justified horizontal layout">
-        <div class="li">
-          <div class="center footer-li horizontal layout">
-            <div>
-              <paper-toggle-button checked="{{proxy}}">enable proxy</paper-toggle-button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </paper-header-panel>
-  </template>
-
-  <script>
-  Polymer({
-
-    back: function() {
-      FlowRouter.setQueryParams({
-        "route": (FlowRouter.getQueryParam("back-route") ? FlowRouter.getQueryParam("back-route") : null)
-      });
-    },
-
-    behaviors: [mwcMixin],
-
-    click: function(e, d) {
-      e.stopPropagation();
-
-      window.open((this.proxy ? "http://do.vcompile.com/proxy/redirect.php?url=" + encodeURIComponent(e.model.__data__.item.url) : e.model.__data__.item.url), "_system");
-    },
-
-    getMeteorData: function() {
-      Meteor.subscribe("torrent", {
-        field: "torrent",
-        id: [FlowRouter.getQueryParam("torrent") ? FlowRouter.getQueryParam("torrent") : "#"]
-      });
-
-      return {
-        torrent: _torrent.findOne({
-          _id: FlowRouter.getQueryParam("torrent")
-        })
-      };
-    },
-
-    initialize_proxy: function() {
-      this.proxy = false;
-    },
-
-    is: "torrent-view",
-
-    properties: {
-      proxy: {
-        type: Boolean,
-        value: false
-      }
-    },
-
-    return_class: function(text) {
-      return polymer_color(text ? text : "#");
-    },
-
-    return_description: function(item) {
-      return (item ? (item.size ? item.size : "#") + " | " + (item.leech ? item.leech + "L" : "#") + " / " + (item.seed ? item.seed + "S" : "#") : "#");
-    },
-
-    return_icon_text: function(text) {
-      return (isNaN(text.charAt(0)) ? text.charAt(0) : "#");
-    },
-
-    return_time: function(time) {
-      return (moment(time).isValid() ? moment(time).fromNow() : "#");
-    }
-
-  });
-  </script>
-
-</dom-module>
-<dom-module id="trending-view" assetpath="/linto/">
-
-  <style>
-  paper-fab {
-    --paper-fab-background: var(--paper-red-500);
-    --paper-fab-keyboard-focus-background: var(--paper-red-700);
-  }
-  
-  paper-toolbar {
-    --paper-toolbar-background: var(--paper-cyan-700);
-    --paper-toolbar-color: white;
-  }
-  
-  paper-toolbar paper-icon-button {
-    margin: 0!important;
-  }
-  
-  paper-toolbar .title {
-    padding: 0 8px;
-  }
-  
-  .body1 {
-    @apply(--paper-font-body1);
-    color: #757575;
-  }
-  
-  .footer-li {
-    min-height: 88px;
-  }
-  
-  .menu-b {
-    bottom: 16px;
-    position: fixed;
-    right: 16px;
-    transition: transform 0.2s ease-in-out;
-    will-change: transform;
-  }
-  
-  .menu-b.move-down {
-    transform: translate3d(0, 88px, 0)!important;
-  }
-  
-  .subhead {
-    @apply(--paper-font-subhead);
-  }
-  
-  .title-li,
-  .title-li > div {
-    padding: 8px;
-  }
-  
-  .trending-li {
-    padding: 4px 12px;
-  }
-  
-  .trending-li > div {
-    margin: 4px;
-    padding: 4px 12px;
-  }
-  </style>
-
-  <template>
-    <iron-localstorage name="trending" on-iron-localstorage-load-empty="initialize_trending" value="[[trending]]"></iron-localstorage>
-
-    <paper-header-panel>
-      <paper-toolbar>
-        <paper-icon-button icon="menu" on-click="menu_toggle" paper-drawer-toggle=""></paper-icon-button>
-        <div class="title">TorrentAlert</div>
-        <paper-icon-button icon="search" on-click="search"></paper-icon-button>
-      </paper-toolbar>
-
-      <div class="center-justified horizontal layout">
-        <div class="li">
-          <div class="center cursor-d horizontal layout title-li">
-            <div>
-              <iron-icon icon="store"></iron-icon>
-            </div>
-
-            <div class="subhead" style="border-bottom: 1px solid #757575;">Trending Top [[return_text(trending.keyword.length)]]</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="center-justified horizontal layout">
-        <div class="li">
-          <div class="horizontal layout trending-li wrap">
-            <template is="dom-repeat" items="[[trending.keyword]]">
-              <div class="cursor-p grey-500 subhead" on-click="click">[[item]]</div>
-            </template>
-          </div>
-        </div>
-      </div>
-
-      <div class="footer-li"></div>
-    </paper-header-panel>
-
-    <paper-fab class="menu-b" id="fab" icon="add" on-click="add_project"></paper-fab>
-  </template>
-
-  <script>
-  Polymer({
-
-    add_project: function() {
-      FlowRouter.setQueryParams({
-        route: "add-project"
-      });
-    },
-
-    attached: function() {
-      var _this = this;
-
-      Meteor.setTimeout(function() {
-        if (6 < moment.duration(moment().diff(moment(_this.trending.time))).asHours() || !_this.trending.keyword.length) {
-          Meteor.call("trending", function(error, response) {
-            if (error) {
-              document.querySelector("#polymer_toast").toast(error.reason);
-            } else {
-              if (response.length) {
-                _this.trending = {
-                  keyword: response,
-                  time: moment().format()
-                };
-
-                response.forEach(function(keyword, index) {
-                  Meteor.call("count", keyword, function(error, count) {
-                    if (!error && count) {
-                      _this.set("trending.keyword." + index, keyword + " [" + count + "]")
-                    }
-                  });
-                });
-              }
-            }
-          });
-        }
-      }, 1000);
-    },
-
-    click: function(e) {
-      if (Meteor.status().connected) {
-        var keyword = Polymer.dom(e).localTarget.textContent.split(" [")[0];
-
-        if (keyword.length) {
-          var row = {
-            keyword: keyword,
-            leech: 1,
-            seed: 1,
-            url: "search",
-            within: 6,
-            worker: "search"
-          };
-
-          Meteor.call("insert_project", row, function(error, response) {
-            if (error) {
-              document.querySelector("#polymer_toast").toast((error.reason == "userNotFound") ? "internet/user required" : error.reason);
-            } else {
-              if (response == "") {
-                document.querySelector("#polymer_toast").toast("unknown issue");
-              } else {
-                document.querySelector("#polymer_toast").toast("i keyword added");
-
-                FlowRouter.setQueryParams({
-                  project: response,
-                  route: "project-view"
-                });
-              }
-            }
-          });
-        } else {
-          document.querySelector("#polymer_toast").toast("empty keyword");
-        }
-      } else {
-        document.querySelector("#polymer_toast").toast("server connection required");
-      }
-    },
-
-    initialize_trending: function() {
-      this.trending = {
-        keyword: [],
-        time: moment().format()
-      };
-    },
-
-    is: "trending-view",
-
-    menu_toggle: function() {
-      document.querySelector("#old_layout").menu_toggle();
-    },
-
-    properties: {
-      trending: {
-        type: Object,
-        value: function() {
-          return {
-            keyword: [],
-            time: moment().format()
-          };
-        }
-      }
-    },
-
-    return_text: function(text) {
-      return (text ? text : "#");
-    },
-
-    search: function() {
-      FlowRouter.setQueryParams({
-        "back-route": "trending",
-        route: "search-view"
-      });
-    }
-
-  });
-  </script>
-
-</dom-module>
-<dom-module id="search-view" assetpath="/linto/">
+<dom-module id="search-list" assetpath="/linto/">
 
   <style>
   input {
@@ -23012,7 +22644,7 @@ mwcLayout = new PolymerLayout();
   </style>
 
   <template>
-    <iron-localstorage name="search" on-iron-localstorage-load-empty="initialize_search_db" value="[[search_db]]"></iron-localstorage>
+    <iron-localstorage name="search" on-iron-localstorage-load-empty="initialize_search" value="{{search}}"></iron-localstorage>
 
     <paper-header-panel style="background: #EEE;">
       <paper-toolbar>
@@ -23022,7 +22654,7 @@ mwcLayout = new PolymerLayout();
 
       <paper-progress hidden="" id="search_progress" indeterminate=""></paper-progress>
 
-      <template is="dom-repeat" items="[[search_db]]">
+      <template is="dom-repeat" items="[[search]]">
         <div class="center-justified horizontal layout">
           <div class="li">
             <paper-icon-item class="cursor-p white" on-click="add_project">
@@ -23066,7 +22698,7 @@ mwcLayout = new PolymerLayout();
 
                 FlowRouter.setQueryParams({
                   project: response,
-                  route: "project-view"
+                  route: "project-list"
                 });
               }
             }
@@ -23085,27 +22717,27 @@ mwcLayout = new PolymerLayout();
       });
     },
 
-    initialize_search_db: function() {
-      this.search_db = [];
+    initialize_search: function() {
+      this.search = [];
     },
 
-    is: "search-view",
+    is: "search-list",
 
     properties: {
-      search_db: {
+      search: {
         type: Array,
         value: function() {
           return [];
         }
       },
       search_input: {
-        observer: "search",
+        observer: "search_input_change",
         type: String,
         value: ""
       }
     },
 
-    search: function(newValue, oldValue) {
+    search_input_change: function(newValue, oldValue) {
       if (newValue && oldValue) {
         if (Meteor.status().connected) {
           this.$.search_progress.hidden = false;
@@ -23118,7 +22750,7 @@ mwcLayout = new PolymerLayout();
                 _this.$.search_progress.hidden = true;
 
                 if (!error) {
-                  _this.search_db = response;
+                  _this.search = response;
                 }
               });
             } else {
@@ -23233,6 +22865,457 @@ mwcLayout = new PolymerLayout();
       } else {
         document.querySelector("#polymer_toast").toast("min password length is 6");
       }
+    }
+
+  });
+  </script>
+
+</dom-module>
+<dom-module id="trending-list" assetpath="/linto/">
+
+  <style>
+  paper-fab {
+    --paper-fab-background: var(--paper-red-500);
+    --paper-fab-keyboard-focus-background: var(--paper-red-700);
+  }
+  
+  paper-toolbar {
+    --paper-toolbar-background: var(--paper-cyan-700);
+    --paper-toolbar-color: white;
+  }
+  
+  paper-toolbar paper-icon-button {
+    margin: 0!important;
+  }
+  
+  paper-toolbar .title {
+    padding: 0 8px;
+  }
+  
+  .body1 {
+    @apply(--paper-font-body1);
+    color: #757575;
+  }
+  
+  .footer-li {
+    min-height: 88px;
+  }
+  
+  .menu-b {
+    bottom: 16px;
+    position: fixed;
+    right: 16px;
+    transition: transform 0.2s ease-in-out;
+    will-change: transform;
+  }
+  
+  .menu-b.move-down {
+    transform: translate3d(0, 88px, 0)!important;
+  }
+  
+  .subhead {
+    @apply(--paper-font-subhead);
+  }
+  
+  .title-li,
+  .title-li > div {
+    padding: 8px;
+  }
+  
+  .trending-li {
+    padding: 4px 12px;
+  }
+  
+  .trending-li > div {
+    margin: 4px;
+    padding: 4px 12px;
+  }
+  </style>
+
+  <template>
+    <iron-localstorage name="trending" on-iron-localstorage-load-empty="initialize_trending" value="{{trending}}"></iron-localstorage>
+
+    <paper-header-panel>
+      <paper-toolbar>
+        <paper-icon-button icon="menu" on-click="menu_toggle" paper-drawer-toggle=""></paper-icon-button>
+        <div class="title">TorrentAlert</div>
+        <paper-icon-button icon="search" on-click="search"></paper-icon-button>
+      </paper-toolbar>
+
+      <div class="center-justified horizontal layout">
+        <div class="li">
+          <div class="center cursor-d horizontal layout title-li">
+            <div>
+              <iron-icon icon="store"></iron-icon>
+            </div>
+
+            <div class="subhead" style="border-bottom: 1px solid #757575;">Trending [[return_trending_count(trending.keyword.length)]]</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="center-justified horizontal layout">
+        <div class="li">
+          <div class="horizontal layout trending-li wrap">
+            <template is="dom-repeat" items="[[trending.keyword]]">
+              <div class="cursor-p grey-500 subhead" on-click="click">[[item]]</div>
+            </template>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-li"></div>
+    </paper-header-panel>
+
+    <paper-fab class="menu-b" id="fab" icon="add" on-click="add_project"></paper-fab>
+  </template>
+
+  <script>
+  Polymer({
+
+    add_project: function() {
+      FlowRouter.setQueryParams({
+        "back-route": "trending-list",
+        route: "add-project"
+      });
+    },
+
+    attached: function() {
+      var _this = this;
+
+      Meteor.setTimeout(function() {
+        if (6 < moment.duration(moment().diff(moment(_this.trending.time))).asHours() || !_this.trending.keyword.length) {
+          Meteor.call("trending", function(error, response) {
+            if (error) {
+              document.querySelector("#polymer_toast").toast(error.reason);
+            } else {
+              if (response.length) {
+                _this.trending = {
+                  keyword: response,
+                  time: moment().format()
+                };
+              }
+            }
+          });
+        }
+      }, 1000);
+    },
+
+    click: function(e) {
+      if (Meteor.status().connected) {
+        var keyword = Polymer.dom(e).localTarget.textContent;
+
+        if (keyword.length) {
+          var row = {
+            keyword: keyword,
+            leech: 1,
+            seed: 1,
+            url: "search",
+            within: 6,
+            worker: "search"
+          };
+
+          Meteor.call("insert_project", row, function(error, response) {
+            if (error) {
+              document.querySelector("#polymer_toast").toast((error.reason == "userNotFound") ? "internet/user required" : error.reason);
+            } else {
+              if (response == "") {
+                document.querySelector("#polymer_toast").toast("unknown issue");
+              } else {
+                document.querySelector("#polymer_toast").toast("i keyword added");
+
+                FlowRouter.setQueryParams({
+                  project: response,
+                  route: "project-list"
+                });
+              }
+            }
+          });
+        } else {
+          document.querySelector("#polymer_toast").toast("empty keyword");
+        }
+      } else {
+        document.querySelector("#polymer_toast").toast("server connection required");
+      }
+    },
+
+    initialize_trending: function() {
+      this.trending = {
+        keyword: [],
+        time: moment().format()
+      };
+    },
+
+    is: "trending-list",
+
+    menu_toggle: function() {
+      document.querySelector("#old_layout").menu_toggle();
+    },
+
+    properties: {
+      trending: {
+        type: Object,
+        value: function() {
+          return {
+            keyword: [],
+            time: moment().format()
+          };
+        }
+      }
+    },
+
+    return_trending_count: function(count) {
+      return (count ? "#" + count : "List");
+    },
+
+    search: function() {
+      FlowRouter.setQueryParams({
+        "back-route": "trending-list",
+        route: "search-list"
+      });
+    }
+
+  });
+  </script>
+
+</dom-module>
+<dom-module id="torrent-item" assetpath="/linto/">
+
+  <style>
+  .body1 {
+    @apply(--paper-font-body1);
+    color: #757575;
+  }
+  
+  .subhead {
+    @apply(--paper-font-subhead);
+  }
+  
+  .time {
+    text-align: right;
+  }
+  
+  .torrent-li {
+    border-bottom: 1px solid #EEE;
+    padding: 8px;
+  }
+  
+  .torrent-li > div {
+    padding: 8px;
+  }
+  </style>
+
+  <template>
+    <div class="center-justified horizontal layout">
+      <div class="li">
+        <div class="cursor-p horizontal hover layout torrent-li white" on-click="click">
+          <div>
+            <selectable-icon icon_class="[[return_class(item.category)]]" icon_text="[[return_text(item.link.length)]]" id="selectable_icon" selected$="{{selected}}"></selectable-icon>
+          </div>
+
+          <div class="flex layout vertical">
+            <div class="body1">[[return_description(item)]]</div>
+            <div class="subhead">[[item.title]]</div>
+            <div class="center horizontal justified layout">
+              <div class="body1 etc flex-5">[[item.category]]</div>
+              <div class="body1 flex-4 time">[[return_time(item.time)]]</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <script>
+  Polymer({
+
+    click: function(e) {
+      if (Polymer.dom(e).localTarget.id != "selectable_icon") {
+        e.stopPropagation();
+
+        if (this.item.link.length) {
+          document.querySelector("#torrent_list").item = this.item;
+
+          FlowRouter.setQueryParams({
+            "back-route": FlowRouter.getQueryParam("route"),
+            route: "torrent-list"
+          });
+        } else {
+          document.querySelector("#polymer_toast").toast("under processing");
+        }
+      }
+    },
+
+    is: "torrent-item",
+
+    properties: {
+      item: {
+        type: Object,
+        value: function() {
+          return {};
+        }
+      },
+      selected: {
+        notify: true,
+        reflectToAttribute: true,
+        type: Boolean,
+        value: false
+      }
+    },
+
+    return_class: function(text) {
+      return polymer_color(text ? text : "#");
+    },
+
+    return_description: function(item) {
+      return (item.size ? item.size : "#") + " | " + (item.leech ? item.leech + "L" : "#") + " / " + (item.seed ? item.seed + "S" : "#");
+    },
+
+    return_text: function(text) {
+      return (text ? text : "#");
+    },
+
+    return_time: function(time) {
+      return (moment(time).isValid() ? moment(time).format("ddd YYYY MMM DD") : "#");
+    }
+
+  });
+  </script>
+
+</dom-module>
+<dom-module id="torrent-list" assetpath="/linto/">
+
+  <style>
+  paper-icon-item {
+    border-bottom: 1px solid #EEE;
+  }
+  
+  paper-toggle-button {
+    --paper-toggle-button-checked-bar-color: var(--paper-green-500);
+    --paper-toggle-button-checked-button-color: var(--paper-green-500);
+    --paper-toggle-button-checked-ink-color: var(--paper-green-500);
+  }
+  
+  .body1 {
+    @apply(--paper-font-body1);
+    color: #757575;
+  }
+  
+  .body2 {
+    @apply(--paper-font-body2);
+  }
+  
+  .footer-li {
+    min-height: 88px;
+    padding: 8px;
+  }
+  
+  .subhead {
+    @apply(--paper-font-subhead);
+  }
+  
+  .footer-li > div,
+  .title-li,
+  .title-li > div {
+    padding: 8px;
+  }
+  </style>
+
+  <template>
+    <iron-localstorage name="proxy" on-iron-localstorage-load-empty="initialize_proxy" value="{{proxy}}"></iron-localstorage>
+
+    <paper-header-panel style="background: #EEE;">
+      <div class="center-justified horizontal layout">
+        <div class="li">
+          <div class="cursor-p horizontal layout title-li">
+            <div>
+              <paper-icon-button icon="arrow-back" on-click="back"></paper-icon-button>
+            </div>
+
+            <div class="flex layout vertical">
+              <div class="body1">[[return_description(item)]]</div>
+
+              <div><span class="subhead">[[item.title]]</span>&nbsp;&nbsp;<span class$="body2 [[return_class(item.category)]]">&nbsp;&nbsp;[[item.category]]&nbsp;&nbsp;</span>&nbsp;&nbsp;</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="center-justified horizontal layout">
+        <div class="li">
+          <template is="dom-repeat" items="[[item.link]]">
+            <paper-icon-item class="cursor-p white" data-link$="[[item.url]]" on-click="click">
+              <selectable-icon icon_class="[[return_class(item.text)]]" icon_text="[[return_icon_text(item.text)]]" item-icon=""></selectable-icon>
+
+              <paper-item-body two-line="">
+                <div>[[item.text]]</div>
+                <div secondary="">[[return_time(item.time)]]</div>
+              </paper-item-body>
+            </paper-icon-item>
+          </template>
+        </div>
+      </div>
+
+      <div class="center-justified horizontal layout">
+        <div class="li">
+          <div class="center footer-li horizontal layout">
+            <div>
+              <paper-toggle-button checked="{{proxy}}">enable proxy</paper-toggle-button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </paper-header-panel>
+  </template>
+
+  <script>
+  Polymer({
+
+    back: function() {
+      FlowRouter.setQueryParams({
+        "route": (FlowRouter.getQueryParam("back-route") ? FlowRouter.getQueryParam("back-route") : null)
+      });
+    },
+
+    click: function(e, d) {
+      e.stopPropagation();
+
+      window.open((this.proxy ? "http://do.vcompile.com/proxy/redirect.php?url=" + encodeURIComponent(e.model.__data__.item.url) : e.model.__data__.item.url), "_system");
+    },
+
+    initialize_proxy: function() {
+      this.proxy = false;
+    },
+
+    is: "torrent-list",
+
+    properties: {
+      item: {
+        type: Object,
+        value: function() {
+          return {};
+        }
+      },
+      proxy: {
+        type: Boolean,
+        value: false
+      }
+    },
+
+    return_class: function(text) {
+      return polymer_color(text ? text : "#");
+    },
+
+    return_description: function(item) {
+      return (item ? (item.size ? item.size : "#") + " | " + (item.leech ? item.leech + "L" : "#") + " / " + (item.seed ? item.seed + "S" : "#") : "#");
+    },
+
+    return_icon_text: function(text) {
+      return (isNaN(text.charAt(0)) ? text.charAt(0) : "#");
+    },
+
+    return_time: function(time) {
+      return (moment(time).isValid() ? moment(time).fromNow() : "#");
     }
 
   });
@@ -23364,8 +23447,10 @@ mwcLayout = new PolymerLayout();
               FlowRouter.go("/main");
             }
           } else { // offline
-            if ((document.querySelector("#torrent_db").value || []).length) { // localstorage
-              FlowRouter.go("/main");
+            if ((localStorage.favorite || []).length) { // localstorage
+              FlowRouter.go("/main", {}, {
+                route: "favorite-list"
+              });
             }
           }
         });
@@ -23671,10 +23756,12 @@ mwcLayout = new PolymerLayout();
         }
       },
       entry_animation: {
-        type: String
+        type: String,
+        value: "fade-in-animation"
       },
       exit_animation: {
-        type: String
+        type: String,
+        value: "fade-out-animation"
       },
       selected: {
         type: Number,
@@ -23697,15 +23784,15 @@ mwcLayout = new PolymerLayout();
     swiper_up: function(e, d) {
       if (d.x < $(window).width() / 2) {
         if (1 <= this.selected && this.selected < 3) {
-          this.entry_animation = "slide-from-right-animation";
-          this.exit_animation = "slide-left-animation";
+          // this.entry_animation = "slide-from-right-animation";
+          // this.exit_animation = "slide-left-animation";
 
           this.selected += 1;
         }
       } else {
         if (1 < this.selected && this.selected <= 3) {
-          this.entry_animation = "slide-from-left-animation";
-          this.exit_animation = "slide-right-animation";
+          // this.entry_animation = "slide-from-left-animation";
+          // this.exit_animation = "slide-right-animation";
 
           this.selected -= 1;
         }
