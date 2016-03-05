@@ -9512,10 +9512,10 @@ this.fire('dom-change');
     /**
      * The function called by `<paper-input-container>` when the input value or validity changes.
      * @param {{
-     *   inputElement: (Node|undefined),
+     *   inputElement: (Element|undefined),
      *   value: (string|undefined),
-     *   invalid: (boolean|undefined)
-     * }} state All properties are optional -
+     *   invalid: boolean
+     * }} state -
      *     inputElement: The input element.
      *     value: The input value.
      *     invalid: True if the input value is invalid.
@@ -15660,6 +15660,17 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
       }
     },
 
+    /**
+     * This overrides the update function in PaperInputAddonBehavior.
+     * @param {{
+     *   inputElement: (Element|undefined),
+     *   value: (string|undefined),
+     *   invalid: boolean
+     * }} state -
+     *     inputElement: The input element.
+     *     value: The input value.
+     *     invalid: True if the input value is invalid.
+     */
     update: function(state) {
       this._setInvalid(state.invalid);
     }
@@ -19326,6 +19337,17 @@ mwcLayout = new PolymerLayout();
       }
     },
 
+    /**
+     * This overrides the update function in PaperInputAddonBehavior.
+     * @param {{
+     *   inputElement: (Element|undefined),
+     *   value: (string|undefined),
+     *   invalid: boolean
+     * }} state -
+     *     inputElement: The input element.
+     *     value: The input value.
+     *     invalid: True if the input value is invalid.
+     */
     update: function(state) {
       if (!state.inputElement) {
         return;
@@ -19333,7 +19355,7 @@ mwcLayout = new PolymerLayout();
 
       state.value = state.value || '';
 
-      var counter = state.value.length;
+      var counter = state.value.length.toString();
 
       if (state.inputElement.hasAttribute('maxlength')) {
         counter += '/' + state.inputElement.getAttribute('maxlength');
@@ -22036,7 +22058,7 @@ mwcLayout = new PolymerLayout();
   
   .prompt-title {
     border-bottom: 1px solid #757575;
-    padding: 8px 0;
+    padding-bottom: 8px;
   }
   
   .subhead {
@@ -22044,14 +22066,13 @@ mwcLayout = new PolymerLayout();
   }
   </style>
 
-
   <template>
 
     <paper-drawer-panel id="paper_drawer_panel">
       <paper-header-panel drawer="">
         <div class="fit layout vertical">
           <template if="[[user._id]]" is="dom-if">
-            <paper-icon-item class="border-bottom cursor-p" onclick="document.querySelector('#user_prompt').open();">
+            <paper-icon-item class="cursor-p" onclick="document.querySelector('#user_prompt').open();">
               <selectable-icon icon_img_src="[[user.profile.picture]]" item-icon=""></selectable-icon>
 
               <paper-item-body two-line="">
@@ -22065,11 +22086,16 @@ mwcLayout = new PolymerLayout();
 
           <div class="flex" style="overflow: auto;">
             <iron-selector on-iron-activate="menu_opt" selected-attribute="selected">
-              <paper-item class="blue-700 border-bottom cursor-p" data-id="favorite-list">Favorite</paper-item>
-              <paper-item class="cyan-700 border-bottom cursor-p" data-id="trending-list">Trending</paper-item>
+              <paper-icon-item class="blue-700 border-top cursor-p" data-id="favorite-list">
+                <iron-icon icon="favorite-border" item-icon=""></iron-icon> Favorite
+              </paper-icon-item>
+
+              <paper-icon-item class="border-top cyan-700 cursor-p" data-id="trending-list">
+                <iron-icon icon="trending-up" item-icon=""></iron-icon> Trending
+              </paper-icon-item>
 
               <template is="dom-repeat" items="[[mwcData.project]]">
-                <paper-icon-item class="border-bottom cursor-p" data-id$="[[item._id]]">
+                <paper-icon-item class="border-bottom border-top cursor-p" data-id$="[[item._id]]">
                   <selectable-icon icon_class="[[return_class(item.keyword)]]" icon_text="[[return_icon_text(item.keyword)]]" item-icon=""></selectable-icon>
 
                   <paper-item-body two-line="">
@@ -22234,6 +22260,10 @@ mwcLayout = new PolymerLayout();
     width: 100%;
   }
   
+  paper-slider {
+    max-width: 50%;
+  }
+  
   paper-toolbar {
     --paper-toolbar-background: var(--paper-cyan-700);
     --paper-toolbar-color: white;
@@ -22326,8 +22356,8 @@ mwcLayout = new PolymerLayout();
 
         <div class="title" id="project_list_toolbar_title">TorrentAlert</div>
 
-        <paper-icon-button class="selection-visible" icon="favorite-border" on-click="favorite"></paper-icon-button>
         <paper-icon-button class="selection-visible" icon="delete" on-click="remove_torrent"></paper-icon-button>
+        <paper-icon-button class="selection-visible" icon="favorite-border" on-click="favorite"></paper-icon-button>
         <paper-icon-button class="selection-visible" icon="social:share" on-click="share"></paper-icon-button>
         <paper-icon-button class="selection-hidden" icon="search" on-click="search"></paper-icon-button>
       </paper-toolbar>
@@ -22946,7 +22976,7 @@ mwcLayout = new PolymerLayout();
         <div class="li">
           <div class="center cursor-d horizontal layout title-li">
             <div>
-              <iron-icon icon="store"></iron-icon>
+              <iron-icon icon="trending-up"></iron-icon>
             </div>
 
             <div class="subhead" style="border-bottom: 1px solid #757575;">Trending [[return_trending_count(trending.keyword.length)]]</div>
@@ -23444,13 +23474,17 @@ mwcLayout = new PolymerLayout();
         Tracker.autorun(function() {
           if (Meteor.status().connected) {
             if (Meteor.user()) {
-              FlowRouter.go("/main");
+              if (!FlowRouter.current().route.group) {
+                FlowRouter.go("/main");
+              }
             }
           } else { // offline
             if ((localStorage.favorite || []).length) { // localstorage
-              FlowRouter.go("/main", {}, {
-                route: "favorite-list"
-              });
+              if (!FlowRouter.current().route.group) {
+                FlowRouter.go("/main", {}, {
+                  route: "favorite-list"
+                });
+              }
             }
           }
         });

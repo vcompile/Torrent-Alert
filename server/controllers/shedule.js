@@ -3,13 +3,13 @@ Meteor.setInterval(function() {
     _project.find({
       worker: "schedule"
     }).forEach(function(item) {
-      if (!(moment.duration(moment().diff(moment(item.time))).asHours() % 6)) {
+      if (6 < parseInt(moment.duration(moment().diff(moment(item.time))).asHours())) {
         item.torrent.forEach(function(torrent_id) {
           var torrent = _torrent.findOne({
             _id: torrent_id
           });
 
-          if (torrent && item.within < moment.duration(moment().diff(moment(torrent.time))).asMonths()) {
+          if (torrent && item.within < parseInt(moment.duration(moment().diff(moment(torrent.time))).asMonths())) {
             _project.update({
               _id: item._id
             }, {
@@ -25,6 +25,14 @@ Meteor.setInterval(function() {
                 project: item._id
               }
             });
+          }
+        });
+
+        _project.update({
+          _id: item._id
+        }, {
+          $set: {
+            time: moment().format()
           }
         });
 
@@ -44,4 +52,4 @@ Meteor.setInterval(function() {
       }
     });
   }).run();
-}, 1000 * 60 * 60);
+}, 1000 * 60 * 15);

@@ -129,13 +129,6 @@ _torrentz_worker = function(worker_id) {
                         url: torrent.url,
                         user: A
                       })) {
-                      _push.insert({
-                        date: moment().format("YYYY-MM-DD"),
-                        project: row._id,
-                        url: torrent.url,
-                        user: A
-                      });
-
                       if (_push.find({
                           date: moment().format("YYYY-MM-DD"),
                           project: row._id,
@@ -153,6 +146,13 @@ _torrentz_worker = function(worker_id) {
                           title: row.keyword
                         });
                       }
+
+                      _push.insert({
+                        date: moment().format("YYYY-MM-DD"),
+                        project: row._id,
+                        url: torrent.url,
+                        user: A
+                      });
                     }
                   });
                 }

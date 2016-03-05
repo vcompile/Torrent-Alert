@@ -39,7 +39,7 @@
   
   .prompt-title {
     border-bottom: 1px solid #757575;
-    padding: 8px 0;
+    padding-bottom: 8px;
   }
   
   .subhead {
@@ -47,14 +47,13 @@
   }
   </style>
 
-
   <template>
 
     <paper-drawer-panel id="paper_drawer_panel">
       <paper-header-panel drawer>
         <div class="fit layout vertical">
           <template if="[[user._id]]" is="dom-if">
-            <paper-icon-item class="border-bottom cursor-p" onclick="document.querySelector('#user_prompt').open();">
+            <paper-icon-item class="cursor-p" onclick="document.querySelector('#user_prompt').open();">
               <selectable-icon icon_img_src="[[user.profile.picture]]" item-icon></selectable-icon>
 
               <paper-item-body two-line>
@@ -68,11 +67,16 @@
 
           <div class="flex" style="overflow: auto;">
             <iron-selector on-iron-activate="menu_opt" selected-attribute="selected">
-              <paper-item class="blue-700 border-bottom cursor-p" data-id="favorite-list">Favorite</paper-item>
-              <paper-item class="cyan-700 border-bottom cursor-p" data-id="trending-list">Trending</paper-item>
+              <paper-icon-item class="blue-700 border-top cursor-p" data-id="favorite-list">
+                <iron-icon icon="favorite-border" item-icon></iron-icon> Favorite
+              </paper-icon-item>
+
+              <paper-icon-item class="border-top cyan-700 cursor-p" data-id="trending-list">
+                <iron-icon icon="trending-up" item-icon></iron-icon> Trending
+              </paper-icon-item>
 
               <template is="dom-repeat" items="[[mwcData.project]]">
-                <paper-icon-item class="border-bottom cursor-p" data-id$="[[item._id]]">
+                <paper-icon-item class="border-bottom border-top cursor-p" data-id$="[[item._id]]">
                   <selectable-icon icon_class="[[return_class(item.keyword)]]" icon_text="[[return_icon_text(item.keyword)]]" item-icon></selectable-icon>
 
                   <paper-item-body two-line>

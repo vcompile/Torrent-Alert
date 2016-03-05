@@ -19,7 +19,10 @@ Meteor.publish("torrent", function(input) {
   });
 
   var query = {
-    user: this.userId
+    user: this.userId,
+    user_removed: {
+      $ne: this.userId
+    }
   };
 
   if (input.field == "torrent") {
@@ -34,7 +37,8 @@ Meteor.publish("torrent", function(input) {
 
   return _torrent.find(query, {
     fields: {
-      user: false
+      user: false,
+      user_removed: false
     },
     limit: 250,
     sort: {

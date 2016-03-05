@@ -120,13 +120,17 @@
         Tracker.autorun(function() {
           if (Meteor.status().connected) {
             if (Meteor.user()) {
-              FlowRouter.go("/main");
+              if (!FlowRouter.current().route.group) {
+                FlowRouter.go("/main");
+              }
             }
           } else { // offline
             if ((localStorage.favorite || []).length) { // localstorage
-              FlowRouter.go("/main", {}, {
-                route: "favorite-list"
-              });
+              if (!FlowRouter.current().route.group) {
+                FlowRouter.go("/main", {}, {
+                  route: "favorite-list"
+                });
+              }
             }
           }
         });

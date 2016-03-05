@@ -11,7 +11,7 @@ Meteor.setInterval(function() {
         },
         user: user._id
       }).forEach(function(item) {
-        if (!(moment.duration(moment().diff(moment(item.time))).asHours() % 6)) {
+        if (parseInt(moment.duration(moment().diff(moment(item.time))).asHours()) % 6 == 1) {
           if (!_worker.findOne({
               status: "",
               torrent: item._id,
