@@ -20,4 +20,5 @@ mwc:compiler
 mwc:mixin
 raix:push
 
+mwc-compiler
 npm-container

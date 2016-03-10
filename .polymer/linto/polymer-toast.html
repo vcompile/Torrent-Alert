@@ -19,7 +19,7 @@
   </style>
 
   <template>
-    <paper-toast class="center cursor-d horizontal justified layout subhead" duration="4000" id="toast" on-iron-announce="toast_open" on-transitionend="transition">
+    <paper-toast class$="center cursor-d horizontal justified layout subhead [[cordova_class]]" duration="4000" id="toast" on-iron-announce="toast_open" on-transitionend="transition">
       <div class="cursor-p self-start subhead" hidden="[[!undo.torrent]]" on-click="clear_undo">UNDO</div>
     </paper-toast>
   </template>
@@ -38,6 +38,12 @@
     is: "polymer-toast",
 
     properties: {
+      cordova_class: {
+        typr: String,
+        value: function() {
+          return (Meteor.isCordova ? "fit-bottom" : "");
+        }
+      },
       undo: {
         type: Object,
         value: function() {

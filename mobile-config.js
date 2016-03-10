@@ -11,7 +11,7 @@ App.info({
   id: "com.vcompile.torrentz",
   name: "Torrent Alert",
   description: "Torrent Keyword Scheduler & Alerter",
-  version: "1.9.9",
+  version: "1.9.10",
   author: "LintoCheeran",
   email: "linto.cet@gmail.com",
   website: "http://vcompile.com/torrentz"
@@ -29,4 +29,4 @@ App.info({
 // });
 
 App.setPreference("android-installLocation", "preferExternal");
-App.setPreference("android-minSdkVersion", "21");
+// App.setPreference("android-minSdkVersion", "21");

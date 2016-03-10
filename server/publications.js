@@ -5,7 +5,6 @@ Meteor.publish("project", function() {
     fields: {
       user: false
     },
-    limit: 25,
     sort: {
       time: -1
     }
@@ -40,7 +39,7 @@ Meteor.publish("torrent", function(input) {
       user: false,
       user_removed: false
     },
-    limit: 250,
+    limit: 100,
     sort: {
       time: -1
     }

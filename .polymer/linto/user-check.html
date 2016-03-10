@@ -125,8 +125,8 @@
               }
             }
           } else { // offline
-            if ((localStorage.favorite || []).length) { // localstorage
-              if (!FlowRouter.current().route.group) {
+            if (!FlowRouter.current().route.group) {
+              if ((localStorage.favorite || []).length) { // localstorage
                 FlowRouter.go("/main", {}, {
                   route: "favorite-list"
                 });

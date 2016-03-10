@@ -99,8 +99,8 @@ FlowRouter.route("/", {
     switch (FlowRouter.getQueryParam("route")) {
       case "sign-in":
         document.querySelector("user-check-layout").sharedElements = {
-          'ripple': document.querySelector("#sign-in"),
-          'reverse-ripple': document.querySelector("#sign-in")
+          "reverse-ripple": document.querySelector("#sign-in"),
+          ripple: document.querySelector("#sign-in")
         };
 
         document.querySelector("user-check").selected = "sign-in";
@@ -108,8 +108,8 @@ FlowRouter.route("/", {
 
       case "sign-up":
         document.querySelector("user-check-layout").sharedElements = {
-          'ripple': document.querySelector("#sign-up"),
-          'reverse-ripple': document.querySelector("#sign-up")
+          "reverse-ripple": document.querySelector("#sign-up"),
+          ripple: document.querySelector("#sign-up")
         };
 
         document.querySelector("user-check").selected = "sign-up";

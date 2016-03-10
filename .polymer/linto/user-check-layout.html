@@ -35,8 +35,8 @@
   <template>
     <div class="center-justified cyan-500 fit horizontal layout" id="user-check-layout-body">
       <div class="layout li vertical">
-        <neon-animated-pages attr-for-selected="data-page" class="flex" on-up="swiper_up" selected="{{selected}}">
-          <neon-animatable class="cyan-500 layout vertical" data-page="1" entry-animation="[[entry_animation]]" exit-animation="[[exit_animation]]">
+        <neon-animated-pages attr-for-selected="data-page" class="flex" on-up="swiper_up" selected="[[selected]]">
+          <neon-animatable class="cyan-500 layout vertical" data-page="1" entry-animation="fade-in-animation" exit-animation="fade-out-animation">
             <div class="center-justified horizontal layout">
               <div class="subhead">sharing, offline storing, etc</div>
             </div>
@@ -52,7 +52,7 @@
             </div>
           </neon-animatable>
 
-          <neon-animatable class="cyan-500 layout vertical" data-page="2" entry-animation="[[entry_animation]]" exit-animation="[[exit_animation]]">
+          <neon-animatable class="cyan-500 layout vertical" data-page="2" entry-animation="fade-in-animation" exit-animation="fade-out-animation">
             <div class="center-justified horizontal layout">
               <div class="subhead">100+ site indexing &amp; inbuilt proxy</div>
             </div>
@@ -68,7 +68,7 @@
             </div>
           </neon-animatable>
 
-          <neon-animatable class="cyan-500 layout vertical" data-page="3" entry-animation="[[entry_animation]]" exit-animation="[[exit_animation]]">
+          <neon-animatable class="cyan-500 layout vertical" data-page="3" entry-animation="fade-in-animation" exit-animation="fade-out-animation">
             <div class="center-justified horizontal layout">
               <div class="subhead">keyword search</div>
             </div>
@@ -127,14 +127,6 @@
           };
         }
       },
-      entry_animation: {
-        type: String,
-        value: "fade-in-animation"
-      },
-      exit_animation: {
-        type: String,
-        value: "fade-out-animation"
-      },
       selected: {
         type: Number,
         value: 3
@@ -156,16 +148,10 @@
     swiper_up: function(e, d) {
       if (d.x < $(window).width() / 2) {
         if (1 <= this.selected && this.selected < 3) {
-          // this.entry_animation = "slide-from-right-animation";
-          // this.exit_animation = "slide-left-animation";
-
           this.selected += 1;
         }
       } else {
         if (1 < this.selected && this.selected <= 3) {
-          // this.entry_animation = "slide-from-left-animation";
-          // this.exit_animation = "slide-right-animation";
-
           this.selected -= 1;
         }
       }

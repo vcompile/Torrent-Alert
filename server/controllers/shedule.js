@@ -3,13 +3,13 @@ Meteor.setInterval(function() {
     _project.find({
       worker: "schedule"
     }).forEach(function(item) {
-      if (6 < parseInt(moment.duration(moment().diff(moment(item.time))).asHours())) {
+      if (6 < parseInt(moment.duration(moment().diff(moment(item.time))).asHours()) && item.user.length) {
         item.torrent.forEach(function(torrent_id) {
           var torrent = _torrent.findOne({
             _id: torrent_id
           });
 
-          if (torrent && item.within < parseInt(moment.duration(moment().diff(moment(torrent.time))).asMonths())) {
+          if (torrent && parseInt(item.within) < parseInt(moment.duration(moment().diff(moment(torrent.time))).asMonths())) {
             _project.update({
               _id: item._id
             }, {

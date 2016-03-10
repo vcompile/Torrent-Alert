@@ -122,7 +122,7 @@ _torrentz_worker = function(worker_id) {
                   });
                 }
 
-                if (row.type == "schedule") {
+                if (row.worker == "schedule") {
                   row.user.forEach(function(A) {
                     if (!_push.findOne({
                         project: row._id,
