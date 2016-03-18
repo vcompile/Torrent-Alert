@@ -43,7 +43,7 @@
   </style>
 
   <template>
-    <paper-header-panel class="white">
+    <paper-header-panel style="background: #EEE;">
       <paper-toolbar>
         <paper-icon-button icon="arrow-back" on-click="back"></paper-icon-button>
         <div class="title">scheduler</div>
@@ -56,7 +56,7 @@
 
             <div class="divider"></div>
             <div class="center horizontal layout">
-              <div class="cursor-d flex subhead text-right">max torrent time in month</div>
+              <div class="cursor-d flex subhead text-right">max torrent age in month</div>
               <paper-slider class="flex" editable max="48" min="1" pin value="{{within}}"></paper-slider>
             </div>
 
@@ -111,7 +111,7 @@
 
                 FlowRouter.setQueryParams({
                   project: response,
-                  route: "project-list"
+                  route: "project-view"
                 });
               }
             }

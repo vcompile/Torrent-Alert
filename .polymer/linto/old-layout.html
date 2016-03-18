@@ -97,9 +97,9 @@
       <neon-animated-pages attr-for-selected="data-page" class="fit" main selected="[[selected]]">
         <add-project data-page="add-project" id="add_project"></add-project>
         <favorite-list data-page="favorite-list" id="favorite_list"></favorite-list>
-        <project-list data-page="project-list" id="project_list"></project-list>
+        <project-view data-page="project-view" id="project_view"></project-view>
         <search-list data-page="search-list" id="search_list"></search-list>
-        <torrent-list data-page="torrent-list" id="torrent_list"></torrent-list>
+        <torrent-view data-page="torrent-view" id="torrent_view"></torrent-view>
         <trending-list data-page="trending-list" id="trending_list"></trending-list>
       </neon-animated-pages>
     </paper-drawer-panel>
@@ -162,7 +162,7 @@
 
       FlowRouter.setQueryParams({
         project: (d.item.dataset.id == "favorite-list" || d.item.dataset.id == "trending-list" ? null : d.item.dataset.id),
-        route: (d.item.dataset.id == "favorite-list" || d.item.dataset.id == "trending-list" ? d.item.dataset.id : "project-list")
+        route: (d.item.dataset.id == "favorite-list" || d.item.dataset.id == "trending-list" ? d.item.dataset.id : "project-view")
       });
     },
 

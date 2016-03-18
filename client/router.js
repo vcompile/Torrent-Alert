@@ -36,13 +36,13 @@ main.route("/", {
       case "add-project":
       case "favorite-list":
       case "search-list":
-      case "torrent-list":
+      case "torrent-view":
         document.querySelector("#old_layout").selected = FlowRouter.getQueryParam("route");
         break;
 
-      case "project-list":
+      case "project-view":
         if (FlowRouter.getQueryParam("project")) {
-          document.querySelector("#old_layout").selected = "project-list";
+          document.querySelector("#old_layout").selected = "project-view";
         }
         break;
 
@@ -113,6 +113,10 @@ FlowRouter.route("/", {
         };
 
         document.querySelector("user-check").selected = "sign-up";
+        break;
+
+      default:
+        document.querySelector("user-check").selected = "layout";
         break;
     }
   },

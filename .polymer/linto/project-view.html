@@ -1,4 +1,4 @@
-<dom-module id="project-list">
+<dom-module id="project-view">
 
   <style>
   paper-button {
@@ -112,7 +112,7 @@
     <paper-header-panel>
       <paper-toolbar id="project_list_toolbar" class$="[[return_class(mwcData.project.keyword)]]">
         <paper-icon-button class="selection-visible" icon="arrow-back" on-click="clear_torrent_selection"></paper-icon-button>
-        <paper-icon-button class="selection-hidden" icon="menu" on-click="menu_toggle" paper-drawer-toggle></paper-icon-button>
+        <paper-icon-button class="selection-hidden" icon="menu" on-click="menu_toggle"></paper-icon-button>
 
         <div class="title" id="project_list_toolbar_title">TorrentAlert</div>
 
@@ -128,7 +128,7 @@
             <div class="flex subhead">[[mwcData.project.keyword]]</div>
 
             <paper-icon-button icon="refresh" on-click="refresh"></paper-icon-button>
-            <paper-icon-button icon="alarm-add" hidden="[[!is_search(mwcData.project.worker)]]" onclick="document.querySelector('#schedule_prompt').open();"></paper-icon-button>
+            <paper-icon-button icon="schedule" hidden="[[!is_search(mwcData.project.worker)]]" onclick="document.querySelector('#schedule_prompt').open();"></paper-icon-button>
             <paper-icon-button icon="close" onclick="document.querySelector('#remove_prompt').open();"></paper-icon-button>
           </div>
         </div>
@@ -202,7 +202,7 @@
 
     add_project: function() {
       FlowRouter.setQueryParams({
-        "back-route": "project-list",
+        "back-route": "project-view",
         route: "add-project"
       });
     },
@@ -248,7 +248,7 @@
       };
     },
 
-    is: "project-list",
+    is: "project-view",
 
     is_search: function(worker) {
       return (worker == "search")
@@ -338,7 +338,7 @@
 
     search: function() {
       FlowRouter.setQueryParams({
-        "back-route": "project-list",
+        "back-route": "project-view",
         route: "search-list"
       });
     },

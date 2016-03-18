@@ -64,7 +64,7 @@
 
     <paper-header-panel>
       <paper-toolbar>
-        <paper-icon-button icon="menu" on-click="menu_toggle" paper-drawer-toggle></paper-icon-button>
+        <paper-icon-button icon="menu" on-click="menu_toggle"></paper-icon-button>
         <div class="title">TorrentAlert</div>
         <paper-icon-button icon="search" on-click="search"></paper-icon-button>
       </paper-toolbar>
@@ -76,16 +76,16 @@
               <iron-icon icon="trending-up"></iron-icon>
             </div>
 
-            <div class="subhead" style="border-bottom: 1px solid #757575;">Trending [[return_trending_count(trending.keyword.length)]]</div>
+            <div class="subhead" style="border-bottom: 1px solid #757575;">Trending Keyword [[return_trending_count(trending.keyword.length)]]</div>
           </div>
         </div>
       </div>
 
       <div class="center-justified horizontal layout">
         <div class="li">
-          <div class="horizontal layout trending-li wrap">
+          <div class="center-justified horizontal layout trending-li wrap">
             <template is="dom-repeat" items="[[trending.keyword]]">
-              <div class="cursor-p grey-500 subhead" on-click="click">[[item]]</div>
+              <div class$="cursor-p subhead [[return_class(item)]]" on-click="click">[[item]]</div>
             </template>
           </div>
         </div>
@@ -153,7 +153,7 @@
 
                 FlowRouter.setQueryParams({
                   project: response,
-                  route: "project-list"
+                  route: "project-view"
                 });
               }
             }
@@ -189,6 +189,10 @@
           };
         }
       }
+    },
+
+    return_class: function(text) {
+      return polymer_color(text ? text : "#").replace(/500$/, "100");
     },
 
     return_trending_count: function(count) {

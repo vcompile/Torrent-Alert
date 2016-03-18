@@ -53,11 +53,11 @@
         e.stopPropagation();
 
         if (this.item.link.length) {
-          document.querySelector("#torrent_list").item = this.item;
+          document.querySelector("#torrent_view").item = this.item;
 
           FlowRouter.setQueryParams({
             "back-route": FlowRouter.getQueryParam("route"),
-            route: "torrent-list"
+            route: "torrent-view"
           });
         } else {
           document.querySelector("#polymer_toast").toast("under processing");

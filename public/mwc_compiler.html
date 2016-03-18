@@ -8823,6 +8823,12 @@ this.fire('dom-change');
       align-items: flex-end;
     };
 
+    --layout-baseline: {
+      -ms-flex-align: baseline;
+      -webkit-align-items: baseline;
+      align-items: baseline;
+    };
+
     /* alignment in main axis */
 
     --layout-start-justified: {
@@ -8884,6 +8890,49 @@ this.fire('dom-change');
       -ms-align-self: stretch;
       -webkit-align-self: stretch;
       align-self: stretch;
+    };
+
+    --layout-self-baseline: {
+      -ms-align-self: baseline;
+      -webkit-align-self: baseline;
+      align-self: baseline;
+    };
+
+    /* multi-line alignment in main axis */
+
+    --layout-start-aligned: {
+      -ms-flex-line-pack: start;  /* IE10 */
+      -ms-align-content: flex-start;
+      -webkit-align-content: flex-start;
+      align-content: flex-start;
+    };
+
+    --layout-end-aligned: {
+      -ms-flex-line-pack: end;  /* IE10 */
+      -ms-align-content: flex-end;
+      -webkit-align-content: flex-end;
+      align-content: flex-end;
+    };
+
+    --layout-center-aligned: {
+      -ms-flex-line-pack: center;  /* IE10 */
+      -ms-align-content: center;
+      -webkit-align-content: center;
+      align-content: center;
+    };
+
+    --layout-between-aligned: {
+      -ms-flex-line-pack: justify;  /* IE10 */
+      -ms-align-content: space-between;
+      -webkit-align-content: space-between;
+      align-content: space-between;
+    };
+
+    --layout-around-aligned: {
+      -ms-flex-line-pack: distribute;  /* IE10 */
+      -ms-align-content: space-around;
+      -webkit-align-content: space-around;
+      align-content: space-around;
     };
 
     /*******************************
@@ -10572,8 +10621,14 @@ is separate from validation, and `allowed-pattern` does not affect how the input
     properties: {
 
       /**
-       * If you want to use the attribute value of an element for `selected` instead of the index,
-       * set this to the name of the attribute.
+       * If you want to use an attribute value or property of an element for
+       * `selected` instead of the index, set this to the name of the attribute
+       * or property. Hyphenated values are converted to camel case when used to
+       * look up the property of a selectable element. Camel cased values are
+       * *not* converted to hyphenated values for attribute lookup. It's
+       * recommended that you provide the hyphenated form of the name so that
+       * selection works in both cases. (Use `attr-or-property-name` instead of
+       * `attrOrPropertyName`.)
        */
       attrForSelected: {
         type: String,
@@ -10814,7 +10869,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
     },
 
     _valueForItem: function(item) {
-      var propValue = item[this.attrForSelected];
+      var propValue = item[Polymer.CaseMap.dashToCamelCase(this.attrForSelected)];
       return propValue != undefined ? propValue : item.getAttribute(this.attrForSelected);
     },
 
@@ -10910,7 +10965,7 @@ is separate from validation, and `allowed-pattern` does not affect how the input
     },
 
     observers: [
-      '_updateSelected(selectedValues)'
+      '_updateSelected(selectedValues.splices)'
     ],
 
     /**
@@ -13119,199 +13174,246 @@ CSS properties               | Action
   /**
    * @struct
    * @constructor
+   * @private
    */
   Polymer.IronOverlayManagerClass = function() {
+    /**
+     * Used to keep track of the opened overlays.
+     * @private {Array<Element>}
+     */
     this._overlays = [];
-    // Used to keep track of the last focused node before an overlay gets opened.
+
+    /**
+     * Used to keep track of the last focused node before an overlay gets opened.
+     * @private {Array<Element>}
+     */
     this._lastFocusedNodes = [];
 
     /**
-     * iframes have a default z-index of 100, so this default should be at least
-     * that.
+     * iframes have a default z-index of 100,
+     * so this default should be at least that.
      * @private {number}
      */
     this._minimumZ = 101;
 
+    /**
+     * Used to keep track of the opened overlays with backdrop.
+     * @private {Array<Element>}
+     */
     this._backdrops = [];
 
+    /**
+     * Memoized backdrop element.
+     * @private {Element|null}
+     */
     this._backdropElement = null;
-    Object.defineProperty(this, 'backdropElement', {
-      get: function() {
-        if (!this._backdropElement) {
-          this._backdropElement = document.createElement('iron-overlay-backdrop');
-        }
-        return this._backdropElement;
-      }.bind(this)
-    });
+  };
+
+  Polymer.IronOverlayManagerClass.prototype = {
+
+    constructor: Polymer.IronOverlayManagerClass,
+
+    /**
+     * The shared backdrop element.
+     * @type {Element} backdropElement
+     */
+    get backdropElement() {
+      if (!this._backdropElement) {
+        this._backdropElement = document.createElement('iron-overlay-backdrop');
+      }
+      return this._backdropElement;
+    },
 
     /**
      * The deepest active element.
-     * returns {?Node} element the active element
+     * @type {Element|undefined} activeElement the active element
      */
-    this.deepActiveElement = null;
-    Object.defineProperty(this, 'deepActiveElement', {
-      get: function() {
-        var active = document.activeElement;
-        // document.activeElement can be null
-        // https://developer.mozilla.org/en-US/docs/Web/API/Document/activeElement
-        while (active && active.root && Polymer.dom(active.root).activeElement) {
-          active = Polymer.dom(active.root).activeElement;
+    get deepActiveElement() {
+      var active = document.activeElement;
+      // document.activeElement can be null
+      // https://developer.mozilla.org/en-US/docs/Web/API/Document/activeElement
+      while (active && active.root && Polymer.dom(active.root).activeElement) {
+        active = Polymer.dom(active.root).activeElement;
+      }
+      return active;
+    },
+
+    /**
+     * If a node is contained in an overlay.
+     * @param {Element=} node
+     * @return {boolean}
+     * @private
+     */
+    _isChildOfOverlay: function(node) {
+      while (node && node !== document.body) {
+        // Use logical parentNode, or native ShadowRoot host.
+        node = Polymer.dom(node).parentNode || node.host;
+        // Check if it is an overlay.
+        if (node && node.behaviors && node.behaviors.indexOf(Polymer.IronOverlayBehaviorImpl) !== -1) {
+          return true;
         }
-        return active;
-      }.bind(this)
-    });
-  };
-
-  /**
-   * If a node is contained in an overlay.
-   * @private
-   * @param {Node} node
-   * @returns {Boolean}
-   */
-  Polymer.IronOverlayManagerClass.prototype._isChildOfOverlay = function(node) {
-    while (node && node !== document.body) {
-      // Use logical parentNode, or native ShadowRoot host.
-      node = Polymer.dom(node).parentNode || node.host;
-      // Check if it is an overlay.
-      if (node && node.behaviors && node.behaviors.indexOf(Polymer.IronOverlayBehaviorImpl) !== -1) {
-        return true;
       }
-    }
-    return false;
-  };
+      return false;
+    },
 
-  Polymer.IronOverlayManagerClass.prototype._applyOverlayZ = function(overlay, aboveZ) {
-    this._setZ(overlay, aboveZ + 2);
-  };
+    /**
+     * @param {Element} overlay
+     * @param {number} aboveZ
+     * @private
+     */
+    _applyOverlayZ: function(overlay, aboveZ) {
+      this._setZ(overlay, aboveZ + 2);
+    },
 
-  Polymer.IronOverlayManagerClass.prototype._setZ = function(element, z) {
-    element.style.zIndex = z;
-  };
+    /**
+     * @param {Element} element
+     * @param {number|string} z
+     * @private
+     */
+    _setZ: function(element, z) {
+      element.style.zIndex = z;
+    },
 
-  /**
-   * track overlays for z-index and focus managemant
-   */
-  Polymer.IronOverlayManagerClass.prototype.addOverlay = function(overlay) {
-    var minimumZ = Math.max(this.currentOverlayZ(), this._minimumZ);
-    this._overlays.push(overlay);
-    var newZ = this.currentOverlayZ();
-    if (newZ <= minimumZ) {
-      this._applyOverlayZ(overlay, minimumZ);
-    }
-    var element = this.deepActiveElement;
-    // If already in other overlay, don't reset focus there.
-    if (this._isChildOfOverlay(element)) {
-      element = null;
-    }
-    this._lastFocusedNodes.push(element);
-  };
-
-  Polymer.IronOverlayManagerClass.prototype.removeOverlay = function(overlay) {
-    var i = this._overlays.indexOf(overlay);
-    if (i >= 0) {
-      this._overlays.splice(i, 1);
-      this._setZ(overlay, '');
-
-      var node = this._lastFocusedNodes[i];
-      // Focus only if still contained in document.body
-      if (overlay.restoreFocusOnClose && node && Polymer.dom(document.body).deepContains(node)) {
-        node.focus();
+    /**
+     * Tracks overlays for z-index and focus management.
+     * @param {Element} overlay
+     */
+    addOverlay: function(overlay) {
+      var minimumZ = Math.max(this.currentOverlayZ(), this._minimumZ);
+      this._overlays.push(overlay);
+      var newZ = this.currentOverlayZ();
+      if (newZ <= minimumZ) {
+        this._applyOverlayZ(overlay, minimumZ);
       }
-      this._lastFocusedNodes.splice(i, 1);
-    }
-  };
-
-  Polymer.IronOverlayManagerClass.prototype.currentOverlay = function() {
-    var i = this._overlays.length - 1;
-    while (this._overlays[i] && !this._overlays[i].opened) {
-      --i;
-    }
-    return this._overlays[i];
-  };
-
-  Polymer.IronOverlayManagerClass.prototype.currentOverlayZ = function() {
-    return this._getOverlayZ(this.currentOverlay());
-  };
-
-  /**
-   * Ensures that the minimum z-index of new overlays is at least `minimumZ`.
-   * This does not effect the z-index of any existing overlays.
-   *
-   * @param {number} minimumZ
-   */
-  Polymer.IronOverlayManagerClass.prototype.ensureMinimumZ = function(minimumZ) {
-    this._minimumZ = Math.max(this._minimumZ, minimumZ);
-  };
-
-  Polymer.IronOverlayManagerClass.prototype.focusOverlay = function() {
-    var current = this.currentOverlay();
-    // We have to be careful to focus the next overlay _after_ any current
-    // transitions are complete (due to the state being toggled prior to the
-    // transition). Otherwise, we risk infinite recursion when a transitioning
-    // (closed) overlay becomes the current overlay.
-    //
-    // NOTE: We make the assumption that any overlay that completes a transition
-    // will call into focusOverlay to kick the process back off. Currently:
-    // transitionend -> _applyFocus -> focusOverlay.
-    if (current && !current.transitioning) {
-      current._applyFocus();
-    }
-  };
-
-  Polymer.IronOverlayManagerClass.prototype.trackBackdrop = function(element) {
-    // backdrops contains the overlays with a backdrop that are currently
-    // visible
-    var index = this._backdrops.indexOf(element);
-    if (element.opened && element.withBackdrop) {
-      // no duplicates
-      if (index === -1) {
-        this._backdrops.push(element);
+      var element = this.deepActiveElement;
+      // If already in other overlay, don't reset focus there.
+      if (this._isChildOfOverlay(element)) {
+        element = null;
       }
-    } else if (index >= 0) {
-      this._backdrops.splice(index, 1);
-    }
-  };
+      this._lastFocusedNodes.push(element);
+    },
 
-  Polymer.IronOverlayManagerClass.prototype.getBackdrops = function() {
-    return this._backdrops;
-  };
+    /**
+     * @param {Element} overlay
+     */
+    removeOverlay: function(overlay) {
+      var i = this._overlays.indexOf(overlay);
+      if (i >= 0) {
+        this._overlays.splice(i, 1);
+        this._setZ(overlay, '');
 
-  /**
-   * Returns the z-index for the backdrop.
-   */
-  Polymer.IronOverlayManagerClass.prototype.backdropZ = function() {
-    return this._getOverlayZ(this._overlayWithBackdrop()) - 1;
-  };
-
-  /**
-   * Returns the first opened overlay that has a backdrop.
-   */
-  Polymer.IronOverlayManagerClass.prototype._overlayWithBackdrop = function() {
-    for (var i = 0; i < this._overlays.length; i++) {
-      if (this._overlays[i].opened && this._overlays[i].withBackdrop) {
-        return this._overlays[i];
+        var node = this._lastFocusedNodes[i];
+        // Focus only if still contained in document.body
+        if (overlay.restoreFocusOnClose && node && Polymer.dom(document.body).deepContains(node)) {
+          node.focus();
+        }
+        this._lastFocusedNodes.splice(i, 1);
       }
-    }
-  };
+    },
 
-  /**
-   * Calculates the minimum z-index for the overlay.
-   */
-  Polymer.IronOverlayManagerClass.prototype._getOverlayZ = function(overlay) {
-    var z = this._minimumZ;
-    if (overlay) {
-      var z1 = Number(window.getComputedStyle(overlay).zIndex);
-      // Check if is a number
-      // Number.isNaN not supported in IE 10+
-      if (z1 === z1) {
-        z = z1;
+    /**
+     * @return {Element|undefined} overlay The current overlay.
+     */
+    currentOverlay: function() {
+      var i = this._overlays.length - 1;
+      while (this._overlays[i] && !this._overlays[i].opened) {
+        --i;
       }
+      return this._overlays[i];
+    },
+
+    /**
+     * @return {number} zIndex the current overlay z-index.
+     */
+    currentOverlayZ: function() {
+      return this._getOverlayZ(this.currentOverlay());
+    },
+
+    /**
+     * Ensures that the minimum z-index of new overlays is at least `minimumZ`.
+     * This does not effect the z-index of any existing overlays.
+     * @param {number} minimumZ
+     */
+    ensureMinimumZ: function(minimumZ) {
+      this._minimumZ = Math.max(this._minimumZ, minimumZ);
+    },
+
+    focusOverlay: function() {
+      var current = /** @type {?} */ (this.currentOverlay());
+      // We have to be careful to focus the next overlay _after_ any current
+      // transitions are complete (due to the state being toggled prior to the
+      // transition). Otherwise, we risk infinite recursion when a transitioning
+      // (closed) overlay becomes the current overlay.
+      //
+      // NOTE: We make the assumption that any overlay that completes a transition
+      // will call into focusOverlay to kick the process back off. Currently:
+      // transitionend -> _applyFocus -> focusOverlay.
+      if (current && !current.transitioning) {
+        current._applyFocus();
+      }
+    },
+
+    /**
+     * @param {Element} overlay The overlay that updated its withBackdrop.
+     */
+    trackBackdrop: function(overlay) {
+      var index = this._backdrops.indexOf(overlay);
+      if (overlay.opened && overlay.withBackdrop) {
+        // no duplicates
+        if (index === -1) {
+          this._backdrops.push(overlay);
+        }
+      } else if (index >= 0) {
+        this._backdrops.splice(index, 1);
+      }
+    },
+
+    /**
+     * @return {Array<Element>} backdrops
+     */
+    getBackdrops: function() {
+      return this._backdrops;
+    },
+
+    /**
+     * @return {number} index The z-index for the backdrop.
+     */
+    backdropZ: function() {
+      return this._getOverlayZ(this._overlayWithBackdrop()) - 1;
+    },
+
+    /**
+     * @return {Element|undefined} overlay The first opened overlay that has a backdrop.
+     * @private
+     */
+    _overlayWithBackdrop: function() {
+      for (var i = 0; i < this._overlays.length; i++) {
+        if (this._overlays[i].opened && this._overlays[i].withBackdrop) {
+          return this._overlays[i];
+        }
+      }
+    },
+
+    /**
+     * Calculates the minimum z-index for the overlay.
+     * @param {Element=} overlay
+     * @private
+     */
+    _getOverlayZ: function(overlay) {
+      var z = this._minimumZ;
+      if (overlay) {
+        var z1 = Number(window.getComputedStyle(overlay).zIndex);
+        // Check if is a number
+        // Number.isNaN not supported in IE 10+
+        if (z1 === z1) {
+          z = z1;
+        }
+      }
+      return z;
     }
-    return z;
   };
 
   Polymer.IronOverlayManager = new Polymer.IronOverlayManagerClass();
-
 </script>
 
 
@@ -13436,6 +13538,11 @@ context. You should place this element as a child of `<body>` whenever possible.
         value: false
       },
 
+      /**
+       * Shortcut to access to the overlay manager.
+       * @private
+       * @type {Polymer.IronOverlayManagerClass}
+       */
       _manager: {
         type: Object,
         value: Polymer.IronOverlayManager
@@ -13476,7 +13583,7 @@ context. You should place this element as a child of `<body>` whenever possible.
 
     /**
      * The backdrop element.
-     * @type {Node}
+     * @type {Element}
      */
     get backdropElement() {
       return this._manager.backdropElement;
@@ -13497,7 +13604,7 @@ context. You should place this element as a child of `<body>` whenever possible.
      *
      * If you know what is your content (specifically the first and last focusable children),
      * you can override this method to return only `[firstFocusable, lastFocusable];`
-     * @type {[Node]}
+     * @type {Array<Node>}
      * @protected
      */
     get _focusableNodes() {
@@ -13595,7 +13702,7 @@ context. You should place this element as a child of `<body>` whenever possible.
 
     /**
      * Cancels the overlay.
-     * @param {?Event} event The original event
+     * @param {Event=} event The original event
      */
     cancel: function(event) {
       var cancelEvent = this.fire('iron-overlay-canceled', event, {cancelable: true});
@@ -15108,7 +15215,7 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
 
 
 
-</head><body><div hidden="" by-vulcanize=""><dom-module id="paper-input-container" assetpath="/bower_components/paper-input/">
+</head><body><div hidden="" by-vulcanize=""><dom-module id="paper-input-container" assetpath="bower_components/paper-input/">
   <template>
     <style>
       :host {
@@ -15473,14 +15580,15 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
       }
       this.addEventListener('focus', this._boundOnFocus, true);
       this.addEventListener('blur', this._boundOnBlur, true);
+    },
+
+    attached: function() {
       if (this.attrForValue) {
         this._inputElement.addEventListener(this._valueChangedEvent, this._boundValueChanged);
       } else {
         this.addEventListener('input', this._onInput);
       }
-    },
 
-    attached: function() {
       // Only validate when attached if the input already has a value.
       if (this._inputElementValue != '') {
         this._handleValueAndAutoValidate(this._inputElement);
@@ -15622,7 +15730,7 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
     }
   });
 </script>
-<dom-module id="paper-input-error" assetpath="/bower_components/paper-input/">
+<dom-module id="paper-input-error" assetpath="bower_components/paper-input/">
   <template>
     <style>
       :host {
@@ -15682,7 +15790,7 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
     }
   });
 </script>
-<dom-module id="gold-email-input" assetpath="/bower_components/gold-email-input/">
+<dom-module id="gold-email-input" assetpath="bower_components/gold-email-input/">
 
   <template>
 
@@ -15815,7 +15923,7 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
   </script>
 
 </dom-module>
-<dom-module id="iron-icon" assetpath="/bower_components/iron-icon/">
+<dom-module id="iron-icon" assetpath="bower_components/iron-icon/">
 
   <style>
     :host {
@@ -16271,7 +16379,7 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
 <g id="whatshot"><path d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67zM11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z"></path></g>
 </defs></svg>
 </iron-iconset-svg>
-<dom-module id="iron-localstorage" assetpath="/bower_components/iron-localstorage/"></dom-module>
+<dom-module id="iron-localstorage" assetpath="bower_components/iron-localstorage/"></dom-module>
 <script>
 
   Polymer({
@@ -16442,7 +16550,7 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
   });
 
 </script>
-<dom-module id="mwc-layout" assetpath="/bower_components/mwc-layout/">
+<dom-module id="mwc-layout" assetpath="bower_components/mwc-layout/">
 
     <style>
     :host {
@@ -16554,7 +16662,7 @@ PolymerLayout.prototype.render = function(layout, opt, rerender) {
 
 mwcLayout = new PolymerLayout();
 </script>
-<dom-module id="neon-animatable" assetpath="/bower_components/neon-animation/">
+<dom-module id="neon-animatable" assetpath="bower_components/neon-animation/">
 
   <style>
 
@@ -16584,7 +16692,7 @@ mwcLayout = new PolymerLayout();
   });
 
 </script>
-<dom-module id="neon-animated-pages" assetpath="/bower_components/neon-animation/">
+<dom-module id="neon-animated-pages" assetpath="bower_components/neon-animation/">
 
   <style>
 
@@ -16784,7 +16892,7 @@ mwcLayout = new PolymerLayout();
 
 })();
 </script>
-<dom-module id="paper-material-shared-styles" assetpath="/bower_components/paper-material/">
+<dom-module id="paper-material-shared-styles" assetpath="bower_components/paper-material/">
   <template>
     <style>
       :host {
@@ -16814,7 +16922,7 @@ mwcLayout = new PolymerLayout();
     </style>
   </template>
 </dom-module>
-<dom-module id="paper-material" assetpath="/bower_components/paper-material/">
+<dom-module id="paper-material" assetpath="bower_components/paper-material/">
   <template>
     <style include="paper-material-shared-styles"></style>
     <style>
@@ -16862,7 +16970,7 @@ mwcLayout = new PolymerLayout();
     }
   });
 </script>
-<dom-module id="paper-ripple" assetpath="/bower_components/paper-ripple/">
+<dom-module id="paper-ripple" assetpath="bower_components/paper-ripple/">
 
   
 
@@ -17537,7 +17645,7 @@ mwcLayout = new PolymerLayout();
     });
   })();
 </script>
-<dom-module id="paper-button" assetpath="/bower_components/paper-button/">
+<dom-module id="paper-button" assetpath="bower_components/paper-button/">
   <template strip-whitespace="">
 
     <style include="paper-material">
@@ -17633,7 +17741,7 @@ mwcLayout = new PolymerLayout();
     */
   });
 </script>
-<dom-module id="iron-overlay-backdrop" assetpath="/bower_components/iron-overlay-behavior/">
+<dom-module id="iron-overlay-backdrop" assetpath="bower_components/iron-overlay-behavior/">
 
   <style>
 
@@ -17756,7 +17864,7 @@ mwcLayout = new PolymerLayout();
 })();
 
 </script>
-<dom-module id="paper-dialog-shared-styles" assetpath="/bower_components/paper-dialog-behavior/">
+<dom-module id="paper-dialog-shared-styles" assetpath="bower_components/paper-dialog-behavior/">
   <template>
     <style>
       :host {
@@ -17810,7 +17918,7 @@ mwcLayout = new PolymerLayout();
     </style>
   </template>
 </dom-module>
-<dom-module id="paper-dialog" assetpath="/bower_components/paper-dialog/">
+<dom-module id="paper-dialog" assetpath="bower_components/paper-dialog/">
   <template>
     <style include="paper-dialog-shared-styles"></style>
     <content></content>
@@ -17863,7 +17971,7 @@ mwcLayout = new PolymerLayout();
 })();
 
 </script>
-<dom-module id="paper-drawer-panel" assetpath="/bower_components/paper-drawer-panel/">
+<dom-module id="paper-drawer-panel" assetpath="bower_components/paper-drawer-panel/">
   <template>
     <style>
       :host {
@@ -18207,6 +18315,8 @@ mwcLayout = new PolymerLayout();
           /**
            * The panel that is being selected. `drawer` for the drawer panel and
            * `main` for the main panel.
+           *
+           * @type {string|null}
            */
           selected: {
             reflectToAttribute: true,
@@ -18228,6 +18338,9 @@ mwcLayout = new PolymerLayout();
            * The CSS selector for the element that should receive focus when the drawer is open.
            * By default, when the drawer opens, it focuses the first tabbable element. That is,
            * the first element that can receive focus.
+           *
+           * To disable this behavior, you can set `drawerFocusSelector` to `null` or an empty string.
+           *
            */
           drawerFocusSelector: {
             type: String,
@@ -18524,28 +18637,32 @@ mwcLayout = new PolymerLayout();
 
         _getAutoFocusedNode: function() {
           var drawerContent = this._getDrawerContent();
-          return Polymer.dom(drawerContent).querySelector(this.drawerFocusSelector) || drawerContent;
+
+          return this.drawerFocusSelector ? 
+              Polymer.dom(drawerContent).querySelector(this.drawerFocusSelector) || drawerContent : null;
         },
 
         _toggleFocusListener: function(selected) {
           if (selected === 'drawer') {
-            document.addEventListener('focus', this._boundFocusListener, true);
+            this.addEventListener('focus', this._boundFocusListener, true);
           } else {
-            document.removeEventListener('focus', this._boundFocusListener, true);
+            this.removeEventListener('focus', this._boundFocusListener, true);
           }
         },
 
         _didFocus: function(event) {
+          var autoFocusedNode = this._getAutoFocusedNode();
+          if (!autoFocusedNode) {
+            return;
+          }
+
           var path = Polymer.dom(event).path;
           var focusedChild = path[0];
           var drawerContent = this._getDrawerContent();
-          var focusedChildCameFromDrawer = false;
-          var autoFocusedNode = this._getAutoFocusedNode();
+          var focusedChildCameFromDrawer = path.indexOf(drawerContent) !== -1;
 
-          while (!focusedChildCameFromDrawer && path[0] && path[0].hasAttribute) {
-            focusedChildCameFromDrawer = path.shift() === drawerContent;
-          }
-          if (!focusedChildCameFromDrawer && autoFocusedNode) {
+          if (!focusedChildCameFromDrawer) {
+            event.stopPropagation();
             autoFocusedNode.focus();
           }
         },
@@ -18558,7 +18675,7 @@ mwcLayout = new PolymerLayout();
     }());
   </script>
 </dom-module>
-<dom-module id="paper-fab" assetpath="/bower_components/paper-fab/">
+<dom-module id="paper-fab" assetpath="bower_components/paper-fab/">
   <template strip-whitespace="">
     <style include="paper-material-shared-styles">
       :host {
@@ -18686,7 +18803,7 @@ mwcLayout = new PolymerLayout();
     });
   </script>
 </dom-module>
-<dom-module id="paper-header-panel" assetpath="/bower_components/paper-header-panel/">
+<dom-module id="paper-header-panel" assetpath="bower_components/paper-header-panel/">
   <template>
     <style>
       :host {
@@ -19056,7 +19173,7 @@ mwcLayout = new PolymerLayout();
     })();
   </script>
 </dom-module>
-<dom-module id="paper-icon-button" assetpath="/bower_components/paper-icon-button/">
+<dom-module id="paper-icon-button" assetpath="bower_components/paper-icon-button/">
   <template strip-whitespace="">
     <style>
       :host {
@@ -19159,7 +19276,7 @@ mwcLayout = new PolymerLayout();
     });
   </script>
 </dom-module>
-<dom-module id="paper-item-shared-styles" assetpath="/bower_components/paper-item/">
+<dom-module id="paper-item-shared-styles" assetpath="bower_components/paper-item/">
   <template>
     <style>
       :host {
@@ -19205,7 +19322,7 @@ mwcLayout = new PolymerLayout();
     </style>
   </template>
 </dom-module>
-<dom-module id="paper-icon-item" assetpath="/bower_components/paper-item/">
+<dom-module id="paper-icon-item" assetpath="bower_components/paper-item/">
   <template>
     <style include="paper-item-shared-styles"></style>
     <style>
@@ -19243,7 +19360,7 @@ mwcLayout = new PolymerLayout();
     });
   </script>
 </dom-module>
-<dom-module id="paper-item" assetpath="/bower_components/paper-item/">
+<dom-module id="paper-item" assetpath="bower_components/paper-item/">
   <template>
     <style include="paper-item-shared-styles"></style>
     <style>
@@ -19269,7 +19386,7 @@ mwcLayout = new PolymerLayout();
     });
   </script>
 </dom-module>
-<dom-module id="paper-item-body" assetpath="/bower_components/paper-item/">
+<dom-module id="paper-item-body" assetpath="bower_components/paper-item/">
   <template>
     <style>
       :host {
@@ -19311,7 +19428,7 @@ mwcLayout = new PolymerLayout();
     });
   </script>
 </dom-module>
-<dom-module id="paper-input-char-counter" assetpath="/bower_components/paper-input/">
+<dom-module id="paper-input-char-counter" assetpath="bower_components/paper-input/">
   <template>
     <style>
       :host {
@@ -19374,7 +19491,7 @@ mwcLayout = new PolymerLayout();
     }
   });
 </script>
-<dom-module id="paper-input" assetpath="/bower_components/paper-input/">
+<dom-module id="paper-input" assetpath="bower_components/paper-input/">
   <template>
     <style>
       :host {
@@ -19430,7 +19547,7 @@ mwcLayout = new PolymerLayout();
     ]
   });
 </script>
-<dom-module id="paper-progress" assetpath="/bower_components/paper-progress/">
+<dom-module id="paper-progress" assetpath="bower_components/paper-progress/">
   <template>
     <style>
       :host {
@@ -19458,7 +19575,7 @@ mwcLayout = new PolymerLayout();
 
       #progressContainer,
       .indeterminate::after {
-        background-color: var(--paper-progress-container-color, --google-grey-300);
+        background: var(--paper-progress-container-color, --google-grey-300);
       }
 
       :host(.transiting) #primaryProgress,
@@ -19490,20 +19607,19 @@ mwcLayout = new PolymerLayout();
       }
 
       #primaryProgress {
-        background-color: var(--paper-progress-active-color, --google-green-500);
+        background: var(--paper-progress-active-color, --google-green-500);
       }
 
       #secondaryProgress {
-        position: relative;
-        background-color: var(--paper-progress-secondary-color, --google-green-100);
+        background: var(--paper-progress-secondary-color, --google-green-100);
       }
 
       :host([disabled]) #primaryProgress {
-        background-color: var(--paper-progress-disabled-active-color, --google-grey-500);
+        background: var(--paper-progress-disabled-active-color, --google-grey-500);
       }
 
       :host([disabled]) #secondaryProgress {
-        background-color: var(--paper-progress-disabled-secondary-color, --google-grey-300);
+        background: var(--paper-progress-disabled-secondary-color, --google-grey-300);
       }
 
       :host(:not([disabled])) #primaryProgress.indeterminate {
@@ -19690,7 +19806,7 @@ mwcLayout = new PolymerLayout();
     }
   });
 </script>
-<dom-module id="paper-slider" assetpath="/bower_components/paper-slider/">
+<dom-module id="paper-slider" assetpath="bower_components/paper-slider/">
   <template strip-whitespace="">
     <style>
       :host {
@@ -20350,7 +20466,7 @@ mwcLayout = new PolymerLayout();
      */
   </script>
 </dom-module>
-<dom-module id="iron-a11y-announcer" assetpath="/bower_components/iron-a11y-announcer/">
+<dom-module id="iron-a11y-announcer" assetpath="bower_components/iron-a11y-announcer/">
   <style>
     :host {
       display: inline-block;
@@ -20429,7 +20545,7 @@ mwcLayout = new PolymerLayout();
 
   </script>
 </dom-module>
-<dom-module id="paper-toast" assetpath="/bower_components/paper-toast/">
+<dom-module id="paper-toast" assetpath="bower_components/paper-toast/">
   <template>
     <style>
       :host {
@@ -20514,6 +20630,16 @@ mwcLayout = new PolymerLayout();
            * Set to false to enable closing of the toast by clicking outside it.
            */
           noCancelOnOutsideClick: {
+            type: Boolean,
+            value: true
+          },
+
+          /**
+           * Overridden from `IronOverlayBehavior`.
+           * Set to true to disable auto-focusing the toast or child nodes with
+           * the `autofocus` attribute` when the overlay is opened.
+           */
+          noAutoFocus: {
             type: Boolean,
             value: true
           }
@@ -20669,7 +20795,7 @@ mwcLayout = new PolymerLayout();
     })();
   </script>
 </dom-module>
-<dom-module id="paper-toggle-button" assetpath="/bower_components/paper-toggle-button/">
+<dom-module id="paper-toggle-button" assetpath="bower_components/paper-toggle-button/">
   <template strip-whitespace="">
 
     <style>
@@ -20704,6 +20830,7 @@ mwcLayout = new PolymerLayout();
       .toggle-button {
         position: absolute;
         top: -3px;
+        left: 0;
         height: 20px;
         width: 20px;
         border-radius: 50%;
@@ -20753,6 +20880,8 @@ mwcLayout = new PolymerLayout();
         position: absolute;
         top: -14px;
         left: -14px;
+        right: auto;
+        bottom: auto;
         width: 48px;
         height: 48px;
         opacity: 0.5;
@@ -20871,7 +21000,7 @@ mwcLayout = new PolymerLayout();
     });
   </script>
 </dom-module>
-<dom-module id="paper-toolbar" assetpath="/bower_components/paper-toolbar/">
+<dom-module id="paper-toolbar" assetpath="bower_components/paper-toolbar/">
   <template>
     <style>
       :host {
@@ -21148,7 +21277,7 @@ mwcLayout = new PolymerLayout();
     });
   </script>
 </dom-module>
-<dom-module id="add-project" assetpath="/linto/">
+<dom-module id="add-project" assetpath="linto/">
 
   <style>
   paper-button {
@@ -21193,7 +21322,7 @@ mwcLayout = new PolymerLayout();
   </style>
 
   <template>
-    <paper-header-panel class="white">
+    <paper-header-panel style="background: #EEE;">
       <paper-toolbar>
         <paper-icon-button icon="arrow-back" on-click="back"></paper-icon-button>
         <div class="title">scheduler</div>
@@ -21206,7 +21335,7 @@ mwcLayout = new PolymerLayout();
 
             <div class="divider"></div>
             <div class="center horizontal layout">
-              <div class="cursor-d flex subhead text-right">max torrent time in month</div>
+              <div class="cursor-d flex subhead text-right">max torrent age in month</div>
               <paper-slider class="flex" editable="" max="48" min="1" pin="" value="{{within}}"></paper-slider>
             </div>
 
@@ -21261,7 +21390,7 @@ mwcLayout = new PolymerLayout();
 
                 FlowRouter.setQueryParams({
                   project: response,
-                  route: "project-list"
+                  route: "project-view"
                 });
               }
             }
@@ -21316,7 +21445,7 @@ mwcLayout = new PolymerLayout();
   </script>
 
 </dom-module>
-<dom-module id="favorite-list" assetpath="/linto/">
+<dom-module id="favorite-list" assetpath="linto/">
 
   <style>
   paper-fab {
@@ -21414,7 +21543,7 @@ mwcLayout = new PolymerLayout();
     <paper-header-panel>
       <paper-toolbar id="favorite_list_toolbar">
         <paper-icon-button class="selection-visible" icon="arrow-back" on-click="clear_torrent_selection"></paper-icon-button>
-        <paper-icon-button class="selection-hidden" icon="menu" on-click="menu_toggle" paper-drawer-toggle=""></paper-icon-button>
+        <paper-icon-button class="selection-hidden" icon="menu" on-click="menu_toggle"></paper-icon-button>
 
         <div class="title" id="favorite_list_toolbar_title">TorrentAlert</div>
 
@@ -21598,7 +21727,7 @@ mwcLayout = new PolymerLayout();
   </script>
 
 </dom-module>
-<dom-module id="card-route" assetpath="/linto/">
+<dom-module id="card-route" assetpath="linto/">
 
   <style>
   :host {
@@ -21685,7 +21814,7 @@ mwcLayout = new PolymerLayout();
   </script>
 
 </dom-module>
-<dom-module id="exit-controller" assetpath="/linto/">
+<dom-module id="exit-controller" assetpath="linto/">
 
   <style>
   paper-button {
@@ -21748,7 +21877,7 @@ mwcLayout = new PolymerLayout();
   </script>
 
 </dom-module>
-<dom-module id="load-awesome" assetpath="/linto/">
+<dom-module id="load-awesome" assetpath="linto/">
 
   <style>
   :host {
@@ -21806,7 +21935,7 @@ mwcLayout = new PolymerLayout();
   </script>
 
 </dom-module>
-<dom-module id="main-layout" assetpath="/linto/">
+<dom-module id="main-layout" assetpath="linto/">
 
   <template>
     <neon-animated-pages attr-for-selected="data-page" class="fit" selected="[[selected]]">
@@ -21830,7 +21959,7 @@ mwcLayout = new PolymerLayout();
   </script>
 
 </dom-module>
-<dom-module id="old-layout" assetpath="/linto/">
+<dom-module id="old-layout" assetpath="linto/">
 
   <style>
   paper-button {
@@ -21929,9 +22058,9 @@ mwcLayout = new PolymerLayout();
       <neon-animated-pages attr-for-selected="data-page" class="fit" main="" selected="[[selected]]">
         <add-project data-page="add-project" id="add_project"></add-project>
         <favorite-list data-page="favorite-list" id="favorite_list"></favorite-list>
-        <project-list data-page="project-list" id="project_list"></project-list>
+        <project-view data-page="project-view" id="project_view"></project-view>
         <search-list data-page="search-list" id="search_list"></search-list>
-        <torrent-list data-page="torrent-list" id="torrent_list"></torrent-list>
+        <torrent-view data-page="torrent-view" id="torrent_view"></torrent-view>
         <trending-list data-page="trending-list" id="trending_list"></trending-list>
       </neon-animated-pages>
     </paper-drawer-panel>
@@ -21994,7 +22123,7 @@ mwcLayout = new PolymerLayout();
 
       FlowRouter.setQueryParams({
         project: (d.item.dataset.id == "favorite-list" || d.item.dataset.id == "trending-list" ? null : d.item.dataset.id),
-        route: (d.item.dataset.id == "favorite-list" || d.item.dataset.id == "trending-list" ? d.item.dataset.id : "project-list")
+        route: (d.item.dataset.id == "favorite-list" || d.item.dataset.id == "trending-list" ? d.item.dataset.id : "project-view")
       });
     },
 
@@ -22051,19 +22180,16 @@ mwcLayout = new PolymerLayout();
   </script>
 
 </dom-module>
-<dom-module id="polymer-toast" assetpath="/linto/">
+<dom-module id="polymer-toast" assetpath="linto/">
 
   <style>
   paper-toast {
-    margin: 8px;
-    padding: 8px 16px;
     z-index: 1000;
   }
   
   paper-toast > div {
     color: var(--paper-yellow-500);
-    margin-left: 16px;
-    padding: 8px;
+    margin-left: 24px;
   }
   
   .subhead {
@@ -22134,7 +22260,7 @@ mwcLayout = new PolymerLayout();
       if (document.querySelector(".menu-b")) {
         this.async(function() {
           for (A = 0; A < document.querySelectorAll(".menu-b").length; A++) {
-            document.querySelectorAll(".menu-b")[A].translate3d(0, "-" + ($("#toast #label").height() + 32) + "px", 0);
+            document.querySelectorAll(".menu-b")[A].translate3d(0, "-" + ($("#toast #label").height() + 40) + "px", 0);
           }
         }, 40);
       }
@@ -22172,7 +22298,7 @@ mwcLayout = new PolymerLayout();
   </script>
 
 </dom-module>
-<dom-module id="project-list" assetpath="/linto/">
+<dom-module id="project-view" assetpath="linto/">
 
   <style>
   paper-button {
@@ -22286,7 +22412,7 @@ mwcLayout = new PolymerLayout();
     <paper-header-panel>
       <paper-toolbar id="project_list_toolbar" class$="[[return_class(mwcData.project.keyword)]]">
         <paper-icon-button class="selection-visible" icon="arrow-back" on-click="clear_torrent_selection"></paper-icon-button>
-        <paper-icon-button class="selection-hidden" icon="menu" on-click="menu_toggle" paper-drawer-toggle=""></paper-icon-button>
+        <paper-icon-button class="selection-hidden" icon="menu" on-click="menu_toggle"></paper-icon-button>
 
         <div class="title" id="project_list_toolbar_title">TorrentAlert</div>
 
@@ -22302,7 +22428,7 @@ mwcLayout = new PolymerLayout();
             <div class="flex subhead">[[mwcData.project.keyword]]</div>
 
             <paper-icon-button icon="refresh" on-click="refresh"></paper-icon-button>
-            <paper-icon-button icon="alarm-add" hidden="[[!is_search(mwcData.project.worker)]]" onclick="document.querySelector('#schedule_prompt').open();"></paper-icon-button>
+            <paper-icon-button icon="schedule" hidden="[[!is_search(mwcData.project.worker)]]" onclick="document.querySelector('#schedule_prompt').open();"></paper-icon-button>
             <paper-icon-button icon="close" onclick="document.querySelector('#remove_prompt').open();"></paper-icon-button>
           </div>
         </div>
@@ -22376,7 +22502,7 @@ mwcLayout = new PolymerLayout();
 
     add_project: function() {
       FlowRouter.setQueryParams({
-        "back-route": "project-list",
+        "back-route": "project-view",
         route: "add-project"
       });
     },
@@ -22422,7 +22548,7 @@ mwcLayout = new PolymerLayout();
       };
     },
 
-    is: "project-list",
+    is: "project-view",
 
     is_search: function(worker) {
       return (worker == "search")
@@ -22512,7 +22638,7 @@ mwcLayout = new PolymerLayout();
 
     search: function() {
       FlowRouter.setQueryParams({
-        "back-route": "project-list",
+        "back-route": "project-view",
         route: "search-list"
       });
     },
@@ -22560,7 +22686,7 @@ mwcLayout = new PolymerLayout();
   </script>
 
 </dom-module>
-<dom-module id="search-list" assetpath="/linto/">
+<dom-module id="search-list" assetpath="linto/">
 
   <style>
   input {
@@ -22662,7 +22788,7 @@ mwcLayout = new PolymerLayout();
 
                 FlowRouter.setQueryParams({
                   project: response,
-                  route: "project-list"
+                  route: "project-view"
                 });
               }
             }
@@ -22731,7 +22857,7 @@ mwcLayout = new PolymerLayout();
   </script>
 
 </dom-module>
-<dom-module id="selectable-icon" assetpath="/linto/">
+<dom-module id="selectable-icon" assetpath="linto/">
 
   <style>
   :host([selected]) .icon {
@@ -22824,7 +22950,7 @@ mwcLayout = new PolymerLayout();
   </script>
 
 </dom-module>
-<dom-module id="set-password" assetpath="/linto/">
+<dom-module id="set-password" assetpath="linto/">
 
   <style>
   paper-button {
@@ -22928,7 +23054,7 @@ mwcLayout = new PolymerLayout();
   </script>
 
 </dom-module>
-<dom-module id="trending-list" assetpath="/linto/">
+<dom-module id="trending-list" assetpath="linto/">
 
   <style>
   paper-fab {
@@ -22994,7 +23120,7 @@ mwcLayout = new PolymerLayout();
 
     <paper-header-panel>
       <paper-toolbar>
-        <paper-icon-button icon="menu" on-click="menu_toggle" paper-drawer-toggle=""></paper-icon-button>
+        <paper-icon-button icon="menu" on-click="menu_toggle"></paper-icon-button>
         <div class="title">TorrentAlert</div>
         <paper-icon-button icon="search" on-click="search"></paper-icon-button>
       </paper-toolbar>
@@ -23006,16 +23132,16 @@ mwcLayout = new PolymerLayout();
               <iron-icon icon="trending-up"></iron-icon>
             </div>
 
-            <div class="subhead" style="border-bottom: 1px solid #757575;">Trending [[return_trending_count(trending.keyword.length)]]</div>
+            <div class="subhead" style="border-bottom: 1px solid #757575;">Trending Keyword [[return_trending_count(trending.keyword.length)]]</div>
           </div>
         </div>
       </div>
 
       <div class="center-justified horizontal layout">
         <div class="li">
-          <div class="horizontal layout trending-li wrap">
+          <div class="center-justified horizontal layout trending-li wrap">
             <template is="dom-repeat" items="[[trending.keyword]]">
-              <div class="cursor-p grey-500 subhead" on-click="click">[[item]]</div>
+              <div class$="cursor-p subhead [[return_class(item)]]" on-click="click">[[item]]</div>
             </template>
           </div>
         </div>
@@ -23083,7 +23209,7 @@ mwcLayout = new PolymerLayout();
 
                 FlowRouter.setQueryParams({
                   project: response,
-                  route: "project-list"
+                  route: "project-view"
                 });
               }
             }
@@ -23121,6 +23247,10 @@ mwcLayout = new PolymerLayout();
       }
     },
 
+    return_class: function(text) {
+      return polymer_color(text ? text : "#").replace(/500$/, "100");
+    },
+
     return_trending_count: function(count) {
       return (count ? "#" + count : "List");
     },
@@ -23136,7 +23266,7 @@ mwcLayout = new PolymerLayout();
   </script>
 
 </dom-module>
-<dom-module id="torrent-item" assetpath="/linto/">
+<dom-module id="torrent-item" assetpath="linto/">
 
   <style>
   .body1 {
@@ -23191,11 +23321,11 @@ mwcLayout = new PolymerLayout();
         e.stopPropagation();
 
         if (this.item.link.length) {
-          document.querySelector("#torrent_list").item = this.item;
+          document.querySelector("#torrent_view").item = this.item;
 
           FlowRouter.setQueryParams({
             "back-route": FlowRouter.getQueryParam("route"),
-            route: "torrent-list"
+            route: "torrent-view"
           });
         } else {
           document.querySelector("#polymer_toast").toast("under processing");
@@ -23240,7 +23370,7 @@ mwcLayout = new PolymerLayout();
   </script>
 
 </dom-module>
-<dom-module id="torrent-list" assetpath="/linto/">
+<dom-module id="torrent-view" assetpath="linto/">
 
   <style>
   paper-icon-item {
@@ -23344,7 +23474,7 @@ mwcLayout = new PolymerLayout();
       this.proxy = false;
     },
 
-    is: "torrent-list",
+    is: "torrent-view",
 
     properties: {
       item: {
@@ -23379,7 +23509,7 @@ mwcLayout = new PolymerLayout();
   </script>
 
 </dom-module>
-<dom-module id="user-check" assetpath="/linto/">
+<dom-module id="user-check" assetpath="linto/">
 
   <style>
   gold-email-input.color-white {
@@ -23687,7 +23817,7 @@ mwcLayout = new PolymerLayout();
   </script>
 
 </dom-module>
-<dom-module id="user-check-layout" assetpath="/linto/">
+<dom-module id="user-check-layout" assetpath="linto/">
 
   <style>
   :host {
