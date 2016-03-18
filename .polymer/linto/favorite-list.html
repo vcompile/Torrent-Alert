@@ -6,48 +6,24 @@
     --paper-toolbar-color: white;
   }
   
-  paper-toolbar paper-icon-button[icon="arrow-back"] {
-    transform: translateX(-42px);
-  }
-  
   paper-toolbar paper-icon-button[icon="menu"] {
     margin: 0!important;
   }
   
-  paper-toolbar.selection paper-icon-button[icon="arrow-back"] {
-    transform: translateX(0);
+  paper-toolbar .selection-hidden-opt {
+    display: block;
   }
   
-  paper-toolbar .selection-hidden {
-    padding: 8px;
-    transform: rotateY(0);
-    transition: transform 400ms ease-in-out;
-    visibility: visible;
-    width: 40px;
-    will-change: transform;
+  paper-toolbar .selection-visible-opt {
+    display: none;
   }
   
-  paper-toolbar.selection .selection-hidden {
-    padding: 0;
-    transform: rotateY(90deg);
-    visibility: hidden;
-    width: 0;
+  paper-toolbar.selection .selection-hidden-opt {
+    display: none;
   }
   
-  paper-toolbar.selection .selection-visible {
-    padding: 8px;
-    transform: rotateY(0);
-    transition: transform 400ms ease-in-out;
-    visibility: visible;
-    width: 40px;
-    will-change: transform;
-  }
-  
-  paper-toolbar .selection-visible {
-    padding: 0;
-    transform: rotateY(90deg);
-    visibility: hidden;
-    width: 0;
+  paper-toolbar.selection .selection-visible-opt {
+    display: block;
   }
   
   paper-toolbar .title {
@@ -90,14 +66,14 @@
 
     <paper-header-panel>
       <paper-toolbar id="favorite_list_toolbar">
-        <paper-icon-button class="selection-visible" icon="arrow-back" on-click="clear_torrent_selection"></paper-icon-button>
-        <paper-icon-button class="selection-hidden" icon="menu" on-click="menu_toggle" paper-drawer-toggle></paper-icon-button>
+        <paper-icon-button class="selection-visible-opt" icon="arrow-back" on-click="clear_torrent_selection"></paper-icon-button>
+        <paper-icon-button class="selection-hidden-opt" icon="menu" on-click="menu_toggle"></paper-icon-button>
 
         <div class="title" id="favorite_list_toolbar_title">TorrentAlert</div>
 
-        <paper-icon-button class="selection-visible" icon="delete" onclick="document.querySelector('#remove_favorite').open();"></paper-icon-button>
-        <paper-icon-button class="selection-visible" icon="social:share" on-click="share"></paper-icon-button>
-        <paper-icon-button class="selection-hidden" icon="search" on-click="search"></paper-icon-button>
+        <paper-icon-button class="selection-visible-opt" icon="delete" onclick="document.querySelector('#remove_favorite').open();"></paper-icon-button>
+        <paper-icon-button class="selection-visible-opt" icon="social:share" on-click="share"></paper-icon-button>
+        <paper-icon-button class="selection-hidden-opt" icon="search" on-click="search"></paper-icon-button>
       </paper-toolbar>
 
       <div class="center-justified horizontal layout">
@@ -189,9 +165,7 @@
       document.querySelector("#old_layout").menu_toggle();
     },
 
-    observers: [
-      "torrent_selected_change(torrent_selected.splices)"
-    ],
+    observers: ["torrent_selected_change(torrent_selected.splices)"],
 
     properties: {
       favorite: {

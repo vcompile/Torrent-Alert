@@ -54,6 +54,17 @@
         e.stopPropagation();
 
         if (this.item.link.length) {
+          if (FlowRouter.getQueryParam("route") == "project-view") {
+            document.querySelector("#project_view").sharedElements = {
+              hero: this
+            };
+
+            var TOP = $(this).offset().top - $("#project_view_toolbar").height();
+            document.querySelector("#torrent_view").animationConfig.exit[1].transformOrigin = TOP + "px " + TOP + "px";
+          } else {
+            document.querySelector("#project_view").sharedElements = {};
+          }
+
           document.querySelector("#torrent_view").item = this.item;
 
           FlowRouter.setQueryParams({

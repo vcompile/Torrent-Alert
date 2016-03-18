@@ -21449,48 +21449,24 @@ mwcLayout = new PolymerLayout();
     --paper-toolbar-color: white;
   }
   
-  paper-toolbar paper-icon-button[icon="arrow-back"] {
-    transform: translateX(-42px);
-  }
-  
   paper-toolbar paper-icon-button[icon="menu"] {
     margin: 0!important;
   }
   
-  paper-toolbar.selection paper-icon-button[icon="arrow-back"] {
-    transform: translateX(0);
+  paper-toolbar .selection-hidden-opt {
+    display: block;
   }
   
-  paper-toolbar .selection-hidden {
-    padding: 8px;
-    transform: rotateY(0);
-    transition: transform 400ms ease-in-out;
-    visibility: visible;
-    width: 40px;
-    will-change: transform;
+  paper-toolbar .selection-visible-opt {
+    display: none;
   }
   
-  paper-toolbar.selection .selection-hidden {
-    padding: 0;
-    transform: rotateY(90deg);
-    visibility: hidden;
-    width: 0;
+  paper-toolbar.selection .selection-hidden-opt {
+    display: none;
   }
   
-  paper-toolbar.selection .selection-visible {
-    padding: 8px;
-    transform: rotateY(0);
-    transition: transform 400ms ease-in-out;
-    visibility: visible;
-    width: 40px;
-    will-change: transform;
-  }
-  
-  paper-toolbar .selection-visible {
-    padding: 0;
-    transform: rotateY(90deg);
-    visibility: hidden;
-    width: 0;
+  paper-toolbar.selection .selection-visible-opt {
+    display: block;
   }
   
   paper-toolbar .title {
@@ -21533,14 +21509,14 @@ mwcLayout = new PolymerLayout();
 
     <paper-header-panel>
       <paper-toolbar id="favorite_list_toolbar">
-        <paper-icon-button class="selection-visible" icon="arrow-back" on-click="clear_torrent_selection"></paper-icon-button>
-        <paper-icon-button class="selection-hidden" icon="menu" on-click="menu_toggle" paper-drawer-toggle=""></paper-icon-button>
+        <paper-icon-button class="selection-visible-opt" icon="arrow-back" on-click="clear_torrent_selection"></paper-icon-button>
+        <paper-icon-button class="selection-hidden-opt" icon="menu" on-click="menu_toggle"></paper-icon-button>
 
         <div class="title" id="favorite_list_toolbar_title">TorrentAlert</div>
 
-        <paper-icon-button class="selection-visible" icon="delete" onclick="document.querySelector('#remove_favorite').open();"></paper-icon-button>
-        <paper-icon-button class="selection-visible" icon="social:share" on-click="share"></paper-icon-button>
-        <paper-icon-button class="selection-hidden" icon="search" on-click="search"></paper-icon-button>
+        <paper-icon-button class="selection-visible-opt" icon="delete" onclick="document.querySelector('#remove_favorite').open();"></paper-icon-button>
+        <paper-icon-button class="selection-visible-opt" icon="social:share" on-click="share"></paper-icon-button>
+        <paper-icon-button class="selection-hidden-opt" icon="search" on-click="search"></paper-icon-button>
       </paper-toolbar>
 
       <div class="center-justified horizontal layout">
@@ -21632,9 +21608,7 @@ mwcLayout = new PolymerLayout();
       document.querySelector("#old_layout").menu_toggle();
     },
 
-    observers: [
-      "torrent_selected_change(torrent_selected.splices)"
-    ],
+    observers: ["torrent_selected_change(torrent_selected.splices)"],
 
     properties: {
       favorite: {
@@ -22313,6 +22287,10 @@ mwcLayout = new PolymerLayout();
 <dom-module id="project-view" assetpath="linto/">
 
   <style>
+  :host {
+    background: transparent!important;
+  }
+  
   paper-button {
     margin: 0;
     min-width: 50%;
@@ -22341,48 +22319,24 @@ mwcLayout = new PolymerLayout();
     --paper-toolbar-color: white;
   }
   
-  paper-toolbar paper-icon-button[icon="arrow-back"] {
-    transform: translateX(-42px);
-  }
-  
   paper-toolbar paper-icon-button[icon="menu"] {
     margin: 0!important;
   }
   
-  paper-toolbar.selection paper-icon-button[icon="arrow-back"] {
-    transform: translateX(0);
+  paper-toolbar .selection-hidden-opt {
+    display: block;
   }
   
-  paper-toolbar .selection-hidden {
-    padding: 8px;
-    transform: rotateY(0);
-    transition: transform 400ms ease-in-out;
-    visibility: visible;
-    width: 40px;
-    will-change: transform;
+  paper-toolbar .selection-visible-opt {
+    display: none;
   }
   
-  paper-toolbar.selection .selection-hidden {
-    padding: 0;
-    transform: rotateY(90deg);
-    visibility: hidden;
-    width: 0;
+  paper-toolbar.selection .selection-hidden-opt {
+    display: none;
   }
   
-  paper-toolbar.selection .selection-visible {
-    padding: 8px;
-    transform: rotateY(0);
-    transition: transform 400ms ease-in-out;
-    visibility: visible;
-    width: 40px;
-    will-change: transform;
-  }
-  
-  paper-toolbar .selection-visible {
-    padding: 0;
-    transform: rotateY(90deg);
-    visibility: hidden;
-    width: 0;
+  paper-toolbar.selection .selection-visible-opt {
+    display: block;
   }
   
   paper-toolbar .title {
@@ -22423,15 +22377,15 @@ mwcLayout = new PolymerLayout();
   <template>
     <paper-header-panel>
       <paper-toolbar id="project_view_toolbar" class$="[[return_class(mwcData.project._id)]]">
-        <paper-icon-button class="selection-visible" icon="arrow-back" on-click="clear_torrent_selection"></paper-icon-button>
-        <paper-icon-button class="selection-hidden" icon="menu" on-click="menu_toggle"></paper-icon-button>
+        <paper-icon-button class="selection-visible-opt" icon="arrow-back" on-click="clear_torrent_selection"></paper-icon-button>
+        <paper-icon-button class="selection-hidden-opt" icon="menu" on-click="menu_toggle"></paper-icon-button>
 
         <div class="title" id="project_view_toolbar_title">TorrentAlert</div>
 
-        <paper-icon-button class="selection-visible" icon="delete" on-click="remove_torrent"></paper-icon-button>
-        <paper-icon-button class="selection-visible" icon="favorite-border" on-click="favorite"></paper-icon-button>
-        <paper-icon-button class="selection-visible" icon="social:share" on-click="share"></paper-icon-button>
-        <paper-icon-button class="selection-hidden" icon="search" on-click="search"></paper-icon-button>
+        <paper-icon-button class="selection-visible-opt" icon="delete" on-click="remove_torrent"></paper-icon-button>
+        <paper-icon-button class="selection-visible-opt" icon="favorite-border" on-click="favorite"></paper-icon-button>
+        <paper-icon-button class="selection-visible-opt" icon="social:share" on-click="share"></paper-icon-button>
+        <paper-icon-button icon="search" on-click="search"></paper-icon-button>
       </paper-toolbar>
 
       <div class="center-justified horizontal layout">
@@ -22519,7 +22473,7 @@ mwcLayout = new PolymerLayout();
       });
     },
 
-    behaviors: [mwcMixin],
+    behaviors: [mwcMixin, Polymer.NeonAnimatableBehavior],
 
     clear_torrent_selection: function() {
       this.torrent_selected = [];
@@ -22570,11 +22524,28 @@ mwcLayout = new PolymerLayout();
       document.querySelector("#old_layout").menu_toggle();
     },
 
-    observers: [
-      "torrent_selected_change(torrent_selected.splices)"
-    ],
+    observers: ["torrent_selected_change(torrent_selected.splices)"],
 
     properties: {
+      animationConfig: {
+        type: Object,
+        value: function() {
+          return {
+            entry: [{
+              name: "fade-in-animation",
+              node: this.$.project_view_toolbar
+            }],
+            exit: [{
+              name: "fade-out-animation",
+              node: this.$.project_view_toolbar
+            }, {
+              fromPage: this,
+              id: "hero",
+              name: "hero-animation"
+            }]
+          };
+        }
+      },
       torrent_selected: {
         type: Array,
         value: function() {
@@ -22908,6 +22879,7 @@ mwcLayout = new PolymerLayout();
   
   .font-title {
     @apply(--paper-font-title);
+    font-weight: 400;
   }
   
   .icon {
@@ -23334,6 +23306,17 @@ mwcLayout = new PolymerLayout();
         e.stopPropagation();
 
         if (this.item.link.length) {
+          if (FlowRouter.getQueryParam("route") == "project-view") {
+            document.querySelector("#project_view").sharedElements = {
+              hero: this
+            };
+
+            var TOP = $(this).offset().top - $("#project_view_toolbar").height();
+            document.querySelector("#torrent_view").animationConfig.exit[1].transformOrigin = TOP + "px " + TOP + "px";
+          } else {
+            document.querySelector("#project_view").sharedElements = {};
+          }
+
           document.querySelector("#torrent_view").item = this.item;
 
           FlowRouter.setQueryParams({
@@ -23386,6 +23369,10 @@ mwcLayout = new PolymerLayout();
 <dom-module id="torrent-view" assetpath="linto/">
 
   <style>
+  :host {
+    background: transparent!important;
+  }
+  
   paper-icon-item {
     border-bottom: 1px solid #EEE;
   }
@@ -23432,53 +23419,56 @@ mwcLayout = new PolymerLayout();
   <template>
     <iron-localstorage name="proxy" on-iron-localstorage-load-empty="initialize_proxy" value="{{proxy}}"></iron-localstorage>
 
-    <paper-header-panel style="background: #EEE;">
-      <paper-toolbar class$="[[return_toolbar_class(item._id)]]">
+    <paper-header-panel>
+      <paper-toolbar class$="[[return_toolbar_class(item._id)]]" id="torrent_view_toolbar">
         <paper-icon-button icon="arrow-back" on-click="back"></paper-icon-button>
 
-        <div class="title">TorrentAlert</div>
+        <div class="title"></div>
 
         <paper-icon-button icon="delete" on-click="remove_torrent"></paper-icon-button>
-        <paper-icon-button icon="favorite-border" on-click="favorite"></paper-icon-button>
+        <paper-icon-button hidden="[[is_favorite_list(item._id)]]" icon="favorite-border" on-click="favorite"></paper-icon-button>
         <paper-icon-button icon="social:share" on-click="share"></paper-icon-button>
+        <paper-icon-button hidden="[[is_favorite_list(item._id)]]" icon="search" on-click="search"></paper-icon-button>
       </paper-toolbar>
 
-      <div class="center-justified horizontal layout">
-        <div class="li">
-          <div class="cursor-d horizontal layout title-li">
-            <div>
-              <paper-icon-button class="white" icon="file-download" on-click="download"></paper-icon-button>
-            </div>
+      <div class="layout vertical" id="torrent_view_body" style="background: #EEE;">
+        <div class="center-justified horizontal layout">
+          <div class="li">
+            <div class="cursor-d horizontal layout title-li">
+              <div>
+                <paper-icon-button class="white" icon="file-download" on-click="download"></paper-icon-button>
+              </div>
 
-            <div class="flex layout vertical">
-              <div class="body1">[[return_description(item)]]</div>
+              <div class="flex layout vertical">
+                <div class="body1">[[return_description(item)]]</div>
 
-              <div><span class="subhead">[[item.title]]</span>&nbsp;&nbsp;<span class$="body2 [[return_class(item.category)]]">&nbsp;&nbsp;[[item.category]]&nbsp;&nbsp;</span>&nbsp;&nbsp;</div>
+                <div><span class="subhead">[[item.title]]</span>&nbsp;&nbsp;<span class$="body2 [[return_class(item.category)]]">&nbsp;&nbsp;[[item.category]]&nbsp;&nbsp;</span>&nbsp;&nbsp;</div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div class="center-justified horizontal layout">
-        <div class="li">
-          <template is="dom-repeat" items="[[item.link]]">
-            <paper-icon-item class="cursor-p white" data-link$="[[item.url]]" on-click="click">
-              <selectable-icon icon_class="[[return_class(item.text)]]" icon_text="[[return_icon_text(item.text)]]" item-icon=""></selectable-icon>
+        <div class="center-justified horizontal layout">
+          <div class="li">
+            <template is="dom-repeat" items="[[item.link]]">
+              <paper-icon-item class="cursor-p white" data-link$="[[item.url]]" on-click="click">
+                <selectable-icon icon_class="[[return_class(item.text)]]" icon_text="[[return_icon_text(item.text)]]" item-icon=""></selectable-icon>
 
-              <paper-item-body two-line="">
-                <div>[[item.text]]</div>
-                <div secondary="">[[return_time(item.time)]]</div>
-              </paper-item-body>
-            </paper-icon-item>
-          </template>
+                <paper-item-body two-line="">
+                  <div>[[item.text]]</div>
+                  <div secondary="">[[return_time(item.time)]]</div>
+                </paper-item-body>
+              </paper-icon-item>
+            </template>
+          </div>
         </div>
-      </div>
 
-      <div class="center-justified horizontal layout">
-        <div class="li">
-          <div class="center footer-li horizontal layout">
-            <div>
-              <paper-toggle-button checked="{{proxy}}">enable proxy</paper-toggle-button>
+        <div class="center-justified horizontal layout">
+          <div class="li">
+            <div class="center footer-li horizontal layout">
+              <div>
+                <paper-toggle-button checked="{{proxy}}">enable proxy</paper-toggle-button>
+              </div>
             </div>
           </div>
         </div>
@@ -23494,6 +23484,8 @@ mwcLayout = new PolymerLayout();
         "route": (FlowRouter.getQueryParam("back-route") ? FlowRouter.getQueryParam("back-route") : null)
       });
     },
+
+    behaviors: [Polymer.NeonAnimatableBehavior],
 
     click: function(e, d) {
       e.stopPropagation();
@@ -23511,7 +23503,35 @@ mwcLayout = new PolymerLayout();
 
     is: "torrent-view",
 
+    is_favorite_list: function(text) {
+      return (FlowRouter.getQueryParam("route") == "favorite-list");
+    },
+
     properties: {
+      animationConfig: {
+        type: Object,
+        value: function() {
+          return {
+            entry: [{
+              name: "fade-in-animation",
+              node: this.$.torrent_view_toolbar
+            }, {
+              id: "hero",
+              name: "hero-animation",
+              toPage: this
+            }],
+            exit: [{
+              name: "fade-out-animation",
+              node: this.$.torrent_view_toolbar
+            }, {
+              axis: "y",
+              name: "scale-down-animation",
+              node: this.$.torrent_view_body,
+              transformOrigin: "100% 100%"
+            }]
+          }
+        }
+      },
       item: {
         type: Object,
         value: function() {
@@ -23521,6 +23541,14 @@ mwcLayout = new PolymerLayout();
       proxy: {
         type: Boolean,
         value: false
+      },
+      sharedElements: {
+        type: Object,
+        value: function() {
+          return {
+            hero: this.$.torrent_view_body
+          };
+        }
       }
     },
 
