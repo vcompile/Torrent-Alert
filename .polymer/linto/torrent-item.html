@@ -54,23 +54,39 @@
         e.stopPropagation();
 
         if (this.item.link.length) {
-          if (FlowRouter.getQueryParam("route") == "project-view") {
-            document.querySelector("#project_view").sharedElements = {
-              hero: this
-            };
+          switch (FlowRouter.getQueryParam("route")) {
+            case "favorite-list":
+              document.querySelector("#favorite_list").sharedElements = {
+                hero: this
+              };
 
-            var TOP = $(this).offset().top - $("#project_view_toolbar").height();
-            document.querySelector("#torrent_view").animationConfig.exit[1].transformOrigin = TOP + "px " + TOP + "px";
-          } else {
-            document.querySelector("#project_view").sharedElements = {};
+              var TOP = $(this).offset().top - $("#favorite_list_toolbar").height();
+              document.querySelector("#favorite_torrent_view").animationConfig.exit[1].transformOrigin = TOP + "px " + TOP + "px";
+
+              document.querySelector("#favorite_torrent_view").item = this.item;
+
+              FlowRouter.setQueryParams({
+                "back-route": FlowRouter.getQueryParam("route"),
+                route: "favorite-torrent-view"
+              });
+              break;
+
+            case "project-view":
+              document.querySelector("#project_view").sharedElements = {
+                hero: this
+              };
+
+              var TOP = $(this).offset().top - $("#project_view_toolbar").height();
+              document.querySelector("#project_torrent_view").animationConfig.exit[1].transformOrigin = TOP + "px " + TOP + "px";
+
+              document.querySelector("#project_torrent_view").item = this.item;
+
+              FlowRouter.setQueryParams({
+                "back-route": FlowRouter.getQueryParam("route"),
+                route: "project-torrent-view"
+              });
+              break;
           }
-
-          document.querySelector("#torrent_view").item = this.item;
-
-          FlowRouter.setQueryParams({
-            "back-route": FlowRouter.getQueryParam("route"),
-            route: "torrent-view"
-          });
         } else {
           document.querySelector("#polymer_toast").toast("under processing");
         }

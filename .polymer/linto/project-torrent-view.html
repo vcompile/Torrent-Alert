@@ -1,4 +1,4 @@
-<dom-module id="torrent-view">
+<dom-module id="project-torrent-view">
 
   <style>
   :host {
@@ -58,9 +58,9 @@
         <div class="title"></div>
 
         <paper-icon-button icon="delete" on-click="remove_torrent"></paper-icon-button>
-        <paper-icon-button hidden="[[is_favorite_list(item._id)]]" icon="favorite-border" on-click="favorite"></paper-icon-button>
+        <paper-icon-button icon="favorite-border" on-click="favorite"></paper-icon-button>
         <paper-icon-button icon="social:share" on-click="share"></paper-icon-button>
-        <paper-icon-button hidden="[[is_favorite_list(item._id)]]" icon="search" on-click="search"></paper-icon-button>
+        <paper-icon-button icon="search" on-click="search"></paper-icon-button>
       </paper-toolbar>
 
       <div class="layout vertical" id="torrent_view_body" style="background: #EEE;">
@@ -133,11 +133,7 @@
       this.proxy = false;
     },
 
-    is: "torrent-view",
-
-    is_favorite_list: function(text) {
-      return (FlowRouter.getQueryParam("route") == "favorite-list");
-    },
+    is: "project-torrent-view",
 
     properties: {
       animationConfig: {
@@ -161,7 +157,7 @@
               node: this.$.torrent_view_body,
               transformOrigin: "100% 100%"
             }]
-          }
+          };
         }
       },
       item: {

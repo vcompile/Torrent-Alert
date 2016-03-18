@@ -34,9 +34,24 @@ main.route("/", {
 
     switch (FlowRouter.getQueryParam("route")) {
       case "add-project":
-      case "favorite-list":
       case "search-list":
         document.querySelector("#old_layout").selected = FlowRouter.getQueryParam("route");
+        break;
+
+      case "favorite-list":
+        document.querySelector("#old_layout").selected = "favorite-layout";
+        document.querySelector("#favorite_layout").selected = FlowRouter.getQueryParam("route");
+        break;
+
+      case "favorite-torrent-view":
+        if (document.querySelector("#favorite_torrent_view").item._id) {
+          document.querySelector("#old_layout").selected = "favorite-layout";
+          document.querySelector("#favorite_layout").selected = FlowRouter.getQueryParam("route");
+        } else {
+          FlowRouter.setQueryParams({
+            route: (FlowRouter.getQueryParam("back-route") ? FlowRouter.getQueryParam("back-route") : null)
+          });
+        }
         break;
 
       case "project-view":
@@ -50,8 +65,8 @@ main.route("/", {
         }
         break;
 
-      case "torrent-view":
-        if (document.querySelector("#torrent_view").item._id) {
+      case "project-torrent-view":
+        if (document.querySelector("#project_torrent_view").item._id) {
           document.querySelector("#old_layout").selected = "project-layout";
           document.querySelector("#project_layout").selected = FlowRouter.getQueryParam("route");
         } else {

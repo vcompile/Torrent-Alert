@@ -1,6 +1,10 @@
 <dom-module id="favorite-list">
 
   <style>
+  :host {
+    background: transparent!important;
+  }
+  
   paper-toolbar {
     --paper-toolbar-background: var(--paper-blue-700);
     --paper-toolbar-color: white;
@@ -73,7 +77,7 @@
 
         <paper-icon-button class="selection-visible-opt" icon="delete" onclick="document.querySelector('#remove_favorite').open();"></paper-icon-button>
         <paper-icon-button class="selection-visible-opt" icon="social:share" on-click="share"></paper-icon-button>
-        <paper-icon-button class="selection-hidden-opt" icon="search" on-click="search"></paper-icon-button>
+        <paper-icon-button icon="search" on-click="search"></paper-icon-button>
       </paper-toolbar>
 
       <div class="center-justified horizontal layout">
@@ -147,6 +151,8 @@
       }
     },
 
+    behaviors: [Polymer.NeonAnimatableBehavior],
+
     clear_torrent_selection: function() {
       this.torrent_selected = [];
     },
@@ -168,6 +174,25 @@
     observers: ["torrent_selected_change(torrent_selected.splices)"],
 
     properties: {
+      animationConfig: {
+        type: Object,
+        value: function() {
+          return {
+            entry: [{
+              name: "fade-in-animation",
+              node: this.$.favorite_list_toolbar
+            }],
+            exit: [{
+              name: "fade-out-animation",
+              node: this.$.favorite_list_toolbar
+            }, {
+              fromPage: this,
+              id: "hero",
+              name: "hero-animation"
+            }]
+          };
+        }
+      },
       favorite: {
         type: Array,
         value: function() {

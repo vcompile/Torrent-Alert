@@ -21441,254 +21441,6 @@ mwcLayout = new PolymerLayout();
   </script>
 
 </dom-module>
-<dom-module id="favorite-list" assetpath="linto/">
-
-  <style>
-  paper-toolbar {
-    --paper-toolbar-background: var(--paper-blue-700);
-    --paper-toolbar-color: white;
-  }
-  
-  paper-toolbar paper-icon-button[icon="menu"] {
-    margin: 0!important;
-  }
-  
-  paper-toolbar .selection-hidden-opt {
-    display: block;
-  }
-  
-  paper-toolbar .selection-visible-opt {
-    display: none;
-  }
-  
-  paper-toolbar.selection .selection-hidden-opt {
-    display: none;
-  }
-  
-  paper-toolbar.selection .selection-visible-opt {
-    display: block;
-  }
-  
-  paper-toolbar .title {
-    padding: 0 8px;
-  }
-  
-  .body1 {
-    @apply(--paper-font-body1);
-    color: #757575;
-  }
-  
-  .footer-li {
-    min-height: 88px;
-  }
-  
-  .menu-b {
-    bottom: 16px;
-    position: fixed;
-    right: 16px;
-    transition: transform 0.2s ease-in-out;
-    will-change: transform;
-  }
-  
-  .menu-b.move-down {
-    transform: translate3d(0, 88px, 0)!important;
-  }
-  
-  .subhead {
-    @apply(--paper-font-subhead);
-  }
-  
-  .title-li,
-  .title-li > div {
-    padding: 8px;
-  }
-  </style>
-
-  <template>
-    <iron-localstorage name="favorite" on-iron-localstorage-load-empty="initialize_favorite" value="{{favorite}}"></iron-localstorage>
-
-    <paper-header-panel>
-      <paper-toolbar id="favorite_list_toolbar">
-        <paper-icon-button class="selection-visible-opt" icon="arrow-back" on-click="clear_torrent_selection"></paper-icon-button>
-        <paper-icon-button class="selection-hidden-opt" icon="menu" on-click="menu_toggle"></paper-icon-button>
-
-        <div class="title" id="favorite_list_toolbar_title">TorrentAlert</div>
-
-        <paper-icon-button class="selection-visible-opt" icon="delete" onclick="document.querySelector('#remove_favorite').open();"></paper-icon-button>
-        <paper-icon-button class="selection-visible-opt" icon="social:share" on-click="share"></paper-icon-button>
-        <paper-icon-button class="selection-hidden-opt" icon="search" on-click="search"></paper-icon-button>
-      </paper-toolbar>
-
-      <div class="center-justified horizontal layout">
-        <div class="li">
-          <div class="center horizontal layout title-li">
-            <div class="flex subhead">My Favorite [[return_favorite_count(favorite.length)]]</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="center-justified horizontal layout" hidden="[[favorite.length]]">
-        <div class="li">
-          <div class="center-justified cursor-d horizontal layout title-li">
-            <div class="subhead" style="color: #AAA;">noItemFound</div>
-          </div>
-        </div>
-      </div>
-
-      <iron-selector activate-event="click" attr-for-selected="item" multi="" selected-attribute="selected" selected-values="{{torrent_selected}}">
-        <template filter="filter_url" is="dom-repeat" items="[[favorite]]" sort="sort">
-          <torrent-item item="[[item]]"></torrent-item>
-        </template>
-      </iron-selector>
-
-      <div class="footer-li"></div>
-    </paper-header-panel>
-
-    <paper-dialog entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" id="remove_favorite">
-      <div class="subhead">Are you sure to delete [[torrent_selected.length]] favorite ?</div>
-
-      <div class="buttons">
-        <paper-button onclick="document.querySelector('#remove_favorite').close();">
-          <iron-icon icon="close"></iron-icon> cancel
-        </paper-button>
-
-        <paper-button on-click="remove_ok">
-          <iron-icon icon="check"></iron-icon> ok
-        </paper-button>
-      </div>
-    </paper-dialog>
-  </template>
-
-  <script>
-  Polymer({
-
-    add_project: function() {
-      FlowRouter.setQueryParams({
-        "back-route": "favorite-list",
-        route: "add-project"
-      });
-    },
-
-    attached: function() {
-      if (Meteor.status().connected) {
-        var _this = this;
-
-        Tracker.autorun(function() {
-          if (Meteor.user()) {
-            Meteor.subscribe("torrent", {
-              field: "torrent",
-              id: (Meteor.user().profile.favorite ? Meteor.user().profile.favorite : [])
-            });
-
-            _this.favorite = _torrent.find({
-              _id: {
-                $in: (Meteor.user().profile.favorite ? Meteor.user().profile.favorite : [])
-              }
-            }).fetch();
-          }
-        });
-      }
-    },
-
-    clear_torrent_selection: function() {
-      this.torrent_selected = [];
-    },
-
-    filter_url: function(torrent) {
-      return (torrent.url);
-    },
-
-    initialize_favorite: function() {
-      this.favorite = [];
-    },
-
-    is: "favorite-list",
-
-    menu_toggle: function() {
-      document.querySelector("#old_layout").menu_toggle();
-    },
-
-    observers: ["torrent_selected_change(torrent_selected.splices)"],
-
-    properties: {
-      favorite: {
-        type: Array,
-        value: function() {
-          return [];
-        }
-      },
-      torrent_selected: {
-        type: Array,
-        value: function() {
-          return [];
-        }
-      }
-    },
-
-    remove_ok: function() {
-      if (Meteor.status().connected) {
-        Meteor.call("remove_favorite", _.map(this.torrent_selected, function(A) {
-          return A._id;
-        }), function(error, response) {
-          document.querySelector("#polymer_toast").toast(error ? error.reason : response);
-        });
-
-        this.clear_torrent_selection();
-      } else {
-        document.querySelector("#polymer_toast").toast("server connection required");
-      }
-
-      this.$.remove_favorite.close();
-    },
-
-    return_favorite_count: function(count) {
-      return (count ? "#" + count : "List");
-    },
-
-    search: function() {
-      FlowRouter.setQueryParams({
-        "back-route": "favorite-list",
-        route: "search-list"
-      });
-    },
-
-    share: function() {
-      var body = "";
-
-      for (var A = 0; A < this.torrent_selected.length; A++) {
-        if (this.torrent_selected[A].link.length) {
-          body += "\n\nT" + (A + 1) + "\t\t" + this.torrent_selected[A].title + "\n\n";
-
-          for (var Z = 0; Z < this.torrent_selected[A].link.length; Z++) {
-            body += "\t\tL" + (Z + 1) + "\t\t" + this.torrent_selected[A].link[Z].url + "\n\n";
-          }
-        }
-      }
-
-      if (body != "") {
-        if (Meteor.isCordova) {
-          window.plugins.socialsharing.share("Hi\n\n" + (Meteor.user() ? Meteor.user().profile.name : "TorrentAlert") + " shared " + this.torrent_selected.length + " torrent" + body);
-        } else {
-          window.open("mailto:?subject=" + encodeURIComponent("TorrentAlert") + "&body=" + encodeURIComponent("Hi\n\n" + (Meteor.user() ? Meteor.user().profile.name : "TorrentAlert") + " shared " + this.torrent_selected.length + " torrent" + body), "_system");
-        }
-      } else {
-        document.querySelector("#polymer_toast").toast("empty body");
-      }
-    },
-
-    sort: function(A, Z) {
-      return (parseInt(moment(Z.time).format("x")) - parseInt(moment(A.time).format("x")));
-    },
-
-    torrent_selected_change: function(change) {
-      this.$.favorite_list_toolbar.toggleClass("selection", this.torrent_selected.length);
-      this.$.favorite_list_toolbar_title.textContent = (this.torrent_selected.length ? this.torrent_selected.length : "TorrentAlert");
-    }
-
-  });
-  </script>
-
-</dom-module>
 <dom-module id="card-route" assetpath="linto/">
 
   <style>
@@ -21834,6 +21586,509 @@ mwcLayout = new PolymerLayout();
     },
 
     _time: moment().format("x")
+
+  });
+  </script>
+
+</dom-module>
+<dom-module id="favorite-layout" assetpath="linto/">
+
+  <template>
+    <neon-animated-pages attr-for-selected="data-page" class="fit" selected="[[selected]]">
+      <favorite-list data-page="favorite-list" id="favorite_list"></favorite-list>
+      <favorite-torrent-view data-page="favorite-torrent-view" id="favorite_torrent_view"></favorite-torrent-view>
+    </neon-animated-pages>
+  </template>
+
+  <script>
+  Polymer({
+
+    is: "favorite-layout",
+
+    properties: {
+      selected: {
+        type: String,
+        value: "favorite-list"
+      }
+    }
+
+  });
+  </script>
+
+</dom-module>
+<dom-module id="favorite-list" assetpath="linto/">
+
+  <style>
+  :host {
+    background: transparent!important;
+  }
+  
+  paper-toolbar {
+    --paper-toolbar-background: var(--paper-blue-700);
+    --paper-toolbar-color: white;
+  }
+  
+  paper-toolbar paper-icon-button[icon="menu"] {
+    margin: 0!important;
+  }
+  
+  paper-toolbar .selection-hidden-opt {
+    display: block;
+  }
+  
+  paper-toolbar .selection-visible-opt {
+    display: none;
+  }
+  
+  paper-toolbar.selection .selection-hidden-opt {
+    display: none;
+  }
+  
+  paper-toolbar.selection .selection-visible-opt {
+    display: block;
+  }
+  
+  paper-toolbar .title {
+    padding: 0 8px;
+  }
+  
+  .body1 {
+    @apply(--paper-font-body1);
+    color: #757575;
+  }
+  
+  .footer-li {
+    min-height: 88px;
+  }
+  
+  .menu-b {
+    bottom: 16px;
+    position: fixed;
+    right: 16px;
+    transition: transform 0.2s ease-in-out;
+    will-change: transform;
+  }
+  
+  .menu-b.move-down {
+    transform: translate3d(0, 88px, 0)!important;
+  }
+  
+  .subhead {
+    @apply(--paper-font-subhead);
+  }
+  
+  .title-li,
+  .title-li > div {
+    padding: 8px;
+  }
+  </style>
+
+  <template>
+    <iron-localstorage name="favorite" on-iron-localstorage-load-empty="initialize_favorite" value="{{favorite}}"></iron-localstorage>
+
+    <paper-header-panel>
+      <paper-toolbar id="favorite_list_toolbar">
+        <paper-icon-button class="selection-visible-opt" icon="arrow-back" on-click="clear_torrent_selection"></paper-icon-button>
+        <paper-icon-button class="selection-hidden-opt" icon="menu" on-click="menu_toggle"></paper-icon-button>
+
+        <div class="title" id="favorite_list_toolbar_title">TorrentAlert</div>
+
+        <paper-icon-button class="selection-visible-opt" icon="delete" onclick="document.querySelector('#remove_favorite').open();"></paper-icon-button>
+        <paper-icon-button class="selection-visible-opt" icon="social:share" on-click="share"></paper-icon-button>
+        <paper-icon-button icon="search" on-click="search"></paper-icon-button>
+      </paper-toolbar>
+
+      <div class="center-justified horizontal layout">
+        <div class="li">
+          <div class="center horizontal layout title-li">
+            <div class="flex subhead">My Favorite [[return_favorite_count(favorite.length)]]</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="center-justified horizontal layout" hidden="[[favorite.length]]">
+        <div class="li">
+          <div class="center-justified cursor-d horizontal layout title-li">
+            <div class="subhead" style="color: #AAA;">noItemFound</div>
+          </div>
+        </div>
+      </div>
+
+      <iron-selector activate-event="click" attr-for-selected="item" multi="" selected-attribute="selected" selected-values="{{torrent_selected}}">
+        <template filter="filter_url" is="dom-repeat" items="[[favorite]]" sort="sort">
+          <torrent-item item="[[item]]"></torrent-item>
+        </template>
+      </iron-selector>
+
+      <div class="footer-li"></div>
+    </paper-header-panel>
+
+    <paper-dialog entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" id="remove_favorite">
+      <div class="subhead">Are you sure to delete [[torrent_selected.length]] favorite ?</div>
+
+      <div class="buttons">
+        <paper-button onclick="document.querySelector('#remove_favorite').close();">
+          <iron-icon icon="close"></iron-icon> cancel
+        </paper-button>
+
+        <paper-button on-click="remove_ok">
+          <iron-icon icon="check"></iron-icon> ok
+        </paper-button>
+      </div>
+    </paper-dialog>
+  </template>
+
+  <script>
+  Polymer({
+
+    add_project: function() {
+      FlowRouter.setQueryParams({
+        "back-route": "favorite-list",
+        route: "add-project"
+      });
+    },
+
+    attached: function() {
+      if (Meteor.status().connected) {
+        var _this = this;
+
+        Tracker.autorun(function() {
+          if (Meteor.user()) {
+            Meteor.subscribe("torrent", {
+              field: "torrent",
+              id: (Meteor.user().profile.favorite ? Meteor.user().profile.favorite : [])
+            });
+
+            _this.favorite = _torrent.find({
+              _id: {
+                $in: (Meteor.user().profile.favorite ? Meteor.user().profile.favorite : [])
+              }
+            }).fetch();
+          }
+        });
+      }
+    },
+
+    behaviors: [Polymer.NeonAnimatableBehavior],
+
+    clear_torrent_selection: function() {
+      this.torrent_selected = [];
+    },
+
+    filter_url: function(torrent) {
+      return (torrent.url);
+    },
+
+    initialize_favorite: function() {
+      this.favorite = [];
+    },
+
+    is: "favorite-list",
+
+    menu_toggle: function() {
+      document.querySelector("#old_layout").menu_toggle();
+    },
+
+    observers: ["torrent_selected_change(torrent_selected.splices)"],
+
+    properties: {
+      animationConfig: {
+        type: Object,
+        value: function() {
+          return {
+            entry: [{
+              name: "fade-in-animation",
+              node: this.$.favorite_list_toolbar
+            }],
+            exit: [{
+              name: "fade-out-animation",
+              node: this.$.favorite_list_toolbar
+            }, {
+              fromPage: this,
+              id: "hero",
+              name: "hero-animation"
+            }]
+          };
+        }
+      },
+      favorite: {
+        type: Array,
+        value: function() {
+          return [];
+        }
+      },
+      torrent_selected: {
+        type: Array,
+        value: function() {
+          return [];
+        }
+      }
+    },
+
+    remove_ok: function() {
+      if (Meteor.status().connected) {
+        Meteor.call("remove_favorite", _.map(this.torrent_selected, function(A) {
+          return A._id;
+        }), function(error, response) {
+          document.querySelector("#polymer_toast").toast(error ? error.reason : response);
+        });
+
+        this.clear_torrent_selection();
+      } else {
+        document.querySelector("#polymer_toast").toast("server connection required");
+      }
+
+      this.$.remove_favorite.close();
+    },
+
+    return_favorite_count: function(count) {
+      return (count ? "#" + count : "List");
+    },
+
+    search: function() {
+      FlowRouter.setQueryParams({
+        "back-route": "favorite-list",
+        route: "search-list"
+      });
+    },
+
+    share: function() {
+      var body = "";
+
+      for (var A = 0; A < this.torrent_selected.length; A++) {
+        if (this.torrent_selected[A].link.length) {
+          body += "\n\nT" + (A + 1) + "\t\t" + this.torrent_selected[A].title + "\n\n";
+
+          for (var Z = 0; Z < this.torrent_selected[A].link.length; Z++) {
+            body += "\t\tL" + (Z + 1) + "\t\t" + this.torrent_selected[A].link[Z].url + "\n\n";
+          }
+        }
+      }
+
+      if (body != "") {
+        if (Meteor.isCordova) {
+          window.plugins.socialsharing.share("Hi\n\n" + (Meteor.user() ? Meteor.user().profile.name : "TorrentAlert") + " shared " + this.torrent_selected.length + " torrent" + body);
+        } else {
+          window.open("mailto:?subject=" + encodeURIComponent("TorrentAlert") + "&body=" + encodeURIComponent("Hi\n\n" + (Meteor.user() ? Meteor.user().profile.name : "TorrentAlert") + " shared " + this.torrent_selected.length + " torrent" + body), "_system");
+        }
+      } else {
+        document.querySelector("#polymer_toast").toast("empty body");
+      }
+    },
+
+    sort: function(A, Z) {
+      return (parseInt(moment(Z.time).format("x")) - parseInt(moment(A.time).format("x")));
+    },
+
+    torrent_selected_change: function(change) {
+      this.$.favorite_list_toolbar.toggleClass("selection", this.torrent_selected.length);
+      this.$.favorite_list_toolbar_title.textContent = (this.torrent_selected.length ? this.torrent_selected.length : "TorrentAlert");
+    }
+
+  });
+  </script>
+
+</dom-module>
+<dom-module id="favorite-torrent-view" assetpath="linto/">
+
+  <style>
+  :host {
+    background: transparent!important;
+  }
+  
+  paper-icon-item {
+    border-bottom: 1px solid #EEE;
+  }
+  
+  paper-toggle-button {
+    --paper-toggle-button-checked-bar-color: var(--paper-green-500);
+    --paper-toggle-button-checked-button-color: var(--paper-green-500);
+    --paper-toggle-button-checked-ink-color: var(--paper-green-500);
+  }
+  
+  paper-toolbar .title {
+    padding: 0 8px;
+  }
+  
+  .body1 {
+    @apply(--paper-font-body1);
+    color: #757575;
+  }
+  
+  .body2 {
+    @apply(--paper-font-body2);
+  }
+  
+  .footer-li {
+    min-height: 88px;
+    padding: 8px;
+  }
+  
+  .subhead {
+    @apply(--paper-font-subhead);
+  }
+  
+  .footer-li > div,
+  .title-li,
+  .title-li > div {
+    padding: 8px;
+  }
+  
+  .title-li > div paper-icon-button {
+    border-radius: 50%;
+  }
+  </style>
+
+  <template>
+    <iron-localstorage name="proxy" on-iron-localstorage-load-empty="initialize_proxy" value="{{proxy}}"></iron-localstorage>
+
+    <paper-header-panel>
+      <paper-toolbar class$="[[return_toolbar_class(item._id)]]" id="torrent_view_toolbar">
+        <paper-icon-button icon="arrow-back" on-click="back"></paper-icon-button>
+
+        <div class="title"></div>
+
+        <paper-icon-button icon="delete" on-click="remove_torrent"></paper-icon-button>
+        <paper-icon-button icon="social:share" on-click="share"></paper-icon-button>
+        <paper-icon-button icon="search" on-click="search"></paper-icon-button>
+      </paper-toolbar>
+
+      <div class="layout vertical" id="torrent_view_body" style="background: #EEE;">
+        <div class="center-justified horizontal layout">
+          <div class="li">
+            <div class="cursor-d horizontal layout title-li">
+              <div>
+                <paper-icon-button class="white" icon="file-download" on-click="download"></paper-icon-button>
+              </div>
+
+              <div class="flex layout vertical">
+                <div class="body1">[[return_description(item)]]</div>
+
+                <div><span class="subhead">[[item.title]]</span>&nbsp;&nbsp;<span class$="body2 [[return_class(item.category)]]">&nbsp;&nbsp;[[item.category]]&nbsp;&nbsp;</span>&nbsp;&nbsp;</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="center-justified horizontal layout">
+          <div class="li">
+            <template is="dom-repeat" items="[[item.link]]">
+              <paper-icon-item class="cursor-p white" data-link$="[[item.url]]" on-click="click">
+                <selectable-icon icon_class="[[return_class(item.text)]]" icon_text="[[return_icon_text(item.text)]]" item-icon=""></selectable-icon>
+
+                <paper-item-body two-line="">
+                  <div>[[item.text]]</div>
+                  <div secondary="">[[return_time(item.time)]]</div>
+                </paper-item-body>
+              </paper-icon-item>
+            </template>
+          </div>
+        </div>
+
+        <div class="center-justified horizontal layout">
+          <div class="li">
+            <div class="center footer-li horizontal layout">
+              <div>
+                <paper-toggle-button checked="{{proxy}}">enable proxy</paper-toggle-button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </paper-header-panel>
+  </template>
+
+  <script>
+  Polymer({
+
+    back: function() {
+      FlowRouter.setQueryParams({
+        "route": (FlowRouter.getQueryParam("back-route") ? FlowRouter.getQueryParam("back-route") : null)
+      });
+    },
+
+    behaviors: [Polymer.NeonAnimatableBehavior],
+
+    click: function(e, d) {
+      e.stopPropagation();
+
+      window.open((this.proxy ? "http://do.vcompile.com/proxy/redirect.php?url=" + encodeURIComponent(e.model.__data__.item.url) : e.model.__data__.item.url), "_system");
+    },
+
+    download: function() {
+      document.querySelector("#polymer_toast").toast("not enabled");
+    },
+
+    initialize_proxy: function() {
+      this.proxy = false;
+    },
+
+    is: "favorite-torrent-view",
+
+    properties: {
+      animationConfig: {
+        type: Object,
+        value: function() {
+          return {
+            entry: [{
+              name: "fade-in-animation",
+              node: this.$.torrent_view_toolbar
+            }, {
+              id: "hero",
+              name: "hero-animation",
+              toPage: this
+            }],
+            exit: [{
+              name: "fade-out-animation",
+              node: this.$.torrent_view_toolbar
+            }, {
+              axis: "y",
+              name: "scale-down-animation",
+              node: this.$.torrent_view_body,
+              transformOrigin: "100% 100%"
+            }]
+          };
+        }
+      },
+      item: {
+        type: Object,
+        value: function() {
+          return {};
+        }
+      },
+      proxy: {
+        type: Boolean,
+        value: false
+      },
+      sharedElements: {
+        type: Object,
+        value: function() {
+          return {
+            hero: this.$.torrent_view_body
+          };
+        }
+      }
+    },
+
+    return_class: function(text) {
+      return polymer_color(text ? text : "#");
+    },
+
+    return_description: function(item) {
+      return (item ? (item.size ? item.size : "#") + " | " + (item.leech ? item.leech + "L" : "#") + " / " + (item.seed ? item.seed + "S" : "#") : "#");
+    },
+
+    return_icon_text: function(text) {
+      return (isNaN(text.charAt(0)) ? text.charAt(0) : "#");
+    },
+
+    return_time: function(time) {
+      return (moment(time).isValid() ? moment(time).fromNow() : "#");
+    },
+
+    return_toolbar_class: function(text) {
+      return (FlowRouter.getQueryParam("project") ? polymer_color(FlowRouter.getQueryParam("project")) : "blue-700");
+    }
 
   });
   </script>
@@ -22019,7 +22274,7 @@ mwcLayout = new PolymerLayout();
 
       <neon-animated-pages attr-for-selected="data-page" class="fit" main="" selected="[[selected]]">
         <add-project data-page="add-project" entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" id="add_project"></add-project>
-        <favorite-list data-page="favorite-list" entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" id="favorite_list"></favorite-list>
+        <favorite-layout data-page="favorite-layout" entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" id="favorite_layout"></favorite-layout>
         <project-layout data-page="project-layout" entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" id="project_layout"></project-layout>
         <search-list data-page="search-list" entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" id="search_list"></search-list>
         <trending-list data-page="trending-list" entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" id="trending_list"></trending-list>
@@ -22264,7 +22519,7 @@ mwcLayout = new PolymerLayout();
   <template>
     <neon-animated-pages attr-for-selected="data-page" class="fit" selected="[[selected]]">
       <project-view data-page="project-view" id="project_view"></project-view>
-      <torrent-view data-page="torrent-view" id="torrent_view"></torrent-view>
+      <project-torrent-view data-page="project-torrent-view" id="project_torrent_view"></project-torrent-view>
     </neon-animated-pages>
   </template>
 
@@ -22278,6 +22533,212 @@ mwcLayout = new PolymerLayout();
         type: String,
         value: "project_view"
       }
+    }
+
+  });
+  </script>
+
+</dom-module>
+<dom-module id="project-torrent-view" assetpath="linto/">
+
+  <style>
+  :host {
+    background: transparent!important;
+  }
+  
+  paper-icon-item {
+    border-bottom: 1px solid #EEE;
+  }
+  
+  paper-toggle-button {
+    --paper-toggle-button-checked-bar-color: var(--paper-green-500);
+    --paper-toggle-button-checked-button-color: var(--paper-green-500);
+    --paper-toggle-button-checked-ink-color: var(--paper-green-500);
+  }
+  
+  paper-toolbar .title {
+    padding: 0 8px;
+  }
+  
+  .body1 {
+    @apply(--paper-font-body1);
+    color: #757575;
+  }
+  
+  .body2 {
+    @apply(--paper-font-body2);
+  }
+  
+  .footer-li {
+    min-height: 88px;
+    padding: 8px;
+  }
+  
+  .subhead {
+    @apply(--paper-font-subhead);
+  }
+  
+  .footer-li > div,
+  .title-li,
+  .title-li > div {
+    padding: 8px;
+  }
+  
+  .title-li > div paper-icon-button {
+    border-radius: 50%;
+  }
+  </style>
+
+  <template>
+    <iron-localstorage name="proxy" on-iron-localstorage-load-empty="initialize_proxy" value="{{proxy}}"></iron-localstorage>
+
+    <paper-header-panel>
+      <paper-toolbar class$="[[return_toolbar_class(item._id)]]" id="torrent_view_toolbar">
+        <paper-icon-button icon="arrow-back" on-click="back"></paper-icon-button>
+
+        <div class="title"></div>
+
+        <paper-icon-button icon="delete" on-click="remove_torrent"></paper-icon-button>
+        <paper-icon-button icon="favorite-border" on-click="favorite"></paper-icon-button>
+        <paper-icon-button icon="social:share" on-click="share"></paper-icon-button>
+        <paper-icon-button icon="search" on-click="search"></paper-icon-button>
+      </paper-toolbar>
+
+      <div class="layout vertical" id="torrent_view_body" style="background: #EEE;">
+        <div class="center-justified horizontal layout">
+          <div class="li">
+            <div class="cursor-d horizontal layout title-li">
+              <div>
+                <paper-icon-button class="white" icon="file-download" on-click="download"></paper-icon-button>
+              </div>
+
+              <div class="flex layout vertical">
+                <div class="body1">[[return_description(item)]]</div>
+
+                <div><span class="subhead">[[item.title]]</span>&nbsp;&nbsp;<span class$="body2 [[return_class(item.category)]]">&nbsp;&nbsp;[[item.category]]&nbsp;&nbsp;</span>&nbsp;&nbsp;</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="center-justified horizontal layout">
+          <div class="li">
+            <template is="dom-repeat" items="[[item.link]]">
+              <paper-icon-item class="cursor-p white" data-link$="[[item.url]]" on-click="click">
+                <selectable-icon icon_class="[[return_class(item.text)]]" icon_text="[[return_icon_text(item.text)]]" item-icon=""></selectable-icon>
+
+                <paper-item-body two-line="">
+                  <div>[[item.text]]</div>
+                  <div secondary="">[[return_time(item.time)]]</div>
+                </paper-item-body>
+              </paper-icon-item>
+            </template>
+          </div>
+        </div>
+
+        <div class="center-justified horizontal layout">
+          <div class="li">
+            <div class="center footer-li horizontal layout">
+              <div>
+                <paper-toggle-button checked="{{proxy}}">enable proxy</paper-toggle-button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </paper-header-panel>
+  </template>
+
+  <script>
+  Polymer({
+
+    back: function() {
+      FlowRouter.setQueryParams({
+        "route": (FlowRouter.getQueryParam("back-route") ? FlowRouter.getQueryParam("back-route") : null)
+      });
+    },
+
+    behaviors: [Polymer.NeonAnimatableBehavior],
+
+    click: function(e, d) {
+      e.stopPropagation();
+
+      window.open((this.proxy ? "http://do.vcompile.com/proxy/redirect.php?url=" + encodeURIComponent(e.model.__data__.item.url) : e.model.__data__.item.url), "_system");
+    },
+
+    download: function() {
+      document.querySelector("#polymer_toast").toast("not enabled");
+    },
+
+    initialize_proxy: function() {
+      this.proxy = false;
+    },
+
+    is: "project-torrent-view",
+
+    properties: {
+      animationConfig: {
+        type: Object,
+        value: function() {
+          return {
+            entry: [{
+              name: "fade-in-animation",
+              node: this.$.torrent_view_toolbar
+            }, {
+              id: "hero",
+              name: "hero-animation",
+              toPage: this
+            }],
+            exit: [{
+              name: "fade-out-animation",
+              node: this.$.torrent_view_toolbar
+            }, {
+              axis: "y",
+              name: "scale-down-animation",
+              node: this.$.torrent_view_body,
+              transformOrigin: "100% 100%"
+            }]
+          };
+        }
+      },
+      item: {
+        type: Object,
+        value: function() {
+          return {};
+        }
+      },
+      proxy: {
+        type: Boolean,
+        value: false
+      },
+      sharedElements: {
+        type: Object,
+        value: function() {
+          return {
+            hero: this.$.torrent_view_body
+          };
+        }
+      }
+    },
+
+    return_class: function(text) {
+      return polymer_color(text ? text : "#");
+    },
+
+    return_description: function(item) {
+      return (item ? (item.size ? item.size : "#") + " | " + (item.leech ? item.leech + "L" : "#") + " / " + (item.seed ? item.seed + "S" : "#") : "#");
+    },
+
+    return_icon_text: function(text) {
+      return (isNaN(text.charAt(0)) ? text.charAt(0) : "#");
+    },
+
+    return_time: function(time) {
+      return (moment(time).isValid() ? moment(time).fromNow() : "#");
+    },
+
+    return_toolbar_class: function(text) {
+      return (FlowRouter.getQueryParam("project") ? polymer_color(FlowRouter.getQueryParam("project")) : "blue-700");
     }
 
   });
@@ -23306,23 +23767,39 @@ mwcLayout = new PolymerLayout();
         e.stopPropagation();
 
         if (this.item.link.length) {
-          if (FlowRouter.getQueryParam("route") == "project-view") {
-            document.querySelector("#project_view").sharedElements = {
-              hero: this
-            };
+          switch (FlowRouter.getQueryParam("route")) {
+            case "favorite-list":
+              document.querySelector("#favorite_list").sharedElements = {
+                hero: this
+              };
 
-            var TOP = $(this).offset().top - $("#project_view_toolbar").height();
-            document.querySelector("#torrent_view").animationConfig.exit[1].transformOrigin = TOP + "px " + TOP + "px";
-          } else {
-            document.querySelector("#project_view").sharedElements = {};
+              var TOP = $(this).offset().top - $("#favorite_list_toolbar").height();
+              document.querySelector("#favorite_torrent_view").animationConfig.exit[1].transformOrigin = TOP + "px " + TOP + "px";
+
+              document.querySelector("#favorite_torrent_view").item = this.item;
+
+              FlowRouter.setQueryParams({
+                "back-route": FlowRouter.getQueryParam("route"),
+                route: "favorite-torrent-view"
+              });
+              break;
+
+            case "project-view":
+              document.querySelector("#project_view").sharedElements = {
+                hero: this
+              };
+
+              var TOP = $(this).offset().top - $("#project_view_toolbar").height();
+              document.querySelector("#project_torrent_view").animationConfig.exit[1].transformOrigin = TOP + "px " + TOP + "px";
+
+              document.querySelector("#project_torrent_view").item = this.item;
+
+              FlowRouter.setQueryParams({
+                "back-route": FlowRouter.getQueryParam("route"),
+                route: "project-torrent-view"
+              });
+              break;
           }
-
-          document.querySelector("#torrent_view").item = this.item;
-
-          FlowRouter.setQueryParams({
-            "back-route": FlowRouter.getQueryParam("route"),
-            route: "torrent-view"
-          });
         } else {
           document.querySelector("#polymer_toast").toast("under processing");
         }
@@ -23360,216 +23837,6 @@ mwcLayout = new PolymerLayout();
 
     return_time: function(time) {
       return (moment(time).isValid() ? moment(time).format("ddd YYYY MMM DD") : "#");
-    }
-
-  });
-  </script>
-
-</dom-module>
-<dom-module id="torrent-view" assetpath="linto/">
-
-  <style>
-  :host {
-    background: transparent!important;
-  }
-  
-  paper-icon-item {
-    border-bottom: 1px solid #EEE;
-  }
-  
-  paper-toggle-button {
-    --paper-toggle-button-checked-bar-color: var(--paper-green-500);
-    --paper-toggle-button-checked-button-color: var(--paper-green-500);
-    --paper-toggle-button-checked-ink-color: var(--paper-green-500);
-  }
-  
-  paper-toolbar .title {
-    padding: 0 8px;
-  }
-  
-  .body1 {
-    @apply(--paper-font-body1);
-    color: #757575;
-  }
-  
-  .body2 {
-    @apply(--paper-font-body2);
-  }
-  
-  .footer-li {
-    min-height: 88px;
-    padding: 8px;
-  }
-  
-  .subhead {
-    @apply(--paper-font-subhead);
-  }
-  
-  .footer-li > div,
-  .title-li,
-  .title-li > div {
-    padding: 8px;
-  }
-  
-  .title-li > div paper-icon-button {
-    border-radius: 50%;
-  }
-  </style>
-
-  <template>
-    <iron-localstorage name="proxy" on-iron-localstorage-load-empty="initialize_proxy" value="{{proxy}}"></iron-localstorage>
-
-    <paper-header-panel>
-      <paper-toolbar class$="[[return_toolbar_class(item._id)]]" id="torrent_view_toolbar">
-        <paper-icon-button icon="arrow-back" on-click="back"></paper-icon-button>
-
-        <div class="title"></div>
-
-        <paper-icon-button icon="delete" on-click="remove_torrent"></paper-icon-button>
-        <paper-icon-button hidden="[[is_favorite_list(item._id)]]" icon="favorite-border" on-click="favorite"></paper-icon-button>
-        <paper-icon-button icon="social:share" on-click="share"></paper-icon-button>
-        <paper-icon-button hidden="[[is_favorite_list(item._id)]]" icon="search" on-click="search"></paper-icon-button>
-      </paper-toolbar>
-
-      <div class="layout vertical" id="torrent_view_body" style="background: #EEE;">
-        <div class="center-justified horizontal layout">
-          <div class="li">
-            <div class="cursor-d horizontal layout title-li">
-              <div>
-                <paper-icon-button class="white" icon="file-download" on-click="download"></paper-icon-button>
-              </div>
-
-              <div class="flex layout vertical">
-                <div class="body1">[[return_description(item)]]</div>
-
-                <div><span class="subhead">[[item.title]]</span>&nbsp;&nbsp;<span class$="body2 [[return_class(item.category)]]">&nbsp;&nbsp;[[item.category]]&nbsp;&nbsp;</span>&nbsp;&nbsp;</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="center-justified horizontal layout">
-          <div class="li">
-            <template is="dom-repeat" items="[[item.link]]">
-              <paper-icon-item class="cursor-p white" data-link$="[[item.url]]" on-click="click">
-                <selectable-icon icon_class="[[return_class(item.text)]]" icon_text="[[return_icon_text(item.text)]]" item-icon=""></selectable-icon>
-
-                <paper-item-body two-line="">
-                  <div>[[item.text]]</div>
-                  <div secondary="">[[return_time(item.time)]]</div>
-                </paper-item-body>
-              </paper-icon-item>
-            </template>
-          </div>
-        </div>
-
-        <div class="center-justified horizontal layout">
-          <div class="li">
-            <div class="center footer-li horizontal layout">
-              <div>
-                <paper-toggle-button checked="{{proxy}}">enable proxy</paper-toggle-button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </paper-header-panel>
-  </template>
-
-  <script>
-  Polymer({
-
-    back: function() {
-      FlowRouter.setQueryParams({
-        "route": (FlowRouter.getQueryParam("back-route") ? FlowRouter.getQueryParam("back-route") : null)
-      });
-    },
-
-    behaviors: [Polymer.NeonAnimatableBehavior],
-
-    click: function(e, d) {
-      e.stopPropagation();
-
-      window.open((this.proxy ? "http://do.vcompile.com/proxy/redirect.php?url=" + encodeURIComponent(e.model.__data__.item.url) : e.model.__data__.item.url), "_system");
-    },
-
-    download: function() {
-      document.querySelector("#polymer_toast").toast("not enabled");
-    },
-
-    initialize_proxy: function() {
-      this.proxy = false;
-    },
-
-    is: "torrent-view",
-
-    is_favorite_list: function(text) {
-      return (FlowRouter.getQueryParam("route") == "favorite-list");
-    },
-
-    properties: {
-      animationConfig: {
-        type: Object,
-        value: function() {
-          return {
-            entry: [{
-              name: "fade-in-animation",
-              node: this.$.torrent_view_toolbar
-            }, {
-              id: "hero",
-              name: "hero-animation",
-              toPage: this
-            }],
-            exit: [{
-              name: "fade-out-animation",
-              node: this.$.torrent_view_toolbar
-            }, {
-              axis: "y",
-              name: "scale-down-animation",
-              node: this.$.torrent_view_body,
-              transformOrigin: "100% 100%"
-            }]
-          }
-        }
-      },
-      item: {
-        type: Object,
-        value: function() {
-          return {};
-        }
-      },
-      proxy: {
-        type: Boolean,
-        value: false
-      },
-      sharedElements: {
-        type: Object,
-        value: function() {
-          return {
-            hero: this.$.torrent_view_body
-          };
-        }
-      }
-    },
-
-    return_class: function(text) {
-      return polymer_color(text ? text : "#");
-    },
-
-    return_description: function(item) {
-      return (item ? (item.size ? item.size : "#") + " | " + (item.leech ? item.leech + "L" : "#") + " / " + (item.seed ? item.seed + "S" : "#") : "#");
-    },
-
-    return_icon_text: function(text) {
-      return (isNaN(text.charAt(0)) ? text.charAt(0) : "#");
-    },
-
-    return_time: function(time) {
-      return (moment(time).isValid() ? moment(time).fromNow() : "#");
-    },
-
-    return_toolbar_class: function(text) {
-      return (FlowRouter.getQueryParam("project") ? polymer_color(FlowRouter.getQueryParam("project")) : "blue-700");
     }
 
   });
