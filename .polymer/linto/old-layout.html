@@ -77,7 +77,7 @@
 
               <template is="dom-repeat" items="[[mwcData.project]]">
                 <paper-icon-item class="border-bottom border-top cursor-p" data-id$="[[item._id]]">
-                  <selectable-icon icon_class="[[return_class(item.keyword)]]" icon_text="[[return_icon_text(item.keyword)]]" item-icon></selectable-icon>
+                  <selectable-icon icon_class="[[return_class(item._id)]]" icon_text="[[return_icon_text(item.keyword)]]" item-icon></selectable-icon>
 
                   <paper-item-body two-line>
                     <div>[[item.keyword]]</div>

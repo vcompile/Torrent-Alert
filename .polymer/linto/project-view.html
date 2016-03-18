@@ -29,12 +29,12 @@
     --paper-toolbar-color: white;
   }
   
-  paper-toolbar paper-icon-button {
-    margin: 0!important;
-  }
-  
   paper-toolbar paper-icon-button[icon="arrow-back"] {
     transform: translateX(-42px);
+  }
+  
+  paper-toolbar paper-icon-button[icon="menu"] {
+    margin: 0!important;
   }
   
   paper-toolbar.selection paper-icon-button[icon="arrow-back"] {
@@ -110,11 +110,11 @@
 
   <template>
     <paper-header-panel>
-      <paper-toolbar id="project_list_toolbar" class$="[[return_class(mwcData.project.keyword)]]">
+      <paper-toolbar id="project_view_toolbar" class$="[[return_class(mwcData.project._id)]]">
         <paper-icon-button class="selection-visible" icon="arrow-back" on-click="clear_torrent_selection"></paper-icon-button>
         <paper-icon-button class="selection-hidden" icon="menu" on-click="menu_toggle"></paper-icon-button>
 
-        <div class="title" id="project_list_toolbar_title">TorrentAlert</div>
+        <div class="title" id="project_view_toolbar_title">TorrentAlert</div>
 
         <paper-icon-button class="selection-visible" icon="delete" on-click="remove_torrent"></paper-icon-button>
         <paper-icon-button class="selection-visible" icon="favorite-border" on-click="favorite"></paper-icon-button>
@@ -378,8 +378,8 @@
 
     torrent_selected_change: function(change) {
       this.$.fab.toggleClass("move-down", this.torrent_selected.length);
-      this.$.project_list_toolbar.toggleClass("selection", this.torrent_selected.length);
-      this.$.project_list_toolbar_title.textContent = (this.torrent_selected.length ? this.torrent_selected.length : "TorrentAlert");
+      this.$.project_view_toolbar.toggleClass("selection", this.torrent_selected.length);
+      this.$.project_view_toolbar_title.textContent = (this.torrent_selected.length ? this.torrent_selected.length : "TorrentAlert");
     }
 
   });

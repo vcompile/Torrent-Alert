@@ -11,12 +11,12 @@
     --paper-toolbar-color: white;
   }
   
-  paper-toolbar paper-icon-button {
-    margin: 0!important;
-  }
-  
   paper-toolbar paper-icon-button[icon="arrow-back"] {
     transform: translateX(-42px);
+  }
+  
+  paper-toolbar paper-icon-button[icon="menu"] {
+    margin: 0!important;
   }
   
   paper-toolbar.selection paper-icon-button[icon="arrow-back"] {
@@ -96,7 +96,7 @@
     <paper-header-panel>
       <paper-toolbar id="favorite_list_toolbar">
         <paper-icon-button class="selection-visible" icon="arrow-back" on-click="clear_torrent_selection"></paper-icon-button>
-        <paper-icon-button class="selection-hidden" icon="menu" on-click="menu_toggle"></paper-icon-button>
+        <paper-icon-button class="selection-hidden" icon="menu" on-click="menu_toggle" paper-drawer-toggle></paper-icon-button>
 
         <div class="title" id="favorite_list_toolbar_title">TorrentAlert</div>
 

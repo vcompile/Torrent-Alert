@@ -11,6 +11,10 @@
     --paper-toggle-button-checked-ink-color: var(--paper-green-500);
   }
   
+  paper-toolbar .title {
+    padding: 0 8px;
+  }
+  
   .body1 {
     @apply(--paper-font-body1);
     color: #757575;
@@ -34,17 +38,31 @@
   .title-li > div {
     padding: 8px;
   }
+  
+  .title-li > div paper-icon-button {
+    border-radius: 50%;
+  }
   </style>
 
   <template>
     <iron-localstorage name="proxy" on-iron-localstorage-load-empty="initialize_proxy" value="{{proxy}}"></iron-localstorage>
 
     <paper-header-panel style="background: #EEE;">
+      <paper-toolbar class$="[[return_toolbar_class(item._id)]]">
+        <paper-icon-button icon="arrow-back" on-click="back"></paper-icon-button>
+
+        <div class="title">TorrentAlert</div>
+
+        <paper-icon-button icon="delete" on-click="remove_torrent"></paper-icon-button>
+        <paper-icon-button icon="favorite-border" on-click="favorite"></paper-icon-button>
+        <paper-icon-button icon="social:share" on-click="share"></paper-icon-button>
+      </paper-toolbar>
+
       <div class="center-justified horizontal layout">
         <div class="li">
-          <div class="cursor-p horizontal layout title-li">
+          <div class="cursor-d horizontal layout title-li">
             <div>
-              <paper-icon-button icon="arrow-back" on-click="back"></paper-icon-button>
+              <paper-icon-button class="white" icon="file-download" on-click="download"></paper-icon-button>
             </div>
 
             <div class="flex layout vertical">
@@ -131,6 +149,10 @@
 
     return_time: function(time) {
       return (moment(time).isValid() ? moment(time).fromNow() : "#");
+    },
+
+    return_toolbar_class: function(text) {
+      return (FlowRouter.getQueryParam("project") ? polymer_color(FlowRouter.getQueryParam("project")) : "blue-700");
     }
 
   });
