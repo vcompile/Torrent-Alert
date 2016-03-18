@@ -1,0 +1,25 @@
+<dom-module id="project-layout">
+
+  <template>
+    <neon-animated-pages attr-for-selected="data-page" class="fit" selected="[[selected]]">
+      <project-view data-page="project-view" id="project_view"></project-view>
+      <torrent-view data-page="torrent-view" id="torrent_view"></torrent-view>
+    </neon-animated-pages>
+  </template>
+
+  <script>
+  Polymer({
+
+    is: "project-layout",
+
+    properties: {
+      selected: {
+        type: String,
+        value: "project_view"
+      }
+    }
+
+  });
+  </script>
+
+</dom-module>

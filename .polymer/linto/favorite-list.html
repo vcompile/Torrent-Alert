@@ -1,11 +1,6 @@
 <dom-module id="favorite-list">
 
   <style>
-  paper-fab {
-    --paper-fab-background: var(--paper-red-500);
-    --paper-fab-keyboard-focus-background: var(--paper-red-700);
-  }
-  
   paper-toolbar {
     --paper-toolbar-background: var(--paper-blue-700);
     --paper-toolbar-color: white;
@@ -130,9 +125,7 @@
       <div class="footer-li"></div>
     </paper-header-panel>
 
-    <paper-fab class="menu-b" id="fab" icon="add" on-click="add_project"></paper-fab>
-
-    <paper-dialog id="remove_favorite">
+    <paper-dialog entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" id="remove_favorite">
       <div class="subhead">Are you sure to delete [[torrent_selected.length]] favorite ?</div>
 
       <div class="buttons">
@@ -271,7 +264,6 @@
     },
 
     torrent_selected_change: function(change) {
-      this.$.fab.toggleClass("move-down", this.torrent_selected.length);
       this.$.favorite_list_toolbar.toggleClass("selection", this.torrent_selected.length);
       this.$.favorite_list_toolbar_title.textContent = (this.torrent_selected.length ? this.torrent_selected.length : "TorrentAlert");
     }

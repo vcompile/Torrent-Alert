@@ -11,6 +11,10 @@
     --paper-toolbar-color: white;
   }
   
+  paper-toolbar paper-icon-button[icon="menu"] {
+    margin: 0!important;
+  }
+  
   paper-toolbar .title {
     padding: 0 8px;
   }
@@ -79,7 +83,7 @@
 
       <div class="center-justified horizontal layout">
         <div class="li">
-          <div class="center-justified horizontal layout trending-li wrap">
+          <div class="center-center horizontal layout trending-li wrap">
             <template is="dom-repeat" items="[[trending.keyword]]">
               <div class$="cursor-p subhead [[return_class(item)]]" on-click="click">[[item]]</div>
             </template>

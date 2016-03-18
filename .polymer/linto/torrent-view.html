@@ -116,6 +116,10 @@
       window.open((this.proxy ? "http://do.vcompile.com/proxy/redirect.php?url=" + encodeURIComponent(e.model.__data__.item.url) : e.model.__data__.item.url), "_system");
     },
 
+    download: function() {
+      document.querySelector("#polymer_toast").toast("not enabled");
+    },
+
     initialize_proxy: function() {
       this.proxy = false;
     },

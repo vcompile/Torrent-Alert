@@ -50,6 +50,7 @@
     "linto/main-layout.html",
     "linto/old-layout.html",
     "linto/polymer-toast.html",
+    "linto/project-layout.html",
     "linto/project-view.html",
     "linto/search-list.html",
     "linto/selectable-icon.html",

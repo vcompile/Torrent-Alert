@@ -21444,11 +21444,6 @@ mwcLayout = new PolymerLayout();
 <dom-module id="favorite-list" assetpath="linto/">
 
   <style>
-  paper-fab {
-    --paper-fab-background: var(--paper-red-500);
-    --paper-fab-keyboard-focus-background: var(--paper-red-700);
-  }
-  
   paper-toolbar {
     --paper-toolbar-background: var(--paper-blue-700);
     --paper-toolbar-color: white;
@@ -21573,9 +21568,7 @@ mwcLayout = new PolymerLayout();
       <div class="footer-li"></div>
     </paper-header-panel>
 
-    <paper-fab class="menu-b" id="fab" icon="add" on-click="add_project"></paper-fab>
-
-    <paper-dialog id="remove_favorite">
+    <paper-dialog entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" id="remove_favorite">
       <div class="subhead">Are you sure to delete [[torrent_selected.length]] favorite ?</div>
 
       <div class="buttons">
@@ -21714,7 +21707,6 @@ mwcLayout = new PolymerLayout();
     },
 
     torrent_selected_change: function(change) {
-      this.$.fab.toggleClass("move-down", this.torrent_selected.length);
       this.$.favorite_list_toolbar.toggleClass("selection", this.torrent_selected.length);
       this.$.favorite_list_toolbar_title.textContent = (this.torrent_selected.length ? this.torrent_selected.length : "TorrentAlert");
     }
@@ -21829,7 +21821,7 @@ mwcLayout = new PolymerLayout();
   </style>
 
   <template>
-    <paper-dialog id="exit_prompt">
+    <paper-dialog entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" id="exit_prompt" withbackdrop="">
       <div class="subhead">Are you sure you want to exit ?</div>
 
       <div class="buttons">
@@ -22052,16 +22044,15 @@ mwcLayout = new PolymerLayout();
       </paper-header-panel>
 
       <neon-animated-pages attr-for-selected="data-page" class="fit" main="" selected="[[selected]]">
-        <add-project data-page="add-project" id="add_project"></add-project>
-        <favorite-list data-page="favorite-list" id="favorite_list"></favorite-list>
-        <project-view data-page="project-view" id="project_view"></project-view>
-        <search-list data-page="search-list" id="search_list"></search-list>
-        <torrent-view data-page="torrent-view" id="torrent_view"></torrent-view>
-        <trending-list data-page="trending-list" id="trending_list"></trending-list>
+        <add-project data-page="add-project" entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" id="add_project"></add-project>
+        <favorite-list data-page="favorite-list" entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" id="favorite_list"></favorite-list>
+        <project-layout data-page="project-layout" entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" id="project_layout"></project-layout>
+        <search-list data-page="search-list" entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" id="search_list"></search-list>
+        <trending-list data-page="trending-list" entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" id="trending_list"></trending-list>
       </neon-animated-pages>
     </paper-drawer-panel>
 
-    <paper-dialog id="user_prompt">
+    <paper-dialog entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" id="user_prompt">
       <div class="layout vertical">
         <div class="flex prompt-title subhead">User option</div>
 
@@ -22294,6 +22285,31 @@ mwcLayout = new PolymerLayout();
   </script>
 
 </dom-module>
+<dom-module id="project-layout" assetpath="linto/">
+
+  <template>
+    <neon-animated-pages attr-for-selected="data-page" class="fit" selected="[[selected]]">
+      <project-view data-page="project-view" id="project_view"></project-view>
+      <torrent-view data-page="torrent-view" id="torrent_view"></torrent-view>
+    </neon-animated-pages>
+  </template>
+
+  <script>
+  Polymer({
+
+    is: "project-layout",
+
+    properties: {
+      selected: {
+        type: String,
+        value: "project_view"
+      }
+    }
+
+  });
+  </script>
+
+</dom-module>
 <dom-module id="project-view" assetpath="linto/">
 
   <style>
@@ -22457,7 +22473,7 @@ mwcLayout = new PolymerLayout();
 
     <paper-fab class="menu-b" id="fab" icon="add" on-click="add_project"></paper-fab>
 
-    <paper-dialog id="remove_prompt">
+    <paper-dialog entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" id="remove_prompt">
       <div class="subhead">Are you sure to delete this item ?</div>
 
       <div class="buttons">
@@ -22471,7 +22487,7 @@ mwcLayout = new PolymerLayout();
       </div>
     </paper-dialog>
 
-    <paper-dialog id="schedule_prompt">
+    <paper-dialog entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" id="schedule_prompt">
       <div class="layout vertical">
         <div class="subhead">Are you sure to schedule this item ?</div>
 
@@ -23063,6 +23079,10 @@ mwcLayout = new PolymerLayout();
     --paper-toolbar-color: white;
   }
   
+  paper-toolbar paper-icon-button[icon="menu"] {
+    margin: 0!important;
+  }
+  
   paper-toolbar .title {
     padding: 0 8px;
   }
@@ -23131,7 +23151,7 @@ mwcLayout = new PolymerLayout();
 
       <div class="center-justified horizontal layout">
         <div class="li">
-          <div class="center-justified horizontal layout trending-li wrap">
+          <div class="center-center horizontal layout trending-li wrap">
             <template is="dom-repeat" items="[[trending.keyword]]">
               <div class$="cursor-p subhead [[return_class(item)]]" on-click="click">[[item]]</div>
             </template>
@@ -23481,6 +23501,10 @@ mwcLayout = new PolymerLayout();
       window.open((this.proxy ? "http://do.vcompile.com/proxy/redirect.php?url=" + encodeURIComponent(e.model.__data__.item.url) : e.model.__data__.item.url), "_system");
     },
 
+    download: function() {
+      document.querySelector("#polymer_toast").toast("not enabled");
+    },
+
     initialize_proxy: function() {
       this.proxy = false;
     },
@@ -23627,7 +23651,7 @@ mwcLayout = new PolymerLayout();
       </card-route>
     </neon-animated-pages>
 
-    <paper-dialog id="request_prompt" style="width: 320px;" with-backdrop="">
+    <paper-dialog entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" id="request_prompt" style="width: 320px;" with-backdrop="">
       <div class="layout vertical">
         <gold-email-input auto-validate="" label="email" required="" value="{{email}}"></gold-email-input>
 

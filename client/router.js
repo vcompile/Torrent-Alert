@@ -41,7 +41,8 @@ main.route("/", {
 
       case "project-view":
         if (FlowRouter.getQueryParam("project")) {
-          document.querySelector("#old_layout").selected = "project-view";
+          document.querySelector("#old_layout").selected = "project-layout";
+          document.querySelector("#project_layout").selected = FlowRouter.getQueryParam("route");
         } else {
           FlowRouter.setQueryParams({
             route: null
@@ -51,7 +52,8 @@ main.route("/", {
 
       case "torrent-view":
         if (document.querySelector("#torrent_view").item._id) {
-          document.querySelector("#old_layout").selected = "torrent-view";
+          document.querySelector("#old_layout").selected = "project-layout";
+          document.querySelector("#project_layout").selected = FlowRouter.getQueryParam("route");
         } else {
           FlowRouter.setQueryParams({
             route: (FlowRouter.getQueryParam("back-route") ? FlowRouter.getQueryParam("back-route") : null)
