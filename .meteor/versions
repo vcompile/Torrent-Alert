@@ -57,7 +57,7 @@ mongo-id@1.0.1
 mwc-compiler@1.0.5
 mwc:compiler@1.1.50
 mwc:extensions@1.0.22
-mwc:mixin@1.0.8
+mwc:mixin@1.0.10
 npm-bcrypt@0.7.8_2
 npm-container@1.1.0
 npm-mongo@1.4.39_1

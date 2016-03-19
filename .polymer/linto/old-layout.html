@@ -12,7 +12,8 @@
   }
   
   paper-drawer-panel /deep/ #drawer,
-  paper-drawer-panel /deep/ #main #scrim {
+  paper-drawer-panel /deep/ #main #scrim,
+  #user_prompt {
     z-index: 1;
   }
   
@@ -94,7 +95,7 @@
         </div>
       </paper-header-panel>
 
-      <neon-animated-pages attr-for-selected="data-page" class="fit" entry-animation="fade-in-animation" exit-animation="fade-out-animation" main selected="[[selected]]">
+      <neon-animated-pages attr-for-selected="data-page" class="fit" main selected="[[selected]]">
         <add-project data-page="add-project" id="add_project"></add-project>
         <favorite-layout data-page="favorite-layout" id="favorite_layout"></favorite-layout>
         <project-layout data-page="project-layout" id="project_layout"></project-layout>
@@ -103,7 +104,7 @@
       </neon-animated-pages>
     </paper-drawer-panel>
 
-    <paper-dialog entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" id="user_prompt">
+    <paper-dialog entry-animation="fade-in-animation" exit-animation="fade-out-animation" id="user_prompt">
       <div class="layout vertical">
         <div class="flex prompt-title subhead">User option</div>
 
