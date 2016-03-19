@@ -16,7 +16,7 @@ Meteor.methods({
           $each: torrent
         }
       }
-    }) ? torrent.length + " item moved to favorite" : "unknown error");
+    }) ? torrent.length + " item added to favorite" : "unknown error");
   },
 
   remove_favorite: function(torrent) {

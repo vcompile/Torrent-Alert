@@ -21948,7 +21948,7 @@ mwcLayout = new PolymerLayout();
 
         <div class="title"></div>
 
-        <paper-icon-button icon="delete" on-click="remove_torrent"></paper-icon-button>
+        <paper-icon-button icon="delete" onclick="document.querySelector('#remove_favorite_torrent_view').open();"></paper-icon-button>
         <paper-icon-button icon="social:share" on-click="share"></paper-icon-button>
         <paper-icon-button icon="search" on-click="search"></paper-icon-button>
       </paper-toolbar>
@@ -21996,6 +21996,20 @@ mwcLayout = new PolymerLayout();
         </div>
       </div>
     </paper-header-panel>
+
+    <paper-dialog entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" id="remove_favorite_torrent_view">
+      <div class="subhead">Are you sure to delete this item ?</div>
+
+      <div class="buttons">
+        <paper-button onclick="document.querySelector('#remove_favorite_torrent_view').close();">
+          <iron-icon icon="close"></iron-icon> cancel
+        </paper-button>
+
+        <paper-button on-click="remove_ok">
+          <iron-icon icon="check"></iron-icon> ok
+        </paper-button>
+      </div>
+    </paper-dialog>
   </template>
 
   <script>
@@ -22003,7 +22017,8 @@ mwcLayout = new PolymerLayout();
 
     back: function() {
       FlowRouter.setQueryParams({
-        "route": (FlowRouter.getQueryParam("back-route") ? FlowRouter.getQueryParam("back-route") : null)
+        "back-route": null,
+        route: "favorite-list"
       });
     },
 
@@ -22016,7 +22031,7 @@ mwcLayout = new PolymerLayout();
     },
 
     download: function() {
-      document.querySelector("#polymer_toast").toast("not enabled");
+      window.open("http://do.vcompile.com/proxy/download.php?torrent=" + encodeURIComponent(JSON.stringify(this.item)), "_system");
     },
 
     initialize_proxy: function() {
@@ -22070,6 +22085,22 @@ mwcLayout = new PolymerLayout();
       }
     },
 
+    remove_ok: function() {
+      if (Meteor.status().connected) {
+        Meteor.call("remove_favorite", [this.item._id], function(error, response) {
+          document.querySelector("#polymer_toast").toast(error ? error.reason : response);
+        });
+
+        document.querySelector("#favorite_list").clear_torrent_selection();
+
+        this.back();
+      } else {
+        document.querySelector("#polymer_toast").toast("server connection required");
+      }
+
+      this.$.remove_favorite_torrent_view.close();
+    },
+
     return_class: function(text) {
       return polymer_color(text ? text : "#");
     },
@@ -22088,6 +22119,35 @@ mwcLayout = new PolymerLayout();
 
     return_toolbar_class: function(text) {
       return (FlowRouter.getQueryParam("project") ? polymer_color(FlowRouter.getQueryParam("project")) : "blue-700");
+    },
+
+    search: function() {
+      FlowRouter.setQueryParams({
+        "back-route": "favorite-torrent-view",
+        route: "search-list"
+      });
+    },
+
+    share: function() {
+      var body = "";
+
+      if (this.item.link.length) {
+        body += "\n\nT1\t\t" + this.item.title + "\n\n";
+
+        for (var Z = 0; Z < this.item.link.length; Z++) {
+          body += "\t\tL" + (Z + 1) + "\t\t" + this.item.link[Z].url + "\n\n";
+        }
+      }
+
+      if (body != "") {
+        if (Meteor.isCordova) {
+          window.plugins.socialsharing.share("Hi\n\n" + (Meteor.user() ? Meteor.user().profile.name : "TorrentAlert") + " shared 1 torrent" + body);
+        } else {
+          window.open("mailto:?subject=" + encodeURIComponent("TorrentAlert") + "&body=" + encodeURIComponent("Hi\n\n" + (Meteor.user() ? Meteor.user().profile.name : "TorrentAlert") + " shared 1 torrent" + body), "_system");
+        }
+      } else {
+        document.querySelector("#polymer_toast").toast("empty body");
+      }
     }
 
   });
@@ -22272,12 +22332,12 @@ mwcLayout = new PolymerLayout();
         </div>
       </paper-header-panel>
 
-      <neon-animated-pages attr-for-selected="data-page" class="fit" main="" selected="[[selected]]">
-        <add-project data-page="add-project" entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" id="add_project"></add-project>
-        <favorite-layout data-page="favorite-layout" entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" id="favorite_layout"></favorite-layout>
-        <project-layout data-page="project-layout" entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" id="project_layout"></project-layout>
-        <search-list data-page="search-list" entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" id="search_list"></search-list>
-        <trending-list data-page="trending-list" entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" id="trending_list"></trending-list>
+      <neon-animated-pages attr-for-selected="data-page" class="fit" entry-animation="fade-in-animation" exit-animation="fade-out-animation" main="" selected="[[selected]]">
+        <add-project data-page="add-project" id="add_project"></add-project>
+        <favorite-layout data-page="favorite-layout" id="favorite_layout"></favorite-layout>
+        <project-layout data-page="project-layout" id="project_layout"></project-layout>
+        <search-list data-page="search-list" id="search_list"></search-list>
+        <trending-list data-page="trending-list" id="trending_list"></trending-list>
       </neon-animated-pages>
     </paper-drawer-panel>
 
@@ -22598,7 +22658,7 @@ mwcLayout = new PolymerLayout();
 
         <div class="title"></div>
 
-        <paper-icon-button icon="delete" on-click="remove_torrent"></paper-icon-button>
+        <paper-icon-button icon="delete" onclick="document.querySelector('#remove_project_torrent_view').open();"></paper-icon-button>
         <paper-icon-button icon="favorite-border" on-click="favorite"></paper-icon-button>
         <paper-icon-button icon="social:share" on-click="share"></paper-icon-button>
         <paper-icon-button icon="search" on-click="search"></paper-icon-button>
@@ -22647,6 +22707,20 @@ mwcLayout = new PolymerLayout();
         </div>
       </div>
     </paper-header-panel>
+
+    <paper-dialog entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" id="remove_project_torrent_view">
+      <div class="subhead">Are you sure to delete this item ?</div>
+
+      <div class="buttons">
+        <paper-button onclick="document.querySelector('#remove_project_torrent_view').close();">
+          <iron-icon icon="close"></iron-icon> cancel
+        </paper-button>
+
+        <paper-button on-click="remove_ok">
+          <iron-icon icon="check"></iron-icon> ok
+        </paper-button>
+      </div>
+    </paper-dialog>
   </template>
 
   <script>
@@ -22654,7 +22728,8 @@ mwcLayout = new PolymerLayout();
 
     back: function() {
       FlowRouter.setQueryParams({
-        "route": (FlowRouter.getQueryParam("back-route") ? FlowRouter.getQueryParam("back-route") : null)
+        "back-route": null,
+        route: "project-view"
       });
     },
 
@@ -22667,7 +22742,17 @@ mwcLayout = new PolymerLayout();
     },
 
     download: function() {
-      document.querySelector("#polymer_toast").toast("not enabled");
+      window.open("http://do.vcompile.com/proxy/download.php?torrent=" + encodeURIComponent(JSON.stringify(this.item)), "_system");
+    },
+
+    favorite: function() {
+      if (Meteor.status().connected) {
+        Meteor.call("insert_favorite", [this.item._id], function(error, response) {
+          document.querySelector("#polymer_toast").toast(error ? error.reason : response);
+        });
+      } else {
+        document.querySelector("#polymer_toast").toast("server connection required");
+      }
     },
 
     initialize_proxy: function() {
@@ -22721,6 +22806,24 @@ mwcLayout = new PolymerLayout();
       }
     },
 
+    remove_ok: function() {
+      if (Meteor.status().connected) {
+        Meteor.call("remove_torrent", {
+          torrent: [this.item._id]
+        }, function(error, response) {
+          document.querySelector("#polymer_toast").toast(error ? error.reason : "1 item removed");
+        });
+
+        document.querySelector("#project_view").clear_torrent_selection();
+
+        this.back();
+      } else {
+        document.querySelector("#polymer_toast").toast("server connection required");
+      }
+
+      this.$.remove_project_torrent_view.close();
+    },
+
     return_class: function(text) {
       return polymer_color(text ? text : "#");
     },
@@ -22739,6 +22842,35 @@ mwcLayout = new PolymerLayout();
 
     return_toolbar_class: function(text) {
       return (FlowRouter.getQueryParam("project") ? polymer_color(FlowRouter.getQueryParam("project")) : "blue-700");
+    },
+
+    search: function() {
+      FlowRouter.setQueryParams({
+        "back-route": "project-torrent-view",
+        route: "search-list"
+      });
+    },
+
+    share: function() {
+      var body = "";
+
+      if (this.item.link.length) {
+        body += "\n\nT1\t\t" + this.item.title + "\n\n";
+
+        for (var Z = 0; Z < this.item.link.length; Z++) {
+          body += "\t\tL" + (Z + 1) + "\t\t" + this.item.link[Z].url + "\n\n";
+        }
+      }
+
+      if (body != "") {
+        if (Meteor.isCordova) {
+          window.plugins.socialsharing.share("Hi\n\n" + (Meteor.user() ? Meteor.user().profile.name : "TorrentAlert") + " shared 1 torrent" + body);
+        } else {
+          window.open("mailto:?subject=" + encodeURIComponent("TorrentAlert") + "&body=" + encodeURIComponent("Hi\n\n" + (Meteor.user() ? Meteor.user().profile.name : "TorrentAlert") + " shared 1 torrent" + body), "_system");
+        }
+      } else {
+        document.querySelector("#polymer_toast").toast("empty body");
+      }
     }
 
   });
@@ -24188,8 +24320,8 @@ mwcLayout = new PolymerLayout();
   <template>
     <div class="center-justified cyan-500 fit horizontal layout" id="user-check-layout-body">
       <div class="layout li vertical">
-        <neon-animated-pages attr-for-selected="data-page" class="flex" on-up="swiper_up" selected="[[selected]]">
-          <neon-animatable class="cyan-500 layout vertical" data-page="1" entry-animation="fade-in-animation" exit-animation="fade-out-animation">
+        <neon-animated-pages attr-for-selected="data-page" class="flex" entry-animation="fade-in-animation" exit-animation="fade-out-animation" on-up="swiper_up" selected="[[selected]]">
+          <neon-animatable class="cyan-500 layout vertical" data-page="1">
             <div class="center-justified horizontal layout">
               <div class="subhead">sharing, offline storing, etc</div>
             </div>
@@ -24205,7 +24337,7 @@ mwcLayout = new PolymerLayout();
             </div>
           </neon-animatable>
 
-          <neon-animatable class="cyan-500 layout vertical" data-page="2" entry-animation="fade-in-animation" exit-animation="fade-out-animation">
+          <neon-animatable class="cyan-500 layout vertical" data-page="2">
             <div class="center-justified horizontal layout">
               <div class="subhead">100+ site indexing &amp; inbuilt proxy</div>
             </div>
@@ -24221,7 +24353,7 @@ mwcLayout = new PolymerLayout();
             </div>
           </neon-animatable>
 
-          <neon-animatable class="cyan-500 layout vertical" data-page="3" entry-animation="fade-in-animation" exit-animation="fade-out-animation">
+          <neon-animatable class="cyan-500 layout vertical" data-page="3">
             <div class="center-justified horizontal layout">
               <div class="subhead">keyword search</div>
             </div>

@@ -57,7 +57,7 @@
 
         <div class="title"></div>
 
-        <paper-icon-button icon="delete" on-click="remove_torrent"></paper-icon-button>
+        <paper-icon-button icon="delete" onclick="document.querySelector('#remove_favorite_torrent_view').open();"></paper-icon-button>
         <paper-icon-button icon="social:share" on-click="share"></paper-icon-button>
         <paper-icon-button icon="search" on-click="search"></paper-icon-button>
       </paper-toolbar>
@@ -105,6 +105,20 @@
         </div>
       </div>
     </paper-header-panel>
+
+    <paper-dialog entry-animation="slide-from-right-animation" exit-animation="slide-left-animation" id="remove_favorite_torrent_view">
+      <div class="subhead">Are you sure to delete this item ?</div>
+
+      <div class="buttons">
+        <paper-button onclick="document.querySelector('#remove_favorite_torrent_view').close();">
+          <iron-icon icon="close"></iron-icon> cancel
+        </paper-button>
+
+        <paper-button on-click="remove_ok">
+          <iron-icon icon="check"></iron-icon> ok
+        </paper-button>
+      </div>
+    </paper-dialog>
   </template>
 
   <script>
@@ -112,7 +126,8 @@
 
     back: function() {
       FlowRouter.setQueryParams({
-        "route": (FlowRouter.getQueryParam("back-route") ? FlowRouter.getQueryParam("back-route") : null)
+        "back-route": null,
+        route: "favorite-list"
       });
     },
 
@@ -125,7 +140,7 @@
     },
 
     download: function() {
-      document.querySelector("#polymer_toast").toast("not enabled");
+      window.open("http://do.vcompile.com/proxy/download.php?torrent=" + encodeURIComponent(JSON.stringify(this.item)), "_system");
     },
 
     initialize_proxy: function() {
@@ -179,6 +194,22 @@
       }
     },
 
+    remove_ok: function() {
+      if (Meteor.status().connected) {
+        Meteor.call("remove_favorite", [this.item._id], function(error, response) {
+          document.querySelector("#polymer_toast").toast(error ? error.reason : response);
+        });
+
+        document.querySelector("#favorite_list").clear_torrent_selection();
+
+        this.back();
+      } else {
+        document.querySelector("#polymer_toast").toast("server connection required");
+      }
+
+      this.$.remove_favorite_torrent_view.close();
+    },
+
     return_class: function(text) {
       return polymer_color(text ? text : "#");
     },
@@ -197,6 +228,35 @@
 
     return_toolbar_class: function(text) {
       return (FlowRouter.getQueryParam("project") ? polymer_color(FlowRouter.getQueryParam("project")) : "blue-700");
+    },
+
+    search: function() {
+      FlowRouter.setQueryParams({
+        "back-route": "favorite-torrent-view",
+        route: "search-list"
+      });
+    },
+
+    share: function() {
+      var body = "";
+
+      if (this.item.link.length) {
+        body += "\n\nT1\t\t" + this.item.title + "\n\n";
+
+        for (var Z = 0; Z < this.item.link.length; Z++) {
+          body += "\t\tL" + (Z + 1) + "\t\t" + this.item.link[Z].url + "\n\n";
+        }
+      }
+
+      if (body != "") {
+        if (Meteor.isCordova) {
+          window.plugins.socialsharing.share("Hi\n\n" + (Meteor.user() ? Meteor.user().profile.name : "TorrentAlert") + " shared 1 torrent" + body);
+        } else {
+          window.open("mailto:?subject=" + encodeURIComponent("TorrentAlert") + "&body=" + encodeURIComponent("Hi\n\n" + (Meteor.user() ? Meteor.user().profile.name : "TorrentAlert") + " shared 1 torrent" + body), "_system");
+        }
+      } else {
+        document.querySelector("#polymer_toast").toast("empty body");
+      }
     }
 
   });

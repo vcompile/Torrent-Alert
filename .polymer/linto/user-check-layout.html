@@ -35,8 +35,8 @@
   <template>
     <div class="center-justified cyan-500 fit horizontal layout" id="user-check-layout-body">
       <div class="layout li vertical">
-        <neon-animated-pages attr-for-selected="data-page" class="flex" on-up="swiper_up" selected="[[selected]]">
-          <neon-animatable class="cyan-500 layout vertical" data-page="1" entry-animation="fade-in-animation" exit-animation="fade-out-animation">
+        <neon-animated-pages attr-for-selected="data-page" class="flex" entry-animation="fade-in-animation" exit-animation="fade-out-animation" on-up="swiper_up" selected="[[selected]]">
+          <neon-animatable class="cyan-500 layout vertical" data-page="1">
             <div class="center-justified horizontal layout">
               <div class="subhead">sharing, offline storing, etc</div>
             </div>
@@ -52,7 +52,7 @@
             </div>
           </neon-animatable>
 
-          <neon-animatable class="cyan-500 layout vertical" data-page="2" entry-animation="fade-in-animation" exit-animation="fade-out-animation">
+          <neon-animatable class="cyan-500 layout vertical" data-page="2">
             <div class="center-justified horizontal layout">
               <div class="subhead">100+ site indexing &amp; inbuilt proxy</div>
             </div>
@@ -68,7 +68,7 @@
             </div>
           </neon-animatable>
 
-          <neon-animatable class="cyan-500 layout vertical" data-page="3" entry-animation="fade-in-animation" exit-animation="fade-out-animation">
+          <neon-animatable class="cyan-500 layout vertical" data-page="3">
             <div class="center-justified horizontal layout">
               <div class="subhead">keyword search</div>
             </div>

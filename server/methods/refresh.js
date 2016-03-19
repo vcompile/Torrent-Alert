@@ -37,7 +37,7 @@ Meteor.methods({
         });
       }
 
-      return "refreshing";
+      return "refreshing / updating";
     } else return "itemNotFound";
   }
 
