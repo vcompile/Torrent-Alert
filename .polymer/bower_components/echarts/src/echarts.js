@@ -550,6 +550,7 @@ define(function (require) {
             cfg = name;
             name = 'default';
         }
+        this.hideLoading();
         var el = defaultLoadingEffect(this._api, cfg);
         var zr = this._zr;
         this._loadingFX = el;
@@ -618,11 +619,12 @@ define(function (require) {
 
             (updateMethod !== 'none' && !isHighlightOrDownplay)
                 && updateMethods[updateMethod].call(this, payload);
+
             if (!silent) {
                 // Follow the rule of action batch
                 if (batched) {
                     eventObj = {
-                        type: eventObjBatch[0].type,
+                        type: actionInfo.event || payload.type,
                         batch: eventObjBatch
                     };
                 }
@@ -962,9 +964,9 @@ define(function (require) {
         /**
          * @type {number}
          */
-        version: '3.1.3',
+        version: '3.1.4',
         dependencies: {
-            zrender: '3.0.4'
+            zrender: '3.0.5'
         }
     };
 

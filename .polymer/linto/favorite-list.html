@@ -5,6 +5,12 @@
     background: transparent!important;
   }
   
+  paper-button {
+    margin: 0;
+    min-width: 50%;
+    padding: 16px;
+  }
+  
   paper-toolbar {
     --paper-toolbar-background: var(--paper-blue-700);
     --paper-toolbar-color: white;
@@ -68,7 +74,7 @@
   <template>
     <iron-localstorage name="favorite" on-iron-localstorage-load-empty="initialize_favorite" value="{{favorite}}"></iron-localstorage>
 
-    <paper-header-panel>
+    <paper-header-panel mode="seamed">
       <paper-toolbar id="favorite_list_toolbar">
         <paper-icon-button class="selection-visible-opt" icon="arrow-back" on-click="clear_torrent_selection"></paper-icon-button>
         <paper-icon-button class="selection-hidden-opt" icon="menu" on-click="menu_toggle"></paper-icon-button>
@@ -106,7 +112,7 @@
     </paper-header-panel>
 
     <paper-dialog entry-animation="fade-in-animation" exit-animation="fade-out-animation" id="remove_favorite">
-      <div class="subhead">Are you sure to delete [[torrent_selected.length]] favorite ?</div>
+      <div class="subhead">Are you sure to delete [[torrent_selected.length]] favorite item ?</div>
 
       <div class="buttons">
         <paper-button onclick="document.querySelector('#remove_favorite').close();">

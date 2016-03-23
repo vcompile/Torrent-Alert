@@ -9,15 +9,11 @@
     color: var(--paper-yellow-500);
     margin-left: 24px;
   }
-  
-  .subhead {
-    @apply(--paper-font-subhead);
-  }
   </style>
 
   <template>
-    <paper-toast class$="center cursor-d horizontal justified layout subhead [[cordova_class]]" duration="4000" id="toast" on-iron-announce="toast_open" on-transitionend="transition">
-      <div class="cursor-p self-start subhead" hidden="[[!undo.torrent]]" on-click="clear_undo">UNDO</div>
+    <paper-toast class$="center cursor-d horizontal justified layout [[cordova_class]]" duration="4000" id="toast" on-iron-announce="toast_open" on-transitionend="transition">
+      <div class="cursor-p self-start" hidden="[[!undo.torrent]]" on-click="clear_undo">UNDO</div>
     </paper-toast>
   </template>
 

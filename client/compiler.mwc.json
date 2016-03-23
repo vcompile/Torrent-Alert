@@ -35,6 +35,7 @@
     "bower_components/paper-item/paper-item.html",
     "bower_components/paper-progress/paper-progress.html",
     "bower_components/paper-slider/paper-slider.html",
+    "bower_components/paper-spinner/paper-spinner.html",
     "bower_components/paper-styles/paper-styles.html",
     "bower_components/paper-toast/paper-toast.html",
     "bower_components/paper-toggle-button/paper-toggle-button.html",

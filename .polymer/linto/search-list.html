@@ -14,10 +14,6 @@
   }
   
   paper-progress {
-    left: 0;
-    position: fixed;
-    width: 100%;
-    z-index: 1;
     --paper-progress-active-color: var(--paper-red-500);
     --paper-progress-secondary-color: var(--paper-red-100);
   }
@@ -52,9 +48,8 @@
       <paper-toolbar>
         <paper-icon-button icon="arrow-back" on-click="back"></paper-icon-button>
         <input autofocus bind-value="{{search_input}}" class="flex" is="iron-input" placeholder="search">
+        <paper-progress class="fit" hidden id="search_progress" indeterminate></paper-progress>
       </paper-toolbar>
-
-      <paper-progress hidden id="search_progress" indeterminate></paper-progress>
 
       <template is="dom-repeat" items="[[search]]">
         <div class="center-justified horizontal layout">

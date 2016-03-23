@@ -41,6 +41,10 @@ main.route("/", {
       case "favorite-list":
         document.querySelector("#old_layout").selected = "favorite-layout";
         document.querySelector("#favorite_layout").selected = FlowRouter.getQueryParam("route");
+
+        if (Meteor.isCordova) {
+          StatusBar.backgroundColorByHexString("#1976D2"); // blue-700
+        }
         break;
 
       case "favorite-torrent-view":
@@ -58,6 +62,18 @@ main.route("/", {
         if (FlowRouter.getQueryParam("project")) {
           document.querySelector("#old_layout").selected = "project-layout";
           document.querySelector("#project_layout").selected = FlowRouter.getQueryParam("route");
+
+          if (Meteor.isCordova) {
+            var A = polymer_color(FlowRouter.getQueryParam("project"));
+
+            var Z = _.find(polymer_color_class, function(item) {
+              return (A == item.class);
+            });
+
+            if (Z) { // hex
+              StatusBar.backgroundColorByHexString(Z.hex);
+            }
+          }
         } else {
           FlowRouter.setQueryParams({
             route: null
@@ -78,6 +94,10 @@ main.route("/", {
 
       default:
         document.querySelector("#old_layout").selected = "trending-list";
+
+        if (Meteor.isCordova) {
+          StatusBar.backgroundColorByHexString("#0097A7"); // cyan-700
+        }
         break;
     }
   },

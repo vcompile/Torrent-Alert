@@ -25,7 +25,7 @@ define(function (require) {
     }
 
     function dispatchDownplayAction(seriesModel, dataName, api) {
-        seriesModel.get('legendHoverLink') &&api.dispatchAction({
+        seriesModel.get('legendHoverLink') && api.dispatchAction({
             type: 'downplay',
             seriesName: seriesModel.name,
             name: dataName
@@ -216,6 +216,8 @@ define(function (require) {
             });
 
             this.group.add(itemGroup);
+
+            graphic.setHoverStyle(itemGroup);
 
             return itemGroup;
         }

@@ -12,7 +12,7 @@ define(function (require) {
 
     var vendors = ['', '-webkit-', '-moz-', '-o-'];
 
-    var gCssText = 'position:absolute;display:block;border-style:solid;white-space:nowrap;';
+    var gCssText = 'position:absolute;display:block;border-style:solid;white-space:nowrap;z-index:9999999;';
 
     /**
      * @param {number} duration
@@ -209,7 +209,8 @@ define(function (require) {
 
             this.el.style.cssText = gCssText + assembleCssText(tooltipModel)
                 // http://stackoverflow.com/questions/21125587/css3-transition-not-working-in-chrome-anymore
-                + ';left:' + this._x + 'px;top:' + this._y + 'px;';
+                + ';left:' + this._x + 'px;top:' + this._y + 'px;'
+                + (tooltipModel.get('extraCssText') || '');
 
             this._show = true;
         },

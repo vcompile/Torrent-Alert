@@ -144,7 +144,7 @@ define(function (require) {
      */
     var dataFilter = function (coordSys, item) {
         // Alwalys return true if there is no coordSys
-        return (coordSys && item.coord && (item.x == null || item.y == null))
+        return (coordSys && coordSys.containData && item.coord && (item.x == null || item.y == null))
             ? coordSys.containData(item.coord) : true;
     };
 
@@ -154,7 +154,7 @@ define(function (require) {
             return item.coord && item.coord[dimIndex];
         }
         else {
-            item.value;
+            return item.value;
         }
     };
 

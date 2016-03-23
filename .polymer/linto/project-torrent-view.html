@@ -5,6 +5,12 @@
     background: transparent!important;
   }
   
+  paper-button {
+    margin: 0;
+    min-width: 50%;
+    padding: 16px;
+  }
+  
   paper-icon-item {
     border-bottom: 1px solid #EEE;
   }
@@ -51,7 +57,7 @@
   <template>
     <iron-localstorage name="proxy" on-iron-localstorage-load-empty="initialize_proxy" value="{{proxy}}"></iron-localstorage>
 
-    <paper-header-panel>
+    <paper-header-panel mode="seamed">
       <paper-toolbar class$="[[return_toolbar_class(item._id)]]" id="torrent_view_toolbar">
         <paper-icon-button icon="arrow-back" on-click="back"></paper-icon-button>
 
