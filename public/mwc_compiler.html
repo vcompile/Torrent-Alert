@@ -7718,6 +7718,13 @@ this.fire('dom-change');
     var SPACE_KEY = /^space(bar)?/;
 
     /**
+     * Matches ESC key.
+     *
+     * Value from: http://w3c.github.io/uievents-key/#key-Escape
+     */
+    var ESC_KEY = /^escape$/;
+
+    /**
      * Transforms the key.
      * @param {string} key The KeyBoardEvent.key
      * @param {Boolean} [noSpecialChars] Limits the transformation to
@@ -7729,6 +7736,8 @@ this.fire('dom-change');
         var lKey = key.toLowerCase();
         if (lKey === ' ' || SPACE_KEY.test(lKey)) {
           validKey = 'space';
+        } else if (ESC_KEY.test(lKey)) {
+          validKey = 'esc';
         } else if (lKey.length == 1) {
           if (!noSpecialChars || KEY_CHAR.test(lKey)) {
             validKey = lKey;
@@ -7772,10 +7781,10 @@ this.fire('dom-change');
           validKey = 'f' + (keyCode - 112);
         } else if (keyCode >= 48 && keyCode <= 57) {
           // top 0-9 keys
-          validKey = String(48 - keyCode);
+          validKey = String(keyCode - 48);
         } else if (keyCode >= 96 && keyCode <= 105) {
           // num pad 0-9
-          validKey = String(96 - keyCode);
+          validKey = String(keyCode - 96);
         } else {
           validKey = KEY_CODE[keyCode];
         }
@@ -7940,6 +7949,13 @@ this.fire('dom-change');
         this._resetKeyEventListeners();
       },
 
+      /**
+       * Returns true if a keyboard event matches `eventString`.
+       *
+       * @param {KeyboardEvent} event
+       * @param {string} eventString
+       * @return {boolean}
+       */
       keyboardEventMatchesKeys: function(event, eventString) {
         var keyCombos = parseEventString(eventString);
         for (var i = 0; i < keyCombos.length; ++i) {
@@ -13336,8 +13352,12 @@ CSS properties               | Action
     _bringOverlayAtIndexToFront: function(i) {
       var overlay = this._overlays[i];
       var lastI = this._overlays.length - 1;
+      // Ensure always-on-top overlay stays on top.
+      if (!overlay.alwaysOnTop && this._overlays[lastI].alwaysOnTop) {
+        lastI--;
+      }
       // If already the top element, return.
-      if (!overlay || i === lastI) {
+      if (!overlay || i >= lastI) {
         return;
       }
       // Update z-index to be on top.
@@ -13370,6 +13390,7 @@ CSS properties               | Action
 
     /**
      * Tracks overlays for z-index and focus management.
+     * Ensures the last added overlay with always-on-top remains on top.
      * @param {Element} overlay
      */
     addOverlay: function(overlay) {
@@ -13378,12 +13399,28 @@ CSS properties               | Action
         this._bringOverlayAtIndexToFront(i);
         return;
       }
-      var minimumZ = Math.max(this.currentOverlayZ(), this._minimumZ);
-      this._overlays.push(overlay);
-      var newZ = this.currentOverlayZ();
+      var insertionIndex = this._overlays.length;
+      var currentOverlay = this._overlays[insertionIndex - 1];
+      var minimumZ = Math.max(this._getZ(currentOverlay), this._minimumZ);
+      var newZ = this._getZ(overlay);
+
+      // Ensure always-on-top overlay stays on top.
+      if (currentOverlay && currentOverlay.alwaysOnTop && !overlay.alwaysOnTop) {
+        // This bumps the z-index of +2.
+        this._applyOverlayZ(currentOverlay, minimumZ);
+        insertionIndex--;
+        // Update minimumZ to match previous overlay's z-index.
+        var previousOverlay = this._overlays[insertionIndex - 1];
+        minimumZ = Math.max(this._getZ(previousOverlay), this._minimumZ);
+      }
+
+      // Update z-index and insert overlay.
       if (newZ <= minimumZ) {
         this._applyOverlayZ(overlay, minimumZ);
       }
+      this._overlays.splice(insertionIndex, 0, overlay);
+
+      // Get focused node.
       var element = this.deepActiveElement;
       overlay.restoreFocusNode = this._overlayParent(element) ? null : element;
     },
@@ -13544,15 +13581,29 @@ CSS properties               | Action
     },
 
     /**
+     * Returns the deepest overlay in the path.
+     * @param {Array<Element>=} path
+     * @return {Element|undefined}
+     * @private
+     */
+    _overlayInPath: function(path) {
+      path = path || [];
+      for (var i = 0; i < path.length; i++) {
+        if (path[i]._manager === this) {
+          return path[i];
+        }
+      }
+    },
+
+    /**
      * Ensures the click event is delegated to the right overlay.
      * @param {!Event} event
      * @private
      */
     _onCaptureClick: function(event) {
       var overlay = /** @type {?} */ (this.currentOverlay());
-      // Check if clicked outside of any overlay.
-      var target = /** @type {Element} */ (Polymer.dom(event).rootTarget);
-      if (overlay && this._overlayParent(target) !== overlay) {
+      // Check if clicked outside of top overlay.
+      if (overlay && this._overlayInPath(Polymer.dom(event).path) !== overlay) {
         overlay._onCaptureClick(event);
       }
     },
@@ -13700,6 +13751,13 @@ context. You should place this element as a child of `<body>` whenever possible.
       restoreFocusOnClose: {
         type: Boolean,
         value: false
+      },
+
+      /**
+       * Set to true to keep overlay always on top.
+       */
+      alwaysOnTop: {
+        type: Boolean
       },
 
       /**
@@ -13905,7 +13963,7 @@ context. You should place this element as a child of `<body>` whenever possible.
           this._renderClosed();
         }
         this._openChangedAsync = null;
-      }, 1);
+      });
     },
 
     _canceledChanged: function() {
@@ -14198,8 +14256,6 @@ to override this attribute with `role="alertdialog"`.
 If `modal` is set, the element will set `aria-modal` and prevent the focus from exiting the element.
 It will also ensure that focus remains in the dialog.
 
-The `aria-labelledby` attribute will be set to the header element, if one exists.
-
 @hero hero.svg
 @demo demo/index.html
 @polymerBehavior Polymer.PaperDialogBehavior
@@ -14239,16 +14295,6 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
       this.__prevWithBackdrop = this.withBackdrop;
     },
 
-    attached: function() {
-      // this._observer is used by iron-overlay-behavior
-      this._ariaObserver = Polymer.dom(this).observeNodes(this._updateAriaLabelledBy);
-      this._updateAriaLabelledBy();
-    },
-
-    detached: function() {
-      Polymer.dom(this).unobserveNodes(this._ariaObserver);
-    },
-
     _modalChanged: function(modal, readied) {
       if (modal) {
         this.setAttribute('aria-modal', 'true');
@@ -14278,27 +14324,6 @@ The `aria-labelledby` attribute will be set to the header element, if one exists
           this.__prevNoCancelOnEscKey;
         this.withBackdrop = this.withBackdrop && this.__prevWithBackdrop;
       }
-    },
-
-    _updateAriaLabelledBy: function() {
-      var header = Polymer.dom(this).querySelector('h2');
-      if (!header) {
-        this.removeAttribute('aria-labelledby');
-        return;
-      }
-      var headerId = header.getAttribute('id');
-      if (headerId && this.getAttribute('aria-labelledby') === headerId) {
-        return;
-      }
-      // set aria-describedBy to the header element
-      var labelledById;
-      if (headerId) {
-        labelledById = headerId;
-      } else {
-        labelledById = 'paper-dialog-header-' + new Date().getUTCMilliseconds();
-        header.setAttribute('id', labelledById);
-      }
-      this.setAttribute('aria-labelledby', labelledById);
     },
 
     _updateClosingReasonConfirmed: function(confirmed) {
@@ -18177,11 +18202,11 @@ mwcLayout = new PolymerLayout();
       :host {
         display: block;
         margin: 24px 40px;
-        -webkit-overflow-scrolling: touch;
 
         background: var(--paper-dialog-background-color, --primary-background-color);
         color: var(--paper-dialog-color, --primary-text-color);
 
+        @apply(--layout-scroll);
         @apply(--paper-font-body1);
         @apply(--shadow-elevation-16dp);
         @apply(--paper-dialog);
@@ -21290,7 +21315,7 @@ mwcLayout = new PolymerLayout();
 
         /**
          * Show the toast. Without arguments, this is the same as `open()` from `IronOverlayBehavior`.
-         * @param {Object|string|undefined} properties Properties to be set before opening the toast.
+         * @param {(Object|string)=} properties Properties to be set before opening the toast.
          * e.g. `toast.show('hello')` or `toast.show({text: 'hello', duration: 3000})`
          */
         show: function(properties) {
@@ -22029,12 +22054,6 @@ mwcLayout = new PolymerLayout();
     is: "add-project",
 
     properties: {
-      active: {
-        notify: true,
-        reflectToAttribute: true,
-        type: Boolean,
-        value: false
-      },
       input: {
         type: String,
         value: ""
@@ -23083,7 +23102,8 @@ mwcLayout = new PolymerLayout();
   });
   </script>
 
-</dom-module><dom-module id="polymer-toast" assetpath="linto/">
+</dom-module>
+<dom-module id="polymer-toast" assetpath="linto/">
 
   <style>
   paper-toast {
@@ -23097,7 +23117,7 @@ mwcLayout = new PolymerLayout();
   </style>
 
   <template>
-    <paper-toast class$="center cursor-d horizontal justified layout [[cordova_class]]" duration="4000" id="toast" on-iron-announce="toast_open" on-transitionend="transition">
+    <paper-toast class$="center cursor-d horizontal justified layout [[cordova_class]]" duration="4000" id="toast" no-cancel-on-outside-click="[[!undo]]" on-iron-announce="toast_open" on-transitionend="transition">
       <div class="cursor-p self-start" hidden="[[!undo.torrent]]" on-click="clear_undo">UNDO</div>
     </paper-toast>
   </template>
@@ -23178,7 +23198,7 @@ mwcLayout = new PolymerLayout();
 
               this.undo = {};
             } else {
-              $("torrent-item." + this.torrent_selected.join(", torrent-item.")).removeClass("undo");
+              $("torrent-item." + this.undo.torrent.join(", torrent-item.")).removeClass("undo");
 
               this.undo = {};
 
@@ -23196,7 +23216,8 @@ mwcLayout = new PolymerLayout();
   });
   </script>
 
-</dom-module><dom-module id="project-layout" assetpath="linto/">
+</dom-module>
+<dom-module id="project-layout" assetpath="linto/">
 
   <template>
     <neon-animated-pages attr-for-selected="data-page" class="fit" selected="[[selected]]">
@@ -23504,7 +23525,8 @@ mwcLayout = new PolymerLayout();
   });
   </script>
 
-</dom-module><dom-module id="project-view" assetpath="linto/">
+</dom-module>
+<dom-module id="project-view" assetpath="linto/">
 
   <style>
   :host {
@@ -23901,6 +23923,7 @@ mwcLayout = new PolymerLayout();
   
   paper-icon-item {
     border-bottom: 1px solid #EEE;
+    border-top: 1px solid #EEE;
   }
   
   paper-progress {
@@ -24053,7 +24076,8 @@ mwcLayout = new PolymerLayout();
   });
   </script>
 
-</dom-module><dom-module id="selectable-icon" assetpath="linto/">
+</dom-module>
+<dom-module id="selectable-icon" assetpath="linto/">
 
   <style>
   :host([selected]) .icon {
@@ -24336,7 +24360,7 @@ mwcLayout = new PolymerLayout();
 
       <div class="center-justified horizontal layout">
         <div class="li">
-          <div class="center-center horizontal layout trending-li wrap">
+          <div class="center-justified horizontal layout trending-li wrap">
             <template is="dom-repeat" items="[[trending.keyword]]">
               <div class$="cursor-p subhead [[return_class(item)]]" on-click="click">[[item]]</div>
             </template>
@@ -24445,7 +24469,7 @@ mwcLayout = new PolymerLayout();
     },
 
     return_class: function(text) {
-      return polymer_color(text ? text : "#").replace(/500$/, "100");
+      return polymer_color(text ? text.charAt(0) : "#").replace(/500$/, "100");
     },
 
     return_trending_count: function(count) {
@@ -24462,7 +24486,8 @@ mwcLayout = new PolymerLayout();
   });
   </script>
 
-</dom-module><dom-module id="torrent-item" assetpath="linto/">
+</dom-module>
+<dom-module id="torrent-item" assetpath="linto/">
 
   <style>
   .body1 {

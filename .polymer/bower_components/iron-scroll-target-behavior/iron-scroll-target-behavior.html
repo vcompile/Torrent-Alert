@@ -74,44 +74,34 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     ],
 
     _scrollTargetChanged: function(scrollTarget, isAttached) {
-      // Remove lister to the current scroll target
+      var eventTarget;
+
       if (this._oldScrollTarget) {
-        if (this._oldScrollTarget === this._doc) {
-        
-          window.removeEventListener('scroll', this._boundScrollHandler);
-        
-        } else if (this._oldScrollTarget.removeEventListener) {
-        
-          this._oldScrollTarget.removeEventListener('scroll', this._boundScrollHandler);
-        
-        }
+        eventTarget = this._oldScrollTarget === this._doc ? window : this._oldScrollTarget;
+        eventTarget.removeEventListener('scroll', this._boundScrollHandler);
         this._oldScrollTarget = null;
       }
-      if (isAttached) {
-        // Support element id references
-        if (scrollTarget === 'document') {
 
-          this.scrollTarget = this._doc;
+      if (!isAttached) {
+        return;
+      }
+      // Support element id references
+      if (scrollTarget === 'document') {
 
-        } else if (typeof scrollTarget === 'string') {
+        this.scrollTarget = this._doc;
 
-          this.scrollTarget = this.domHost ? this.domHost.$[scrollTarget] :
-              Polymer.dom(this.ownerDocument).querySelector('#' + scrollTarget);
+      } else if (typeof scrollTarget === 'string') {
 
-        } else if (this._scrollHandler) {
+        this.scrollTarget = this.domHost ? this.domHost.$[scrollTarget] :
+            Polymer.dom(this.ownerDocument).querySelector('#' + scrollTarget);
 
-          this._boundScrollHandler = this._boundScrollHandler || this._scrollHandler.bind(this);
-          // Add a new listener
-          if (scrollTarget === this._doc) {
-            window.addEventListener('scroll', this._boundScrollHandler);
-            if (this._scrollTop !== 0 || this._scrollLeft !== 0) {
-              this._scrollHandler();
-            }
-          } else if (scrollTarget && scrollTarget.addEventListener) {
-            scrollTarget.addEventListener('scroll', this._boundScrollHandler);
-          }
-          this._oldScrollTarget = scrollTarget;
-        }
+      } else if (this._isValidScrollTarget()) {
+
+        eventTarget = scrollTarget === this._doc ? window : scrollTarget;
+        this._boundScrollHandler = this._boundScrollHandler || this._scrollHandler.bind(this);
+        this._oldScrollTarget = scrollTarget;
+
+        eventTarget.addEventListener('scroll', this._boundScrollHandler);
       }
     },
 

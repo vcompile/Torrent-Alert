@@ -89,19 +89,22 @@ define(function (require) {
         if (rect && rect.contain(zoomX, zoomY)) {
 
             var target = this.target;
+            var zoomLimit = this.zoomLimit;
 
             if (target) {
                 var pos = target.position;
                 var scale = target.scale;
 
-                var newZoom = this._zoom = this._zoom || 1;
+                var newZoom = this.zoom = this.zoom || 1;
                 newZoom *= zoomDelta;
-                // newZoom = Math.max(
-                //     Math.min(target.maxZoom, newZoom),
-                //     target.minZoom
-                // );
-                var zoomScale = newZoom / this._zoom;
-                this._zoom = newZoom;
+                if (zoomLimit) {
+                    newZoom = Math.max(
+                        Math.min(zoomLimit.max, newZoom),
+                        zoomLimit.min
+                    );
+                }
+                var zoomScale = newZoom / this.zoom;
+                this.zoom = newZoom;
                 // Keep the mouse center when scaling
                 pos[0] -= (zoomX - pos[0]) * (zoomScale - 1);
                 pos[1] -= (zoomY - pos[1]) * (zoomScale - 1);
@@ -136,6 +139,16 @@ define(function (require) {
          */
         this.rect = rect;
 
+        /**
+         * { min: 1, max: 2 }
+         * @type {Object}
+         */
+        this.zoomLimit;
+
+        /**
+         * @type {number}
+         */
+        this.zoom;
         /**
          * @type {module:zrender}
          */

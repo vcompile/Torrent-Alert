@@ -52,7 +52,7 @@ define(function(require) {
                     stack: seriesModel.get('stack'),
                     markPoint: seriesModel.get('markPoint'),
                     markLine: seriesModel.get('markLine')
-                }, model.get('option.line'));
+                }, model.get('option.line') || {}, true);
             }
         },
         'bar': function (seriesType, seriesId, seriesModel, model) {
@@ -65,23 +65,23 @@ define(function(require) {
                     stack: seriesModel.get('stack'),
                     markPoint: seriesModel.get('markPoint'),
                     markLine: seriesModel.get('markLine')
-                }, model.get('option.bar'));
+                }, model.get('option.bar') || {}, true);
             }
         },
         'stack': function (seriesType, seriesId, seriesModel, model) {
             if (seriesType === 'line' || seriesType === 'bar') {
-                return {
+                return zrUtil.merge({
                     id: seriesId,
                     stack: '__ec_magicType_stack__'
-                };
+                }, model.get('option.stack') || {}, true);
             }
         },
         'tiled': function (seriesType, seriesId, seriesModel, model) {
             if (seriesType === 'line' || seriesType === 'bar') {
-                return {
+                return zrUtil.merge({
                     id: seriesId,
                     stack: ''
-                };
+                }, model.get('option.tiled') || {}, true);
             }
         }
     };
@@ -112,6 +112,21 @@ define(function(require) {
                 zrUtil.defaults(newSeriesOpt, seriesModel.option);
                 newOption.series.push(newSeriesOpt);
             }
+            // Modify boundaryGap
+            var coordSys = seriesModel.coordinateSystem;
+            if (coordSys.type === 'cartesian2d') {
+                var categoryAxis = coordSys.getAxesByScale('ordinal')[0];
+                if (categoryAxis) {
+                    var axisDim = categoryAxis.dim;
+                    var axisIndex = seriesModel.get(axisDim + 'AxisIndex');
+                    var axisKey = axisDim + 'Axis';
+                    newOption[axisKey] = newOption[axisKey] || [];
+                    for (var i = 0; i <= axisIndex; i++) {
+                        newOption[axisKey][axisIndex] = newOption[axisKey][axisIndex] || {};
+                    }
+                    newOption[axisKey][axisIndex].boundaryGap = type === 'bar' ? true : false;
+                }
+            }
         };
 
         zrUtil.each(radioTypes, function (radio) {
@@ -127,7 +142,9 @@ define(function(require) {
         ecModel.eachComponent(
             {
                 mainType: 'series',
-                seriesIndex: seriesIndex
+                query: seriesIndex == null ? null : {
+                    seriesIndex: seriesIndex
+                }
             }, generateNewSeriesTypes
         );
         api.dispatchAction({

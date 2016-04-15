@@ -830,7 +830,7 @@ define(function (require) {
     }
 
     var MOUSE_EVENT_NAMES = [
-        'click', 'dblclick', 'mouseover', 'mouseout', 'globalout'
+        'click', 'dblclick', 'mouseover', 'mouseout', 'mousedown', 'mouseup', 'globalout'
     ];
     /**
      * @private
@@ -842,8 +842,8 @@ define(function (require) {
                 var ecModel = this.getModel();
                 var el = e.target;
                 if (el && el.dataIndex != null) {
-                    var hostModel = el.hostModel || ecModel.getSeriesByIndex(el.seriesIndex);
-                    var params = hostModel && hostModel.getDataParams(el.dataIndex) || {};
+                    var dataModel = el.dataModel || ecModel.getSeriesByIndex(el.seriesIndex);
+                    var params = dataModel && dataModel.getDataParams(el.dataIndex) || {};
                     params.event = e;
                     params.type = eveName;
                     this.trigger(eveName, params);
@@ -888,7 +888,7 @@ define(function (require) {
 
         this._zr.dispose();
 
-        instances[this.id] = null;
+        delete instances[this.id];
     };
 
     zrUtil.mixin(ECharts, Eventful);
@@ -964,9 +964,9 @@ define(function (require) {
         /**
          * @type {number}
          */
-        version: '3.1.4',
+        version: '3.1.5',
         dependencies: {
-            zrender: '3.0.5'
+            zrender: '3.0.6'
         }
     };
 

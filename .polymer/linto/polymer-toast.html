@@ -12,7 +12,7 @@
   </style>
 
   <template>
-    <paper-toast class$="center cursor-d horizontal justified layout [[cordova_class]]" duration="4000" id="toast" on-iron-announce="toast_open" on-transitionend="transition">
+    <paper-toast class$="center cursor-d horizontal justified layout [[cordova_class]]" duration="4000" id="toast" no-cancel-on-outside-click="[[!undo]]" on-iron-announce="toast_open" on-transitionend="transition">
       <div class="cursor-p self-start" hidden="[[!undo.torrent]]" on-click="clear_undo">UNDO</div>
     </paper-toast>
   </template>
@@ -93,7 +93,7 @@
 
               this.undo = {};
             } else {
-              $("torrent-item." + this.torrent_selected.join(", torrent-item.")).removeClass("undo");
+              $("torrent-item." + this.undo.torrent.join(", torrent-item.")).removeClass("undo");
 
               this.undo = {};
 

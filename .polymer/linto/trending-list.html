@@ -83,7 +83,7 @@
 
       <div class="center-justified horizontal layout">
         <div class="li">
-          <div class="center-center horizontal layout trending-li wrap">
+          <div class="center-justified horizontal layout trending-li wrap">
             <template is="dom-repeat" items="[[trending.keyword]]">
               <div class$="cursor-p subhead [[return_class(item)]]" on-click="click">[[item]]</div>
             </template>
@@ -192,7 +192,7 @@
     },
 
     return_class: function(text) {
-      return polymer_color(text ? text : "#").replace(/500$/, "100");
+      return polymer_color(text ? text.charAt(0) : "#").replace(/500$/, "100");
     },
 
     return_trending_count: function(count) {
