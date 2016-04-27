@@ -29,4 +29,6 @@ App.info({
 // });
 
 App.setPreference("android-installLocation", "preferExternal");
-// App.setPreference("android-minSdkVersion", "21");
+App.setPreference("android-minSdkVersion", "19");
+App.setPreference("SplashMaintainAspectRatio", true);
+App.setPreference("SplashShowOnlyFirstTime", false);

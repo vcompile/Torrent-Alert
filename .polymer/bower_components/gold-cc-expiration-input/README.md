@@ -12,9 +12,9 @@ thing! https://github.com/PolymerLabs/tedium/issues
 
 -->
 
-[![Build Status](https://travis-ci.org/PolymerElements/gold-cc-expiration-input.svg?branch=master)](https://travis-ci.org/PolymerElements/gold-cc-expiration-input)
+[![Build status](https://travis-ci.org/PolymerElements/gold-cc-expiration-input.svg?branch=master)](https://travis-ci.org/PolymerElements/gold-cc-expiration-input)
 
-_[Demo and API Docs](https://elements.polymer-project.org/elements/gold-cc-expiration-input)_
+_[Demo and API docs](https://elements.polymer-project.org/elements/gold-cc-expiration-input)_
 
 
 ##&lt;gold-cc-expiration-input&gt;
