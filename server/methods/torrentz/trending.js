@@ -8,7 +8,7 @@ Meteor.methods({
 
     var response = HTTP.call("GET", "http://do.vcompile.com/proxy/get.php", {
         params: {
-          url: "https://torrentz-proxy.com"
+          url: "http://185.87.146.3"
         },
         timeout: 1000 * 60
       }),

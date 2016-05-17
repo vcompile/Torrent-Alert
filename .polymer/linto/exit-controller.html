@@ -50,6 +50,10 @@
 
       if ((parseInt(A) - parseInt(this._time)) < 1000) {
         this.$.exit_prompt.open();
+      } {
+        if (Meteor.isCordova) {
+          navigator.app.backHistory();
+        }
       }
 
       this._time = A;

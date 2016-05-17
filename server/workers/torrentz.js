@@ -30,7 +30,7 @@ _torrentz_worker = function(worker_id) {
 
       var response = HTTP.call("GET", "http://do.vcompile.com/proxy/get.php", {
         params: {
-          url: "https://torrentz-proxy.com/" + row.url + (key == "#" ? "?q=" + row.keyword + " added<" + row.within + "m leech>" + row.leech + " seed>" + row.seed : "")
+          url: "http://185.87.146.3/" + row.url + (key == "#" ? "?q=" + row.keyword + " added<" + row.within + "m leech>" + row.leech + " seed>" + row.seed : "")
         },
         timeout: 1000 * 60
       });
