@@ -1,4 +1,7 @@
-MeteorJS Polymer Project, [Mobile Browser Version](http://do.vcompile.com:16000), [New Version](https://ts-vcompile.herokuapp.com)
+MeteorJS Polymer Project
+
+* [Mobile Browser Version](http://do.vcompile.com:16000)
+* [New Development Version](https://ts-vcompile.herokuapp.com)
 
 Install Guide
 ----------

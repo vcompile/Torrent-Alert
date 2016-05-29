@@ -88,6 +88,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         box-sizing: border-box;
       }
 
+      .sizer {
+        width: 9999px;
+        height: 9999px;
+      }
+
     </style>
 
   </head>
@@ -167,6 +172,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             </div>
           </test-fit>
         </div>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="scrollable">
+      <template>
+        <test-fit auto-fit-on-attach class="scrolling">
+          scrollable
+          <div class="sizer"></div>
+        </test-fit>
       </template>
     </test-fixture>
 
@@ -360,6 +374,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           el.refit();
           var rect = el.getBoundingClientRect();
           assert.isTrue(rect.height <= window.innerHeight, 'height is less than or equal to viewport height');
+        });
+
+        test('scrolling sizingTarget preserves scrolling position', function() {
+          el = fixture('scrollable');
+          el.scrollTop = 20;
+          el.scrollLeft = 20;
+          el.refit();
+          assert.equal(el.scrollTop, 20, 'scrollTop ok');
+          assert.equal(el.scrollLeft, 20, 'scrollLeft ok');
         });
 
       });

@@ -12592,69 +12592,6 @@ is separate from validation, and `allowed-pattern` does not affect how the input
   ];
 
 </script>
-<style is="custom-style">
-
-  :root {
-
-    --shadow-transition: {
-      transition: box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1);
-    };
-
-    --shadow-none: {
-      box-shadow: none;
-    };
-
-    /* from http://codepen.io/shyndman/pen/c5394ddf2e8b2a5c9185904b57421cdb */
-
-    --shadow-elevation-2dp: {
-      box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14),
-                  0 1px 5px 0 rgba(0, 0, 0, 0.12),
-                  0 3px 1px -2px rgba(0, 0, 0, 0.2);
-    };
-
-    --shadow-elevation-3dp: {
-      box-shadow: 0 3px 4px 0 rgba(0, 0, 0, 0.14),
-                  0 1px 8px 0 rgba(0, 0, 0, 0.12),
-                  0 3px 3px -2px rgba(0, 0, 0, 0.4);
-    };
-
-    --shadow-elevation-4dp: {
-      box-shadow: 0 4px 5px 0 rgba(0, 0, 0, 0.14),
-                  0 1px 10px 0 rgba(0, 0, 0, 0.12),
-                  0 2px 4px -1px rgba(0, 0, 0, 0.4);
-    };
-
-    --shadow-elevation-6dp: {
-      box-shadow: 0 6px 10px 0 rgba(0, 0, 0, 0.14),
-                  0 1px 18px 0 rgba(0, 0, 0, 0.12),
-                  0 3px 5px -1px rgba(0, 0, 0, 0.4);
-    };
-
-    --shadow-elevation-8dp: {
-      box-shadow: 0 8px 10px 1px rgba(0, 0, 0, 0.14),
-                  0 3px 14px 2px rgba(0, 0, 0, 0.12),
-                  0 5px 5px -3px rgba(0, 0, 0, 0.4);
-    };
-
-    --shadow-elevation-12dp: {
-      box-shadow: 0 12px 16px 1px rgba(0, 0, 0, 0.14),
-                  0 4px 22px 3px rgba(0, 0, 0, 0.12),
-                  0 6px 7px -4px rgba(0, 0, 0, 0.4);
-    };
-
-    --shadow-elevation-16dp: {
-      box-shadow: 0 16px 24px 2px rgba(0, 0, 0, 0.14),
-                  0  6px 30px 5px rgba(0, 0, 0, 0.12),
-                  0  8px 10px -5px rgba(0, 0, 0, 0.4);
-    };
-
-  }
-
-</style>
-
-
-
-
 <script>
 
   /**
@@ -12869,6 +12806,8 @@ is separate from validation, and `allowed-pattern` does not affect how the input
   ];
 
 </script>
+
+
 <script>
 
   /**
@@ -13075,6 +13014,67 @@ is separate from validation, and `allowed-pattern` does not affect how the input
   ];
 
 </script>
+<style is="custom-style">
+
+  :root {
+
+    --shadow-transition: {
+      transition: box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    };
+
+    --shadow-none: {
+      box-shadow: none;
+    };
+
+    /* from http://codepen.io/shyndman/pen/c5394ddf2e8b2a5c9185904b57421cdb */
+
+    --shadow-elevation-2dp: {
+      box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.14),
+                  0 1px 5px 0 rgba(0, 0, 0, 0.12),
+                  0 3px 1px -2px rgba(0, 0, 0, 0.2);
+    };
+
+    --shadow-elevation-3dp: {
+      box-shadow: 0 3px 4px 0 rgba(0, 0, 0, 0.14),
+                  0 1px 8px 0 rgba(0, 0, 0, 0.12),
+                  0 3px 3px -2px rgba(0, 0, 0, 0.4);
+    };
+
+    --shadow-elevation-4dp: {
+      box-shadow: 0 4px 5px 0 rgba(0, 0, 0, 0.14),
+                  0 1px 10px 0 rgba(0, 0, 0, 0.12),
+                  0 2px 4px -1px rgba(0, 0, 0, 0.4);
+    };
+
+    --shadow-elevation-6dp: {
+      box-shadow: 0 6px 10px 0 rgba(0, 0, 0, 0.14),
+                  0 1px 18px 0 rgba(0, 0, 0, 0.12),
+                  0 3px 5px -1px rgba(0, 0, 0, 0.4);
+    };
+
+    --shadow-elevation-8dp: {
+      box-shadow: 0 8px 10px 1px rgba(0, 0, 0, 0.14),
+                  0 3px 14px 2px rgba(0, 0, 0, 0.12),
+                  0 5px 5px -3px rgba(0, 0, 0, 0.4);
+    };
+
+    --shadow-elevation-12dp: {
+      box-shadow: 0 12px 16px 1px rgba(0, 0, 0, 0.14),
+                  0 4px 22px 3px rgba(0, 0, 0, 0.12),
+                  0 6px 7px -4px rgba(0, 0, 0, 0.4);
+    };
+
+    --shadow-elevation-16dp: {
+      box-shadow: 0 16px 24px 2px rgba(0, 0, 0, 0.14),
+                  0  6px 30px 5px rgba(0, 0, 0, 0.12),
+                  0  8px 10px -5px rgba(0, 0, 0, 0.4);
+    };
+
+  }
+
+</style>
+
+
 
 
 <script>
@@ -13384,10 +13384,15 @@ Use `noOverlap` to position the element around another element without overlappi
      * Equivalent to calling `resetFit()` and `fit()`. Useful to call this after
      * the element or the `fitInto` element has been resized, or if any of the
      * positioning properties (e.g. `horizontalAlign, verticalAlign`) is updated.
+     * It preserves the scroll position of the sizingTarget.
      */
     refit: function() {
+      var scrollLeft = this.sizingTarget.scrollLeft;
+      var scrollTop = this.sizingTarget.scrollTop;
       this.resetFit();
       this.fit();
+      this.sizingTarget.scrollLeft = scrollLeft;
+      this.sizingTarget.scrollTop = scrollTop;
     },
 
     /**
@@ -15028,18 +15033,27 @@ It will also ensure that focus remains in the dialog.
   },
 
   _calcStep: function(value) {
-   /**
-    * if we calculate the step using
-    * `Math.round(value / step) * step` we may hit a precision point issue
-    * eg. 0.1 * 0.2 =  0.020000000000000004
-    * http://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html
-    *
-    * as a work around we can divide by the reciprocal of `step`
-    */
     // polymer/issues/2493
     value = parseFloat(value);
-    return this.step ? (Math.round((value + this.min) / this.step) -
-        (this.min / this.step)) / (1 / this.step) : value;
+
+    if (!this.step) {
+      return value;
+    }
+
+    var numSteps = Math.round((value - this.min) / this.step);
+    if (this.step < 1) {
+     /**
+      * For small values of this.step, if we calculate the step using
+      * `Math.round(value / step) * step` we may hit a precision point issue
+      * eg. 0.1 * 0.2 =  0.020000000000000004
+      * http://docs.oracle.com/cd/E19957-01/806-3568/ncg_goldberg.html
+      *
+      * as a work around we can divide by the reciprocal of `step`
+      */
+      return numSteps / (1 / this.step) + this.min;
+    } else {
+      return numSteps * this.step + this.min;
+    }
   },
 
   _validateValue: function() {
@@ -17646,84 +17660,6 @@ mwcLayout = new PolymerLayout();
 
 })();
 </script>
-<dom-module id="paper-material-shared-styles" assetpath="bower_components/paper-material/">
-  <template>
-    <style>
-      :host {
-        display: block;
-        position: relative;
-      }
-
-      :host([elevation="1"]) {
-        @apply(--shadow-elevation-2dp);
-      }
-
-      :host([elevation="2"]) {
-        @apply(--shadow-elevation-4dp);
-      }
-
-      :host([elevation="3"]) {
-        @apply(--shadow-elevation-6dp);
-      }
-
-      :host([elevation="4"]) {
-        @apply(--shadow-elevation-8dp);
-      }
-
-      :host([elevation="5"]) {
-        @apply(--shadow-elevation-16dp);
-      }
-    </style>
-  </template>
-</dom-module>
-<dom-module id="paper-material" assetpath="bower_components/paper-material/">
-  <template>
-    <style include="paper-material-shared-styles"></style>
-    <style>
-      :host([animated]) {
-        @apply(--shadow-transition);
-      }
-    </style>
-
-    <content></content>
-  </template>
-</dom-module>
-<script>
-  Polymer({
-    is: 'paper-material',
-
-    properties: {
-      /**
-       * The z-depth of this element, from 0-5. Setting to 0 will remove the
-       * shadow, and each increasing number greater than 0 will be "deeper"
-       * than the last.
-       *
-       * @attribute elevation
-       * @type number
-       * @default 1
-       */
-      elevation: {
-        type: Number,
-        reflectToAttribute: true,
-        value: 1
-      },
-
-      /**
-       * Set this to true to animate the shadow when setting a new
-       * `elevation` value.
-       *
-       * @attribute animated
-       * @type boolean
-       * @default false
-       */
-      animated: {
-        type: Boolean,
-        reflectToAttribute: true,
-        value: false
-      }
-    }
-  });
-</script>
 <dom-module id="paper-ripple" assetpath="bower_components/paper-ripple/">
 
   
@@ -18399,18 +18335,97 @@ mwcLayout = new PolymerLayout();
     });
   })();
 </script>
+<dom-module id="paper-material-shared-styles" assetpath="bower_components/paper-material/">
+  <template>
+    <style>
+      :host {
+        display: block;
+        position: relative;
+      }
+
+      :host([elevation="1"]) {
+        @apply(--shadow-elevation-2dp);
+      }
+
+      :host([elevation="2"]) {
+        @apply(--shadow-elevation-4dp);
+      }
+
+      :host([elevation="3"]) {
+        @apply(--shadow-elevation-6dp);
+      }
+
+      :host([elevation="4"]) {
+        @apply(--shadow-elevation-8dp);
+      }
+
+      :host([elevation="5"]) {
+        @apply(--shadow-elevation-16dp);
+      }
+    </style>
+  </template>
+</dom-module>
+<dom-module id="paper-material" assetpath="bower_components/paper-material/">
+  <template>
+    <style include="paper-material-shared-styles"></style>
+    <style>
+      :host([animated]) {
+        @apply(--shadow-transition);
+      }
+    </style>
+
+    <content></content>
+  </template>
+</dom-module>
+<script>
+  Polymer({
+    is: 'paper-material',
+
+    properties: {
+      /**
+       * The z-depth of this element, from 0-5. Setting to 0 will remove the
+       * shadow, and each increasing number greater than 0 will be "deeper"
+       * than the last.
+       *
+       * @attribute elevation
+       * @type number
+       * @default 1
+       */
+      elevation: {
+        type: Number,
+        reflectToAttribute: true,
+        value: 1
+      },
+
+      /**
+       * Set this to true to animate the shadow when setting a new
+       * `elevation` value.
+       *
+       * @attribute animated
+       * @type boolean
+       * @default false
+       */
+      animated: {
+        type: Boolean,
+        reflectToAttribute: true,
+        value: false
+      }
+    }
+  });
+</script>
 <dom-module id="paper-button" assetpath="bower_components/paper-button/">
   <template strip-whitespace="">
-
     <style include="paper-material">
       :host {
-        display: inline-block;
+        @apply(--layout-inline);
+        @apply(--layout-center-center);
         position: relative;
         box-sizing: border-box;
         min-width: 5.14em;
         margin: 0 0.29em;
         background: transparent;
-        text-align: center;
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+        -webkit-tap-highlight-color: transparent;
         font: inherit;
         text-transform: uppercase;
         outline-width: 0;
@@ -18423,6 +18438,7 @@ mwcLayout = new PolymerLayout();
         z-index: 0;
         padding: 0.7em 0.57em;
 
+        @apply(--paper-font-common-base);
         @apply(--paper-button);
       }
 
@@ -18448,53 +18464,50 @@ mwcLayout = new PolymerLayout();
       paper-ripple {
         color: var(--paper-button-ink-color);
       }
-
-      :host > ::content * {
-        text-transform: inherit;
-      }
     </style>
+
     <content></content>
   </template>
-</dom-module>
 
-<script>
-  Polymer({
-    is: 'paper-button',
+  <script>
+    Polymer({
+      is: 'paper-button',
 
-    behaviors: [
-      Polymer.PaperButtonBehavior
-    ],
+      behaviors: [
+        Polymer.PaperButtonBehavior
+      ],
 
-    properties: {
+      properties: {
+        /**
+         * If true, the button should be styled with a shadow.
+         */
+        raised: {
+          type: Boolean,
+          reflectToAttribute: true,
+          value: false,
+          observer: '_calculateElevation'
+        }
+      },
+
+      _calculateElevation: function() {
+        if (!this.raised) {
+          this._setElevation(0);
+        } else {
+          Polymer.PaperButtonBehaviorImpl._calculateElevation.apply(this);
+        }
+      }
+
       /**
-       * If true, the button should be styled with a shadow.
-       */
-      raised: {
-        type: Boolean,
-        reflectToAttribute: true,
-        value: false,
-        observer: '_calculateElevation'
-      }
-    },
+      Fired when the animation finishes.
+      This is useful if you want to wait until
+      the ripple animation finishes to perform some action.
 
-    _calculateElevation: function() {
-      if (!this.raised) {
-        this._setElevation(0);
-      } else {
-        Polymer.PaperButtonBehaviorImpl._calculateElevation.apply(this);
-      }
-    }
-    /**
-
-    Fired when the animation finishes.
-    This is useful if you want to wait until
-    the ripple animation finishes to perform some action.
-
-    @event transitionend
-    @param {{node: Object}} detail Contains the animated node.
-    */
-  });
-</script>
+      @event transitionend
+      Event param: {{node: Object}} detail Contains the animated node.
+      */
+    });
+  </script>
+</dom-module>
 <dom-module id="iron-overlay-backdrop" assetpath="bower_components/iron-overlay-behavior/">
 
   <style>
@@ -19904,7 +19917,7 @@ mwcLayout = new PolymerLayout();
                 header.classList.remove('animate');
               }, animateDuration);
             } else {
-              header.classList.toggle('animate', configs.tallMode[newMode]);
+              this.toggleClass('animate', configs.tallMode[newMode], header);
             }
           }
           this._keepScrollingState();
@@ -20646,7 +20659,7 @@ mwcLayout = new PolymerLayout();
         padding: 15px 0;
         width: 100%;
         background-color: var(--paper-slider-bar-color, transparent);
-        --paper-progress-container-color: var(--paper-grey-400);
+        --paper-progress-container-color: var(--paper-slider-container-color, --paper-grey-400);
         --paper-progress-height: var(--paper-slider-height, 2px);
       }
 
@@ -20815,7 +20828,6 @@ mwcLayout = new PolymerLayout();
     </style>
 
     <div id="sliderContainer" class$="[[_getClassNames(disabled, pin, snaps, immediateValue, min, expand, dragging, transiting, editable)]]">
-
       <div class="bar-container">
         <paper-progress disabled$="[[disabled]]" id="sliderBar" aria-hidden="true" min="[[min]]" max="[[max]]" step="[[step]]" value="[[immediateValue]]" secondary-progress="[[secondaryProgress]]" on-down="_bardown" on-up="_resetKnob" on-track="_onTrack">
         </paper-progress>
@@ -20908,8 +20920,7 @@ mwcLayout = new PolymerLayout();
         maxMarkers: {
           type: Number,
           value: 0,
-          notify: true,
-          observer: '_maxMarkersChanged'
+          notify: true
         },
 
         /**
@@ -20946,7 +20957,8 @@ mwcLayout = new PolymerLayout();
       observers: [
         '_updateKnob(value, min, max, snaps, step)',
         '_valueChanged(value)',
-        '_immediateValueChanged(immediateValue)'
+        '_immediateValueChanged(immediateValue)',
+        '_updateMarkers(maxMarkers, min, max, snaps)'
       ],
 
       hostAttributes: {
@@ -20957,13 +20969,6 @@ mwcLayout = new PolymerLayout();
       keyBindings: {
         'left down pagedown home': '_decrementKey',
         'right up pageup end': '_incrementKey'
-      },
-
-      ready: function() {
-        // issue polymer/polymer#1305
-        this.async(function() {
-          this._updateKnob(this.value);
-        }, 1);
       },
 
       /**
@@ -21132,11 +21137,11 @@ mwcLayout = new PolymerLayout();
         }
       },
 
-      _maxMarkersChanged: function(maxMarkers) {
-        if (!this.snaps) {
+      _updateMarkers: function(maxMarkers, min, max, snaps) {
+        if (!snaps) {
           this._setMarkers([]);
         }
-        var steps = Math.round((this.max - this.min) / this.step);
+        var steps = Math.round((max - min) / this.step);
         if (steps > maxMarkers) {
           steps = maxMarkers;
         }
@@ -21226,7 +21231,12 @@ mwcLayout = new PolymerLayout();
      */
 
     /**
-     * Fired when the slider's immediateValue changes.
+     * Fired when the slider's immediateValue changes. Only occurs while the
+     * user is dragging.
+     *
+     * To detect changes to immediateValue that happen for any input (i.e.                                                          
+     * dragging, tapping, clicking, etc.) listen for immediate-value-changed
+     * instead.
      *
      * @event immediate-value-change
      */
@@ -21258,15 +21268,26 @@ mwcLayout = new PolymerLayout();
        *                                5 pointed star shape (it's 360/5 * 3).
        *                                For a 7 pointed star, we might do
        *                                360/7 * 3 = 154.286)
-       *      CONTAINERWIDTH = 28px
        *      SHRINK_TIME = 400ms
        */
 
       :host {
         display: inline-block;
         position: relative;
-        width: 28px; /* CONTAINERWIDTH */
-        height: 28px; /* CONTAINERWIDTH */
+        width: 28px;
+        height: 28px;
+
+        /* 360 * ARCTIME / (ARCSTARTROT + (360-ARCSIZE)) */
+        --paper-spinner-container-rotation-duration: 1568ms;
+
+        /* ARCTIME */
+        --paper-spinner-expand-contract-duration: 1333ms;
+
+        /* 4 * ARCTIME */
+        --paper-spinner-full-cycle-duration: 5332ms;
+
+        /* SHRINK_TIME */
+        --paper-spinner-cooldown-duration: 400ms;
       }
 
       #spinnerContainer {
@@ -21280,9 +21301,8 @@ mwcLayout = new PolymerLayout();
       }
 
       #spinnerContainer.active {
-        /* duration: 360 * ARCTIME / (ARCSTARTROT + (360-ARCSIZE)) */
-        -webkit-animation: container-rotate 1568ms linear infinite;
-        animation: container-rotate 1568ms linear infinite;
+        -webkit-animation: container-rotate var(--paper-spinner-container-rotation-duration) linear infinite;
+        animation: container-rotate var(--paper-spinner-container-rotation-duration) linear infinite;
       }
 
       @-webkit-keyframes container-rotate {
@@ -21325,161 +21345,129 @@ mwcLayout = new PolymerLayout();
        * guarantee that the animation will start _exactly_ after that value. So we avoid using
        * animation-delay and instead set custom keyframes for each color (as layer-2undant as it
        * seems).
-       *
-       * We write out each animation in full (instead of separating animation-name,
-       * animation-duration, etc.) because under the polyfill, Safari does not recognize those
-       * specific properties properly, treats them as -webkit-animation, and overrides the
-       * other animation rules. See https://github.com/Polymer/platform/issues/53.
        */
       .active .spinner-layer {
-        /* durations: 4 * ARCTIME */
-        -webkit-animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
-        animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+        -webkit-animation-name: fill-unfill-rotate;
+        -webkit-animation-duration: var(--paper-spinner-full-cycle-duration);
+        -webkit-animation-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1);
+        -webkit-animation-iteration-count: infinite;
+        animation-name: fill-unfill-rotate;
+        animation-duration: var(--paper-spinner-full-cycle-duration);
+        animation-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1);
+        animation-iteration-count: infinite;
         opacity: 1;
       }
 
       .active .spinner-layer.layer-1 {
-        /* durations: 4 * ARCTIME */
-        -webkit-animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-1-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
-        animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-1-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+        -webkit-animation-name: fill-unfill-rotate, layer-1-fade-in-out;
+        animation-name: fill-unfill-rotate, layer-1-fade-in-out;
       }
 
       .active .spinner-layer.layer-2 {
-        /* durations: 4 * ARCTIME */
-        -webkit-animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-2-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
-        animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-2-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+        -webkit-animation-name: fill-unfill-rotate, layer-2-fade-in-out;
+        animation-name: fill-unfill-rotate, layer-2-fade-in-out;
       }
 
       .active .spinner-layer.layer-3 {
-        /* durations: 4 * ARCTIME */
-        -webkit-animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-3-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
-        animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-3-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+        -webkit-animation-name: fill-unfill-rotate, layer-3-fade-in-out;
+        animation-name: fill-unfill-rotate, layer-3-fade-in-out;
       }
 
       .active .spinner-layer.layer-4 {
-        /* durations: 4 * ARCTIME */
-        -webkit-animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-4-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
-        animation: fill-unfill-rotate 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both, layer-4-fade-in-out 5332ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+        -webkit-animation-name: fill-unfill-rotate, layer-4-fade-in-out;
+        animation-name: fill-unfill-rotate, layer-4-fade-in-out;
       }
 
       @-webkit-keyframes fill-unfill-rotate {
-        12.5% { -webkit-transform: rotate(135deg);  } /* 0.5 * ARCSIZE */
-        25%   { -webkit-transform: rotate(270deg);  } /* 1   * ARCSIZE */
-        37.5% { -webkit-transform: rotate(405deg);  } /* 1.5 * ARCSIZE */
-        50%   { -webkit-transform: rotate(540deg);  } /* 2   * ARCSIZE */
-        62.5% { -webkit-transform: rotate(675deg);  } /* 2.5 * ARCSIZE */
-        75%   { -webkit-transform: rotate(810deg);  } /* 3   * ARCSIZE */
-        87.5% { -webkit-transform: rotate(945deg);  } /* 3.5 * ARCSIZE */
-        to    { -webkit-transform: rotate(1080deg); } /* 4   * ARCSIZE */
+        12.5% { -webkit-transform: rotate(135deg) } /* 0.5 * ARCSIZE */
+        25%   { -webkit-transform: rotate(270deg) } /* 1   * ARCSIZE */
+        37.5% { -webkit-transform: rotate(405deg) } /* 1.5 * ARCSIZE */
+        50%   { -webkit-transform: rotate(540deg) } /* 2   * ARCSIZE */
+        62.5% { -webkit-transform: rotate(675deg) } /* 2.5 * ARCSIZE */
+        75%   { -webkit-transform: rotate(810deg) } /* 3   * ARCSIZE */
+        87.5% { -webkit-transform: rotate(945deg) } /* 3.5 * ARCSIZE */
+        to    { -webkit-transform: rotate(1080deg) } /* 4   * ARCSIZE */
       }
 
       @keyframes fill-unfill-rotate {
-        12.5% { transform: rotate(135deg);  } /* 0.5 * ARCSIZE */
-        25%   { transform: rotate(270deg);  } /* 1   * ARCSIZE */
-        37.5% { transform: rotate(405deg);  } /* 1.5 * ARCSIZE */
-        50%   { transform: rotate(540deg);  } /* 2   * ARCSIZE */
-        62.5% { transform: rotate(675deg);  } /* 2.5 * ARCSIZE */
-        75%   { transform: rotate(810deg);  } /* 3   * ARCSIZE */
-        87.5% { transform: rotate(945deg);  } /* 3.5 * ARCSIZE */
-        to    { transform: rotate(1080deg); } /* 4   * ARCSIZE */
+        12.5% { transform: rotate(135deg) } /* 0.5 * ARCSIZE */
+        25%   { transform: rotate(270deg) } /* 1   * ARCSIZE */
+        37.5% { transform: rotate(405deg) } /* 1.5 * ARCSIZE */
+        50%   { transform: rotate(540deg) } /* 2   * ARCSIZE */
+        62.5% { transform: rotate(675deg) } /* 2.5 * ARCSIZE */
+        75%   { transform: rotate(810deg) } /* 3   * ARCSIZE */
+        87.5% { transform: rotate(945deg) } /* 3.5 * ARCSIZE */
+        to    { transform: rotate(1080deg) } /* 4   * ARCSIZE */
       }
 
-      /**
-       * HACK: Even though the intention is to have the current .spinner-layer at
-       * `opacity: 1`, we set it to `opacity: 0.99` instead since this forces Chrome
-       * to do proper subpixel rendering for the elements being animated. This is
-       * especially visible in Chrome 39 on Ubuntu 14.04. See:
-       *
-       * - https://github.com/Polymer/paper-spinner/issues/9
-       * - https://code.google.com/p/chromium/issues/detail?id=436255
-       */
       @-webkit-keyframes layer-1-fade-in-out {
-        from { opacity: 0.99; }
-        25% { opacity: 0.99; }
-        26% { opacity: 0; }
-        89% { opacity: 0; }
-        90% { opacity: 0.99; }
-        100% { opacity: 0.99; }
+        0% { opacity: 1 }
+        25% { opacity: 1 }
+        26% { opacity: 0 }
+        89% { opacity: 0 }
+        90% { opacity: 1 }
+        to { opacity: 1 }
       }
 
       @keyframes layer-1-fade-in-out {
-        from { opacity: 0.99; }
-        25% { opacity: 0.99; }
-        26% { opacity: 0; }
-        89% { opacity: 0; }
-        90% { opacity: 0.99; }
-        100% { opacity: 0.99; }
+        0% { opacity: 1 }
+        25% { opacity: 1 }
+        26% { opacity: 0 }
+        89% { opacity: 0 }
+        90% { opacity: 1 }
+        to { opacity: 1 }
       }
 
       @-webkit-keyframes layer-2-fade-in-out {
-        from { opacity: 0; }
-        15% { opacity: 0; }
-        25% { opacity: 0.99; }
-        50% { opacity: 0.99; }
-        51% { opacity: 0; }
+        0% { opacity: 0 }
+        15% { opacity: 0 }
+        25% { opacity: 1 }
+        50% { opacity: 1 }
+        51% { opacity: 0 }
+        to { opacity: 0 }
       }
 
       @keyframes layer-2-fade-in-out {
-        from { opacity: 0; }
-        15% { opacity: 0; }
-        25% { opacity: 0.99; }
-        50% { opacity: 0.99; }
-        51% { opacity: 0; }
+        0% { opacity: 0 }
+        15% { opacity: 0 }
+        25% { opacity: 1 }
+        50% { opacity: 1 }
+        51% { opacity: 0 }
+        to { opacity: 0 }
       }
 
       @-webkit-keyframes layer-3-fade-in-out {
-        from { opacity: 0; }
-        40% { opacity: 0; }
-        50% { opacity: 0.99; }
-        75% { opacity: 0.99; }
-        76% { opacity: 0; }
+        0% { opacity: 0 }
+        40% { opacity: 0 }
+        50% { opacity: 1 }
+        75% { opacity: 1 }
+        76% { opacity: 0 }
+        to { opacity: 0 }
       }
 
       @keyframes layer-3-fade-in-out {
-        from { opacity: 0; }
-        40% { opacity: 0; }
-        50% { opacity: 0.99; }
-        75% { opacity: 0.99; }
-        76% { opacity: 0; }
+        0% { opacity: 0 }
+        40% { opacity: 0 }
+        50% { opacity: 1 }
+        75% { opacity: 1 }
+        76% { opacity: 0 }
+        to { opacity: 0 }
       }
 
       @-webkit-keyframes layer-4-fade-in-out {
-        from { opacity: 0; }
-        65% { opacity: 0; }
-        75% { opacity: 0.99; }
-        90% { opacity: 0.99; }
-        100% { opacity: 0; }
+        0% { opacity: 0 }
+        65% { opacity: 0 }
+        75% { opacity: 1 }
+        90% { opacity: 1 }
+        to { opacity: 0 }
       }
 
       @keyframes layer-4-fade-in-out {
-        from { opacity: 0; }
-        65% { opacity: 0; }
-        75% { opacity: 0.99; }
-        90% { opacity: 0.99; }
-        100% { opacity: 0; }
-      }
-
-      /**
-       * Patch the gap that appear between the two adjacent div.circle-clipper while the
-       * spinner is rotating (appears on Chrome 38, Safari 7.1, and IE 11).
-       *
-       * Update: the gap no longer appears on Chrome when .spinner-layer's opacity is 0.99,
-       * but still does on Safari and IE.
-       */
-      .gap-patch {
-        position: absolute;
-        box-sizing: border-box;
-        top: 0;
-        left: 45%;
-        width: 10%;
-        height: 100%;
-        overflow: hidden;
-        border-color: inherit;
-      }
-
-      .gap-patch .circle {
-        width: 1000%;
-        left: -450%;
+        0% { opacity: 0 }
+        65% { opacity: 0 }
+        75% { opacity: 1 }
+        90% { opacity: 1 }
+        to { opacity: 0 }
       }
 
       .circle-clipper {
@@ -21491,134 +21479,132 @@ mwcLayout = new PolymerLayout();
         border-color: inherit;
       }
 
-      .circle-clipper .circle {
-        width: 200%;
+      /**
+       * Patch the gap that appear between the two adjacent div.circle-clipper while the
+       * spinner is rotating (appears on Chrome 50, Safari 9.1.1, and Edge).
+       */
+      .spinner-layer::after {
+        left: 45%;
+        width: 10%;
+        border-top-style: solid;
       }
 
-      .circle {
+      .spinner-layer::after,
+      .circle-clipper::after {
+        content: '';
         box-sizing: border-box;
-        height: 100%;
-        border-width: var(--paper-spinner-stroke-width, 3px); /* STROKEWIDTH */
-        border-style: solid;
+        position: absolute;
+        top: 0;
+        border-width: var(--paper-spinner-stroke-width, 3px);
         border-color: inherit;
-        border-bottom-color: transparent !important;
         border-radius: 50%;
-        -webkit-animation: none;
-        animation: none;
-
-        @apply(--layout-fit);
       }
 
-      .circle-clipper.left .circle {
+      .circle-clipper::after {
+        bottom: 0;
+        width: 200%;
+        border-style: solid;
+        border-bottom-color: transparent !important;
+      }
+
+      .circle-clipper.left::after {
+        left: 0;
         border-right-color: transparent !important;
         -webkit-transform: rotate(129deg);
         transform: rotate(129deg);
       }
 
-      .circle-clipper.right .circle {
+      .circle-clipper.right::after {
         left: -100%;
         border-left-color: transparent !important;
         -webkit-transform: rotate(-129deg);
         transform: rotate(-129deg);
       }
 
-      .active .circle-clipper.left .circle {
-        /* duration: ARCTIME */
-        -webkit-animation: left-spin 1333ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
-        animation: left-spin 1333ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+      .active .gap-patch::after,
+      .active .circle-clipper::after {
+        -webkit-animation-duration: var(--paper-spinner-expand-contract-duration);
+        -webkit-animation-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1);
+        -webkit-animation-iteration-count: infinite;
+        animation-duration: var(--paper-spinner-expand-contract-duration);
+        animation-timing-function: cubic-bezier(0.4, 0.0, 0.2, 1);
+        animation-iteration-count: infinite;
       }
 
-      .active .circle-clipper.right .circle {
-        /* duration: ARCTIME */
-        -webkit-animation: right-spin 1333ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
-        animation: right-spin 1333ms cubic-bezier(0.4, 0.0, 0.2, 1) infinite both;
+      .active .circle-clipper.left::after {
+        -webkit-animation-name: left-spin;
+        animation-name: left-spin;
+      }
+
+      .active .circle-clipper.right::after {
+        -webkit-animation-name: right-spin;
+        animation-name: right-spin;
       }
 
       @-webkit-keyframes left-spin {
-        from { -webkit-transform: rotate(130deg); }
-        50% { -webkit-transform: rotate(-5deg); }
-        to { -webkit-transform: rotate(130deg); }
+        0% { -webkit-transform: rotate(130deg) }
+        50% { -webkit-transform: rotate(-5deg) }
+        to { -webkit-transform: rotate(130deg) }
       }
 
       @keyframes left-spin {
-        from { transform: rotate(130deg); }
-        50% { transform: rotate(-5deg); }
-        to { transform: rotate(130deg); }
+        0% { transform: rotate(130deg) }
+        50% { transform: rotate(-5deg) }
+        to { transform: rotate(130deg) }
       }
 
       @-webkit-keyframes right-spin {
-        from { -webkit-transform: rotate(-130deg); }
-        50% { -webkit-transform: rotate(5deg); }
-        to { -webkit-transform: rotate(-130deg); }
+        0% { -webkit-transform: rotate(-130deg) }
+        50% { -webkit-transform: rotate(5deg) }
+        to { -webkit-transform: rotate(-130deg) }
       }
 
       @keyframes right-spin {
-        from { transform: rotate(-130deg); }
-        50% { transform: rotate(5deg); }
-        to { transform: rotate(-130deg); }
+        0% { transform: rotate(-130deg) }
+        50% { transform: rotate(5deg) }
+        to { transform: rotate(-130deg) }
       }
 
       #spinnerContainer.cooldown {
-        /* duration: SHRINK_TIME */
-        -webkit-animation: container-rotate 1568ms linear infinite, fade-out 400ms cubic-bezier(0.4, 0.0, 0.2, 1);
-        animation: container-rotate 1568ms linear infinite, fade-out 400ms cubic-bezier(0.4, 0.0, 0.2, 1);
+        -webkit-animation: container-rotate var(--paper-spinner-container-rotation-duration) linear infinite, fade-out var(--paper-spinner-cooldown-duration) cubic-bezier(0.4, 0.0, 0.2, 1);
+        animation: container-rotate var(--paper-spinner-container-rotation-duration) linear infinite, fade-out var(--paper-spinner-cooldown-duration) cubic-bezier(0.4, 0.0, 0.2, 1);
       }
 
       @-webkit-keyframes fade-out {
-        from { opacity: 0.99; }
-        to { opacity: 0; }
+        0% { opacity: 1 }
+        to { opacity: 0 }
       }
 
       @keyframes fade-out {
-        from { opacity: 0.99; }
-        to { opacity: 0; }
+        0% { opacity: 1 }
+        to { opacity: 0 }
       }
     </style>
   </template>
 </dom-module>
 <dom-module id="paper-spinner" assetpath="bower_components/paper-spinner/">
-  <template>
+  <template strip-whitespace="">
     <style include="paper-spinner-styles"></style>
 
     <div id="spinnerContainer" class-name="[[__computeContainerClasses(active, __coolingDown)]]">
       <div class="spinner-layer layer-1">
-        <div class="circle-clipper left">
-          <div class="circle"></div>
-        </div><div class="gap-patch">
-          <div class="circle"></div>
-        </div><div class="circle-clipper right">
-          <div class="circle"></div>
-        </div>
+        <div class="circle-clipper left"></div>
+        <div class="circle-clipper right"></div>
       </div>
 
       <div class="spinner-layer layer-2">
-        <div class="circle-clipper left">
-          <div class="circle"></div>
-        </div><div class="gap-patch">
-          <div class="circle"></div>
-        </div><div class="circle-clipper right">
-          <div class="circle"></div>
-        </div>
+        <div class="circle-clipper left"></div>
+        <div class="circle-clipper right"></div>
       </div>
 
       <div class="spinner-layer layer-3">
-        <div class="circle-clipper left">
-          <div class="circle"></div>
-        </div><div class="gap-patch">
-          <div class="circle"></div>
-        </div><div class="circle-clipper right">
-          <div class="circle"></div>
-        </div>
+        <div class="circle-clipper left"></div>
+        <div class="circle-clipper right"></div>
       </div>
 
       <div class="spinner-layer layer-4">
-        <div class="circle-clipper left">
-          <div class="circle"></div>
-        </div><div class="gap-patch">
-          <div class="circle"></div>
-        </div><div class="circle-clipper right">
-          <div class="circle"></div>
-        </div>
+        <div class="circle-clipper left"></div>
+        <div class="circle-clipper right"></div>
       </div>
     </div>
   </template>
@@ -22661,10 +22647,10 @@ mwcLayout = new PolymerLayout();
 
       if ((parseInt(A) - parseInt(this._time)) < 1000) {
         this.$.exit_prompt.open();
-      } {
-        if (Meteor.isCordova) {
-          navigator.app.backHistory();
-        }
+      } else {
+        // if (Meteor.isCordova) {
+        //   navigator.app.backHistory();
+        // }
       }
 
       this._time = A;

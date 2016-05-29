@@ -26,6 +26,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       .vertical-section-container {
         max-width: 500px;
       }
+
+      label {
+        align-self: center;
+      }
     </style>
   </head>
 
@@ -34,7 +38,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <h3>A paper-radio-group allows only one item to be selected</h3>
       <demo-snippet class="centered-demo">
         <template>
-          <paper-radio-group>
+          <label id="label1">Dinosaurs:</label>
+          <paper-radio-group aria-labelledby="label1">
             <paper-radio-button name="a">allosaurus</paper-radio-button>
             <paper-radio-button name="b">brontosaurus</paper-radio-button>
             <paper-radio-button name="d" disabled>diplodocus</paper-radio-button>
@@ -45,7 +50,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <h3>It can have an initial selection</h3>
       <demo-snippet class="centered-demo">
         <template>
-          <paper-radio-group selected="b">
+          <label id="label2">Dinosaurs:</label>
+          <paper-radio-group selected="b" aria-labelledby="label2">
             <paper-radio-button name="a">allosaurus</paper-radio-button>
             <paper-radio-button name="b">brontosaurus</paper-radio-button>
             <paper-radio-button name="d" disabled>diplodocus</paper-radio-button>
@@ -56,7 +62,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       <h3>It can optionally allow items to be deselected</h3>
       <demo-snippet class="centered-demo">
         <template>
-          <paper-radio-group selected="b" allow-empty-selection>
+          <label id="label3">Dinosaurs:</label>
+          <paper-radio-group selected="b" allow-empty-selection aria-labelledby="label3">
             <paper-radio-button name="a">allosaurus</paper-radio-button>
             <paper-radio-button name="b">brontosaurus</paper-radio-button>
             <paper-radio-button name="d" disabled>diplodocus</paper-radio-button>
