@@ -1,0 +1,118 @@
+<dom-module id="polymer-toast">
+  <style>
+  paper-toast {
+    z-index: 1000;
+  }
+  
+  paper-toast > div {
+    color: var(--paper-yellow-500);
+    margin-left: 24px;
+  }
+  </style>
+
+  <template>
+    <paper-toast class$="center cursor-d [[cordova_class]] horizontal justified layout" duration="4000" id="paper_toast" no-cancel-on-outside-click="[[button]]" on-transitionend="_on_transition">
+      <div class="cursor-p self-start" hidden="[[!button]]" on-tap="_button">[[button]]</div>
+    </paper-toast>
+  </template>
+
+  <script>
+  Polymer({
+
+    _button: function() {
+      switch (this.button) {
+        case 'EXIT':
+          if (Meteor.isCordova) {
+            navigator.app.exitApp();
+          }
+          break;
+
+        case 'UNDO':
+          if (this.store.project) {
+            Meteor.call('restore_project', this.store.project, function(e, r) {
+              // document.querySelector("#polymer_toast").toast(e ? e.message : r);
+            });
+          }
+
+          if (this.store.torrent) {
+            Meteor.call('restore_torrent', this.store.torrent, function(e, r) {
+              // document.querySelector("#polymer_toast").toast(e ? e.message : r);
+            });
+          }
+          break;
+
+          // default:
+          //   break;
+      }
+
+      this.button = '';
+      this.store = {};
+
+      this.$.paper_toast.hide();
+    },
+
+    _on_transition: function() {
+      if (!this.$.paper_toast.opened) {
+        // switch (this.button) {
+        //   if (Meteor.status().connected) {}
+        // }
+
+        this.button = '';
+        this.store = {};
+      }
+    },
+
+    attached: function() {
+      var _this = this;
+
+      Tracker.autorun(function() {
+        if (Meteor.status().connected) {
+          if (_this.$.paper_toast.text != "server connected") {
+            _this.toast("server connected");
+          }
+        } else {
+          if (_this.$.paper_toast.text != "lost server connection") {
+            _this.toast("lost server connection");
+          }
+        }
+      });
+    },
+
+    is: "polymer-toast",
+
+    properties: {
+      button: {
+        type: String,
+        value: '',
+      },
+      cordova_class: {
+        typr: String,
+        value: function() {
+          return (Meteor.isCordova ? "fit-bottom" : "");
+        },
+      },
+      store: {
+        type: Object,
+        value: function() {
+          return {};
+        },
+      },
+    },
+
+    toast: function(text, button, store) {
+      this.$.paper_toast.hide();
+
+      this.async(function() {
+        this.$.paper_toast.text = text;
+
+        this.button = (button ? button : '');
+        this.store = (store ? store : {});
+
+        this.$.paper_toast.show();
+      }, 400);
+    },
+
+  });
+  </script>
+
+</dom-module>

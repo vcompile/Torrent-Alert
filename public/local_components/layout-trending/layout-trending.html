@@ -1,0 +1,159 @@
+<dom-module id="layout-trending">
+  <style>
+  paper-icon-item {
+    border-bottom: 1px solid #EEE;
+    border-top: 1px solid #EEE;
+  }
+  
+  paper-icon-item paper-item-body {
+    padding: 8px 0;
+  }
+  
+  .footer {
+    min-height: 88px;
+  }
+  
+  .subhead {
+    @apply(--paper-font-subhead);
+  }
+  
+  .title,
+  .title > div {
+    padding: 8px;
+  }
+  
+  .white-space-normal {
+    white-space: normal;
+  }
+  </style>
+
+  <template>
+    <iron-localstorage name="trending" on-iron-localstorage-load-empty="_on_load_empty_trending" value="{{torrent}}"></iron-localstorage>
+
+    <template is="dom-repeat" items="[[project]]">
+      <div class="center-justified horizontal layout">
+        <div class="li">
+          <div class="center horizontal layout title">
+            <div class="cursor-d etc flex subhead">[[item.title]]</div>
+
+            <paper-icon-button icon="launch" on-tap="_torrent_list"></paper-icon-button>
+          </div>
+        </div>
+      </div>
+
+      <template filter="[[filter(item._id)]]" is="dom-repeat" items="[[torrent]]" sort="sort">
+        <div class="center-justified horizontal layout">
+          <div class="li">
+            <paper-icon-item class="cursor-p white" on-tap="_torrent_item">
+              <selectable-icon icon_class="[[return_icon_class(item.category)]]" icon_text="[[return_icon_count(item.count)]]" item-icon></selectable-icon>
+
+              <paper-item-body two-line>
+                <div secondary>[[item.category]]</div>
+                <div class="white-space-normal">[[item.title]]</div>
+                <div class="horizontal justified layout" secondary>
+                  <div>[[item.size]] | [[item.leech]]L / [[item.seed]]S</div>
+                  <div>[[return_time(item.insert_time)]]</div>
+                </div>
+              </paper-item-body>
+            </paper-icon-item>
+          </div>
+        </div>
+      </template>
+    </template>
+
+    <div class="footer"></div>
+  </template>
+</dom-module>
+
+<script>
+(function() {
+  Polymer({
+
+    _on_load_empty_trending: function() {
+      this.trending = [];
+    },
+
+    _torrent_item: function(e) {
+      FlowRouter.go("/torrent", {}, {
+        torrent: e.model.__data__.item._id,
+        route: 'torrent-item',
+        previous: Base64.encode(ascii_array(FlowRouter.current().path)),
+      });
+    },
+
+    _torrent_list: function(e) {
+      FlowRouter.go("/torrent", {}, {
+        previous: Base64.encode(ascii_array(FlowRouter.current().path)),
+        project: e.model.__data__.item._id,
+        route: null,
+      });
+    },
+
+    attached: function() {
+      var _this = this;
+
+      this.project.forEach(function(project) {
+        Meteor.subscribe('torrent', {
+          limit: 10,
+          project: [project._id],
+        });
+      });
+
+      Tracker.autorun(function() {
+        if (Meteor.status().connected) {
+          _this.torrent = _torrent.find({
+            project: {
+              $in: _this.project.map(function(item) {
+                return item._id;
+              }),
+            },
+          }).fetch();
+        }
+      });
+    },
+
+    filter: function(project) {
+      return function(torrent) {
+        return (-1 < torrent.project.indexOf(project));
+      };
+    },
+
+    is: "layout-trending",
+
+    properties: {
+      project: {
+        type: Array,
+        value: function() {
+          return [{
+            _id: 'trending',
+            title: "Trending this week",
+          }, {
+            _id: 'latest_softwares',
+            title: "Latest softwares",
+          }, {
+            _id: 'latest_movies',
+            title: "Latest movies",
+          }];
+        },
+      },
+    },
+
+    return_icon_class: function(text) {
+      return polymer_color(text ? text : '#');
+    },
+
+    return_icon_count: function(count) {
+      return (count ? count : '#');
+    },
+
+    return_time: function(time) {
+      return (moment(time).isValid() ? moment(time).format('MMM DD ddd') : '#');
+    },
+
+    sort: function(A, Z) {
+      return (+moment(Z.insert_time).format('X') - +moment(A.insert_time).format('X'));
+    },
+
+  });
+})();
+</script>

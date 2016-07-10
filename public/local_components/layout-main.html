@@ -1,0 +1,28 @@
+<dom-module id="layout-main">
+  <template>
+    <neon-animated-pages attr-for-selected="data-page" class="fit" selected="[[selected]]">
+      <layout-account data-page="layout-account" id="layout_account"></layout-account>
+      <layout-inbox data-page="layout-inbox" id="layout_inbox"></layout-inbox>
+      <layout-search data-page="layout-search" id="layout_search"></layout-search>
+      <layout-torrent data-page="layout-torrent" id="layout_torrent"></layout-torrent>
+      <project-filter data-page="project-filter" id="project_filter"></project-filter>
+    </neon-animated-pages>
+  </template>
+</dom-module>
+
+<script>
+(function() {
+  Polymer({
+
+    is: "layout-main",
+
+    properties: {
+      selected: {
+        type: String,
+        value: "layout-account",
+      },
+    },
+
+  });
+})();
+</script>

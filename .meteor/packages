@@ -1,0 +1,28 @@
+accounts-google
+accounts-password
+base64
+blaze-html-templates    # Compile .html files into Meteor Blaze views
+check
+ddp-rate-limiter
+ecmascript              # Enable ECMAScript2015+ syntax in app code
+email
+es5-shim                # ECMAScript 5 compatibility for older browsers.
+force-ssl
+http
+jquery                  # Helpful client-side library
+meteor-base             # Packages every Meteor app needs to have
+mobile-experience       # Packages for a great mobile UX
+mongo                   # The database Meteor supports right now
+random
+session                 # Client-side reactive dictionary for your app
+standard-minifiers      # JS/CSS minifiers run for production mode
+tracker                 # Meteor's client-side reactive programming library
+underscore
+
+kadira:flow-router
+meteorhacks:npm
+meteorhacks:picker
+momentjs:moment
+raix:push
+
+npm-container

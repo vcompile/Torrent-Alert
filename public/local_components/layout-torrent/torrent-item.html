@@ -1,0 +1,246 @@
+<dom-module id="torrent-item">
+  <style>
+  paper-icon-item.title {
+    --paper-item-focused-before: {
+      display: none; // TRICK: prevent title focused
+    }
+  }
+  
+  paper-icon-item.title paper-icon-button {
+    border-radius: 50%;
+  }
+  
+  paper-icon-item.title paper-item-body {
+    padding: 8px 0;
+  }
+  
+  paper-toggle-button {
+    --paper-toggle-button-checked-bar-color: var(--paper-green-500);
+    --paper-toggle-button-checked-button-color: var(--paper-green-500);
+    --paper-toggle-button-checked-ink-color: var(--paper-green-500);
+  }
+  
+  paper-toolbar {
+    --paper-toolbar-background: var(--paper-teal-500);
+    --paper-toolbar-color: white;
+  }
+  
+  span {
+    margin: 2px 8px;
+    padding: 2px 8px;
+  }
+  
+  .body1 {
+    @apply(--paper-font-body1);
+  }
+  
+  .footer {
+    min-height: 88px;
+  }
+  
+  .proxy,
+  .proxy > paper-toggle-button {
+    padding: 8px;
+  }
+  
+  .spinner,
+  .spinner > div {
+    padding: 8px;
+  }
+  
+  .subhead {
+    @apply(--paper-font-subhead);
+  }
+  
+  .white-space-normal {
+    white-space: normal;
+  }
+  </style>
+
+  <template>
+    <iron-localstorage name="proxy" on-iron-localstorage-load-empty="_on_load_empty_proxy" value="{{proxy}}"></iron-localstorage>
+
+    <paper-header-panel mode="seamed">
+      <paper-toolbar>
+        <paper-icon-button icon="arrow-back" on-tap="_back"></paper-icon-button>
+
+        <div class="title"></div>
+
+        <paper-icon-button icon="delete" on-tap="_delete"></paper-icon-button>
+        <paper-icon-button icon="social:share" on-tap="_share"></paper-icon-button>
+      </paper-toolbar>
+
+      <div class="center-justified horizontal layout">
+        <div class="li">
+          <paper-icon-item class="cursor-p title">
+            <paper-icon-button class="white" icon="file-download" item-icon on-tap="_download"></paper-icon-button>
+
+            <paper-item-body two-line>
+              <div secondary>[[torrent.size]] | [[torrent.leech]]L / [[torrent.seed]]S</div>
+              <div class="white-space-normal">[[torrent.title]]<span class$="[[return_color_class(torrent.category)]] body1">[[torrent.category]]</span></div>
+            </paper-item-body>
+          </paper-icon-item>
+        </div>
+      </div>
+
+      <template filter="[[filter(torrent._id)]]" is="dom-repeat" items="[[url]]" sort="sort">
+        <div class="center-justified horizontal layout">
+          <div class="li">
+            <paper-icon-item class="cursor-p white" on-tap="_url">
+              <selectable-icon icon_class="[[return_icon_class(item.url)]]" icon_text="[[return_icon_text(item.url)]]" item-icon></selectable-icon>
+
+              <paper-item-body two-line>
+                <div>[[return_host(item.url)]]</div>
+                <div secondary>[[return_time(item.insert_time)]]</div>
+              </paper-item-body>
+
+              <div class="subhead">[[item.count]]</div>
+            </paper-icon-item>
+          </div>
+        </div>
+      </template>
+
+      <div class="center-justified horizontal layout" hidden="[[url.length]]" id="torrent_progress">
+        <div class="li">
+          <div class="center-justified horizontal layout spinner">
+            <div>
+              <paper-spinner active></paper-spinner>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="center-justified horizontal layout">
+        <div class="li">
+          <paper-item class="proxy">
+            <paper-toggle-button checked="{{proxy}}" class="flex">Allow Proxy</paper-toggle-button>
+          </paper-item>
+        </div>
+      </div>
+
+      <div class="footer"></div>
+    </paper-header-panel>
+  </template>
+</dom-module>
+
+<script>
+(function() {
+  Polymer({
+
+    _back: function() {
+      if (FlowRouter.getQueryParam('previous')) {
+        FlowRouter.go(array_ascii(Base64.decode(FlowRouter.getQueryParam('previous'))));
+      }
+    },
+
+    _delete: function() {
+      var _this = this;
+
+      Meteor.call('remove_torrent', [_this.torrent._id], function(e, r) {
+        if (e) {
+          document.querySelector("#polymer_toast").toast(e.message);
+        } else {
+          document.querySelector("#polymer_toast").toast(r, 'UNDO', {
+            torrent: [_this.torrent._id],
+          });
+
+          _this._back();
+        }
+      });
+    },
+
+    _download: function() {
+      document.querySelector("#polymer_toast").toast('notImplemented');
+    },
+
+    _on_load_empty_proxy: function() {
+      this.proxy = false;
+    },
+
+    _share: function() {
+      var share = "\n\n" + this.torrent.category + "\t\t" + this.torrent.size + "\t\t" + this.torrent.title + "\t\t" + Meteor.absoluteUrl('torrent?previous=Lw%3D%3D&route=torrent-item&torrent=' + this.torrent._id) + "\n\n";
+
+      if (Meteor.isCordova) {
+        window.plugins.socialsharing.share(share);
+      } else {
+        window.open('mailto:?subject=' + encodeURIComponent('Torrent Alert') + '&body=' + encodeURIComponent(share), "_system");
+      }
+    },
+
+    _url: function(e) {
+      if (this.proxy) {
+        window.open(Meteor.absoluteUrl('redirect?url=' + encodeURIComponent(e.model.__data__.item.url)), '_system');
+      } else {
+        window.open(e.model.__data__.item.url, '_system');
+      }
+    },
+
+    attached: function() {
+      var _this = this;
+
+      Tracker.autorun(function() {
+        if (FlowRouter.getQueryParam('torrent')) {
+          Meteor.subscribe('torrent', {
+            torrent: [FlowRouter.getQueryParam('torrent')],
+          });
+        }
+      });
+
+      Tracker.autorun(function() {
+        if (FlowRouter.getQueryParam('torrent')) {
+          Meteor.subscribe('url', [FlowRouter.getQueryParam('torrent')]);
+        }
+      });
+
+      Tracker.autorun(function() {
+        if (Meteor.status().connected) {
+          _this.torrent = _torrent.findOne({
+            _id: FlowRouter.getQueryParam('torrent'),
+          });
+        }
+      });
+
+      Tracker.autorun(function() {
+        if (Meteor.status().connected) {
+          _this.url = _url.find({
+            torrent: FlowRouter.getQueryParam('torrent'),
+          }).fetch();
+        }
+      });
+    },
+
+    filter: function(torrent) {
+      return function(url) {
+        return (-1 < url.torrent.indexOf(torrent));
+      };
+    },
+
+    is: "torrent-item",
+
+    return_color_class: function(text) {
+      return polymer_color(text ? text : '#');
+    },
+
+    return_icon_class: function(url) {
+      return polymer_color(url ? url.match(/:\/\/(www\.)?([^:^/]*)/)[2] : '#');
+    },
+
+    return_icon_text: function(url) {
+      return (url ? url.match(/:\/\/(www\.)?([^:^/]*)/)[2][0] : '#');
+    },
+
+    return_host: function(url) {
+      return url.match(/:\/\/(www\.)?([^:^/]*)/)[2];
+    },
+
+    return_time: function(time) {
+      return (moment(time).isValid() ? moment(time).format('MMM DD ddd hh:mm A') : '#');
+    },
+
+    sort: function(A, Z) {
+      return (+moment(Z.insert_time).format('X') - +moment(A.insert_time).format('X'));
+    },
+
+  });
+})();
+</script>

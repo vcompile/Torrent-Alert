@@ -1,0 +1,80 @@
+<dom-module id="layout-subscription">
+  <style>
+  .body1 {
+    @apply(--paper-font-body1);
+  }
+  
+  .color {
+    color: #757575;
+  }
+  
+  .footer {
+    min-height: 88px;
+  }
+  
+  .li .title {
+    padding: 8px;
+  }
+  </style>
+
+  <template>
+    <iron-localstorage name="subscription" on-iron-localstorage-load-empty="_on_load_empty_subscription" value="{{project}}"></iron-localstorage>
+
+    <div class="center-justified horizontal layout">
+      <div class="li">
+        <div class="horizontal layout title">
+          <div class="body1 color cursor-d flex"><span hidden="[[project.length]]">noItemFound</span><span hidden="[[!project.length]]">[[project.length]] item</span></div>
+        </div>
+      </div>
+    </div>
+
+    <iron-selector attr-for-selected="data-id" multi selected-attribute="selected" selected-values="{{selected}}">
+      <template is="dom-repeat" items="[[project]]">
+        <subscription-list-item class$="[[item._id]]" data-id$="[[item._id]]" item="[[item]]"></subscription-list-item>
+      </template>
+    </iron-selector>
+
+    <div class="footer"></div>
+  </template>
+</dom-module>
+
+<script>
+(function() {
+  Polymer({
+
+    _on_load_empty_subscription: function() {
+      this.project = [];
+    },
+
+    attached: function() {
+      var _this = this;
+
+      Tracker.autorun(function() {
+        Meteor.subscribe('project');
+      });
+
+      Tracker.autorun(function() {
+        if (Meteor.status().connected) {
+          if (Meteor.userId()) {
+            _this.project = _project.find({
+              user: Meteor.userId(),
+            }).fetch();
+          }
+        }
+      });
+    },
+
+    is: "layout-subscription",
+
+    properties: {
+      project: {
+        type: Array,
+        value: function() {
+          return [];
+        },
+      },
+    },
+
+  });
+})();
+</script>

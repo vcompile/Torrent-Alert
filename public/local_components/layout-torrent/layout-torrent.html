@@ -1,0 +1,25 @@
+<dom-module id="layout-torrent">
+  <template>
+    <neon-animated-pages attr-for-selected="data-page" class="fit" selected="[[selected]]">
+      <torrent-list data-page="torrent-list" id="torrent_list"></torrent-list>
+      <torrent-item data-page="torrent-item" id="torrent_item"></torrent-item>
+    </neon-animated-pages>
+  </template>
+</dom-module>
+
+<script>
+(function() {
+  Polymer({
+
+    is: "layout-torrent",
+
+    properties: {
+      selected: {
+        type: String,
+        value: "torrent-list",
+      },
+    },
+
+  });
+})();
+</script>
