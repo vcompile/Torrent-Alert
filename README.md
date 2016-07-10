@@ -1,7 +1,7 @@
 MeteorJS Polymer Project
 ----------
 
-* [Mobile Browser Version](https://t-alert.herokuapp.com)
+* [Mobile Browser Version](https://ww8.herokuapp.com)
 
 Install Guide
 ----------
