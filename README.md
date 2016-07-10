@@ -1,7 +1,7 @@
 MeteorJS Polymer Project
+----------
 
-* [Mobile Browser Version](http://do.vcompile.com:16000)
-* [New Development Version](https://t-alert.herokuapp.com)
+* [Mobile Browser Version](https://t-alert.herokuapp.com)
 
 Install Guide
 ----------

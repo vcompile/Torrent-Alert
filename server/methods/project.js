@@ -1,161 +1,202 @@
 Meteor.methods({
 
-  insert_project: function(input) {
+  refresh_project: function(input) {
     this.unblock();
 
     var user = Meteor.user();
-    if (!user) throw new Meteor.Error(422, "userNotFound");
+    if (!user) throw new Meteor.Error(400, "userNotFound");
 
-    check(input, {
-      keyword: String,
-      leech: Match.Integer,
-      seed: Match.Integer,
-      url: String,
-      within: Match.Integer,
-      worker: String
+    check(input, String);
+
+    var project = _project.findOne({
+      _id: input
+    }, {
+      fields: {
+        worker: 1,
+      },
     });
 
-    var A = true;
+    _worker.upsert({
+      input: project._id,
+      status: '',
+      type: project.worker,
+    }, {
+      $set: {
+        input: project._id,
+        insert_time: moment().toDate(),
+        status: '',
+        type: project.worker,
+      },
+    });
 
-    if (input.worker == "schedule") {
-      A = ((_project.find({
-        user: user._id,
-        worker: input.worker
-      }).count() < 4) ? true : false);
-    }
-
-    if (A) {
-      var row = _project.findOne(input);
-
-      if (row) {
-        var update_count = _project.update(input, {
-          $addToSet: {
-            user: user._id
-          },
-          $set: {
-            time: moment().format()
-          }
-        }, {
-          multi: true
-        });
-
-        if (input.worker == "search" && update_count && !_worker.findOne({
-            project: row._id,
-            status: "",
-            type: input.worker
-          })) {
-          _worker.insert({
-            project: row._id,
-            status: "",
-            time_insert: moment().format(),
-            type: input.worker,
-            user: row.user
-          });
-        }
-
-        return row._id;
-      } else {
-        input.time = moment().format();
-        input.torrent = [];
-        input.user = [user._id];
-
-        input._id = _project.insert(input);
-
-        if (!_worker.findOne({
-            project: input._id,
-            status: "",
-            type: input.worker
-          })) {
-          _worker.insert({
-            project: input._id,
-            status: "",
-            time_insert: moment().format(),
-            type: input.worker,
-            user: input.user
-          });
-        }
-
-        return input._id;
-      }
-    } else return "";
+    return 'refreshing';
   },
 
-  remove_project: function(id) {
+  remove_project: function(input) {
     this.unblock();
 
     var user = Meteor.user();
-    if (!user) throw new Meteor.Error(422, "userNotFound");
+    if (!user) throw new Meteor.Error(400, "userNotFound");
 
-    check(id, String);
+    check(input, [String]);
 
-    var row = _project.findOne({
-      _id: id,
-      user: user._id
+    var A = _project.update({
+      _id: {
+        $in: input,
+      },
+    }, {
+      $pull: {
+        user: user._id,
+      },
+    }, {
+      multi: true,
     });
 
-    if (row) {
-      _project.update({
-        _id: row._id
+    return (A ? A + ' item ' : '') + 'removed';
+  },
+
+  restore_project: function(input) {
+    this.unblock();
+
+    var user = Meteor.user();
+    if (!user) throw new Meteor.Error(400, "userNotFound");
+
+    check(input, [String]);
+
+    var A = _project.update({
+      _id: {
+        $in: input,
+      },
+    }, {
+      $addToSet: {
+        user: user._id,
+      },
+    }, {
+      multi: true,
+    });
+
+    return (A ? A + ' item ' : '') + 'restored';
+  },
+
+  schedule_project: function(input) {
+    this.unblock();
+
+    var user = Meteor.user();
+    if (!user) throw new Meteor.Error(400, "userNotFound");
+
+    check(input, String);
+
+    var project = _project.findOne({
+      _id: input
+    }, {
+      fields: {
+        query: 1,
+      },
+    });
+
+    if (project) {
+      var exists = _project.findOne({
+        query: project.query,
+        worker: 'schedule',
       }, {
-        $pull: {
-          user: user._id
-        }
+        fields: {
+          _id: 1,
+        },
       });
 
-      return "1 keyword removed";
-    } else return "notFound";
-  },
-
-  schedule_project: function(id) {
-    this.unblock();
-
-    var user = Meteor.user();
-    if (!user) throw new Meteor.Error(422, "userNotFound");
-
-    check(id, String);
-
-    var exists = _project.findOne({
-      _id: id,
-      user: user._id
-    });
-
-    if (exists) {
-      if (_project.find({
-          user: user._id,
-          worker: "schedule"
-        }).count() < 4) {
-        var schedule_exists = _project.findOne({
-          keyword: exists.keyword,
-          leech: exists.leech,
-          seed: exists.seed,
-          url: exists.url,
-          user: user._id,
-          within: exists.within,
-          worker: "schedule"
+      if (exists) {
+        var A = _project.update({
+          _id: exists._id,
+        }, {
+          $addToSet: {
+            user: user._id,
+          },
         });
 
-        if (schedule_exists) {
-          _project.update({
-            _id: schedule_exists._id,
-          }, {
-            $addToSet: {
-              user: user._id
-            },
-          });
-        } else {
-          _project.update({
-            _id: id,
-            user: user._id
-          }, {
-            $set: {
-              worker: "schedule"
-            }
-          });
-        }
+        return {
+          text: (A ? A + ' item ' : '') + 'scheduled',
+          project: exists._id,
+        };
+      } else {
+        var A = _project.update({
+          _id: project._id,
+        }, {
+          $addToSet: {
+            user: user._id,
+          },
+          $set: {
+            worker: 'schedule',
+          },
+        });
 
-        return "1 item added to scheduler";
-      } else return "quota limit reached";
-    } else return "notFound";
-  }
+        return {
+          text: (A ? A + ' item ' : '') + 'scheduled',
+        };
+      }
+    } else {
+      return {
+        text: 'itemNotFound',
+      };
+    }
+  },
+
+  search_project: function(input) {
+    this.unblock();
+
+    // var user = Meteor.user();
+    // if (!user) throw new Meteor.Error(400, "userNotFound");
+
+    check(input, Match.Where(function(A) {
+      return A.match(/\?f=(.+) added/);
+    }));
+
+    var project = _project.findOne({
+      query: input,
+      worker: 'search',
+    }, {
+      fields: {
+        _id: 1,
+      },
+    });
+
+    if (project) {
+      _worker.upsert({
+        input: project._id,
+        status: '',
+        type: 'search',
+      }, {
+        $set: {
+          input: project._id,
+          insert_time: moment().toDate(),
+          status: '',
+          type: 'search',
+        },
+      });
+
+      return project._id;
+    } else {
+      var project_id = _project.insert({
+        index: _project.find({}, { fields: { _id: 1 } }).count() + 1,
+        query: input,
+        title: input.match(/\?f=(.+) added/)[1],
+        worker: 'search',
+      });
+
+      _worker.upsert({
+        input: project_id,
+        status: '',
+        type: 'search',
+      }, {
+        $set: {
+          input: project_id,
+          insert_time: moment().toDate(),
+          status: '',
+          type: 'search',
+        },
+      });
+
+      return project_id;
+    }
+  },
 
 });

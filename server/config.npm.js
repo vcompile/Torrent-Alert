@@ -1,1 +1,0 @@
-fibers = Npm.require("fibers");

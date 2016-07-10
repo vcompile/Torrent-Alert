@@ -1,0 +1,249 @@
+<dom-module id="torrent-list">
+  <style>
+  paper-toolbar {
+    --paper-toolbar-background: var(--paper-teal-500);
+    --paper-toolbar-color: white;
+  }
+  
+  .body1 {
+    @apply(--paper-font-body1);
+  }
+  
+  .color {
+    color: #757575;
+  }
+  
+  .divider {
+    padding: 8px;
+  }
+  
+  .footer {
+    min-height: 88px;
+  }
+  
+  .li .title {
+    padding: 8px;
+  }
+  
+  .spinner,
+  .spinner > div {
+    padding: 8px;
+  }
+  </style>
+
+  <template>
+    <paper-scroll-header-panel class="fit" fixed>
+      <paper-toolbar>
+        <paper-icon-button icon="arrow-back" on-tap="_back"></paper-icon-button>
+
+        <div class="title"><span hidden="[[selected.length]]">[[project.title]]</span><span hidden="[[!selected.length]]">[[selected.length]]</span></div>
+
+        <paper-icon-button hidden="[[hidden_A(project, selected.length)]]" icon="add-alert" on-tap="_add"></paper-icon-button>
+        <paper-icon-button hidden="[[hidden_Z(project, selected.length)]]" icon="filter-list" on-tap="_filter"></paper-icon-button>
+        <paper-icon-button hidden="[[selected.length]]" icon="refresh" on-tap="_refresh"></paper-icon-button>
+
+        <paper-icon-button hidden="[[!selected.length]]" icon="delete" on-tap="_delete"></paper-icon-button>
+        <paper-icon-button hidden="[[!selected.length]]" icon="social:share" on-tap="_share"></paper-icon-button>
+      </paper-toolbar>
+
+      <div class="center-justified horizontal layout">
+        <div class="li">
+          <div class="horizontal layout title">
+            <div class="body1 color cursor-d flex"><span hidden="[[torrent.length]]">indexing</span><span hidden="[[!torrent.length]]">[[torrent.length]] item</span></div>
+          </div>
+        </div>
+      </div>
+
+      <iron-selector attr-for-selected="data-id" multi selected-attribute="selected" selected-values="{{selected}}">
+        <template is="dom-repeat" items="[[torrent]]">
+          <torrent-list-item class$="[[item._id]]" data-id$="[[item._id]]" item="[[item]]"></torrent-list-item>
+        </template>
+      </iron-selector>
+
+      <div class="center-justified horizontal layout" hidden="[[torrent.length]]" id="torrent_progress">
+        <div class="li">
+          <div class="center-justified horizontal layout spinner">
+            <div>
+              <paper-spinner active></paper-spinner>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer"></div>
+    </paper-scroll-header-panel>
+  </template>
+</dom-module>
+
+<script>
+(function() {
+  Polymer({
+
+    _add: function() {
+      Meteor.call('schedule_project', FlowRouter.getQueryParam('project'), function(e, r) {
+        document.querySelector("#polymer_toast").toast(e ? e.message : r.text);
+
+        if (!e && r.project) {
+          FlowRouter.go("/torrent", {}, {
+            previous: Base64.encode(ascii_array(FlowRouter.current().path)),
+            project: r.project,
+            route: null,
+          });
+        }
+      });
+    },
+
+    _back: function() {
+      if (this.selected.length) {
+        this.selected = [];
+      } else {
+        if (FlowRouter.getQueryParam('previous')) {
+          FlowRouter.go(array_ascii(Base64.decode(FlowRouter.getQueryParam('previous'))));
+        }
+      }
+    },
+
+    _delete: function() {
+      var _this = this;
+
+      Meteor.call('remove_torrent', _this.selected, function(e, r) {
+        if (e) {
+          document.querySelector("#polymer_toast").toast(e.message);
+        } else {
+          document.querySelector("#polymer_toast").toast(r, 'UNDO', {
+            torrent: _this.selected,
+          });
+
+          _this._back();
+        }
+      });
+    },
+
+    _filter: function() {
+      FlowRouter.go("/filter", {}, {
+        previous: Base64.encode(ascii_array(FlowRouter.current().path)),
+        project: this.project._id,
+        route: null,
+      });
+    },
+
+    _refresh: function() {
+      Meteor.call('refresh_project', FlowRouter.getQueryParam('project'), function(e, r) {
+        document.querySelector("#polymer_toast").toast(e ? e.message : r);
+      });
+    },
+
+    _scroll: function(e, d) {
+      if (d.target.scrollHeight - (d.target.clientHeight * 1.5) < d.target.scrollTop) {
+        this.debounce('_scroll', function() {
+          if (FlowRouter.getQueryParam('project') && !FlowRouter.getQueryParam('restrict') && this.limit <= 100) {
+            this.limit += 50;
+
+            Meteor.subscribe('torrent', {
+              limit: this.limit,
+              project: [FlowRouter.getQueryParam('project')],
+            });
+          }
+        }, 1000 * 2);
+      }
+    },
+
+    _share: function() {
+      var selected = _torrent.find({
+          _id: {
+            $in: this.selected,
+          },
+        }).fetch(),
+        share = '';
+
+      selected.forEach(function(torrent) {
+        share += "\n\n" + torrent.category + "\t\t" + torrent.size + "\t\t" + torrent.title + "\t\t" + Meteor.absoluteUrl('torrent?previous=Lw%3D%3D&route=torrent-item&torrent=' + torrent._id) + "\n\n";
+      });
+
+      if (share != '') {
+        if (Meteor.isCordova) {
+          window.plugins.socialsharing.share(share);
+        } else {
+          window.open('mailto:?subject=' + encodeURIComponent('Torrent Alert') + '&body=' + encodeURIComponent(share), "_system");
+        }
+      }
+    },
+
+    attached: function() {
+      var _this = this;
+
+      Tracker.autorun(function() {
+        if (FlowRouter.getQueryParam('project')) {
+          Meteor.subscribe('project', [FlowRouter.getQueryParam('project')]);
+        }
+      });
+
+      Tracker.autorun(function() {
+        if (FlowRouter.getQueryParam('project')) {
+          if (FlowRouter.getQueryParam('restrict')) {
+            Meteor.subscribe('torrent', {
+              torrent: FlowRouter.getQueryParam('restrict').split('|'),
+              project: [FlowRouter.getQueryParam('project')],
+            });
+          } else {
+            Meteor.subscribe('torrent', {
+              limit: _this.limit,
+              project: [FlowRouter.getQueryParam('project')],
+            });
+          }
+        }
+      });
+
+      Tracker.autorun(function() {
+        if (Meteor.status().connected) {
+          _this.project = _project.findOne({
+            _id: FlowRouter.getQueryParam('project'),
+          });
+        }
+      });
+
+      Tracker.autorun(function() {
+        if (Meteor.status().connected) {
+          _this.torrent = _torrent.find({
+            project: FlowRouter.getQueryParam('project'),
+          }).fetch();
+        }
+      });
+    },
+
+    hidden_A: function(A, Z) {
+      return (!A.query.match(/\?f=(.+) added/) || (A.user && -1 < A.user.indexOf(Meteor.userId())) || Z);
+    },
+
+    hidden_Z: function(A, Z) {
+      return (!A.query.match(/\?f=(.+) added/) || Z);
+    },
+
+    is: "torrent-list",
+
+    listeners: {
+      'content-scroll': '_scroll',
+    },
+
+    properties: {
+      limit: {
+        type: Number,
+        value: 50,
+      },
+      selected: {
+        type: Array,
+        value: function() {
+          return [];
+        },
+      },
+      torrent: {
+        type: Array,
+        value: function() {
+          return [];
+        },
+      },
+    },
+
+  });
+})();
+</script>

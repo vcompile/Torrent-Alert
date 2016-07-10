@@ -1,0 +1,71 @@
+<head>
+  <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+
+  <title>Torrent Alert</title>
+  <link href="/png/icon.png" rel="shortcut icon">
+
+  <script src="polymer.js"></script>
+  <link href="polymer.html" rel="import">
+
+  <!-- <script src="bower_components/webcomponentsjs/webcomponents-lite.min.js"></script> -->
+  <!-- <link href="bower_components.html" rel="import"> -->
+
+  <link href="local_components.html" rel="import">
+</head>
+
+<body class="fullbleed">
+  <style>
+  * {
+    tap-highlight-color: rgba(0, 0, 0, 0);
+    touch-callout: none;
+    user-select: none;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+  }
+  
+  body {
+    background: #EEE;
+  }
+  
+  .cursor-d {
+    cursor: default;
+  }
+  
+  .cursor-p {
+    cursor: pointer;
+  }
+  
+  .etc {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .li {
+    width: 480px;
+  }
+  
+  .relative {
+    position: relative;
+  }
+  
+  @media (max-width: 480px) {
+    .li {
+      width: 100%;
+    }
+  }
+  
+  @media (min-width: 480px) {
+    .li {
+      width: 480px;
+    }
+  }
+  </style>
+
+  <layout-main class="fit" id="layout_main"></layout-main>
+
+  <!-- plug-ins -->
+
+  <polymer-toast id="polymer_toast"></polymer-toast>
+</body>

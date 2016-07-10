@@ -1,0 +1,212 @@
+<dom-module id="layout-inbox">
+  <style>
+  div[selected] .tab-bottom-line {
+    width: 100%;
+  }
+  
+  paper-badge {
+    --paper-badge-background: var(--paper-red-300);
+    --paper-badge-text-color: white;
+  }
+  
+  paper-menu {
+    min-width: 192px
+  }
+  
+  paper-menu-button {
+    padding: 0;
+  }
+  
+  paper-ripple {
+    color: var(--paper-teal-100);
+  }
+  
+  paper-toolbar {
+    --paper-toolbar-background: var(--paper-teal-500);
+    --paper-toolbar-color: white;
+    --paper-toolbar-height: 56px;
+    height: 112px;
+    overflow: visible;
+  }
+  
+  paper-toolbar .title {
+    margin: 0!important;
+    padding: 16px 8px;
+  }
+  
+  #tab-panel {
+    overflow-x: auto;
+  }
+  
+  .tab-bottom-line {
+    height: 4px;
+  }
+  
+  .tab-icon {
+    min-width: 48px;
+    padding: 16px;
+  }
+  </style>
+
+  <template>
+    <paper-scroll-header-panel class="fit" condensed-header-height="56" keep-condensed-header scroll-away-topbar>
+      <paper-toolbar>
+        <div class="title">[[selected]]</div>
+
+        <paper-icon-button icon="search" on-tap="_search"></paper-icon-button>
+
+        <paper-menu-button horizontal-align="right" horizontal-offset="-8">
+          <paper-icon-button class="dropdown-trigger" icon="more-vert"></paper-icon-button>
+
+          <paper-menu class="dropdown-content" on-iron-select="_select">
+            <paper-item class="cursor-p" data-menu="Issue Reporting">Issue Reporting</paper-item>
+            <paper-item class="cursor-p" data-menu="Sign In" hidden$="[[user]]">Sign In</paper-item>
+            <paper-item class="cursor-p" data-menu="Sign Out" hidden$="[[!user]]">Sign Out</paper-item>
+          </paper-menu>
+        </paper-menu-button>
+
+        <iron-selector attr-for-selected="data-tab" class="bottom center-justified flex horizontal layout self-start" id="tab-panel" hidden="[[hidden(selected_subscription.length)]]" selected="{{selected}}" selected-attribute="selected">
+          <div class="center-center cursor-p layout relative self-end vertical" data-tab="Subscription">
+            <div class="center-justified flex horizontal layout tab-icon">
+              <iron-icon icon="social:notifications-none" id="tab_A"></iron-icon>
+              <!-- <paper-badge for="tab_A" label="3"></paper-badge> -->
+            </div>
+
+            <div class="teal-700 tab-bottom-line"></div>
+
+            <paper-ripple></paper-ripple>
+          </div>
+
+          <div class="center-center cursor-p layout relative self-end vertical" data-tab="Trending">
+            <div class="center-justified flex horizontal layout tab-icon">
+              <iron-icon icon="trending-up"></iron-icon>
+            </div>
+
+            <div class="teal-700 tab-bottom-line"></div>
+
+            <paper-ripple></paper-ripple>
+          </div>
+
+          <div class="center-center cursor-p layout relative self-end vertical" data-tab="User">
+            <div class="center-justified flex horizontal layout tab-icon">
+              <iron-icon icon="social:person-outline"></iron-icon>
+            </div>
+
+            <div class="teal-700 tab-bottom-line"></div>
+
+            <paper-ripple></paper-ripple>
+          </div>
+        </iron-selector>
+
+        <div class="bottom center flex horizontal layout" hidden="[[!selected_subscription.length]]">
+          <div class="title">[[selected_subscription.length]]</div>
+          <paper-icon-button icon="delete" on-tap="_delete"></paper-icon-button>
+        </div>
+      </paper-toolbar>
+
+      <neon-animated-pages attr-for-selected="data-page" selected="[[selected]]">
+        <layout-subscription data-page="Subscription" id="layout_subscription" selected="{{selected_subscription}}"></layout-subscription>
+        <layout-trending data-page="Trending" id="layout_trending"></layout-trending>
+        <layout-user data-page="User" id="layout_user"></layout-user>
+      </neon-animated-pages>
+    </paper-scroll-header-panel>
+  </template>
+</dom-module>
+
+<script>
+(function() {
+  Polymer({
+
+    _delete: function() {
+      if (Meteor.status().connected) {
+        switch (this.selected) {
+          case 'Subscription':
+            var _this = this;
+
+            Meteor.call('remove_project', _this.selected_subscription, function(e, r) {
+              if (e) {
+                document.querySelector("#polymer_toast").toast(e.message);
+              } else {
+                document.querySelector("#polymer_toast").toast(r, 'UNDO', {
+                  project: _this.selected_subscription,
+                });
+
+                _this.selected_subscription = [];
+              }
+            });
+            break;
+        }
+      } else {
+        document.querySelector("#polymer_toast").toast("server connection required");
+      }
+    },
+
+    _search: function() {
+      FlowRouter.go("/search", {}, {
+        previous: Base64.encode(ascii_array(FlowRouter.current().path)),
+        route: null,
+      });
+    },
+
+    _select: function(e, d) {
+      switch (d.item.dataset.menu) {
+        case 'Issue Reporting':
+          window.open('//github.com/HedCET/TorrentAlert/issues', '_system');
+          break;
+
+        case 'Sign In':
+          FlowRouter.go("/user-account", {}, {
+            previous: Base64.encode(ascii_array(FlowRouter.current().path)),
+            route: null,
+          });
+          break;
+
+        case 'Sign Out':
+          if (Meteor.status().connected) {
+            Meteor.logout((error) => {
+              if (error) {
+                console.log(error);
+              } else {
+                FlowRouter.go("/", {}, {
+                  previous: null,
+                  route: null,
+                });
+              }
+            });
+          } else {
+            document.querySelector("#polymer_toast").toast("server connection required");
+          }
+          break;
+      }
+    },
+
+    attached: function() {
+      var _this = this;
+
+      Tracker.autorun(function() {
+        _this.user = (Meteor.user() ? Meteor.user() : null);
+      });
+    },
+
+    hidden: function(A) {
+      return !!A;
+    },
+
+    is: "layout-inbox",
+
+    properties: {
+      selected: {
+        type: String,
+        value: "Trending",
+      },
+      selected_subscription: {
+        type: Array,
+        value: function() {
+          return [];
+        },
+      },
+    },
+
+  });
+})();
+</script>
