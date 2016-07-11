@@ -8,6 +8,8 @@ Meteor.methods({
 
     check(input, String);
 
+    var res = [];
+
     try {
       var req = HTTP.call("GET", Random.choice(_torrentz_proxy) + "/suggestions.php?q=" + input, {
         headers: {
@@ -20,19 +22,15 @@ Meteor.methods({
       });
 
       if (req.statusCode === 200) {
-        var res = JSON.parse(req.content);
-
-        return (1 < res.length ? _.uniq(res[1]) : []);
+        res = JSON.parse(req.content);
       } else {
         console.log('search_keyword HTTP.call()', input);
-
-        return [];
       }
     } catch (e) {
       console.log(e);
     }
 
-    return [];
+    return (1 < res.length ? _.uniq(res[1]) : []);
   },
 
   search_keyword_x: function(input) {
