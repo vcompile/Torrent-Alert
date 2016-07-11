@@ -173,7 +173,7 @@ _torrentz_worker = function(row) {
                         query: {
                           userId: user,
                         },
-                        text: torrent.length + ' item added',
+                        text: torrent.length + ' item',
                         title: project.title,
                       });
                     }

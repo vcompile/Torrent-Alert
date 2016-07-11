@@ -1,0 +1,11 @@
+{
+  "alert": true,
+  "badge": true,
+  "gcm": {
+    "apiKey": "ABC",
+    "projectNumber": 123
+  },
+  "production": true,
+  "sound": true,
+  "vibrate": true
+}

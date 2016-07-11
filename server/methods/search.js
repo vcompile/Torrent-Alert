@@ -8,25 +8,29 @@ Meteor.methods({
 
     check(input, String);
 
-    var req = HTTP.call("GET", Random.choice(_torrentz_proxy) + "/suggestions.php?q=" + input, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.0',
-      },
-      npmRequestOptions: {
-        proxy: Random.choice(_proxy),
-      },
-      timeout: 1000 * 60,
-    });
+    var res = [];
 
-    if (req.statusCode === 200) {
-      var res = JSON.parse(req.content);
+    try {
+      var req = HTTP.call("GET", Random.choice(_torrentz_proxy) + "/suggestions.php?q=" + input, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.0',
+        },
+        npmRequestOptions: {
+          proxy: Random.choice(_proxy),
+        },
+        timeout: 1000 * 60,
+      });
 
-      return (1 < res.length ? _.uniq(res[1]) : []);
-    } else {
-      console.log('search_keyword HTTP.call()', input);
-
-      return [];
+      if (req.statusCode === 200) {
+        res = JSON.parse(req.content);
+      } else {
+        console.log('search_keyword HTTP.call()', input);
+      }
+    } catch (e) {
+      console.log(e);
     }
+
+    return (1 < res.length ? _.uniq(res[1]) : []);
   },
 
   search_keyword_x: function(input) {

@@ -1,9 +1,3 @@
-Meteor.users.deny({
-  update: function() {
-    return true;
-  },
-});
-
 var accounts_methods = [
   'ATCreateUserServer',
   'ATRemoveService',
@@ -31,3 +25,9 @@ if (Meteor.isServer) {
     },
   }, 1, 1000);
 }
+
+Meteor.users.deny({
+  update: function() {
+    return true;
+  },
+});

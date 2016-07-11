@@ -19,7 +19,6 @@ standard-minifiers      # JS/CSS minifiers run for production mode
 tracker                 # Meteor's client-side reactive programming library
 underscore
 
-hedcet:cordova-google-plus-native-sign-in
 kadira:flow-router
 meteorhacks:npm
 meteorhacks:picker

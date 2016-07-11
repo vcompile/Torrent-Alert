@@ -8,7 +8,7 @@ if (Meteor.isCordova) {
       if (!(exit - _exit)) {
         document.querySelector("#polymer_toast").toast('Are you sure you want to exit ?', 'EXIT');
       } else {
-        if (FlowRouter.current().route.path != '/') {
+        if (FlowRouter.getQueryParam("previous")) {
           navigator.app.backHistory();
         }
       }
