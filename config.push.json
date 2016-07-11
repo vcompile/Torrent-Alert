@@ -2,8 +2,8 @@
   "alert": true,
   "badge": true,
   "gcm": {
-    "apiKey": "AIzaSyBuIz2LAO01hnOtfejZ80-3rb0prKfBf74",
-    "projectNumber": 1035713157090
+    "apiKey": "AIzaSyB57drmamKqmnK2v3gXx_MogfrsR7MrKj8",
+    "projectNumber": 196958297151
   },
   "production": true,
   "sound": true,

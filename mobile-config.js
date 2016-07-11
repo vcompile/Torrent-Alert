@@ -4,17 +4,17 @@ App.icons({
   "android_ldpi": ".build/drawable-ldpi/ic_launcher.png",
   "android_mdpi": ".build/drawable-mdpi/ic_launcher.png",
   "android_hdpi": ".build/drawable-hdpi/ic_launcher.png",
-  "android_xhdpi": ".build/drawable-xhdpi/ic_launcher.png"
+  "android_xhdpi": ".build/drawable-xhdpi/ic_launcher.png",
 });
 
 App.info({
-  id: "com.vcompile.torrent",
+  id: "torrent.scheduler",
   name: "Torrent Alert",
   description: "Torrent Keyword Scheduler & Alerter",
   version: "0.0.1",
-  author: "LintoCheeran",
+  author: "Linto Cheeran",
   email: "linto.cet@gmail.com",
-  website: "http://vcompile.com/torrent"
+  website: "http://vcompile.com/scheduler",
 });
 
 // App.launchScreens({
@@ -25,7 +25,7 @@ App.info({
 //     "android_hdpi_portrait": ".build/splash/splash-480x800.png",
 //     "android_hdpi_landscape": ".build/splash/splash-800x480.png",
 //     "android_xhdpi_portrait": ".build/splash/splash-720x1280.png",
-//     "android_xhdpi_landscape": ".build/splash/splash-1280x720.png"
+//     "android_xhdpi_landscape": ".build/splash/splash-1280x720.png",
 // });
 
 App.setPreference("android-installLocation", "preferExternal");
