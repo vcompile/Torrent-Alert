@@ -96,8 +96,10 @@
     },
 
     _input: function(newValue, oldValue) {
+      this.searching = true;
+
       if (newValue && oldValue) {
-        this.searching = true;
+        this.search = [];
 
         this.debounce('_input', function() {
           var _this = this;

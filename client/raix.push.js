@@ -8,14 +8,12 @@ Meteor.startup(function() {
         // document.querySelector("#polymer_toast").toast(e ? e.message : r);
       });
 
-      Meteor.setTimeout(function() {
-        FlowRouter.go("/torrent", {}, {
-          previous: "Lw%3D%3D",
-          project: notification.payload.project,
-          restrict: notification.payload.torrent.join('|'),
-          route: null,
-        });
-      }, 40);
+      FlowRouter.go("/torrent", {}, {
+        previous: "Lw%3D%3D",
+        project: notification.payload.project,
+        restrict: notification.payload.torrent.join('|'),
+        route: null,
+      });
     });
   });
 
