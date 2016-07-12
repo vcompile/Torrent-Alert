@@ -102,15 +102,19 @@
         this.search = [];
 
         this.debounce('_input', function() {
-          var _this = this;
+          if (newValue) {
+            var _this = this;
 
-          Meteor.call("search_keyword_x", newValue, function(error, response) {
-            if (!error) {
-              Session.set('search', JSON.stringify(response));
-            }
+            Meteor.call("search_keyword_x", newValue, function(error, response) {
+              if (!error && newValue) {
+                Session.set('search', JSON.stringify(response));
+              }
 
-            _this.searching = false;
-          });
+              _this.searching = false;
+            });
+          } else {
+            this.searching = false;
+          }
         }, 1000 * 2);
       } else {
         this.searching = false;

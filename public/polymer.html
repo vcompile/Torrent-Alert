@@ -16843,6 +16843,10 @@ is separate from validation, and `allowed-pattern` does not affect how the input
         -webkit-tap-highlight-color: transparent;
       }
 
+      :host([hidden]) {
+        display: none !important;
+      }
+
       :host(:focus) {
         outline: none;
       }
