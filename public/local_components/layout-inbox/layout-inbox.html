@@ -155,7 +155,7 @@
           break;
 
         case 'Sign In':
-          FlowRouter.go("/user-account", {}, {
+          FlowRouter.go("/account", {}, {
             previous: Base64.encode(ascii_array(FlowRouter.current().path)),
             route: null,
           });

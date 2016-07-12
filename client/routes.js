@@ -6,21 +6,7 @@ document.addEventListener("WebComponentsReady", function() {
   });
 });
 
-var main = FlowRouter.group({
-  triggersEnter: [(context, redirect) => {
-    if (Meteor.status().connected) {
-      if (!Meteor.user()) {
-        redirect("/account", {}, {
-          previous: null,
-          route: null,
-        });
-      }
-    }
-  }],
-  name: 'main',
-});
-
-main.route("/", {
+FlowRouter.route("/", {
   action() {
     document.querySelector("#layout_main").selected = (FlowRouter.getQueryParam("route") ? FlowRouter.getQueryParam("route") : 'layout-inbox');
 
