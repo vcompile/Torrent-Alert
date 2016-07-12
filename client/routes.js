@@ -11,7 +11,7 @@ var main = FlowRouter.group({
     if (Meteor.status().connected) {
       if (!Meteor.user()) {
         redirect("/account", {}, {
-          previous: Base64.encode(ascii_array(FlowRouter.current().path)),
+          previous: Base64.encode(ascii_array(FlowRouter.current().path ? FlowRouter.current().path : '/')),
           route: null,
         });
       }
