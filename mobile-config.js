@@ -1,4 +1,4 @@
-App.accessRule("*://*.googleusercontent.com/*");
+// App.accessRule("*://*.googleusercontent.com/*");
 
 App.icons({
   "android_ldpi": ".build/drawable-ldpi/ic_launcher.png",
@@ -8,10 +8,10 @@ App.icons({
 });
 
 App.info({
-  id: "torrentz.scheduler",
+  id: "com.vcompile.scheduler",
   name: "Torrent Alert",
-  description: "Torrent Keyword Scheduler & Alerter",
-  version: "1.0.1",
+  description: "Torrent Keyword Search, Schedule & Alerter",
+  version: "1.0.0",
   author: "Linto Cheeran",
   email: "linto.cet@gmail.com",
   website: "http://vcompile.com/scheduler",
