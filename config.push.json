@@ -2,8 +2,8 @@
   "alert": true,
   "badge": true,
   "gcm": {
-    "apiKey": "ABC",
-    "projectNumber": 123
+    "apiKey": "",
+    "projectNumber": 1
   },
   "production": true,
   "sound": true,

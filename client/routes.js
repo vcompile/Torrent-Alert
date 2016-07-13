@@ -6,21 +6,21 @@ document.addEventListener("WebComponentsReady", function() {
   });
 });
 
-var main = FlowRouter.group({
-  triggersEnter: [(context, redirect) => {
+var MAIN = FlowRouter.group({
+  triggersEnter: [function(context, redirect) {
     if (Meteor.status().connected) {
       if (!Meteor.user()) {
         redirect("/account", {}, {
-          previous: Base64.encode(ascii_array(FlowRouter.current().path)),
+          previous: null,
           route: null,
         });
       }
     }
   }],
-  name: 'main',
+  name: "MAIN",
 });
 
-main.route("/", {
+MAIN.route("/", {
   action() {
     document.querySelector("#layout_main").selected = (FlowRouter.getQueryParam("route") ? FlowRouter.getQueryParam("route") : 'layout-inbox');
 

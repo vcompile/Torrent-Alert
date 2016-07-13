@@ -164,7 +164,7 @@ _torrentz_worker = function(row) {
 
                     if (torrent.length) {
                       Push.send({
-                        from: "com.vcompile.torrentz",
+                        from: "torrentz.scheduler",
                         notId: project.index,
                         payload: {
                           torrent: torrent,

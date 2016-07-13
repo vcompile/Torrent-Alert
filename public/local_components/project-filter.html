@@ -100,9 +100,9 @@
         Meteor.call('search_project', Z, function(e, r) {
           if (!e) {
             FlowRouter.go("/torrent", {}, {
-              input: r,
-              previous: Base64.encode(ascii_array(FlowRouter.current().path)),
               route: null,
+              project: r,
+              previous: Base64.encode(ascii_array(FlowRouter.current().path)),
             });
           }
         });
@@ -115,18 +115,18 @@
       var _this = this;
 
       Tracker.autorun(function() {
-        if (FlowRouter.getQueryParam('input')) {
-          Meteor.subscribe('project', [FlowRouter.getQueryParam('input')]);
+        if (FlowRouter.getQueryParam('project')) {
+          Meteor.subscribe('project', [FlowRouter.getQueryParam('project')]);
         }
       });
 
       Tracker.autorun(function() {
         if (Meteor.status().connected) {
           if (_project.findOne({
-              _id: FlowRouter.getQueryParam('input'),
+              _id: FlowRouter.getQueryParam('project'),
             })) {
             _this.project = _project.findOne({
-              _id: FlowRouter.getQueryParam('input'),
+              _id: FlowRouter.getQueryParam('project'),
             });
 
             _this.quality = (_this.project.query.match(/\/(.+)\?f=/) ? _this.project.query.match(/\/(.+)\?f=/)[1].replace(/[^a-z]/g, '') : 'search');

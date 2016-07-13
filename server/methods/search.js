@@ -18,7 +18,7 @@ Meteor.methods({
         npmRequestOptions: {
           proxy: Random.choice(_proxy),
         },
-        timeout: 1000 * 60,
+        timeout: 1000 * 30,
       });
 
       if (req.statusCode === 200) {

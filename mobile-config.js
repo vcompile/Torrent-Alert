@@ -8,10 +8,10 @@ App.icons({
 });
 
 App.info({
-  id: "torrent.scheduler",
+  id: "torrentz.scheduler",
   name: "Torrent Alert",
   description: "Torrent Keyword Scheduler & Alerter",
-  version: "0.0.1",
+  version: "1.0.1",
   author: "Linto Cheeran",
   email: "linto.cet@gmail.com",
   website: "http://vcompile.com/scheduler",
@@ -29,6 +29,6 @@ App.info({
 // });
 
 App.setPreference("android-installLocation", "preferExternal");
-App.setPreference("android-minSdkVersion", "19");
+App.setPreference("android-minSdkVersion", "21");
 // App.setPreference("SplashMaintainAspectRatio", true);
 App.setPreference("SplashShowOnlyFirstTime", false);

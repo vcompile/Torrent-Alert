@@ -96,23 +96,23 @@
     },
 
     _input: function(newValue, oldValue) {
-      if (newValue && oldValue) {
-        this.searching = true;
+      this.searching = true;
 
-        this.debounce('_input', function() {
+      this.debounce('_input', function() {
+        if (this.input) {
           var _this = this;
 
-          Meteor.call("search_keyword_x", newValue, function(error, response) {
-            if (!error) {
+          Meteor.call("search_keyword_x", _this.input, function(error, response) {
+            if (!error && newValue) {
               Session.set('search', JSON.stringify(response));
             }
 
             _this.searching = false;
           });
-        }, 1000 * 2);
-      } else {
-        this.searching = false;
-      }
+        } else {
+          this.searching = false;
+        }
+      }, 1000 * 2);
     },
 
     _on_load_empty_search: function() {
