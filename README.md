@@ -2,6 +2,7 @@ MeteorJS Polymer Project
 ----------
 
 * [Mobile Browser Version](https://ww8.herokuapp.com)
+* [APK Build](https://github.com/HedCET/Torrent-Alert/tree/master/.APK)
 
 Install Guide
 ----------
