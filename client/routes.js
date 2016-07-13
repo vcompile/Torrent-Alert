@@ -6,7 +6,7 @@ document.addEventListener("WebComponentsReady", function() {
   });
 });
 
-var AUTH = FlowRouter.group({
+var MAIN = FlowRouter.group({
   triggersEnter: [function(context, redirect) {
     if (Meteor.status().connected) {
       if (!Meteor.user()) {
@@ -17,10 +17,10 @@ var AUTH = FlowRouter.group({
       }
     }
   }],
-  name: "main",
+  name: "MAIN",
 });
 
-AUTH.route("/", {
+MAIN.route("/", {
   action() {
     document.querySelector("#layout_main").selected = (FlowRouter.getQueryParam("route") ? FlowRouter.getQueryParam("route") : 'layout-inbox');
 

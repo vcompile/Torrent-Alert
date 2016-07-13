@@ -11,7 +11,7 @@ App.info({
   id: "torrentz.scheduler",
   name: "Torrent Alert",
   description: "Torrent Keyword Scheduler & Alerter",
-  version: "1.0.0",
+  version: "1.0.1",
   author: "Linto Cheeran",
   email: "linto.cet@gmail.com",
   website: "http://vcompile.com/scheduler",
