@@ -13,6 +13,6 @@ _worker.find({
   added: function(row) {
     Meteor.setTimeout(function() {
       _torrentz_worker(row);
-    }, 1000);
+    }, 200);
   },
 });
