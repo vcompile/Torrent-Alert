@@ -8,7 +8,7 @@ App.icons({
 });
 
 App.info({
-  id: "com.vcompile.scheduler",
+  id: "keyword.schedule",
   name: "Torrent Alert",
   description: "Torrent Keyword Search, Schedule & Alerter",
   version: "1.0.0",
