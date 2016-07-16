@@ -1,4 +1,4 @@
-MeteorJS Polymer Project
+MeteorJS Polymer Android App
 ----------
 
 * [Mobile Browser Version](https://ww8.herokuapp.com)
