@@ -163,7 +163,7 @@
 
         case 'Sign Out':
           if (Meteor.status().connected) {
-            Meteor.logout((error) => {
+            Meteor.logout(function(error) {
               if (error) {
                 console.log(error);
               } else {
