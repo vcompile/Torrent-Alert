@@ -226,7 +226,13 @@
     },
 
     return_icon_text: function(url) {
-      return (url ? url.match(/:\/\/(www\.)?([^:^/]*)/)[2][0] : '#');
+      if (url) {
+        var text = url.match(/:\/\/(www\.)?([^:^/]*)/)[2][0];
+
+        return (isNaN(+text) ? text : '#');
+      } else {
+        return '#';
+      }
     },
 
     return_host: function(url) {
