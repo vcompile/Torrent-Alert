@@ -23,7 +23,7 @@ Picker.route('/proxy/:key', function(p, req, res, next) {
 
 Picker.route('/redirect', function(p, req, res, next) {
   if (p.query.url) {
-    res.end('<html><head><title>redirecting</title></head><body><form action="https://' + Random.choice(['1', '2', '3', '4']) + '.hidemyass.com/includes/process.php?action=update" id="form" method="post"><input name="u" type="hidden" value="' + decodeURIComponent(p.query.url) +
+    res.end('<html><head><title>Torrent Alert</title><link href="/png/icon.png" rel="shortcut icon"></head><body><form action="https://1.hidemyass.com/includes/process.php?action=update" id="form" method="post"><input name="u" type="hidden" value="' + p.query.url +
       '"></form><script>document.querySelector("#form").submit();</script></body></html>');
   } else {
     res.end('<html><head><title>redirecting</title><script>window.location.href="' + Meteor.absoluteUrl() + '"</script></head><body></body></html>');
