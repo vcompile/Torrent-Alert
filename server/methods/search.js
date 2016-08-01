@@ -8,7 +8,8 @@ Meteor.methods({
 
     check(input, String);
 
-    var res = [];
+    var res = [],
+      proxy = Random.choice(_proxy);
 
     try {
       var req = HTTP.call("GET", Random.choice(_torrentz_proxy) + "/suggestions.php?q=" + input, {
@@ -27,7 +28,7 @@ Meteor.methods({
         console.log('search_keyword HTTP.call()', input);
       }
     } catch (e) {
-      console.log(e);
+      console.log(proxy, e);
     }
 
     return (1 < res.length ? _.uniq(res[1]) : []);

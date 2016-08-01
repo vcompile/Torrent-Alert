@@ -19695,6 +19695,10 @@ It will also ensure that focus remains in the dialog.
       :host {
         display: block;
       }
+      
+      :host([focused]) {
+        outline: none;
+      }
 
       :host([hidden]) {
         display: none !important;

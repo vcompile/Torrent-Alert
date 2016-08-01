@@ -8,7 +8,8 @@ Meteor.methods({
 
     check(query, String);
 
-    var res = {};
+    var res = {},
+      proxy = Random.choice(_proxy);
 
     try {
       var req = HTTP.call("GET", Random.choice(_torrentz_proxy) + query, {
@@ -16,7 +17,7 @@ Meteor.methods({
           'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.0',
         },
         npmRequestOptions: {
-          proxy: Random.choice(_proxy),
+          proxy: proxy,
         },
         timeout: 1000 * 30,
       });
@@ -64,7 +65,7 @@ Meteor.methods({
         console.log('query HTTP.call()', query);
       }
     } catch (e) {
-      console.log(e);
+      console.log(proxy, e);
     }
 
     return res;
