@@ -23,9 +23,9 @@ Picker.route('/proxy/:key', function(p, req, res, next) {
 
 Picker.route('/redirect', function(p, req, res, next) {
   if (p.query.url) {
-    res.end('<html><head><title>Torrent Alert</title><link href="/png/icon.png" rel="shortcut icon"></head><body><form action="https://1.hidemyass.com/includes/process.php?action=update" id="form" method="post"><input name="u" type="hidden" value="' + p.query.url +
+    res.end('<html><body><form action="https://www.filterbypass.me/includes/process.php?action=update" id="form" method="post"><input name="k" type="hidden" value="' + p.query.url +
       '"></form><script>document.querySelector("#form").submit();</script></body></html>');
   } else {
-    res.end('<html><head><title>redirecting</title><script>window.location.href="' + Meteor.absoluteUrl() + '"</script></head><body></body></html>');
+    res.end('<html><head><script>window.location.href="' + Meteor.absoluteUrl() + '"</script></head><body></body></html>');
   }
 });
