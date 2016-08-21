@@ -31,7 +31,9 @@ Meteor.methods({
       console.log(proxy, e);
     }
 
-    return (1 < res.length ? _.uniq(res[1]) : []);
+    return (1 < res.length ? _.uniq(_.map(res[1], function(v) {
+      return v.replace(/\//, '');
+    })) : []);
   },
 
   search_keyword_x: function(input) {
@@ -45,7 +47,7 @@ Meteor.methods({
     var search = [];
 
     Meteor.call('search_keyword', input).forEach(function(item) {
-      var project = _project.findOne({ query: '/search?f=' + item + ' added<90d leech>0 seed>0' }, {
+      var project = _project.findOne({ query: '/search?f=' + item + ' added:90d' }, {
         fields: {
           _id: 1,
         },
@@ -57,7 +59,7 @@ Meteor.methods({
       } else {
         project_id = _project.insert({
           index: _project.find({}, { fields: { _id: 1 } }).count() + 1,
-          query: '/search?f=' + item + ' added<90d leech>0 seed>0',
+          query: '/search?f=' + item + ' added:90d',
           title: item,
           worker: 'search',
         });

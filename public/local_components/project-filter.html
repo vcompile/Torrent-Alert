@@ -4,6 +4,12 @@
     width: 100%;
   }
   
+  paper-toggle-button {
+    --paper-toggle-button-checked-bar-color: var(--paper-green-500);
+    --paper-toggle-button-checked-button-color: var(--paper-green-500);
+    --paper-toggle-button-checked-ink-color: var(--paper-green-500);
+  }
+  
   paper-toolbar {
     --paper-toolbar-background: var(--paper-teal-500);
     --paper-toolbar-color: white;
@@ -50,7 +56,6 @@
               <div class="body1 color cursor-d">Torrent Quality</div>
 
               <paper-radio-group selected="{{quality}}">
-                <paper-radio-button name="any">All</paper-radio-button>
                 <paper-radio-button name="search">Good</paper-radio-button>
                 <paper-radio-button name="verified">Very Good</paper-radio-button>
               </paper-radio-group>
@@ -63,15 +68,9 @@
               <paper-slider editable max="90" min="1" pin value="{{age}}"></paper-slider>
             </div>
 
-            <div class="layout vertical">
-              <div class="body1 color cursor-d paper-slider-label">Minimum Seed Count</div>
-              <paper-slider editable max="1000" pin step="10" value="{{seed}}"></paper-slider>
-            </div>
-
-            <div class="layout vertical">
-              <div class="body1 color cursor-d paper-slider-label">Minimum Leech Count</div>
-              <paper-slider editable max="1000" pin step="10" value="{{leech}}"></paper-slider>
-            </div>
+            <paper-item>
+              <paper-toggle-button checked="{{safe}}" class="flex">Adult Content</paper-toggle-button>
+            </paper-item>
           </div>
         </div>
       </div>
@@ -95,7 +94,7 @@
       var A = this.project.query.match(/\?f=(.+) added/);
 
       if (A) {
-        var Z = '/' + this.quality + '?f=' + A[1] + ' added<' + this.age + 'd leech>' + this.leech + ' seed>' + this.seed;
+        var Z = '/' + this.quality + '?f=' + A[1] + ' added:' + this.age + 'd' + (this.safe ? '&safe=1' : '');
 
         Meteor.call('search_project', Z, function(e, r) {
           if (!e) {
@@ -129,10 +128,10 @@
               _id: FlowRouter.getQueryParam('project'),
             });
 
-            _this.quality = (_this.project.query.match(/\/(.+)\?f=/) ? _this.project.query.match(/\/(.+)\?f=/)[1].replace(/[^a-z]/g, '') : 'search');
-            _this.age = (_this.project.query.match(/ added<([0-9]+)d ?/) ? +_this.project.query.match(/ added<([0-9]+)d ?/)[1] : 90);
-            _this.leech = (_this.project.query.match(/ leech>([0-9]+) ?/) ? +_this.project.query.match(/ leech>([0-9]+) ?/)[1] : 0);
-            _this.seed = (_this.project.query.match(/ seed>([0-9]+) ?/) ? +_this.project.query.match(/ seed>([0-9]+) ?/)[1] : 0);
+            _this.quality = (_this.project.query.match(/\/(.+)\?f=/) ? _this.project.query.match(/\/(.+)\?f=/)[1] : 'search');
+            _this.age = (_this.project.query.match(/ added:([0-9]+)d ?/) ? +_this.project.query.match(/ added:([0-9]+)d ?/)[1] : 90);
+
+            _this.safe = (_this.project.query.match(/&safe=(0|1)/) ? !!(+(_this.project.query.match(/&safe=(0|1)/)[1])) : false);
           }
         }
       });
@@ -145,17 +144,13 @@
         type: Number,
         value: 90,
       },
-      leech: {
-        type: Number,
-        value: 0,
-      },
       quality: {
         type: String,
         value: 'search',
       },
-      seed: {
-        type: Number,
-        value: 0,
+      safe: {
+        type: Boolean,
+        value: false,
       },
     },
 

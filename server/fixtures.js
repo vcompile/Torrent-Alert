@@ -1,25 +1,25 @@
 if (!_project.findOne({
-    _id: "trending",
+    _id: 'latest_movies',
   }, {
     fields: {
       _id: 1,
     },
   })) {
   _project.insert({
-    _id: 'trending',
-    index: 1,
-    query: '/verifiedP?f= added<7d',
-    title: "Trending this week",
+    _id: 'latest_movies',
+    index: 3,
+    query: '/search?f=movies',
+    title: 'Latest movies',
     worker: 'schedule',
   });
 
   _worker.upsert({
-    input: 'trending',
+    input: 'latest_movies',
     status: '',
     type: 'schedule',
   }, {
     $set: {
-      input: 'trending',
+      input: 'latest_movies',
       insert_time: moment().toDate(),
       status: '',
       type: 'schedule',
@@ -49,35 +49,6 @@ if (!_project.findOne({
   }, {
     $set: {
       input: 'latest_softwares',
-      insert_time: moment().toDate(),
-      status: '',
-      type: 'schedule',
-    },
-  });
-}
-
-if (!_project.findOne({
-    _id: 'latest_movies',
-  }, {
-    fields: {
-      _id: 1,
-    },
-  })) {
-  _project.insert({
-    _id: 'latest_movies',
-    index: 3,
-    query: '/search?f=movie',
-    title: 'Latest movies',
-    worker: 'schedule',
-  });
-
-  _worker.upsert({
-    input: 'latest_movies',
-    status: '',
-    type: 'schedule',
-  }, {
-    $set: {
-      input: 'latest_movies',
       insert_time: moment().toDate(),
       status: '',
       type: 'schedule',

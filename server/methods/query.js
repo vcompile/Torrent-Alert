@@ -37,10 +37,10 @@ Meteor.methods({
                 query: $(this).find("dt a").attr("href"),
                 category: $(this).find("dt").children().remove().end().text().replace(/[^0-9a-z ]/gi, " ").trim().replace(/\s+/g, " "),
 
-                insert_time: ($(this).find("dd .a span").attr("title") ? moment($(this).find("dd .a span").attr("title"), "ddd, DD MMM YYYY HH:mm:ss").toDate() : moment().toDate()),
-                leech: +$(this).find("dd .u").text().replace(/[^0-9]/g, ""),
-                seed: +$(this).find("dd .d").text().replace(/[^0-9]/g, ""),
-                size: $(this).find("dd .s").text().replace(/[^0-9a-z]/gi, ""),
+                insert_time: ($(this).find("dd span:nth-child(2)").attr("title") ? moment($(this).find("dd span:nth-child(2)").attr("title"), "X").toDate() : moment().toDate()),
+                leech: +$(this).find("dd span:nth-child(4)").text().replace(/[^0-9]/g, ""),
+                seed: +$(this).find("dd span:nth-child(5)").text().replace(/[^0-9]/g, ""),
+                size: $(this).find("dd span:nth-child(3)").text().replace(/[^0-9a-z]/gi, ""),
 
               });
             }
