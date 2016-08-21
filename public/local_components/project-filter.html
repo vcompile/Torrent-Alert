@@ -39,6 +39,10 @@
   .paper-slider-label {
     margin-bottom: -12px;
   }
+  
+  .safe {
+    padding: 0;
+  }
   </style>
 
   <template>
@@ -68,7 +72,7 @@
               <paper-slider editable max="90" min="1" pin value="{{age}}"></paper-slider>
             </div>
 
-            <paper-item>
+            <paper-item class="safe">
               <paper-toggle-button checked="{{safe}}" class="flex">Adult Content</paper-toggle-button>
             </paper-item>
           </div>

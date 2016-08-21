@@ -49,7 +49,7 @@ Meteor.methods({
           res.url = [];
 
           $(".download dl").each(function() {
-            if ($(this).find("dt a").attr("href") && $(this).find("dt a span").first().text() != 'Download Direct') {
+            if ($(this).find("dt a").attr("href")) {
               var url = $(this).find("dt a").attr("href");
 
               if (url.substr(0, 4) == "http") {
