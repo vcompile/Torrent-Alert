@@ -1,11 +1,11 @@
 _done = null;
 
-Accounts.onResetPasswordLink((token, done) => {
+Accounts.onResetPasswordLink(function(token, done) {
   if (Meteor.user()) {
     Meteor.logout();
   }
 
-  Meteor.setTimeout(() => {
+  Meteor.setTimeout(function() {
     FlowRouter.go("/user-account", {}, {
       token: token,
       route: 'reset-password',

@@ -9,7 +9,7 @@ if (!_project.findOne({
     _id: 'latest_movies',
     index: 3,
     query: '/search?f=movies',
-    title: 'Latest movies',
+    title: 'Latest Movie',
     worker: 'schedule',
   });
 
@@ -38,7 +38,7 @@ if (!_project.findOne({
     _id: 'latest_softwares',
     index: 2,
     query: '/search?f=software',
-    title: 'Latest softwares',
+    title: 'Latest App',
     worker: 'schedule',
   });
 

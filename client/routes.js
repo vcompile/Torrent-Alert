@@ -24,7 +24,11 @@ MAIN.route("/", {
   action() {
     document.querySelector("#layout_main").selected = (FlowRouter.getQueryParam("route") ? FlowRouter.getQueryParam("route") : 'layout-inbox');
 
-    Meteor.setTimeout(() => {
+    Meteor.call("recent", function(error, response) {
+      document.querySelector("#layout_trending").recent = response;
+    });
+
+    Meteor.setTimeout(function() {
       document.querySelector("#layout_inbox paper-scroll-header-panel").notifyResize();
     }, 40);
 
@@ -70,7 +74,7 @@ FlowRouter.route("/torrent", {
     document.querySelector("#layout_torrent").selected = (FlowRouter.getQueryParam("route") ? FlowRouter.getQueryParam("route") : 'torrent-list');
     document.querySelector("#layout_main").selected = "layout-torrent";
 
-    Meteor.setTimeout(() => {
+    Meteor.setTimeout(function() {
       document.querySelector("#torrent_list paper-scroll-header-panel").notifyResize();
     }, 40);
 
