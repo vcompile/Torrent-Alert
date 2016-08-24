@@ -24,8 +24,10 @@ MAIN.route("/", {
   action() {
     document.querySelector("#layout_main").selected = (FlowRouter.getQueryParam("route") ? FlowRouter.getQueryParam("route") : 'layout-inbox');
 
-    Meteor.call("recent", function(error, response) {
-      document.querySelector("#layout_trending").recent = response;
+    Meteor.call("recent", function(error, res) {
+      if (!error && res.length) {
+        document.querySelector("#layout_trending").recent = res;
+      }
     });
 
     Meteor.setTimeout(function() {

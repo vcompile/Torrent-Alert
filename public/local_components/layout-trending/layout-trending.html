@@ -116,6 +116,14 @@
     },
 
     _torrent_list: function(e) {
+      if (e.model.__data__.item.count) {
+        Meteor.call("refresh_project", e.model.__data__.item._id, function(error, res) {
+          if (error) {
+            console.log(error);
+          }
+        });
+      }
+
       FlowRouter.go("/torrent", {}, {
         previous: Base64.encode(ascii_array(FlowRouter.current().path)),
         project: e.model.__data__.item._id,
