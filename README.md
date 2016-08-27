@@ -13,4 +13,6 @@ cd TorrentAlert
 meteor
 ```
 
-MIT License & MAILTO ```request@vcompile.com``` For Abuse/ContentRemoval/copyright/DMCA/EUCD
+* Also Look [Meteor-WebComponent](https://github.com/meteorwebcomponents) Approch
+
+**MIT License** & MAILTO *request@vcompile.com* For Abuse/ContentRemoval/copyright/DMCA/EUCD
