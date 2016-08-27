@@ -81,8 +81,6 @@ Meteor.methods({
 
               return item;
             });
-
-            console.log(_recent);
           }
         } else { // url
           res.url = [];
