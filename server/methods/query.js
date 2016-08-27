@@ -46,20 +46,20 @@ Meteor.methods({
             }
           });
 
-          var reg_ex = new RegExp(/ ?((.*?) +\(([0-9]+)\)) +([0-9]+[a-z]+,?) ?/gi),
-            text = $(".recent").text();
+          // var reg_ex = new RegExp(/ ?((.*?) +\(([0-9]+)\)) +([0-9]+[a-z]+,?) ?/gi),
+          //   text = $(".recent").text();
 
-          var A,
-            Z = [];
+          // var A,
+          //   Z = [];
 
-          while ((A = reg_ex.exec(text)) !== null) {
-            if (A[2].length && +A[3]) {
-              Z.push({
-                title: A[2],
-                count: +A[3],
-              });
-            }
-          }
+          // while ((A = reg_ex.exec(text)) !== null) {
+          //   if (A[2].length && +A[3]) {
+          //     Z.push({
+          //       title: A[2],
+          //       count: +A[3],
+          //     });
+          //   }
+          // }
 
           if (Z.length) {
             _recent = _.map(Z, item => {
