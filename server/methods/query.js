@@ -46,20 +46,19 @@ Meteor.methods({
             }
           });
 
-          // var reg_ex = new RegExp(/ ?((.*?) +\(([0-9]+)\)) +([0-9]+[a-z]+,?) ?/gi),
-          //   text = $(".recent").text();
+          var reg_ex = new RegExp(/ ?(.*?) +([0-9]+[a-z]+,?) ?/gi),
+            text = $(".recent").text();
 
-          // var A,
-          //   Z = [];
+          var A,
+            Z = [];
 
-          // while ((A = reg_ex.exec(text)) !== null) {
-          //   if (A[2].length && +A[3]) {
-          //     Z.push({
-          //       title: A[2],
-          //       count: +A[3],
-          //     });
-          //   }
-          // }
+          while ((A = reg_ex.exec(text)) !== null) {
+            if (A[1].length) {
+              Z.push({
+                title: A[1],
+              });
+            }
+          }
 
           if (Z.length) {
             _recent = _.map(Z, item => {
@@ -73,7 +72,6 @@ Meteor.methods({
                 item._id = project._id;
               } else {
                 item._id = _project.insert({
-                  count: item.count,
                   index: _project.find({}, { fields: { _id: 1 } }).count() + 1,
                   query: '/search?f=' + item.title + ' added:90d',
                   title: item.title,
@@ -83,6 +81,8 @@ Meteor.methods({
 
               return item;
             });
+
+            console.log(_recent);
           }
         } else { // url
           res.url = [];
