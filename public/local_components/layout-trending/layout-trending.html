@@ -116,7 +116,9 @@
     },
 
     _torrent_list: function(e) {
-      if (e.model.__data__.item.count) {
+      if (_.map(this.project, function(item) {
+          return item._id;
+        }).indexOf(e.model.__data__.item._id) == -1) {
         Meteor.call("refresh_project", e.model.__data__.item._id, function(error, res) {
           if (error) {
             console.log(error);

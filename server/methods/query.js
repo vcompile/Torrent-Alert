@@ -46,7 +46,7 @@ Meteor.methods({
             }
           });
 
-          var reg_ex = new RegExp(/ ?(.*?) +([0-9]+[a-z]+,?) ?/gi),
+          var reg_ex = new RegExp(/ ?(.*?) +[0-9]+[a-z]+,?/gi),
             text = $(".recent").text();
 
           var A,
