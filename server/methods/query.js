@@ -64,7 +64,7 @@ Meteor.methods({
             _recent = _.map(Z, item => {
               var project = _project.findOne({ query: '/search?f=' + item.title + ' added:90d' }, {
                 fields: {
-                  _id: 1,
+                  count: 1,
                 },
               });
 
