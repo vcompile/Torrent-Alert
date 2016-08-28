@@ -70,6 +70,10 @@ Meteor.methods({
 
               if (project) {
                 item._id = project._id;
+
+                if (project.count) {
+                  item.count = project.count;
+                }
               } else {
                 item._id = _project.insert({
                   index: _project.find({}, { fields: { _id: 1 } }).count() + 1,
