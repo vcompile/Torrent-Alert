@@ -10,7 +10,7 @@ Meteor.methods({
 
     var res = {},
       proxy = Random.choice(_proxy),
-      torrentz_url = Random.choice(_torrentz_proxy) + query;
+      torrentz_url = Random.choice(_torrentz_url) + query;
 
     try {
       var req = HTTP.call("GET", torrentz_url, {
