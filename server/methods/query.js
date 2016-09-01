@@ -9,10 +9,11 @@ Meteor.methods({
     check(query, String);
 
     var res = {},
-      proxy = Random.choice(_proxy);
+      proxy = Random.choice(_proxy),
+      torrentz_url = Random.choice(_torrentz_proxy) + query;
 
     try {
-      var req = HTTP.call("GET", Random.choice(_torrentz_proxy) + query, {
+      var req = HTTP.call("GET", torrentz_url, {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.0',
         },
@@ -26,42 +27,41 @@ Meteor.methods({
         var $ = Meteor.npmRequire("cheerio").load(req.content);
 
         if (-1 < query.indexOf('?')) { // torrent
-          res.count = +_.first($('.results h2').children().remove().end().text().split(/torrents/i)).replace(/[^0-9]/g, '');
+          var count = ($('.results h2').length ? $('.results h2').text().match(/([0-9,]+)? Torrents/i) : null);
+          res.count = (count && count[1] ? +count[1].replace(/[^0-9]+/, '') : null);
+
           res.torrent = [];
 
           $(".results dl").each(function() {
             if ($(this).find("dt a").attr("href")) {
               res.torrent.push({
 
-                title: $(this).find("dt a").text(),
-                query: $(this).find("dt a").attr("href"),
-                category: $(this).find("dt").children().remove().end().text().replace(/[^0-9a-z ]/gi, " ").trim().replace(/\s+/g, " "),
+                title: $(this).find('dt a').text(),
+                query: $(this).find('dt a').attr('href'),
+                category: $(this).find('dt').children().remove().end().text().replace(/»/g, '').trim(),
 
-                insert_time: ($(this).find("dd span:nth-child(2)").attr("title") ? moment($(this).find("dd span:nth-child(2)").attr("title"), "X").toDate() : moment().toDate()),
-                leech: +$(this).find("dd span:nth-child(4)").text().replace(/[^0-9]/g, ""),
-                seed: +$(this).find("dd span:nth-child(5)").text().replace(/[^0-9]/g, ""),
-                size: $(this).find("dd span:nth-child(3)").text().replace(/[^0-9a-z]/gi, ""),
+                verified: $(this).find('dd span:nth-child(1)').text().replace(/[^✓]+/g, ''),
+                time: (moment($(this).find("dd span:nth-child(2)").attr("title"), ["ddd, DD MMM YYYY HH:mm:ss", "X"]).isValid() ? moment($(this).find("dd span:nth-child(2)").attr("title"), ["ddd, DD MMM YYYY HH:mm:ss", "X"]).toDate() : moment().toDate()),
+                size: $(this).find('dd span:nth-child(3)').text().replace(/[^0-9a-z]+/gi, ''),
+                leech: +$(this).find('dd span:nth-child(4)').text().replace(/[^0-9]+/g, ''),
+                seed: +$(this).find('dd span:nth-child(5)').text().replace(/[^0-9]+/g, ''),
 
               });
             }
           });
 
-          var reg_ex = new RegExp(/ ?(.*?) +[0-9]+[a-z]+,?/gi),
-            text = $(".recent").text();
+          var recent = [];
 
-          var A,
-            Z = [];
-
-          while ((A = reg_ex.exec(text)) !== null) {
-            if (A[1].length) {
-              Z.push({
-                title: A[1],
+          $('.recent a').each(function() {
+            if ($(this).attr('href')) {
+              recent.push({
+                title: $(this).text(),
               });
             }
-          }
+          });
 
-          if (Z.length) {
-            _recent = _.map(Z, item => {
+          if (recent.length) {
+            _recent = _.map(recent, item => {
               var project = _project.findOne({ query: '/search?f=' + item.title + ' added:90d' }, {
                 fields: {
                   count: 1,
@@ -91,22 +91,18 @@ Meteor.methods({
 
           $(".download dl").each(function() {
             if ($(this).find("dt a").attr("href")) {
-              var url = $(this).find("dt a").attr("href");
-
-              if (url.substr(0, 4) == "http") {
-                res.url.push({
-                  insert_time: ($(this).find("dd span").attr("title") ? moment($(this).find("dd span").attr("title"), "ddd, DD MMM YYYY HH:mm:ss").toDate() : moment().toDate()),
-                  url: url,
-                });
-              }
+              res.url.push({
+                time: (moment($(this).find("dd span").attr("title"), ["ddd, DD MMM YYYY HH:mm:ss", "X"]).isValid() ? moment($(this).find("dd span").attr("title"), ["ddd, DD MMM YYYY HH:mm:ss", "X"]).toDate() : moment().toDate()),
+                url: $(this).find("dt a").attr("href"),
+              });
             }
           });
         }
       } else {
-        console.log('query HTTP.call()', query);
+        console.log('query', proxy, torrentz_url, req);
       }
     } catch (e) {
-      console.log(proxy, e);
+      console.log('query', proxy, torrentz_url, e);
     }
 
     return res;

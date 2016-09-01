@@ -6,13 +6,13 @@ _worker.find({
 }, {
   fields: {
     input: 1,
-    insert_time: 1,
+    time: 1,
     type: 1,
   },
 }).observe({
   added: function(row) {
     Meteor.setTimeout(function() {
       _torrentz_worker(row);
-    }, 200);
+    }, 1000);
   },
 });

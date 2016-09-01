@@ -1,43 +1,43 @@
 Meteor.methods({
 
   search_keyword: function(input) {
-    this.unblock();
+    // this.unblock();
 
     // var user = Meteor.user();
     // if (!user) throw new Meteor.Error(400, "userNotFound");
 
     check(input, String);
 
-    var res = [],
-      proxy = Random.choice(_proxy);
+    if (input.trim()) {
+      var proxy = Random.choice(_proxy),
+        torrentz_url = Random.choice(_torrentz_proxy) + "/suggestions.php?q=" + input;
 
-    try {
-      var req = HTTP.call("GET", Random.choice(_torrentz_proxy) + "/suggestions.php?q=" + input, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.0',
-        },
-        npmRequestOptions: {
-          proxy: Random.choice(_proxy),
-        },
-        timeout: 1000 * 30,
-      });
+      try {
+        var req = HTTP.call("GET", torrentz_url, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.0',
+          },
+          npmRequestOptions: {
+            proxy: proxy,
+          },
+          timeout: 1000 * 30,
+        });
 
-      if (req.statusCode === 200) {
-        res = JSON.parse(req.content);
-      } else {
-        console.log('search_keyword HTTP.call()', input);
+        if (req.statusCode === 200) {
+          return _.uniq(_.flatten(JSON.parse(req.content)));
+        } else {
+          console.log('search_keyword', proxy, torrentz_url, req);
+        }
+      } catch (e) {
+        console.log('search_keyword', proxy, torrentz_url, e);
       }
-    } catch (e) {
-      console.log(proxy, e);
     }
 
-    return (1 < res.length ? _.uniq(_.map(res[1], function(v) {
-      return v.replace(/\//, '');
-    })) : []);
+    return [];
   },
 
   search_keyword_x: function(input) {
-    this.unblock();
+    // this.unblock();
 
     // var user = Meteor.user();
     // if (!user) throw new Meteor.Error(400, "userNotFound");
@@ -74,7 +74,7 @@ Meteor.methods({
       }, {
         $set: {
           input: project_id,
-          insert_time: moment().toDate(),
+          time: moment().toDate(),
           status: '',
           type: 'search',
         },

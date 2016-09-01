@@ -20,8 +20,8 @@ if (!_project.findOne({
   }, {
     $set: {
       input: 'latest_softwares',
-      insert_time: moment().toDate(),
       status: '',
+      time: moment().toDate(),
       type: 'schedule',
     },
   });

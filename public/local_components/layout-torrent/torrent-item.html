@@ -91,7 +91,7 @@
 
               <paper-item-body two-line>
                 <div>[[return_host(item.url)]]</div>
-                <div secondary>[[return_time(item.insert_time)]]</div>
+                <div secondary>[[return_time(item.time)]]</div>
               </paper-item-body>
 
               <div class="subhead">[[item.count]]</div>
@@ -244,7 +244,7 @@
     },
 
     sort: function(A, Z) {
-      return (+moment(Z.insert_time).format('X') - +moment(A.insert_time).format('X'));
+      return (+moment(Z.time).format('X') - +moment(A.time).format('X'));
     },
 
   });

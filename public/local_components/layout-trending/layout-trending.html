@@ -56,7 +56,7 @@
                 <div class="white-space-normal">[[item.title]]</div>
                 <div class="horizontal justified layout" secondary>
                   <div>[[item.size]] | [[item.leech]]L / [[item.seed]]S</div>
-                  <div>[[return_time(item.insert_time)]]</div>
+                  <div>[[return_time(item.time)]]</div>
                 </div>
               </paper-item-body>
             </paper-icon-item>
@@ -193,7 +193,7 @@
     },
 
     sort: function(A, Z) {
-      return (+moment(Z.insert_time).format('X') - +moment(A.insert_time).format('X'));
+      return (+moment(Z.time).format('X') - +moment(A.time).format('X'));
     },
 
   });

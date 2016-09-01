@@ -12,7 +12,7 @@ Meteor.publish('torrent', function(input) {
         user_removed: false
       },
       limit: (input.limit ? input.limit : 150),
-      sort: { insert_time: -1 }
+      sort: { time: -1 }
     }
   );
 

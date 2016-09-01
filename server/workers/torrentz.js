@@ -25,7 +25,7 @@ _torrentz_worker = function(row) {
             status: {
               $in: ['200'],
             },
-            update_time: {
+            time: {
               $gt: moment().subtract(6, 'hours').toDate(),
             },
           }, {
@@ -33,17 +33,17 @@ _torrentz_worker = function(row) {
               _id: 1,
             },
           })) {
-          row.insert_time = moment(row.insert_time).format('X');
+          row.time = moment(row.time).format('X');
 
           store[row.type].queue.push(row);
-          store[row.type].queue = _.sortBy(store[row.type].queue, 'insert_time');
+          store[row.type].queue = _.sortBy(store[row.type].queue, 'time');
         } else {
           _worker.update({
             _id: row._id,
           }, {
             $set: {
               status: '402',
-              update_time: moment().toDate(),
+              time: moment().toDate(),
             },
           });
         }
@@ -53,7 +53,7 @@ _torrentz_worker = function(row) {
         }, {
           $set: {
             status: '400',
-            update_time: moment().toDate(),
+            time: moment().toDate(),
           },
         });
       }
@@ -63,17 +63,17 @@ _torrentz_worker = function(row) {
       if (!_.find(store[row.type].queue, function(item) {
           return (row._id == item._id);
         })) {
-        row.insert_time = moment(row.insert_time).format('X');
+        row.time = moment(row.time).format('X');
 
         store[row.type].queue.push(row);
-        store[row.type].queue = _.sortBy(store[row.type].queue, 'insert_time');
+        store[row.type].queue = _.sortBy(store[row.type].queue, 'time');
       } else {
         _worker.update({
           _id: row._id,
         }, {
           $set: {
             status: '400',
-            update_time: moment().toDate(),
+            time: moment().toDate(),
           },
         });
       }
@@ -128,7 +128,7 @@ _torrentz_worker = function(row) {
                   }, {
                     $set: {
                       input: res.torrent[index]._id,
-                      insert_time: moment().toDate(),
+                      time: moment().toDate(),
                       status: '',
                       type: 'torrent',
                     },
@@ -140,7 +140,7 @@ _torrentz_worker = function(row) {
                 }, {
                   $set: {
                     status: '200',
-                    update_time: moment().toDate(),
+                    time: moment().toDate(),
                   },
                 });
 
@@ -186,7 +186,7 @@ _torrentz_worker = function(row) {
               }, {
                 $set: {
                   status: '404',
-                  update_time: moment().toDate(),
+                  time: moment().toDate(),
                 },
               });
             }
@@ -230,7 +230,7 @@ _torrentz_worker = function(row) {
               }, {
                 $set: {
                   status: '200',
-                  update_time: moment().toDate(),
+                  time: moment().toDate(),
                 },
               });
             } else {
@@ -239,7 +239,7 @@ _torrentz_worker = function(row) {
               }, {
                 $set: {
                   status: '404',
-                  update_time: moment().toDate(),
+                  time: moment().toDate(),
                 },
               });
             }

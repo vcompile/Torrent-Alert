@@ -14,7 +14,7 @@ Meteor.setInterval(function() {
           status: {
             $in: ['', '200'],
           },
-          update_time: {
+          time: {
             $gt: moment().subtract(6, 'hours').toDate(),
           },
         }, {
@@ -24,7 +24,7 @@ Meteor.setInterval(function() {
         })) {
         _worker.insert({
           input: project._id,
-          insert_time: moment().toDate(),
+          time: moment().toDate(),
           status: '',
           type: 'schedule',
         });

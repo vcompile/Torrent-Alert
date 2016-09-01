@@ -23,7 +23,7 @@ Meteor.methods({
     }, {
       $set: {
         input: project._id,
-        insert_time: moment().toDate(),
+        time: moment().toDate(),
         status: '',
         type: project.worker,
       },
@@ -167,7 +167,7 @@ Meteor.methods({
       }, {
         $set: {
           input: project._id,
-          insert_time: moment().toDate(),
+          time: moment().toDate(),
           status: '',
           type: 'search',
         },
@@ -189,7 +189,7 @@ Meteor.methods({
       }, {
         $set: {
           input: project_id,
-          insert_time: moment().toDate(),
+          time: moment().toDate(),
           status: '',
           type: 'search',
         },
