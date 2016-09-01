@@ -1,7 +1,7 @@
 Meteor.methods({
 
   search_keyword: function(input) {
-    // this.unblock();
+    this.unblock();
 
     // var user = Meteor.user();
     // if (!user) throw new Meteor.Error(400, "userNotFound");
@@ -37,7 +37,7 @@ Meteor.methods({
   },
 
   search_keyword_x: function(input) {
-    // this.unblock();
+    this.unblock();
 
     // var user = Meteor.user();
     // if (!user) throw new Meteor.Error(400, "userNotFound");
