@@ -9,6 +9,10 @@
     padding: 8px 0;
   }
   
+  .verified {
+    color: var(--paper-teal-500);
+  }
+  
   .white-space-normal {
     white-space: normal;
   }
@@ -21,7 +25,10 @@
           <selectable-icon icon_class="[[return_icon_class(item.category)]]" icon_text="[[return_text(item.count)]]" id="selectable_icon" item-icon selected$="{{selected}}"></selectable-icon>
 
           <paper-item-body two-line>
-            <div secondary>[[item.category]]</div>
+            <div class="horizontal justified layout" secondary>
+              <div>[[item.category]]</div>
+              <div class="verified">[[item.verified]]</div>
+            </div>
             <div class="white-space-normal">[[item.title]]</div>
             <div class="horizontal justified layout" secondary>
               <div>[[item.size]] | [[item.leech]]L / [[item.seed]]S</div>
