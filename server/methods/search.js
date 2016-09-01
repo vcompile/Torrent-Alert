@@ -10,7 +10,7 @@ Meteor.methods({
 
     if (input.trim()) {
       var proxy = Random.choice(_proxy),
-        torrentz_url = Random.choice(_torrentz_url) + "/suggestions.php?q=" + input;
+        torrentz_url = Random.choice(_torrentz_url) + "/suggestions.php?q=" + input.replace(/\s+/, '+');
 
       try {
         var req = HTTP.call("GET", torrentz_url, {
