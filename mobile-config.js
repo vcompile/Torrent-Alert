@@ -11,7 +11,7 @@ App.info({
   id: "keyword.schedule",
   name: "Torrent Alert",
   description: "Torrent Keyword Search, Schedule & Alerter",
-  version: "1.1.5",
+  version: "1.3.1",
   author: "Linto Cheeran",
   email: "linto.cet@gmail.com",
   website: "http://vcompile.com/scheduler",
@@ -29,6 +29,6 @@ App.info({
 // });
 
 App.setPreference("android-installLocation", "preferExternal");
-App.setPreference("android-minSdkVersion", "21");
+App.setPreference("android-minSdkVersion", "19");
 // App.setPreference("SplashMaintainAspectRatio", true);
 App.setPreference("SplashShowOnlyFirstTime", false);
