@@ -9,7 +9,7 @@ Install Guide
 ```sh
 curl https://install.meteor.com/ | sh
 git clone https://github.com/HedCET/Torrent-Alert.git Torrent-Alert
-cd TorrentAlert 
+cd Torrent-Alert 
 meteor
 ```
 
