@@ -52,7 +52,7 @@ Meteor.methods({
 
           var recent = [];
 
-          $('.recent a').each(function() {
+          $('#recent a').each(function() {
             if ($(this).attr('href')) {
               recent.push({
                 title: $(this).text(),
