@@ -15,6 +15,7 @@ Meteor.methods({
       try {
         var req = HTTP.call("GET", torrentz_url, {
           headers: {
+            'Referer': 'https://torrentz2.eu/',
             'User-Agent': 'Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.0',
           },
           npmRequestOptions: {
