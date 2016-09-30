@@ -23,7 +23,7 @@ if (Meteor.isServer) {
     name: function(name) {
       return _.contains(accounts_methods, name);
     },
-  }, 1, 1000 * 10);
+  }, 1, 1000);
 }
 
 Meteor.users.deny({

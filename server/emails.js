@@ -1,5 +1,5 @@
 Accounts.emailTemplates.siteName = "Torrent Alert";
-Accounts.emailTemplates.from = "TA<request@vcompile.com>";
+Accounts.emailTemplates.from = "request<request@vcompile.com>";
 
 Accounts.emailTemplates.enrollAccount = {
   subject: function() {
