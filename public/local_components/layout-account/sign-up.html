@@ -73,10 +73,14 @@
     },
 
     _done: function() {
+      document.querySelector("#polymer_modal_spinner").toggle("#004D40");
+
       Accounts.createUser({
         email: this.email,
         password: this.password,
       }, function(error) {
+        document.querySelector("#polymer_modal_spinner").toggle("#009688");
+
         if (error) {
           document.querySelector("#polymer_toast").toast(error.message);
         } else {

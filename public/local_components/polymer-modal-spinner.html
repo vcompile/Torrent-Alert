@@ -1,0 +1,46 @@
+<dom-module id="polymer-modal-spinner">
+  <style>
+  paper-dialog {
+    border-radius: 12.5%;
+  }
+  </style>
+
+  <template>
+    <paper-dialog class="center layout vertical" modal opened="{{opened}}">
+      <paper-spinner active></paper-spinner>
+    </paper-dialog>
+  </template>
+
+  <script>
+  Polymer({
+
+    is: "polymer-modal-spinner",
+
+    properties: {
+      opened: {
+        type: Boolean,
+      },
+    },
+
+    toggle: function(StatusBarHexColor) {
+      if (!this.opened) {
+        this.opened = !this.opened;
+
+        if (Meteor.isCordova && StatusBarHexColor) {
+          StatusBar.backgroundColorByHexString(StatusBarHexColor);
+        }
+      } else {
+        this.async(function() {
+          this.opened = !this.opened;
+
+          if (Meteor.isCordova && StatusBarHexColor) {
+            StatusBar.backgroundColorByHexString(StatusBarHexColor);
+          }
+        }, 400);
+      }
+    },
+
+  });
+  </script>
+
+</dom-module>
