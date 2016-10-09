@@ -9,8 +9,8 @@ Install Guide
 ```sh
 curl https://install.meteor.com/ | sh
 git clone https://github.com/HedCET/Torrent-Alert.git Torrent-Alert
-cd Torrent-Alert 
-meteor
+cd Torrent-Alert
+export TORRENTZ_URL="https://torrentz2.eu" && meteor
 ```
 
 * Also Look [Meteor-WebComponent](https://github.com/meteorwebcomponents) Approch
