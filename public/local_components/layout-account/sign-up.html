@@ -32,7 +32,7 @@
         <paper-menu-button horizontal-align="right" horizontal-offset="-8">
           <paper-icon-button class="dropdown-trigger" icon="more-vert"></paper-icon-button>
 
-          <paper-menu class="dropdown-content" on-iron-select="_select">
+          <paper-menu class="dropdown-content" on-iron-activate="_menu">
             <paper-item class="cursor-p" data-menu="Issue Reporting">Issue Reporting</paper-item>
             <paper-item class="cursor-p" data-menu="Sign In">Sign In</paper-item>
           </paper-menu>
@@ -73,7 +73,7 @@
     },
 
     _done: function() {
-      document.querySelector("#polymer_modal_spinner").toggle("#404040");
+      document.querySelector("#polymer_modal_spinner").toggle("#202020");
 
       Accounts.createUser({
         email: this.email,
@@ -92,7 +92,7 @@
       });
     },
 
-    _select: function(e, d) {
+    _menu: function(e, d) {
       switch (d.item.dataset.menu) {
         case 'Issue Reporting':
           window.open('//github.com/HedCET/Torrent-Alert/issues', '_system');

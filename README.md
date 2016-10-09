@@ -13,6 +13,6 @@ cd Torrent-Alert
 export TORRENTZ_URL="https://torrentz2.eu" && meteor
 ```
 
-* Also Look [Meteor-WebComponent](https://github.com/meteorwebcomponents) Approch
+* Also Look [Meteor-WebComponent](https://github.com/meteorwebcomponents/synthesis) Approch
 
 **MIT License** & MAILTO *request@vcompile.com* For Abuse/ContentRemoval/copyright/DMCA/EUCD

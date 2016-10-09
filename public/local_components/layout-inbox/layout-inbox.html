@@ -58,7 +58,7 @@
         <paper-menu-button horizontal-align="right" horizontal-offset="-8">
           <paper-icon-button class="dropdown-trigger" icon="more-vert"></paper-icon-button>
 
-          <paper-menu class="dropdown-content" on-iron-select="_select">
+          <paper-menu class="dropdown-content" on-iron-activate="_menu">
             <paper-item class="cursor-p" data-menu="Issue Reporting">Issue Reporting</paper-item>
             <paper-item class="cursor-p" data-menu="Sign In" hidden$="[[user]]">Sign In</paper-item>
             <paper-item class="cursor-p" data-menu="Sign Out" hidden$="[[!user]]">Sign Out</paper-item>
@@ -148,7 +148,7 @@
       });
     },
 
-    _select: function(e, d) {
+    _menu: function(e, d) {
       switch (d.item.dataset.menu) {
         case 'Issue Reporting':
           window.open('//github.com/HedCET/Torrent-Alert/issues', '_system');
@@ -162,24 +162,20 @@
           break;
 
         case 'Sign Out':
-          if (Meteor.status().connected) {
-            document.querySelector("#polymer_modal_spinner").toggle("#404040");
+          document.querySelector("#polymer_modal_spinner").toggle("#202020");
 
-            Meteor.logout(function(error) {
-              document.querySelector("#polymer_modal_spinner").toggle("#009688");
+          Meteor.logout(function(error) {
+            document.querySelector("#polymer_modal_spinner").toggle("#009688");
 
-              if (error) {
-                console.log(error);
-              } else {
-                FlowRouter.go("/", {}, {
-                  previous: null,
-                  route: null,
-                });
-              }
-            });
-          } else {
-            document.querySelector("#polymer_toast").toast("server connection required");
-          }
+            if (error) {
+              console.log(error);
+            } else {
+              FlowRouter.go("/", {}, {
+                previous: null,
+                route: null,
+              });
+            }
+          });
           break;
       }
     },
