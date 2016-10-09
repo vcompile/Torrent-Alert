@@ -163,7 +163,11 @@
 
         case 'Sign Out':
           if (Meteor.status().connected) {
+            document.querySelector("#polymer_modal_spinner").toggle("#404040");
+
             Meteor.logout(function(error) {
+              document.querySelector("#polymer_modal_spinner").toggle("#009688");
+
               if (error) {
                 console.log(error);
               } else {
