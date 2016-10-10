@@ -1,7 +1,7 @@
 MeteorJS Polymer Project
 ----------
 
-* [Mobile Browser Version](https://ww8.herokuapp.com)
+* [Mobile Browser Version](http://t.vcompile.com)
 
 Install Guide
 ----------

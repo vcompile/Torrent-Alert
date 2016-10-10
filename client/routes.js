@@ -6,40 +6,6 @@ document.addEventListener("WebComponentsReady", function() {
   });
 });
 
-var MAIN = FlowRouter.group({
-  triggersEnter: [function(context, redirect) {
-    if (Meteor.status().connected) {
-      if (!Meteor.user()) {
-        redirect("/account", {}, {
-          previous: null,
-          route: null,
-        });
-      }
-    }
-  }],
-  name: "MAIN",
-});
-
-MAIN.route("/", {
-  action() {
-    document.querySelector("#layout_main").selected = (FlowRouter.getQueryParam("route") ? FlowRouter.getQueryParam("route") : 'layout-inbox');
-
-    Meteor.call("recent", function(error, res) {
-      if (!error && res.length) {
-        document.querySelector("#layout_trending").recent = res;
-      }
-    });
-
-    Meteor.setTimeout(function() {
-      document.querySelector("#layout_inbox paper-scroll-header-panel").notifyResize();
-    }, 40);
-
-    if (Meteor.isCordova) {
-      StatusBar.backgroundColorByHexString("#009688");
-    }
-  },
-});
-
 FlowRouter.route("/account", {
   action() {
     document.querySelector("#layout_account").selected = (FlowRouter.getQueryParam("route") ? FlowRouter.getQueryParam("route") : 'sign-in');
@@ -94,3 +60,37 @@ FlowRouter.notFound = {
     });
   },
 };
+
+var MAIN = FlowRouter.group({
+  triggersEnter: [function(context, redirect) {
+    if (Meteor.status().connected) {
+      if (!Meteor.user()) {
+        redirect("/account", {}, {
+          previous: null,
+          route: null,
+        });
+      }
+    }
+  }],
+  name: "MAIN",
+});
+
+MAIN.route("/", {
+  action() {
+    document.querySelector("#layout_main").selected = (FlowRouter.getQueryParam("route") ? FlowRouter.getQueryParam("route") : 'layout-inbox');
+
+    Meteor.call("recent", function(error, res) {
+      if (!error && res.length) {
+        document.querySelector("#layout_trending").recent = res;
+      }
+    });
+
+    Meteor.setTimeout(function() {
+      document.querySelector("#layout_inbox paper-scroll-header-panel").notifyResize();
+    }, 40);
+
+    if (Meteor.isCordova) {
+      StatusBar.backgroundColorByHexString("#009688");
+    }
+  },
+});

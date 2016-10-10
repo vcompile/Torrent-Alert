@@ -7,7 +7,7 @@ ddp-rate-limiter
 ecmascript              # Enable ECMAScript2015+ syntax in app code
 email
 es5-shim                # ECMAScript 5 compatibility for older browsers.
-force-ssl
+# force-ssl
 http
 jquery                  # Helpful client-side library
 meteor-base             # Packages every Meteor app needs to have

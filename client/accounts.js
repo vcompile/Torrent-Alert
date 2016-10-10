@@ -6,7 +6,7 @@ Accounts.onResetPasswordLink(function(token, done) {
   }
 
   Meteor.setTimeout(function() {
-    FlowRouter.go("/user-account", {}, {
+    FlowRouter.go("/account", {}, {
       token: token,
       route: 'reset-password',
       previous: Base64.encode(ascii_array(FlowRouter.current().path)),

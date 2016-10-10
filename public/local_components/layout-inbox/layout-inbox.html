@@ -162,10 +162,10 @@
           break;
 
         case 'Sign Out':
-          document.querySelector("#polymer_modal_spinner").toggle("#202020");
+          document.querySelector("#polymer_modal_spinner").toggle();
 
           Meteor.logout(function(error) {
-            document.querySelector("#polymer_modal_spinner").toggle("#009688");
+            document.querySelector("#polymer_modal_spinner").toggle();
 
             if (error) {
               console.log(error);

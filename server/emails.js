@@ -6,7 +6,7 @@ Accounts.emailTemplates.enrollAccount = {
     return "enrollAccount URL";
   },
   text: function(user, url) {
-    return "Hi\n\tPlease open the URL below in browser to enroll password\n\t" + url + "\n\tThankYou";
+    return "Hi\n\tPlease open the URL below in browser to enroll password\n\t" + url + "\n\n\n\tThankYou";
   },
 };
 
@@ -15,7 +15,7 @@ Accounts.emailTemplates.resetPassword = {
     return "reset password URL";
   },
   text: function(user, url) {
-    return "Hi\n\tPlease open the URL below in browser to reset your password\n\t" + url + "\n\tThankYou";
+    return "Hi\n\tPlease open the URL below in browser to reset your password\n\t" + url + "\n\n\n\tThankYou";
   },
 };
 
@@ -24,6 +24,6 @@ Accounts.emailTemplates.verifyEmail = {
     return "VERIFY registered mailId";
   },
   text: function(user, url) {
-    return "Hi\n\tPlease open the URL below in browser to VERIFY your mailId\n\t" + url + "\n\tThankYou";
+    return "Hi\n\tPlease open the URL below in browser to VERIFY your mailId\n\t" + url + "\n\n\n\tThankYou";
   },
 };

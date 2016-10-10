@@ -22,19 +22,19 @@
       },
     },
 
-    toggle: function(StatusBarHexColor) {
+    toggle: function() {
       if (!this.opened) {
         this.opened = !this.opened;
 
-        if (Meteor.isCordova && StatusBarHexColor) {
-          StatusBar.backgroundColorByHexString(StatusBarHexColor);
+        if (Meteor.isCordova) {
+          StatusBar.backgroundColorByHexString('#606060');
         }
       } else {
         this.async(function() {
           this.opened = !this.opened;
 
-          if (Meteor.isCordova && StatusBarHexColor) {
-            StatusBar.backgroundColorByHexString(StatusBarHexColor);
+          if (Meteor.isCordova) {
+            StatusBar.backgroundColorByHexString('#009688');
           }
         }, 400);
       }
