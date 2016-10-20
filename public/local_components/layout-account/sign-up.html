@@ -1,5 +1,9 @@
 <dom-module id="sign-up">
   <style>
+  form {
+    padding: 16px;
+  }
+  
   paper-menu {
     min-width: 192px
   }
@@ -15,10 +19,6 @@
   
   .footer {
     min-height: 88px;
-  }
-  
-  .form {
-    padding: 16px;
   }
   </style>
 
@@ -41,7 +41,7 @@
 
       <div class="center-justified horizontal layout">
         <div class="li">
-          <div class="form layout vertical">
+          <form class="layout vertical">
             <gold-email-input auto-validate label="Mail Id" required value="{{email}}"></gold-email-input>
 
             <paper-input auto-validate error-message="minLength is 8" id="password" label="Password" minlength="8" on-change="_change" required type="password" value="{{password}}">
@@ -49,7 +49,7 @@
             </paper-input>
 
             <paper-input auto-validate error-message="incorrect" id="confirm_password" label="Confirm Password" minlength="8" on-change="_change" required type="password"></paper-input>
-          </div>
+          </form>
         </div>
       </div>
 

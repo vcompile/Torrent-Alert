@@ -19224,6 +19224,10 @@ It will also ensure that focus remains in the dialog.
         @apply(--paper-header-panel-body);
       }
 
+      #mainContainer {
+        @apply(--paper-header-panel-container);
+      }
+
       /*
        * mode: scroll
        */
@@ -22987,6 +22991,7 @@ this.currentTarget=a,this.defaultPrevented=!1,this.eventPhase=Event.AT_TARGET,th
         --paper-progress-secondary-color: var(--paper-slider-secondary-color, --google-blue-300);
         --paper-progress-disabled-active-color: var(--paper-slider-disabled-active-color, --paper-grey-400);
         --paper-progress-disabled-secondary-color: var(--paper-slider-disabled-secondary-color, --paper-grey-400);
+        --calculated-paper-slider-height: var(--paper-slider-height, 2px);
       }
 
       /* focus shows the ripple */
@@ -22997,9 +23002,9 @@ this.currentTarget=a,this.defaultPrevented=!1,this.eventPhase=Event.AT_TARGET,th
       #sliderContainer {
         position: relative;
         width: 100%;
-        height: calc(30px + var(--paper-slider-height, 2px));
-        margin-left: calc(15px + var(--paper-slider-height, 2px)/2);
-        margin-right: calc(15px + var(--paper-slider-height, 2px)/2);
+        height: calc(30px + var(--calculated-paper-slider-height));
+        margin-left: calc(15px + var(--calculated-paper-slider-height)/2);
+        margin-right: calc(15px + var(--calculated-paper-slider-height)/2);
       }
 
       #sliderContainer:focus {
@@ -23021,7 +23026,7 @@ this.currentTarget=a,this.defaultPrevented=!1,this.eventPhase=Event.AT_TARGET,th
       }
 
       .ring > .bar-container {
-        left: calc(5px + var(--paper-slider-height, 2px)/2);
+        left: calc(5px + var(--calculated-paper-slider-height)/2);
         transition: left 0.18s ease;
       }
 
@@ -23030,7 +23035,7 @@ this.currentTarget=a,this.defaultPrevented=!1,this.eventPhase=Event.AT_TARGET,th
       }
 
       .ring.expand:not(.pin) > .bar-container {
-        left: calc(8px + var(--paper-slider-height, 2px)/2);
+        left: calc(8px + var(--calculated-paper-slider-height)/2);
       }
 
       #sliderBar {
@@ -23038,13 +23043,13 @@ this.currentTarget=a,this.defaultPrevented=!1,this.eventPhase=Event.AT_TARGET,th
         width: 100%;
         background-color: var(--paper-slider-bar-color, transparent);
         --paper-progress-container-color: var(--paper-slider-container-color, --paper-grey-400);
-        --paper-progress-height: var(--paper-slider-height, 2px);
+        --paper-progress-height: var(--calculated-paper-slider-height);
       }
 
       .slider-markers {
         position: absolute;
         top: calc(14px + var(--paper-slider-height,2px)/2);
-        height: var(--paper-slider-height, 2px);
+        height: var(--calculated-paper-slider-height);
         left: 0;
         right: -1px;
         box-sizing: border-box;
@@ -23061,38 +23066,38 @@ this.currentTarget=a,this.defaultPrevented=!1,this.eventPhase=Event.AT_TARGET,th
         display: block;
         margin-left: -1px;
         width: 2px;
-        height: 2px;
+        height: var(--calculated-paper-slider-height);
         border-radius: 50%;
-        background-color: black;
+        background-color: var(--paper-slider-markers-color, #000);
       }
 
-      #sliderKnob {
+      .slider-knob {
         position: absolute;
         left: 0;
         top: 0;
-        margin-left: calc(-15px - var(--paper-slider-height, 2px)/2);
-        width: calc(30px + var(--paper-slider-height, 2px));
-        height: calc(30px + var(--paper-slider-height, 2px));
+        margin-left: calc(-15px - var(--calculated-paper-slider-height)/2);
+        width: calc(30px + var(--calculated-paper-slider-height));
+        height: calc(30px + var(--calculated-paper-slider-height));
       }
 
-      .transiting > #sliderKnob {
+      .transiting > .slider-knob {
         transition: left 0.08s ease;
       }
 
-      #sliderKnob:focus {
+      .slider-knob:focus {
         outline: none;
       }
 
-      #sliderKnob.dragging {
+      .slider-knob.dragging {
         transition: none;
       }
 
-      .snaps > #sliderKnob.dragging {
+      .snaps > .slider-knob.dragging {
         transition: -webkit-transform 0.08s ease;
         transition: transform 0.08s ease;
       }
 
-      #sliderKnobInner {
+      .slider-knob-inner {
         margin: 10px;
         width: calc(100% - 20px);
         height: calc(100% - 20px);
@@ -23109,21 +23114,21 @@ this.currentTarget=a,this.defaultPrevented=!1,this.eventPhase=Event.AT_TARGET,th
         transition-timing-function: ease;
       }
 
-      .expand:not(.pin) > #sliderKnob > #sliderKnobInner {
+      .expand:not(.pin) > .slider-knob > .slider-knob-inner {
         -webkit-transform: scale(1.5);
         transform: scale(1.5);
       }
 
-      .ring > #sliderKnob > #sliderKnobInner {
+      .ring > .slider-knob > .slider-knob-inner {
         background-color: var(--paper-slider-knob-start-color, transparent);
         border: 2px solid var(--paper-slider-knob-start-border-color, --paper-grey-400);
       }
 
-      #sliderKnobInner::before {
+      .slider-knob-inner::before {
         background-color: var(--paper-slider-pin-color, --google-blue-700);
       }
 
-      .pin > #sliderKnob > #sliderKnobInner::before {
+      .pin > .slider-knob > .slider-knob-inner::before {
         content: "";
         position: absolute;
         top: 0;
@@ -23137,22 +23142,22 @@ this.currentTarget=a,this.defaultPrevented=!1,this.eventPhase=Event.AT_TARGET,th
         transform: rotate(-45deg) scale(0) translate(0);
       }
 
-      #sliderKnobInner::before,
-      #sliderKnobInner::after {
+      .slider-knob-inner::before,
+      .slider-knob-inner::after {
         transition: -webkit-transform .18s ease, background-color .18s ease;
         transition: transform .18s ease, background-color .18s ease;
       }
 
-      .pin.ring > #sliderKnob > #sliderKnobInner::before {
+      .pin.ring > .slider-knob > .slider-knob-inner::before {
         background-color: var(--paper-slider-pin-start-color, --paper-grey-400);
       }
 
-      .pin.expand > #sliderKnob > #sliderKnobInner::before {
+      .pin.expand > .slider-knob > .slider-knob-inner::before {
         -webkit-transform: rotate(-45deg) scale(1) translate(17px, -17px);
         transform: rotate(-45deg) scale(1) translate(17px, -17px);
       }
 
-      .pin > #sliderKnob > #sliderKnobInner::after {
+      .pin > .slider-knob > .slider-knob-inner::after {
         content: attr(value);
         position: absolute;
         top: 0;
@@ -23168,7 +23173,7 @@ this.currentTarget=a,this.defaultPrevented=!1,this.eventPhase=Event.AT_TARGET,th
         transform: scale(0) translate(0);
       }
 
-      .pin.expand > #sliderKnob > #sliderKnobInner::after {
+      .pin.expand > .slider-knob > .slider-knob-inner::after {
         -webkit-transform: scale(1) translate(0, -17px);
         transform: scale(1) translate(0, -17px);
       }
@@ -23188,14 +23193,14 @@ this.currentTarget=a,this.defaultPrevented=!1,this.eventPhase=Event.AT_TARGET,th
         pointer-events: none;
       }
 
-      .disabled > #sliderKnob > #sliderKnobInner {
+      .disabled > .slider-knob > .slider-knob-inner {
         background-color: var(--paper-slider-disabled-knob-color, --paper-grey-400);
         border: 2px solid var(--paper-slider-disabled-knob-color, --paper-grey-400);
         -webkit-transform: scale3d(0.75, 0.75, 1);
         transform: scale3d(0.75, 0.75, 1);
       }
 
-      .disabled.ring > #sliderKnob > #sliderKnobInner {
+      .disabled.ring > .slider-knob > .slider-knob-inner {
         background-color: var(--paper-slider-knob-start-color, transparent);
         border: 2px solid var(--paper-slider-knob-start-border-color, --paper-grey-400);
       }
@@ -23219,8 +23224,8 @@ this.currentTarget=a,this.defaultPrevented=!1,this.eventPhase=Event.AT_TARGET,th
         </div>
       </template>
 
-      <div id="sliderKnob" on-down="_knobdown" on-up="_resetKnob" on-track="_onTrack" on-transitionend="_knobTransitionEnd">
-          <div id="sliderKnobInner" value$="[[immediateValue]]"></div>
+      <div id="sliderKnob" class="slider-knob" on-down="_knobdown" on-up="_resetKnob" on-track="_onTrack" on-transitionend="_knobTransitionEnd">
+          <div class="slider-knob-inner" value$="[[immediateValue]]"></div>
       </div>
     </div>
 
@@ -23328,7 +23333,9 @@ this.currentTarget=a,this.defaultPrevented=!1,this.eventPhase=Event.AT_TARGET,th
         markers: {
           type: Array,
           readOnly: true,
-          value: []
+          value: function() {
+              return [];
+          }
         },
       },
 
@@ -23439,12 +23446,12 @@ this.currentTarget=a,this.defaultPrevented=!1,this.eventPhase=Event.AT_TARGET,th
         this._setDragging(true);
       },
 
-      _trackX: function(e) {
+      _trackX: function(event) {
         if (!this.dragging) {
-          this._trackStart(e);
+          this._trackStart(event);
         }
 
-        var dx = Math.min(this._maxx, Math.max(this._minx, e.detail.dx));
+        var dx = Math.min(this._maxx, Math.max(this._minx, event.detail.dx));
         this._x = this._startx + dx;
 
         var immediateValue = this._calcStep(this._calcKnobPosition(this._x / this._w));
@@ -23612,7 +23619,7 @@ this.currentTarget=a,this.defaultPrevented=!1,this.eventPhase=Event.AT_TARGET,th
      * Fired when the slider's immediateValue changes. Only occurs while the
      * user is dragging.
      *
-     * To detect changes to immediateValue that happen for any input (i.e.                                                          
+     * To detect changes to immediateValue that happen for any input (i.e.
      * dragging, tapping, clicking, etc.) listen for immediate-value-changed
      * instead.
      *

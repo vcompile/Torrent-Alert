@@ -1,5 +1,6 @@
 accounts-google
 accounts-password
+appcache
 base64
 blaze-html-templates    # Compile .html files into Meteor Blaze views
 check

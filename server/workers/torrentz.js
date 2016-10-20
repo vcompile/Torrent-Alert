@@ -33,10 +33,8 @@ _torrentz_worker = function(row) {
               _id: 1,
             },
           })) {
-          row.time = moment(row.time).format('X');
-
           store[row.type].queue.push(row);
-          store[row.type].queue = _.sortBy(store[row.type].queue, 'time');
+          store[row.type].queue = _.shuffle(store[row.type].queue);
         } else {
           _worker.update({
             _id: row._id,
@@ -63,10 +61,8 @@ _torrentz_worker = function(row) {
       if (!_.find(store[row.type].queue, function(item) {
           return (row._id == item._id);
         })) {
-        row.time = moment(row.time).format('X');
-
         store[row.type].queue.push(row);
-        store[row.type].queue = _.sortBy(store[row.type].queue, 'time');
+        store[row.type].queue = _.shuffle(store[row.type].queue);
       } else {
         _worker.update({
           _id: row._id,

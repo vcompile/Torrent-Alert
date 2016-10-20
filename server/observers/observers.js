@@ -6,7 +6,6 @@ _worker.find({
 }, {
   fields: {
     input: 1,
-    time: 1,
     type: 1,
   },
 }).observe({
