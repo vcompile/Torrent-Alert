@@ -1,6 +1,11 @@
 MeteorJS Polymer Project
 ----------
 
+About
+-----
+
+Torrent alert will let you know when your favorite movie/file is available online. All you need to do is set some keywords for it to watch. If your service provider is blocking the torrent URL it has got a proxy option also.
+
 * [Mobile Browser Version](http://t.vcompile.com)
 
 Install Guide
