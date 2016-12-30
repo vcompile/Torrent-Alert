@@ -1,0 +1,51 @@
+<link rel="import" href="../../../bower_components/font-roboto/roboto.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../../bower_components/paper-item/paper-item-body.html">
+<link rel="import" href="../../../bower_components/paper-item/paper-icon-item.html">
+<link rel="import" href="../../../bower_components/paper-styles/paper-styles.html">
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+<dom-module id="layout-subscribed">
+  <template>
+    <style>
+    paper-icon-item {
+      border-bottom: 1px solid #EEE;
+      border-top: 1px solid #EEE;
+    }
+    
+    .body1 {
+      @apply(--paper-font-body1);
+    }
+    
+    .color {
+      color: #757575;
+    }
+    
+    .footer {
+      min-height: 88px;
+    }
+    
+    .li .title {
+      padding: 8px;
+    }
+    </style>
+
+    <div class="center-justified horizontal layout">
+      <div class="li">
+        <div class="horizontal layout title">
+          <div class="body1 color cursor-d flex">{{_status(project.length)}}</div>
+        </div>
+      </div>
+    </div>
+
+    <iron-selector attr-for-selected="item" multi selected-attribute="selected" selected-values="{{selected}}">
+      <template is="dom-repeat" items="{{project}}">
+        <subscribed-item item="{{item}}"></subscribed-item>
+      </template>
+    </iron-selector>
+
+    <div class="footer"></div>
+  </template>
+</dom-module>
+
+<link rel="import" href="subscribed-item.html">

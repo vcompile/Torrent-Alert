@@ -1,0 +1,21 @@
+<link rel="import" href="../../bower_components/app-route/app-route.html">
+<link rel="import" href="../../bower_components/font-roboto/roboto.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../bower_components/neon-animation/neon-animated-pages.html">
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<dom-module id="layout-z">
+  <template>
+    <app-route data="{{route}}" pattern="/:layout_z" route="{{router}}" tail="{{tail}}"></app-route>
+
+    <neon-animated-pages attr-for-selected="data-page" class="fit" selected="{{route.layout_z}}">
+      <layout-torrent data-page="torrent" router="{{tail}}"></layout-torrent>
+      <layout-project data-page="project" router="{{tail}}" user="{{user}}"></layout-project>
+      <layout-filter data-page="filter" router="{{tail}}"></layout-filter>
+    </neon-animated-pages>
+  </template>
+</dom-module>
+
+<link rel="import" href="layout-torrent/layout-torrent.html">
+<link rel="import" href="layout-project/layout-project.html">
+<link rel="import" href="layout-filter.html">

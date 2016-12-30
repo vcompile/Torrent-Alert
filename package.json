@@ -1,0 +1,34 @@
+{
+  "author": {},
+  "bugs": {},
+  "contributors": [
+    "linto.cet@gmail.com"
+  ],
+  "dependencies": {
+    "babel-runtime": "^6.20.0",
+    "bcrypt": "^1.0.1",
+    "cheerio": "^0.22.0",
+    "meteor-node-stubs": "^0.2.4",
+    "moment": "^2.17.1",
+    "node-gcm": "^0.14.4",
+    "underscore": "^1.8.3"
+  },
+  "description": "Torrent Search & Alert",
+  "devDependencies": {},
+  "engines": {
+    "node": ">= 0.12.0"
+  },
+  "homepage": "",
+  "keywords": [
+    "Torrent Alert"
+  ],
+  "license": "MIT",
+  "main": "",
+  "name": "torrent",
+  "private": true,
+  "repository": {},
+  "scripts": {
+    "start": "meteor run"
+  },
+  "version": "0.0.0"
+}

@@ -1,0 +1,58 @@
+<link rel="import" href="../../bower_components/font-roboto/roboto.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item-body.html">
+<link rel="import" href="../../bower_components/paper-item/paper-icon-item.html">
+<link rel="import" href="../../bower_components/paper-styles/paper-styles.html">
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<dom-module id="layout-user">
+  <template>
+    <style>
+    paper-icon-item {
+      border-bottom: 1px solid #EEE;
+      border-top: 1px solid #EEE;
+    }
+    
+    .body1 {
+      @apply(--paper-font-body1);
+    }
+    
+    .color {
+      color: #757575;
+    }
+    
+    .footer {
+      min-height: 88px;
+    }
+    
+    .li .title {
+      padding: 8px;
+    }
+    </style>
+
+    <div class="center-justified horizontal layout">
+      <div class="li">
+        <div class="horizontal layout title">
+          <div class="body1 color cursor-d flex">Account Linking</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="center-justified horizontal layout">
+      <div class="li">
+        <paper-icon-item class="cursor-p white" on-tap="_google">
+          <selectable-icon icon_img_src="{{_picture(user.picture)}}" item-icon></selectable-icon>
+
+          <paper-item-body two-line>
+            <div>{{_name(user.name)}}</div>
+            <div secondary>{{_email(user.email)}}</div>
+          </paper-item-body>
+        </paper-icon-item>
+      </div>
+    </div>
+
+    <div class="footer"></div>
+  </template>
+</dom-module>
+
+<link rel="import" href="../selectable-icon.html">

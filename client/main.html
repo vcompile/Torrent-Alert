@@ -1,24 +1,48 @@
 <head>
-  <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+
+  <link rel="apple-touch-icon" href="/icons/Icon-60@3x.png">
+  <link rel="icon" sizes="192x192" href="/icons/xxxhdpi.png">
+  <link rel="manifest" href="/manifest.web.json">
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="#009688">
+  <meta name="apple-mobile-web-app-title" content="Torrent Alert">
+  <meta name="application-name" content="Torrent Alert">
+  <meta name="description" content="Torrent Search & Alert">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="msapplication-tap-highlight" content="no">
+  <meta name="msapplication-TileColor" content="#009688">
+  <meta name="msapplication-TileImage" content="/png/512x512.png">
+  <meta name="msapplication-tooltip" content="Torrent Search & Alert">
+  <meta name="msapplication-starturl" content="https://torrent.linto.online">
+  <meta name="theme-color" content="#009688">
+  <meta name="viewport" content="initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no">
 
   <title>Torrent Alert</title>
-  <link href="/png/icon.png" rel="shortcut icon">
 
-  <script src="polymer.js"></script>
-  <link href="polymer.html" rel="import">
+  <script src="/cdn/webcomponents-lite.min.js"></script>
+  <script src="/cdn/web-animations.min.js"></script>
 
-  <!-- <script src="bower_components/webcomponentsjs/webcomponents-lite.min.js"></script> -->
-  <!-- <link href="bower_components.html" rel="import"> -->
+  <link href="/cdn/local_components.min.html" rel="import">
 
-  <link href="local_components.html" rel="import">
+  <!-- <script src="/bower_components/webcomponentsjs/webcomponents-lite.min.js"></script> -->
+  <!-- <script src="/bower_components/web-animations-js/web-animations.min.js"></script> -->
+
+  <!-- <link href="/local_components/polymer-spinner.html" rel="import"> -->
+  <!-- <link href="/local_components/polymer-toast.html" rel="import"> -->
+
+  <!-- <link href="/local_components/layout-main.html" rel="import"> -->
+
 </head>
 
 <body class="fullbleed">
+
+  <polymer-spinner id="polymer_spinner"></polymer-spinner>
+  <polymer-toast id="polymer_toast"></polymer-toast>
+
   <style>
   * {
-    tap-highlight-color: rgba(0, 0, 0, 0);
-    touch-callout: none;
-    user-select: none;
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
     -webkit-touch-callout: none;
     -webkit-user-select: none;
@@ -32,18 +56,16 @@
     -webkit-box-shadow: 0 0 0 1000px #EEE inset!important;
   }
   
+  iron-overlay-backdrop {
+    background: #009688!important;
+  }
+  
   .cursor-d {
     cursor: default;
   }
   
   .cursor-p {
     cursor: pointer;
-  }
-  
-  .etc {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
   
   .li {
@@ -69,8 +91,4 @@
 
   <layout-main class="fit" id="layout_main"></layout-main>
 
-  <!-- plug-ins -->
-
-  <polymer-modal-spinner id="polymer_modal_spinner"></polymer-modal-spinner>
-  <polymer-toast id="polymer_toast"></polymer-toast>
 </body>

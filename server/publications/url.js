@@ -1,9 +1,17 @@
-Meteor.publish('url', function(input) {
+Meteor.publish('url', (input) => {
   check(input, [String]);
 
   return _url.find({
-    torrent: {
+    _id: {
       $in: input,
     },
+    deny: {
+      $exists: false,
+    },
+  }, {
+    fields: {
+      deny: false,
+    },
+    // limit: 15,
   });
 });

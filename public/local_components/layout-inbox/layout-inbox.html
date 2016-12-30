@@ -1,212 +1,109 @@
-<dom-module id="layout-inbox">
-  <style>
-  div[selected] .tab-bottom-line {
-    width: 100%;
-  }
-  
-  paper-badge {
-    --paper-badge-background: var(--paper-red-300);
-    --paper-badge-text-color: white;
-  }
-  
-  paper-menu {
-    min-width: 192px
-  }
-  
-  paper-menu-button {
-    padding: 0;
-  }
-  
-  paper-ripple {
-    color: var(--paper-teal-100);
-  }
-  
-  paper-toolbar {
-    --paper-toolbar-background: var(--paper-teal-500);
-    --paper-toolbar-color: white;
-    --paper-toolbar-height: 56px;
-    height: 112px;
-    overflow: visible;
-  }
-  
-  paper-toolbar .title {
-    margin: 0!important;
-    padding: 16px 8px;
-  }
-  
-  #tab-panel {
-    overflow-x: auto;
-  }
-  
-  .tab-bottom-line {
-    height: 4px;
-  }
-  
-  .tab-icon {
-    min-width: 48px;
-    padding: 16px;
-  }
-  </style>
+<link rel="import" href="../../bower_components/app-route/app-route.html">
+<link rel="import" href="../../bower_components/font-roboto/roboto.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/social-icons.html">
+<link rel="import" href="../../bower_components/iron-selector/iron-selector.html">
+<link rel="import" href="../../bower_components/neon-animation/neon-animated-pages.html">
+<!-- <link rel="import" href="../../bower_components/paper-badge/paper-badge.html"> -->
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-ripple/paper-ripple.html">
+<link rel="import" href="../../bower_components/paper-scroll-header-panel/paper-scroll-header-panel.html">
+<link rel="import" href="../../bower_components/paper-styles/paper-styles.html">
+<link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="../../bower_components/polymer/polymer.html">
 
+<dom-module id="layout-inbox">
   <template>
+    <style>
+    div[selected] .tab-bottom-line {
+      width: 100%;
+    }
+    /*paper-badge {
+      --paper-badge-background: var(--paper-red-300);
+      --paper-badge-text-color: white;
+    }*/
+    
+    paper-ripple {
+      color: var(--paper-teal-100);
+    }
+    
+    paper-toolbar {
+      --paper-toolbar-background: var(--paper-teal-500);
+      --paper-toolbar-color: white;
+      --paper-toolbar-height: 56px;
+      height: 112px;
+      overflow: visible;
+    }
+    
+    paper-toolbar .title {
+      margin: 0!important;
+      padding: 16px 8px;
+      /*text-transform: capitalize;*/
+    }
+    
+    .tab-bottom-line {
+      height: 4px;
+    }
+    
+    .tab-icon {
+      display: block;
+      padding: 16px 32px;
+    }
+    </style>
+
+    <app-route data="{{route}}" pattern="/:layout_inbox" route="{{router}}" tail="{{tail}}"></app-route>
+
     <paper-scroll-header-panel class="fit" condensed-header-height="56" keep-condensed-header scroll-away-topbar>
       <paper-toolbar>
-        <div class="title">[[selected]]</div>
+        <div class="title">{{route.layout_inbox}}</div>
 
-        <paper-icon-button icon="search" on-tap="_search"></paper-icon-button>
+        <paper-icon-button icon="info-outline" on-tap="_info"></paper-icon-button>
 
-        <paper-menu-button horizontal-align="right" horizontal-offset="-8">
-          <paper-icon-button class="dropdown-trigger" icon="more-vert"></paper-icon-button>
-
-          <paper-menu class="dropdown-content" on-iron-activate="_menu">
-            <paper-item class="cursor-p" data-menu="Issue Reporting">Issue Reporting</paper-item>
-            <paper-item class="cursor-p" data-menu="Sign In" hidden$="[[user]]">Sign In</paper-item>
-            <paper-item class="cursor-p" data-menu="Sign Out" hidden$="[[!user]]">Sign Out</paper-item>
-          </paper-menu>
-        </paper-menu-button>
-
-        <iron-selector attr-for-selected="data-tab" class="bottom center-justified flex horizontal layout self-start" id="tab-panel" hidden="[[hidden(selected_subscription.length)]]" selected="{{selected}}" selected-attribute="selected">
-          <div class="center-center cursor-p layout relative self-end vertical" data-tab="Subscription">
+        <iron-selector attr-for-selected="data-tab" class="bottom center-justified flex horizontal layout self-start" hidden="{{_hidden(selected_subscribed.length)}}" selected="{{route.layout_inbox}}" selected-attribute="selected">
+          <div class="center-center cursor-p layout relative self-end vertical" data-tab="search">
             <div class="center-justified flex horizontal layout tab-icon">
-              <iron-icon icon="social:notifications-none" id="tab_A"></iron-icon>
-              <!-- <paper-badge for="tab_A" label="3"></paper-badge> -->
+              <iron-icon icon="cloud-queue" id="search_badge"></iron-icon>
+              <!-- <paper-badge for="search_badge" label="9+"></paper-badge> -->
             </div>
-
-            <div class="teal-700 tab-bottom-line"></div>
-
+            <div class="teal-A700 tab-bottom-line"></div>
             <paper-ripple></paper-ripple>
           </div>
 
-          <div class="center-center cursor-p layout relative self-end vertical" data-tab="Trending">
+          <div class="center-center cursor-p layout relative self-end vertical" data-tab="subscribed">
             <div class="center-justified flex horizontal layout tab-icon">
-              <iron-icon icon="trending-up"></iron-icon>
+              <iron-icon icon="social:notifications-none" id="subscribed_badge"></iron-icon>
+              <!-- <paper-badge for="subscribed_badge" label="9+"></paper-badge> -->
             </div>
-
-            <div class="teal-700 tab-bottom-line"></div>
-
+            <div class="teal-A700 tab-bottom-line"></div>
             <paper-ripple></paper-ripple>
           </div>
 
-          <div class="center-center cursor-p layout relative self-end vertical" data-tab="User">
+          <div class="center-center cursor-p layout relative self-end vertical" data-tab="user">
             <div class="center-justified flex horizontal layout tab-icon">
-              <iron-icon icon="social:person-outline"></iron-icon>
+              <iron-icon icon="social:person-outline" id="user_badge"></iron-icon>
+              <!-- <paper-badge for="user_badge" label="9+"></paper-badge> -->
             </div>
-
-            <div class="teal-700 tab-bottom-line"></div>
-
+            <div class="teal-A700 tab-bottom-line"></div>
             <paper-ripple></paper-ripple>
           </div>
         </iron-selector>
 
-        <div class="bottom center flex horizontal layout" hidden="[[!selected_subscription.length]]">
-          <div class="title">[[selected_subscription.length]]</div>
+        <div class="bottom center flex horizontal layout" hidden="{{!selected_subscribed.length}}">
+          <div class="title">{{selected_subscribed.length}}</div>
           <paper-icon-button icon="delete" on-tap="_delete"></paper-icon-button>
         </div>
       </paper-toolbar>
 
-      <neon-animated-pages attr-for-selected="data-page" selected="[[selected]]">
-        <layout-subscription data-page="Subscription" id="layout_subscription" selected="{{selected_subscription}}"></layout-subscription>
-        <layout-trending data-page="Trending" id="layout_trending"></layout-trending>
-        <layout-user data-page="User" id="layout_user"></layout-user>
+      <neon-animated-pages attr-for-selected="data-page" selected="{{route.layout_inbox}}">
+        <layout-search data-page="search" router="{{tail}}"></layout-search>
+        <layout-subscribed data-page="subscribed" selected="{{selected_subscribed}}" user="{{user}}"></layout-subscribed>
+        <layout-user data-page="user" id="layout_user" user="{{user}}"></layout-user>
       </neon-animated-pages>
     </paper-scroll-header-panel>
   </template>
 </dom-module>
 
-<script>
-(function() {
-  Polymer({
-
-    _delete: function() {
-      if (Meteor.status().connected) {
-        switch (this.selected) {
-          case 'Subscription':
-            var _this = this;
-
-            Meteor.call('remove_project', _this.selected_subscription, function(e, r) {
-              if (e) {
-                document.querySelector("#polymer_toast").toast(e.message);
-              } else {
-                document.querySelector("#polymer_toast").toast(r, 'UNDO', {
-                  project: _this.selected_subscription,
-                });
-
-                _this.selected_subscription = [];
-              }
-            });
-            break;
-        }
-      } else {
-        document.querySelector("#polymer_toast").toast("server connection required");
-      }
-    },
-
-    _search: function() {
-      FlowRouter.go("/search", {}, {
-        previous: Base64.encode(ascii_array(FlowRouter.current().path)),
-        route: null,
-      });
-    },
-
-    _menu: function(e, d) {
-      switch (d.item.dataset.menu) {
-        case 'Issue Reporting':
-          window.open('//github.com/HedCET/Torrent-Alert/issues', '_system');
-          break;
-
-        case 'Sign In':
-          FlowRouter.go("/account", {}, {
-            previous: Base64.encode(ascii_array(FlowRouter.current().path)),
-            route: null,
-          });
-          break;
-
-        case 'Sign Out':
-          document.querySelector("#polymer_modal_spinner").toggle();
-
-          Meteor.logout(function(error) {
-            document.querySelector("#polymer_modal_spinner").toggle();
-
-            if (error) {
-              console.log(error);
-            } else {
-              FlowRouter.go("/", {}, {
-                previous: null,
-                route: null,
-              });
-            }
-          });
-          break;
-      }
-    },
-
-    attached: function() {
-      var _this = this;
-
-      Tracker.autorun(function() {
-        _this.user = (Meteor.user() ? Meteor.user() : null);
-      });
-    },
-
-    hidden: function(A) {
-      return !!A;
-    },
-
-    is: "layout-inbox",
-
-    properties: {
-      selected: {
-        type: String,
-        value: "Trending",
-      },
-      selected_subscription: {
-        type: Array,
-        value: function() {
-          return [];
-        },
-      },
-    },
-
-  });
-})();
-</script>
+<link rel="import" href="layout-user.html">
+<link rel="import" href="layout-subscribed/layout-subscribed.html">
+<link rel="import" href="layout-search/layout-search.html">

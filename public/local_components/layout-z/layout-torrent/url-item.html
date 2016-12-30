@@ -1,0 +1,32 @@
+<link rel="import" href="../../../bower_components/font-roboto/roboto.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../../bower_components/paper-item/paper-item-body.html">
+<link rel="import" href="../../../bower_components/paper-item/paper-icon-item.html">
+<link rel="import" href="../../../bower_components/paper-styles/paper-styles.html">
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+
+<dom-module id="url-item">
+  <template>
+    <style>
+    paper-icon-item {
+      border-bottom: 1px solid #EEE;
+      border-top: 1px solid #EEE;
+    }
+    </style>
+
+    <div class="center-justified horizontal layout">
+      <div class="li">
+        <paper-icon-item class="cursor-p white">
+          <selectable-icon icon_class="{{_icon_class(item.query)}}" icon_text="{{_icon_text(item.query)}}" item-icon></selectable-icon>
+
+          <paper-item-body two-line>
+            <div>{{_text(item.query)}}</div>
+            <div class="horizontal justified layout" secondary><span>{{_date(item.time)}}</span><span>{{_time(item.time)}}</span></div>
+          </paper-item-body>
+        </paper-icon-item>
+      </div>
+    </div>
+  </template>
+</dom-module>
+
+<link rel="import" href="../../selectable-icon.html">

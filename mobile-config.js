@@ -1,34 +1,35 @@
-// App.accessRule("*://*.googleusercontent.com/*");
+App.accessRule("*://*.googleusercontent.com/*");
+
+App.appendToConfig(`
+  <universal-links>
+    <host event="ww8" name="ww8.herokuapp.com" scheme="https" />
+  </universal-links>
+`);
+
+App.configurePlugin('phonegap-plugin-push', {
+  SENDER_ID: '731987698101',
+});
 
 App.icons({
-  "android_ldpi": ".build/drawable-ldpi/ic_launcher.png",
-  "android_mdpi": ".build/drawable-mdpi/ic_launcher.png",
-  "android_hdpi": ".build/drawable-hdpi/ic_launcher.png",
-  "android_xhdpi": ".build/drawable-xhdpi/ic_launcher.png",
+  android_hdpi: 'public/icons/hdpi.png',
+  android_mdpi: 'public/icons/mdpi.png',
+  android_xhdpi: 'public/icons/xhdpi.png',
+  android_xxhdpi: 'public/icons/xxhdpi.png',
+  android_xxxhdpi: 'public/icons/xxhdpi.png',
 });
 
 App.info({
-  id: "keyword.schedule",
-  name: "Torrent Alert",
-  description: "Torrent Keyword Search, Schedule & Alerter",
-  version: "1.3.11",
-  author: "Linto Cheeran",
+  author: "VCompile",
+  description: "Torrent Search & Alert",
   email: "linto.cet@gmail.com",
-  website: "http://vcompile.com/scheduler",
+  id: "online.linto.torrentz",
+  name: "Torrent Alert",
+  website: "https://github.com/HedCET/Torrent-Alert",
+  version: "1.0.0",
 });
 
-// App.launchScreens({
-//     "android_ldpi_portrait": ".build/splash/splash-200x320.png",
-//     "android_ldpi_landscape": ".build/splash/splash-320x200.png",
-//     "android_mdpi_portrait": ".build/splash/splash-320x480.png",
-//     "android_mdpi_landscape": ".build/splash/splash-480x320.png",
-//     "android_hdpi_portrait": ".build/splash/splash-480x800.png",
-//     "android_hdpi_landscape": ".build/splash/splash-800x480.png",
-//     "android_xhdpi_portrait": ".build/splash/splash-720x1280.png",
-//     "android_xhdpi_landscape": ".build/splash/splash-1280x720.png",
-// });
-
 App.setPreference("android-installLocation", "preferExternal");
-App.setPreference("android-minSdkVersion", "19");
-// App.setPreference("SplashMaintainAspectRatio", true);
+App.setPreference("android-minSdkVersion", "21");
+App.setPreference("AndroidLaunchMode", "singleInstance");
 App.setPreference("SplashShowOnlyFirstTime", false);
+App.setPreference('StatusBarBackgroundColor', '#009688');

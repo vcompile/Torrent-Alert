@@ -1,64 +1,113 @@
-<dom-module id="polymer-toast">
-  <style>
-  paper-toast {
-    z-index: 1000;
-  }
-  
-  paper-toast > div {
-    color: var(--paper-yellow-500);
-    margin-left: 24px;
-  }
-  </style>
+<link rel="import" href="../../bower_components/font-roboto/roboto.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../bower_components/paper-styles/paper-styles.html">
+<link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../../bower_components/polymer/polymer.html">
 
+<dom-module id="polymer-toast">
   <template>
-    <paper-toast class$="center cursor-d [[cordova_class]] horizontal justified layout" duration="4000" id="paper_toast" no-cancel-on-outside-click="[[button]]" on-transitionend="_on_transition">
-      <div class="cursor-p self-start" hidden="[[!button]]" on-tap="_button">[[button]]</div>
+    <style>
+    paper-toast {
+      z-index: 1000;
+    }
+    
+    paper-toast > div {
+      color: var(--paper-yellow-500);
+      margin-left: 24px;
+    }
+    </style>
+
+    <paper-toast class$="center cursor-d [[cordova_class]] horizontal justified layout" duration="4000" id="_polymer_toast" no-cancel-on-outside-click="{{logic}}" on-transitionend="_on_transition">
+      <div class="cursor-p self-start" hidden="{{!logic}}" on-tap="_logic">{{logic}}</div>
     </paper-toast>
   </template>
+</dom-module>
 
-  <script>
+<script>
+(function() {
   Polymer({
 
-    _button: function() {
-      switch (this.button) {
+    _logic: function() {
+      switch (this.logic) {
+
         case 'EXIT':
           if (Meteor.isCordova) {
             navigator.app.exitApp();
           }
           break;
 
-        case 'UNDO':
-          if (this.store.project) {
-            Meteor.call('restore_project', this.store.project, function(e, r) {
-              // document.querySelector("#polymer_toast").toast(e ? e.message : r);
-            });
-          }
+        case 'SIGNIN':
+          document.querySelector("#layout_user").google();
+          break;
 
-          if (this.store.torrent) {
-            Meteor.call('restore_torrent', this.store.torrent, function(e, r) {
-              // document.querySelector("#polymer_toast").toast(e ? e.message : r);
+        case 'SIGNOUT':
+          if (Meteor.user()) {
+            Meteor.logout(function(error) {
+              if (Meteor.isCordova) {
+                window.plugins.googleplus.disconnect();
+              }
             });
           }
           break;
 
-          // default:
-          //   break;
+        case 'UNDO':
+          if (this.store.subscribed) {
+            // Meteor.users.update({
+            //   _id: Meteor.user()._id,
+            // }, {
+            //   $pull: {
+            //     'profile.subscribed': {
+            //       $in: this.store.subscribed,
+            //     },
+            //   },
+            // });
+
+            this.store.subscribed.forEach(function(_id) {
+              Meteor.users.update({
+                _id: Meteor.user()._id,
+              }, {
+                $pull: {
+                  'profile.subscribed': _id,
+                },
+              });
+            });
+          }
+
+          if (this.store.torrent) {
+            var _this = this;
+
+            Meteor.call('restore_torrent', _this.store.torrent, function(error, res) {
+              if (error) {
+                console.log(error);
+              }
+            });
+          }
+
+          if (this.store.un_subscribed) {
+            Meteor.users.update({
+              _id: Meteor.user()._id,
+            }, {
+              $addToSet: {
+                'profile.subscribed': {
+                  $each: this.store.un_subscribed,
+                },
+              },
+            });
+          }
+          break;
+
       }
 
-      this.button = '';
-      this.store = {};
+      this.logic = '';
+      this.set('store', {});
 
-      this.$.paper_toast.hide();
+      this.$._polymer_toast.hide();
     },
 
     _on_transition: function() {
-      if (!this.$.paper_toast.opened) {
-        // switch (this.button) {
-        //   if (Meteor.status().connected) {}
-        // }
-
-        this.button = '';
-        this.store = {};
+      if (!this.$._polymer_toast.opened) {
+        this.logic = '';
+        this.set('store', {});
       }
     },
 
@@ -67,13 +116,11 @@
 
       Tracker.autorun(function() {
         if (Meteor.status().connected) {
-          if (_this.$.paper_toast.text != "server connected") {
+          if (_this.$._polymer_toast.text != "server connected") {
             _this.toast("server connected");
           }
         } else {
-          if (_this.$.paper_toast.text != "lost server connection") {
-            _this.toast("lost server connection");
-          }
+          _this.toast("lost server connection");
         }
       });
     },
@@ -81,38 +128,27 @@
     is: "polymer-toast",
 
     properties: {
-      button: {
-        type: String,
-        value: '',
-      },
       cordova_class: {
         typr: String,
         value: function() {
           return (Meteor.isCordova ? "fit-bottom" : "");
         },
       },
-      store: {
-        type: Object,
-        value: function() {
-          return {};
-        },
-      },
     },
 
-    toast: function(text, button, store) {
-      this.$.paper_toast.hide();
+    toast: function(text, logic, store) {
+      this.$._polymer_toast.hide();
 
       this.async(function() {
-        this.$.paper_toast.text = text;
+        this.$._polymer_toast.text = text;
 
-        this.button = (button ? button : '');
-        this.store = (store ? store : {});
+        this.logic = (logic ? logic : '');
+        this.set('store', store ? store : {});
 
-        this.$.paper_toast.show();
+        this.$._polymer_toast.show();
       }, 400);
     },
 
   });
-  </script>
-
-</dom-module>
+})();
+</script>
