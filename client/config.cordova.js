@@ -11,9 +11,7 @@ if (Meteor.isCordova) {
     document.addEventListener("WebComponentsReady", function() {
       PushNotification.hasPermission(function(res) {
         if (!res.isEnabled) {
-          Meteor.setTimeout(function() {
-            document.querySelector('#polymer_toast').toast('pushAlert permission denied');
-          }, 1000 * 10);
+          document.querySelector('#polymer_toast').toast('pushAlert permission denied');
         }
       });
     }, false);
