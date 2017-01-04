@@ -22,6 +22,6 @@
     "url": "https://play.google.com/store/apps/details?id=online.linto.torrentz"
   }],
   "scope": "/",
-  "start_url": "search/_recent_",
+  "start_url": "/search/_recent_",
   "theme_color": "#009688"
 }

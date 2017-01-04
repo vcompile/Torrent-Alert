@@ -139,8 +139,6 @@ const underscore = require('underscore');
         } else {
           window.open('mailto:?subject=' + encodeURIComponent('Torrent Alert') + '&body=' + encodeURIComponent(share), "_system");
         }
-
-        this.set('selected', []);
       }
     },
 

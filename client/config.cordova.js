@@ -1,87 +1,98 @@
 if (Meteor.isCordova) {
-  document.addEventListener("deviceready", function() {
-    var _LaunchScreen = LaunchScreen.hold();
+  let STORE = {};
 
-    document.addEventListener("WebComponentsReady", function() {
-      window.setTimeout(function() {
-        _LaunchScreen.release();
-      }, 1000);
-    }, false);
+  let POLYMER_READY = () => {
+    if (STORE.TOAST) {
+      document.querySelector('#polymer_toast').toast(STORE.TOAST);
+    }
 
-    document.addEventListener("WebComponentsReady", function() {
-      PushNotification.hasPermission(function(res) {
-        if (!res.isEnabled) {
-          document.querySelector('#polymer_toast').toast('pushAlert permission denied');
-        }
-      });
-    }, false);
+    if (STORE.PN) {
+      document.querySelector('#layout_main').set('PN', STORE.PN);
+    }
 
-    var _PN = PushNotification.init({
-      android: {
-        clearBadge: true,
-        forceShow: true,
-        icon: 'ldpi',
-        iconColor: '#009688',
-        senderID: '731987698101',
-      },
-      browser: {},
-      ios: {},
-      windows: {},
-    });
+    if (STORE.PATH) {
+      document.querySelector('#app_location').set('path', STORE.PATH);
+    }
 
-    _PN.on('registration', function(res) {
-      document.addEventListener("WebComponentsReady", function() {
-        document.querySelector('#layout_main').set('PN', res.registrationId);
-      }, false);
-    });
+    let _back = 1;
 
-    _PN.on('notification', function(res) {
-      if (document.querySelector('#app_location')) {
-        document.querySelector('#app_location').set('path', '/project/' + res.additionalData.project + '|' + res.additionalData.torrent.join('|'));
+    document.addEventListener("backbutton", () => {
+      if (1 < _back++) {
+        document.querySelector("#polymer_toast").toast('Are you sure you want to exit ?', 'EXIT');
       } else {
-        document.addEventListener("WebComponentsReady", function() {
-          document.querySelector('#app_location').set('path', '/project/' + res.additionalData.project + '|' + res.additionalData.torrent.join('|'));
-        }, false);
+        navigator.app.backHistory();
+      }
+
+      Meteor.setTimeout(() => {
+        _back = 1;
+      }, 400);
+    }, false);
+
+    Meteor.setTimeout(() => {
+      STORE.LS.release();
+    }, 1000);
+  };
+
+  let CORDOVA_READY = () => {
+    STORE.LS = LaunchScreen.hold();
+
+    PushNotification.hasPermission((res) => {
+      if (res.isEnabled) {
+        let _PN = PushNotification.init({
+          android: {
+            clearBadge: true,
+            forceShow: true,
+            icon: 'ldpi',
+            iconColor: '#009688',
+            senderID: '731987698101',
+          },
+          browser: {},
+          ios: {},
+          windows: {},
+        });
+
+        _PN.on('registration', (e) => {
+          if (document.querySelector('#layout_main')) {
+            document.querySelector('#layout_main').set('PN', e.registrationId);
+          } else {
+            STORE.PN = e.registrationId;
+          }
+        });
+
+        _PN.on('notification', (e) => {
+          if (document.querySelector('#app_location')) {
+            document.querySelector('#app_location').set('path', '/project/' + e.additionalData.project + '|' + e.additionalData.torrent.join('|'));
+          } else {
+            STORE.PATH = '/project/' + e.additionalData.project + '|' + e.additionalData.torrent.join('|');
+          }
+        });
+
+        _PN.on('error', (e) => {
+          if (document.querySelector('#polymer_toast')) {
+            document.querySelector('#polymer_toast').toast(e.message);
+          } else {
+            STORE.TOAST = e.message;
+          }
+        });
+      } else {
+        STORE.TOAST = 'pushAlert permission denied';
       }
     });
 
-    _PN.on('error', function(e) {
-      if (document.querySelector('#polymer_toast')) {
-        document.querySelector('#polymer_toast').toast(e.message);
-      } else {
-        document.addEventListener("WebComponentsReady", function() {
-          document.querySelector('#polymer_toast').toast(e.message);
-        }, false);
-      }
-    });
+    universalLinks.subscribe('ww8', (e) => {
+      let url = new URL(e.url);
 
-    universalLinks.subscribe('ww8', function(e) {
-      var url = new URL(e.url);
-
-      if (url.hostname == 'ww8.herokuapp.com') {
+      if (url.hostname == 'ww8.herokuapp.com' && url.pathname != '/proxy') {
         if (document.querySelector('#app_location')) {
           document.querySelector('#app_location').set('path', url.pathname);
         } else {
-          document.addEventListener("WebComponentsReady", function() {
-            document.querySelector('#app_location').set('path', url.pathname);
-          }, false);
+          STORE.PATH = url.pathname;
         }
       }
     });
 
-    var moment = require('moment');
-    var _exit = moment().toDate();
+    document.addEventListener('WebComponentsReady', POLYMER_READY, false);
+  };
 
-    document.addEventListener("WebComponentsReady", function() {
-      document.addEventListener("backbutton", function() {
-        if (moment.duration(moment().diff(_exit)).asSeconds() < 1) {
-          document.querySelector("#polymer_toast").toast('Are you sure you want to exit ?', 'EXIT');
-        } else {
-          navigator.app.backHistory();
-        }
-
-        _exit = moment().toDate();
-      }, false);
-    }, false);
-  }, false);
+  document.addEventListener('deviceready', CORDOVA_READY, false);
 }

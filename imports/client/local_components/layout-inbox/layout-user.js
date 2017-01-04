@@ -4,7 +4,7 @@ import { Meteor } from 'meteor/meteor';
   Polymer({
 
     _email(email) {
-      return email ? email : 'Synchronize with Google Account';
+      return email ? email : 'unlock subscription & pushAlert';
     },
 
     _google() {
@@ -20,7 +20,7 @@ import { Meteor } from 'meteor/meteor';
     },
 
     _name(name) {
-      return name ? name : 'Google Account';
+      return name ? name : 'SignIN with Google +';
     },
 
     _picture(picture) {
@@ -39,7 +39,7 @@ import { Meteor } from 'meteor/meteor';
           document.querySelector('#polymer_spinner').toggle();
 
           if (error) {
-            document.querySelector('#polymer_toast').toast(error);
+            document.querySelector('#polymer_toast').toast('google errorNo - ' + error);
           }
         });
       } else {
