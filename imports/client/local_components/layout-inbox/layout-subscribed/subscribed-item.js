@@ -3,7 +3,7 @@
 
     _added(query) {
       let match = query.match(/ added.*?([0-9]+)[a-z] ?/i);
-      return (match && +match[1] ? match[1] : 'zero');
+      return (match ? match[1] : '999');
     },
 
     _icon_class(text) {
@@ -34,7 +34,7 @@
 
     _seed(query) {
       let match = query.match(/ seed.*?([0-9]+) ?/i);
-      return (match && +match[1] ? match[1] : 'zero');
+      return (match ? match[1] : '0');
     },
 
     is: "subscribed-item",

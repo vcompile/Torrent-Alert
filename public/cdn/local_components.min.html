@@ -19963,6 +19963,10 @@ It will also ensure that focus remains in the dialog.
 <dom-module id="torrent-item" assetpath="/local_components/layout-z/layout-project/">
   <template>
     <style>
+    iron-icon {
+      color: var(--paper-green-500);
+    }
+    
     paper-icon-item {
       border-bottom: 1px solid #EEE;
       border-top: 1px solid #EEE;
@@ -19976,11 +19980,6 @@ It will also ensure that focus remains in the dialog.
       padding: 8px 0;
     }
     
-    .very_good {
-      border-right: 4px solid #4CAF50;
-      padding-right: 12px;
-    }
-    
     .white-space-normal {
       white-space: normal;
     }
@@ -19988,11 +19987,16 @@ It will also ensure that focus remains in the dialog.
 
     <div class="center-justified horizontal layout">
       <div class="li">
-        <paper-icon-item class$="cursor-p white {{_very_good(item.very_good)}}" on-tap="_torrent">
-          <selectable-icon icon_class="{{_icon_class(item.category)}}" icon_text="{{_icon_text(item.url.length)}}" id="selectable_icon" item-icon="" selected$="{{selected}}"></selectable-icon>
+        <paper-icon-item class="cursor-p white" on-tap="_torrent">
+          <selectable-icon icon_class="{{_icon_class(item.category)}}" icon_text="{{item.url.length}}" id="selectable_icon" item-icon="" selected$="{{selected}}"></selectable-icon>
 
           <paper-item-body two-line="">
-            <div secondary="">{{item.category}}</div>
+            <div class="end horizontal justified layout" secondary="">
+              <div>{{item.category}}</div>
+              <div>
+                <iron-icon hidden="{{!item.very_good}}" icon="check-circle"></iron-icon>
+              </div>
+            </div>
             <div class="white-space-normal">{{item.title}}</div>
             <div class="horizontal justified layout" secondary="">
               <div><span>{{item.size}}</span> | <b>{{item.leech}}</b> L &amp; <b>{{item.seed}}</b> S</div>

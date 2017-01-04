@@ -11,10 +11,6 @@ const moment = require('moment');
       return polymer_color(text ? text : '#');
     },
 
-    _icon_text(length) {
-      return (length ? length : '#');
-    },
-
     _torrent(e) {
       if (Polymer.dom(e).localTarget.id != 'selectable_icon') {
         e.stopPropagation();
@@ -31,10 +27,6 @@ const moment = require('moment');
           }
         });
       }
-    },
-
-    _very_good(very_good) {
-      return (very_good ? 'very_good' : '');
     },
 
     is: "torrent-item",
