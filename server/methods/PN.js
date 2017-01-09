@@ -1,3 +1,4 @@
+const fibers = Npm.require("fibers");
 const gcm = require('node-gcm');
 const moment = require('moment');
 
@@ -86,30 +87,32 @@ Meteor.methods({
                   if (error) {
                     console.log('trigger_PN', error);
                   } else {
-                    res.results.forEach((item, index) => {
-                      if (item.registration_id) {
-                        Meteor.users.update({
-                          _id: row._id,
-                        }, {
-                          $addToSet: {
-                            PN: item.registration_id,
-                          },
-                          $pull: {
-                            PN: row.PN[index],
-                          },
-                        });
-                      } else {
-                        if (item.error) {
+                    new fibers(() => {
+                      res.results.forEach((item, index) => {
+                        if (item.registration_id) {
                           Meteor.users.update({
                             _id: row._id,
                           }, {
+                            $addToSet: {
+                              PN: item.registration_id,
+                            },
                             $pull: {
                               PN: row.PN[index],
                             },
                           });
+                        } else {
+                          if (item.error) {
+                            Meteor.users.update({
+                              _id: row._id,
+                            }, {
+                              $pull: {
+                                PN: row.PN[index],
+                              },
+                            });
+                          }
                         }
-                      }
-                    });
+                      });
+                    }).run();
                   }
                 });
               }
