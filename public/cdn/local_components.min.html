@@ -14823,7 +14823,7 @@ It will also ensure that focus remains in the dialog.
         return;
       }
       this.paramsString = this._encodeParams(this.paramsObject)
-          .replace(/%3F/g, '?').replace(/%2F/g, '/');
+          .replace(/%3F/g, '?').replace(/%2F/g, '/').replace(/'/g, '%27');
     },
     _encodeParams: function(params) {
       var encodedParams = [];

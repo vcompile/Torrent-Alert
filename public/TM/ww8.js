@@ -34,11 +34,9 @@ TM_observer = function(input) {
 
 TM_scheduler = function(interval) {
   if (Meteor.user()._id == 'ADMIN') {
-    TM.scheduler = setInterval(function() {
+    TM.scheduler = Meteor.setInterval(function() {
       Meteor.call('trigger_PN', function(error, res) {
-        if (error) {
-          console.log('TM_scheduler', error);
-        }
+        console.log('TM_scheduler', error ? error : res);
       });
     }, interval);
   }
@@ -71,7 +69,7 @@ TM_stop = function() {
   }
 
   if (TM.scheduler) {
-    clearInterval(TM.scheduler);
+    Meteor.clearInterval(TM.scheduler);
   }
 };
 
