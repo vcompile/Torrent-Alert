@@ -50,11 +50,6 @@
       @apply(--paper-font-body1);
     }
     
-    .category {
-      margin: 2px 8px;
-      padding: 2px 8px;
-    }
-    
     .footer {
       min-height: 88px;
     }
@@ -93,7 +88,7 @@
 
             <paper-item-body two-line>
               <div secondary><span>{{torrent.size}}</span> | <b>{{torrent.leech}}</b> leech &amp; <b>{{torrent.seed}}</b> seed</div>
-              <div class="white-space-normal">{{torrent.title}}<span class$="body1 category {{_category_class(torrent.category)}}">{{torrent.category}}</span></div>
+              <div class="white-space-normal">{{torrent.title}}</div>
             </paper-item-body>
           </paper-icon-item>
         </div>

@@ -14,6 +14,7 @@ Meteor.publish('worker', function(input) {
     }, {
       fields: {
         project: true,
+        query: true,
         status: true,
       },
       limit: 15,

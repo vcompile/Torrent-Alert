@@ -130,6 +130,6 @@
   }, false);
 
   setInterval(function() {
-    location.reload();
+    location.reload(true);
   }, 1000 * 60 * 30);
 })();

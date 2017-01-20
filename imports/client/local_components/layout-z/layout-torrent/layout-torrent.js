@@ -14,10 +14,6 @@ const underscore = require('underscore');
       }
     },
 
-    _category_class(text) {
-      return polymer_color(text ? text : '#');
-    },
-
     _delete() {
       document.querySelector('#polymer_spinner').toggle();
 
@@ -84,6 +80,7 @@ const underscore = require('underscore');
 
     _torrent_changed(torrent) {
       this.set('torrent', torrent);
+      this.set('url', []);
 
       if (torrent.url.length) {
         Meteor.subscribe('url', torrent.url);
@@ -91,8 +88,6 @@ const underscore = require('underscore');
         if (this._observe) {
           this._observe.stop();
         }
-
-        this.set('url', []);
 
         let _this = this;
 

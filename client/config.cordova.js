@@ -88,6 +88,8 @@ if (Meteor.isCordova) {
         } else {
           STORE.PATH = url.pathname;
         }
+      } else {
+        window.open(e.url, '_system');
       }
     });
 

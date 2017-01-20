@@ -18,6 +18,7 @@
         if (Meteor.user()) {
           _this.set('user', _.pick(Meteor.user().profile, ['email', 'name', 'picture', 'subscribed']));
 
+          // Meteor.setTimeout(() => {
           if (_this.PN) {
             Meteor.call('insert_PN', _this.PN, (error, res) => {
               if (error) {
@@ -25,6 +26,7 @@
               }
             });
           }
+          // }, 1000 * 4);
         } else {
           _this.set('user', { email: '', name: '', picture: '', subscribed: [] });
         }

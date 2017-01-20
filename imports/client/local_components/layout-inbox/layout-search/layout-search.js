@@ -13,7 +13,7 @@ const underscore = require('underscore');
           break;
 
         case '200':
-          return (project.length ? project.length + ' item' + (this.route.layout_search == '_recent_' ? ' recent' : '') : 'noItemFound');
+          return (project.length ? project.length + ' item' : 'noItemFound');
           break;
 
         default:
@@ -115,6 +115,10 @@ const underscore = require('underscore');
             _this.splice('project', underscore.findIndex(_this.project, { _id: row._id }), 1);
           },
         });
+      }
+
+      if (worker.query) {
+        this.keyword = worker.query.match(/\?q=(.*)/)[1];
       }
     },
 
