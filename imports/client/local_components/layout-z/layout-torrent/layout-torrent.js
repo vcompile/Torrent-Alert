@@ -69,7 +69,7 @@ const underscore = require('underscore');
     },
 
     _share() {
-      let share = "\n\n" + this.torrent.category + "\t\t" + this.torrent.size + "\t\t" + this.torrent.title + "\t\t" + Meteor.absoluteUrl('/torrent/' + this.torrent._id) + "\n\n";
+      let share = "\n\n" + this.torrent.category + "\t\t" + this.torrent.size + "\t\t" + this.torrent.title + "\t\t" + Meteor.absoluteUrl('torrent/' + this.torrent._id) + "\n\n";
 
       if (Meteor.isCordova) {
         window.plugins.socialsharing.share(share);

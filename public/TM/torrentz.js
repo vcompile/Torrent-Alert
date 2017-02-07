@@ -65,7 +65,7 @@
               if ($(this).find('dt a').attr('href')) {
                 e.data.torrent.push({
 
-                  title: $(this).find('dt a').text().replace(/\s+/g, ' ').trim(),
+                  title: $(this).find('dt a').text().replace(/\[email protected\].*\*\//g, ' ').replace(/\s+/g, ' ').trim(),
                   query: $(this).find('dt a').attr('href'),
                   category: $(this).find('dt').children().remove().end().text().replace(/»/g, '').replace(/\s+/g, ' ').trim(),
 
@@ -103,7 +103,7 @@
 
             e.data.url = [];
             $('#' + id + ' .download dl').each(function() {
-              if ($(this).find('dt a').attr('href')) {
+              if ($(this).find('dt a').attr('href') && $(this).find('dt a').attr('href').match(/:\/\//)) {
                 e.data.url.push({
                   query: $(this).find("dt a").attr("href"),
                   time: (moment($(this).find('dd span').attr('title'), ['ddd, DD MMM YYYY HH:mm:ss']).isValid() ? moment($(this).find('dd span').attr('title'), ['ddd, DD MMM YYYY HH:mm:ss']).toDate() : moment().toDate()),
@@ -131,5 +131,5 @@
 
   setInterval(function() {
     location.reload(true);
-  }, 1000 * 60 * 30);
+  }, 1000 * 60 * 5);
 })();

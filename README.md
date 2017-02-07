@@ -5,15 +5,15 @@ Torrent Alert will let you know when your FavoriteMovie/File is online. All you 
 
 * [Mobile Browser Version](https://ww8.herokuapp.com)
 
-###this app only cache links & texts from [torrentz](https://torrentz2.me). downloading some torrent is illegal.
+###this app only cache links & texts from [torrentz](https://torrentz2.me). downloading banned torrent is illegal.
 
 Install Guide
 ----------
 
 ```sh
 curl https://install.meteor.com/ | sh
-git clone https://github.com/HedCET/Torrent-Alert.git Torrent-Alert
-cd Torrent-Alert
+git clone https://github.com/HedCET/Torrent-Alert.git TorrentAlert
+cd TorrentAlert
 meteor run android-device --mobile-server=https://ww8.herokuapp.com
 ```
 
