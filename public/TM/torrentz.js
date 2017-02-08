@@ -13,6 +13,10 @@
 
 (function() {
   var origin = ['http://localhost:3000', 'https://ww8.herokuapp.com'];
+  var pattern = new RegExp('^(https?:\\/\\/)?' + '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.?)+[a-z]{2,}|' + '((\\d{1,3}\\.){3}\\d{1,3}))' + '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + '(\\?[;&a-z\\d%_.~+=-]*)?' + '(\\#[-a-z\\d_]*)?$', 'i');
+  var isURL = function(string) {
+    return pattern.test(string);
+  };
   var randomId = function(length) {
     return _.sample(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'], length ? (isNaN(+length) ? 32 : length) : 32).join('');
   };
@@ -103,11 +107,15 @@
 
             e.data.url = [];
             $('#' + id + ' .download dl').each(function() {
-              if ($(this).find('dt a').attr('href') && $(this).find('dt a').attr('href').match(/:\/\//)) {
-                e.data.url.push({
-                  query: $(this).find("dt a").attr("href"),
-                  time: (moment($(this).find('dd span').attr('title'), ['ddd, DD MMM YYYY HH:mm:ss']).isValid() ? moment($(this).find('dd span').attr('title'), ['ddd, DD MMM YYYY HH:mm:ss']).toDate() : moment().toDate()),
-                });
+              if ($(this).find('dt a').attr('href') && isURL($(this).find('dt a').attr('href'))) {
+                var url = new URL($(this).find('dt a').attr('href'));
+
+                if (-1 == ['s3-us-west-2.amazonaws.com'].indexOf(url.hostname)) {
+                  e.data.url.push({
+                    query: $(this).find("dt a").attr("href"),
+                    time: (moment($(this).find('dd span').attr('title'), ['ddd, DD MMM YYYY HH:mm:ss']).isValid() ? moment($(this).find('dd span').attr('title'), ['ddd, DD MMM YYYY HH:mm:ss']).toDate() : moment().toDate()),
+                  });
+                }
               }
             });
 

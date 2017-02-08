@@ -4,7 +4,7 @@ const moment = require('moment');
   Polymer({
 
     _date(time) {
-      return moment(time).isValid() ? moment(time).format('MMM Do ddd') : moment().format('MMM Do ddd');
+      return moment(time).isValid() ? moment(time).format('ddd Do MMM') : moment().format('ddd Do MMM Do');
     },
 
     _icon_class(query) {
