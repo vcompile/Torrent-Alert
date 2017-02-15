@@ -5,10 +5,10 @@
     "linto.cet@gmail.com"
   ],
   "dependencies": {
-    "babel-runtime": "^6.22.0",
+    "babel-runtime": "^6.23.0",
     "bcrypt": "^1.0.2",
     "cheerio": "^0.22.0",
-    "meteor-node-stubs": "^0.2.4",
+    "meteor-node-stubs": "^0.2.5",
     "moment": "^2.17.1",
     "node-gcm": "^0.14.4",
     "underscore": "^1.8.3"

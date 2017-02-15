@@ -3,9 +3,9 @@ MeteorJS Polymer Project
 
 Torrent Alert will let you know when your FavoriteMovie/File is online. All you need to do is set some keywords for scheduled search. If your service provider is blocking the torrent URL enable proxy option.
 
-* [Mobile Browser Version](https://ww8.herokuapp.com)
+* [Chrome Browser Mobile](https://ww8.herokuapp.com)
 
-###this app only cache links & texts from [torrentz](https://torrentz2.me). downloading banned torrent is illegal.
+###this app only cache links & texts from [torrentz](https://torrentz2.me). banned torrent downloading is illegal.
 
 Install Guide
 ----------

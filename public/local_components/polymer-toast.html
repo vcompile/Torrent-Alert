@@ -112,6 +112,8 @@
     },
 
     attached: function() {
+      this.cordova_class = (Meteor.isCordova ? "fit-bottom" : "");
+
       var _this = this;
 
       Tracker.autorun(function() {
@@ -130,9 +132,9 @@
     properties: {
       cordova_class: {
         typr: String,
-        value: function() {
-          return (Meteor.isCordova ? "fit-bottom" : "");
-        },
+        // value: function() {
+        //   return (Meteor.isCordova ? "fit-bottom" : "");
+        // },
       },
     },
 

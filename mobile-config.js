@@ -1,3 +1,4 @@
+App.accessRule("*://*.googleapis.com/*");
 App.accessRule("*://*.googleusercontent.com/*");
 
 App.appendToConfig(`
@@ -25,7 +26,7 @@ App.info({
   id: "online.linto.torrentz",
   name: "Torrent Alert",
   website: "https://github.com/HedCET/Torrent-Alert",
-  version: "1.0.7",
+  version: "1.1.0",
 });
 
 App.setPreference("android-installLocation", "preferExternal");

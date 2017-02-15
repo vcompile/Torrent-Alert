@@ -8425,6 +8425,12 @@ this.fire('dom-change');
         flex-wrap: wrap;
       }
 
+      .layout.no-wrap {
+        -ms-flex-wrap: nowrap;
+        -webkit-flex-wrap: nowrap;
+        flex-wrap: nowrap;
+      }
+
       .layout.center,
       .layout.center-center {
         -ms-flex-align: center;
@@ -8591,7 +8597,7 @@ this.fire('dom-change');
         -ms-align-self: baseline;
         -webkit-align-self: baseline;
         align-self: baseline;
-      };
+      }
 
       /**
        * multi-line alignment in main axis.
@@ -12075,6 +12081,12 @@ It will also ensure that focus remains in the dialog.
       -webkit-flex-wrap: wrap;
       flex-wrap: wrap;
     };
+    
+    --layout-no-wrap: {
+      -ms-flex-wrap: nowrap;
+      -webkit-flex-wrap: nowrap;
+      flex-wrap: nowrap;
+    };
 
     --layout-wrap-reverse: {
       -ms-flex-wrap: wrap-reverse;
@@ -13602,6 +13614,12 @@ It will also ensure that focus remains in the dialog.
     -webkit-flex-wrap: wrap;
     flex-wrap: wrap;
   }
+  
+  html /deep/ .layout-no-wrap {
+    -ms-flex-wrap: nowrap;
+    -webkit-flex-wrap: nowrap;
+    flex-wrap: nowrap;
+  }
 
   html /deep/ .layout.wrap-reverse {
     -ms-flex-wrap: wrap-reverse;
@@ -13896,6 +13914,12 @@ It will also ensure that focus remains in the dialog.
     -ms-flex-wrap: wrap;
     -webkit-flex-wrap: wrap;
     flex-wrap: wrap;
+  }
+  
+  .layout.no-wrap {
+    -ms-flex-wrap: nowrap;
+    -webkit-flex-wrap: nowrap;
+    flex-wrap: nowrap;
   }
 
   .layout.wrap-reverse {
@@ -14589,6 +14613,8 @@ It will also ensure that focus remains in the dialog.
     },
 
     attached: function() {
+      this.cordova_class = (Meteor.isCordova ? "fit-bottom" : "");
+
       var _this = this;
 
       Tracker.autorun(function() {
@@ -14607,9 +14633,9 @@ It will also ensure that focus remains in the dialog.
     properties: {
       cordova_class: {
         typr: String,
-        value: function() {
-          return (Meteor.isCordova ? "fit-bottom" : "");
-        },
+        // value: function() {
+        //   return (Meteor.isCordova ? "fit-bottom" : "");
+        // },
       },
     },
 
