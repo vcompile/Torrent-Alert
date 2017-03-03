@@ -26,7 +26,7 @@ App.info({
   id: "online.linto.torrentz",
   name: "Torrent Alert",
   website: "https://github.com/HedCET/Torrent-Alert",
-  version: "1.1.0",
+  version: "1.1.1",
 });
 
 App.setPreference("android-installLocation", "preferExternal");
