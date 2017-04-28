@@ -27,14 +27,14 @@ Polymer({
           Meteor.cordova_g_plus({ cordova_g_plus: true, profile: ['email', 'email_verified', 'family_name', 'gender', 'given_name', 'locale', 'name', 'picture'], webClientId: '731987698101-thavlbcphk9v1kco7l7bl3q70dph819m.apps.googleusercontent.com' }, (error) => {
             document.querySelector('#spinner').toggle();
 
-            if (error) { document.querySelector('#toast').toast('Error'); }
+            if (error) { document.querySelector('#toast').toast('User Not Found'); }
             else { document.querySelector('#main').set('router.path', '/user/' + Meteor.user()._id); }
           });
         } else {
           Meteor.loginWithGoogle({ requestOfflineToken: true, requestPermissions: ['email', 'profile'] }, (error) => {
             document.querySelector('#spinner').toggle();
 
-            if (error) { document.querySelector('#toast').toast('Error'); }
+            if (error) { document.querySelector('#toast').toast('User Not Found'); }
             else { document.querySelector('#main').set('router.path', '/user/' + Meteor.user()._id); }
           });
         }
