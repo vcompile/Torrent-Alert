@@ -1,0 +1,48 @@
+<link rel="import" href="../../bower_components/font-roboto/roboto.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item-body.html">
+<link rel="import" href="../../bower_components/paper-item/paper-icon-item.html">
+<link rel="import" href="../../bower_components/paper-styles/paper-styles.html">
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<dom-module id="torrent-item">
+  <template>
+    <style>
+      paper-icon-item {
+        --paper-item-icon: {
+          @apply(--layout-self-start);
+          min-height: 88px;
+        }
+      }
+    </style>
+
+    <paper-icon-item class="cursor-p" on-tap="_url">
+      <selectable-icon icon_class="{{_icon_class(item.category)}}" icon_text="{{item.url.length}}" id="si" item-icon selected$="{{selected}}"></selectable-icon>
+
+      <paper-item-body style="padding: 8px 0;" two-line>
+        <div class="end horizontal justified layout" secondary>
+          <style>
+            .nowrap {
+              @apply(--paper-font-common-nowrap);
+            }
+          </style>
+          <div class="nowrap">{{item.category}}</div>
+          <style>
+            iron-icon {
+              color: var(--paper-green-500);
+            }
+          </style>
+          <iron-icon hidden="{{!item.very_good}}" icon="check-circle"></iron-icon>
+        </div>
+        <div style="white-space: normal;">{{item.title}}</div>
+        <div class="horizontal justified layout" secondary>
+          <div class="nowrap"><span>{{item.size}}</span> | <b>{{_number_string(item.leech)}}</b> L &amp; <b>{{_number_string(item.seed)}}</b> S</div>
+          <div>{{_date(item.time)}}</div>
+        </div>
+      </paper-item-body>
+    </paper-icon-item>
+  </template>
+</dom-module>
+
+<link rel="import" href="../custom/selectable-icon.html">

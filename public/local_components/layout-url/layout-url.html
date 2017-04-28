@@ -1,0 +1,96 @@
+<link rel="import" href="../../bower_components/font-roboto/roboto.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/paper-header-panel/paper-header-panel.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-item/paper-icon-item.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item-body.html">
+<link rel="import" href="../../bower_components/paper-styles/paper-styles.html">
+<link rel="import" href="../../bower_components/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<dom-module id="layout-url">
+  <template>
+    <paper-header-panel mode="cover" style="height: 100vh;">
+      <div class="paper-header tail" style="background: #4DB6AC; height: 256px;"></div>
+
+      <div class="body layout vertical" style="background: #FFF; min-height: 256px;">
+        <style>
+          paper-toolbar {
+            --paper-toolbar-background: #009688;
+            --paper-toolbar-color: #E0F2F1;
+          }
+        </style>
+        <paper-toolbar>
+          <paper-icon-button icon="arrow-back" on-tap="_back"></paper-icon-button>
+
+          <div class="title"></div>
+
+          <paper-icon-button hidden="{{!selected.length}}" icon="delete" on-tap="_remove"></paper-icon-button>
+        </paper-toolbar>
+
+        <style>
+          paper-icon-item {
+            --paper-item-focused-before: {
+              display: none;
+            }
+            --paper-item-icon: {
+              @apply(--layout-self-start);
+              min-height: 88px;
+            }
+          }
+          
+          paper-icon-item paper-icon-button {
+            border-radius: 50%;
+          }
+        </style>
+
+        <paper-icon-item class="cursor-p" style="background: #EEE;">
+          <paper-icon-button class="white" icon="file-download" item-icon on-tap="_open_random"></paper-icon-button>
+
+          <paper-item-body style="padding: 8px 0;" two-line>
+            <div class="end horizontal justified layout" secondary>
+              <style>
+                .nowrap {
+                  @apply(--paper-font-common-nowrap);
+                }
+              </style>
+              <div class="nowrap">{{torrent.category}}</div>
+              <style>
+                iron-icon {
+                  color: var(--paper-green-500);
+                }
+              </style>
+              <iron-icon hidden="{{!torrent.very_good}}" icon="check-circle"></iron-icon>
+            </div>
+            <div style="white-space: normal;">{{torrent.title}}</div>
+            <div class="horizontal justified layout" secondary>
+              <div class="nowrap"><span>{{torrent.size}}</span> | <b>{{_number_string(torrent.leech)}}</b> L &amp; <b>{{_number_string(torrent.seed)}}</b> S</div>
+              <div>{{_date(torrent.time)}}</div>
+            </div>
+          </paper-item-body>
+        </paper-icon-item>
+
+        <template is="dom-repeat" items="{{torrent.url}}">
+          <url-item item="{{item}}" on-tap="_open"></url-item>
+        </template>
+
+        <div class="center-center flex horizontal layout" hidden="{{worker.status}}" style="min-height: 128px;">
+          <paper-spinner active></paper-spinner>
+        </div>
+
+        <style>
+          paper-toggle-button {
+            --paper-toggle-button-checked-bar-color: var(--paper-green-500);
+            --paper-toggle-button-checked-button-color: var(--paper-green-500);
+            --paper-toggle-button-checked-ink-color: var(--paper-green-500);
+          }
+        </style>
+        <paper-toggle-button checked="{{proxy}}" class="flex" style="background: #EEE; padding: 24px 16px;">Allow Proxy</paper-toggle-button>
+      </div>
+    </paper-header-panel>
+  </template>
+</dom-module>
+
+<link rel="import" href="./url-item.html">

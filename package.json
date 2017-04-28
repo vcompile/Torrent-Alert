@@ -8,10 +8,12 @@
     "babel-runtime": "^6.23.0",
     "bcrypt": "^1.0.2",
     "cheerio": "^0.22.0",
-    "meteor-node-stubs": "^0.2.5",
-    "moment": "^2.17.1",
-    "node-gcm": "^0.14.4",
-    "underscore": "^1.8.3"
+    "fibers": "^1.0.15",
+    "meteor-node-stubs": "^0.2.6",
+    "moment": "^2.18.1",
+    "nightmare": "^2.10.0",
+    "underscore": "^1.8.3",
+    "url": "^0.11.0"
   },
   "description": "Torrent Search & Alert",
   "devDependencies": {},
@@ -20,11 +22,12 @@
   },
   "homepage": "",
   "keywords": [
-    "Torrent Alert"
+    "Torrent Alert",
+    "Torrent Search & Alert"
   ],
   "license": "MIT",
   "main": "",
-  "name": "torrent",
+  "name": "torrentz",
   "private": true,
   "repository": {},
   "scripts": {

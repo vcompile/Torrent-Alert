@@ -1,0 +1,51 @@
+<link rel="import" href="../../bower_components/font-roboto/roboto.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/paper-header-panel/paper-header-panel.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-item/paper-icon-item.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item-body.html">
+<link rel="import" href="../../bower_components/paper-styles/paper-styles.html">
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<dom-module id="layout-user">
+  <template>
+    <paper-header-panel mode="cover" style="height: 100vh;">
+      <div class="paper-header tail" style="background: #4DB6AC; height: 256px;"></div>
+
+      <div class="body layout vertical" style="background: #FFF; min-height: 256px;">
+        <style>
+          paper-icon-item {
+            --paper-item-icon-width: auto;
+          }
+        </style>
+        <paper-icon-item class="cursor-d" style="background: #009688; color: #E0F2F1;">
+          <paper-icon-button icon="arrow-back" item-icon on-tap="_back"></paper-icon-button>
+
+          <paper-item-body two-line>
+            <div>{{user.name}}</div>
+            <div secondary style="color: #B2DFDB;">{{user.email}}</div>
+          </paper-item-body>
+
+          <paper-icon-button icon="delete-sweep" on-tap="_SIGNOUT"></paper-icon-button>
+        </paper-icon-item>
+
+        <div class="horizontal layout" style="color: #757575; padding: 8px 16px;">
+          <style>
+            .body1 {
+              @apply(--paper-font-body1);
+            }
+            
+            .nowrap {
+              @apply(--paper-font-common-nowrap);
+            }
+          </style>
+          <div class="body1 nowrap">No Item Found</div>
+        </div>
+
+
+
+      </div>
+    </paper-header-panel>
+  </template>
+</dom-module>

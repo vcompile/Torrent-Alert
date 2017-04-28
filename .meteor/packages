@@ -1,22 +1,19 @@
-accounts-base@1.2.14
-accounts-google@1.1.0
-accounts-password@1.3.4
+accounts-base@1.2.16
+accounts-google@1.1.2
+accounts-password@1.3.5
 # appcache
-# blaze-html-templates
-check@1.2.4
+check@1.2.5
 # crosswalk
 es5-shim@4.6.15
-ecmascript@0.6.3
-force-ssl@1.0.13
+ecmascript@0.7.2
+force-ssl@1.0.14
 meteor-base@1.0.4
-mobile-experience@1.0.4
-mongo@1.1.15
-shell-server@0.2.2
-standard-minifier-css@1.3.3
-standard-minifier-js@1.2.2
+mongo@1.1.16
+shell-server@0.2.3
+standard-minifier-css@1.3.4
+standard-minifier-js@2.0.0
 static-html
 tracker@1.1.2
 
 hedcet:cordova-google-plus-native-sign-in
 meteorhacks:picker
-google-config-ui

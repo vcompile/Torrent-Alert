@@ -1,0 +1,24 @@
+<link rel="import" href="../../bower_components/font-roboto/roboto.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/paper-styles/paper-styles.html">
+<link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<dom-module id="polymer-toast">
+  <template>
+    <style>
+      paper-toast {
+        z-index: 1000;
+      }
+    </style>
+    <paper-toast class$="center cursor-d horizontal justified layout {{_class}}" duration="4000" id="_toast" no-cancel-on-outside-click="{{condition}}" on-iron-announce="_open" on-iron-overlay-closed="_close">
+      <style>
+        .condition {
+          color: var(--paper-yellow-500);
+          margin-left: 24px;
+        }
+      </style>
+      <div class="condition cursor-p self-start" hidden="{{!condition}}" on-tap="_condition">{{condition}}</div>
+      </paper-toast>
+  </template>
+</dom-module>

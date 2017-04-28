@@ -1,0 +1,74 @@
+<link rel="import" href="../../bower_components/font-roboto/roboto.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/paper-styles/paper-styles.html">
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<dom-module id="selectable-icon">
+  <template>
+    <style>
+      .icon {
+        background: #EEE;
+        border-radius: 50%;
+        color: black;
+        cursor: pointer;
+        height: 40px;
+        overflow: hidden;
+        transition: transform 350ms ease-in-out;
+        width: 40px;
+        will-change: transform;
+      }
+      
+       :host([selected]) .icon {
+        transform: rotate3d(0, 1, 0, 180deg);
+      }
+    </style>
+    <div class="icon">
+      <style>
+        img,
+        .letter {
+          border-radius: inherit;
+          height: 100%;
+          text-transform: uppercase;
+          transition: opacity 200ms ease-in-out 100ms;
+          width: 100%;
+          will-change: opacity;
+        }
+        
+         :host([selected]) img,
+         :host([selected]) .letter {
+          opacity: 0;
+        }
+      </style>
+
+      <template if="{{icon_img_src}}" is="dom-if">
+        <img class$="{{icon_class}}" src$="{{icon_img_src}}">
+      </template>
+
+      <style>
+        .title {
+          @apply(--paper-font-title);
+        }
+      </style>
+      <div class$="center-center horizontal layout letter title {{icon_class}}" hidden="{{icon_img_src}}">{{icon_text}}</div>
+
+      <style>
+        iron-icon {
+          left: 20%;
+          position: absolute!important;
+          opacity: 0;
+          top: 20%;
+          transform: rotate3d(0, 1, 0, -180deg) scale(0);
+          transition: transform 300ms ease-in-out 100ms;
+          will-change: opacity;
+        }
+        
+         :host([selected]) iron-icon {
+          transform: rotate3d(0, 1, 0, -180deg) scale(1);
+          opacity: 1;
+        }
+      </style>
+      <iron-icon icon="check"></iron-icon>
+    </div>
+  </template>
+</dom-module>

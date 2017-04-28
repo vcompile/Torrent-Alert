@@ -1,0 +1,21 @@
+<link rel="import" href="../../bower_components/font-roboto/roboto.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item-body.html">
+<link rel="import" href="../../bower_components/paper-item/paper-icon-item.html">
+<link rel="import" href="../../bower_components/paper-styles/paper-styles.html">
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<dom-module id="url-item">
+  <template>
+    <paper-icon-item class="cursor-p">
+      <selectable-icon icon_class="{{_icon_class(url.title)}}" icon_text="{{_icon_text(url.title)}}" item-icon></selectable-icon>
+
+      <paper-item-body two-line>
+        <div>{{url.title}}</div>
+        <div class="horizontal justified layout" secondary><span>{{_date(url.time)}}</span><span>{{_time(url.time)}}</span></div>
+      </paper-item-body>
+    </paper-icon-item>
+  </template>
+</dom-module>
+
+<link rel="import" href="../custom/selectable-icon.html">

@@ -1,0 +1,21 @@
+<link rel="import" href="../../bower_components/font-roboto/roboto.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item-body.html">
+<link rel="import" href="../../bower_components/paper-item/paper-icon-item.html">
+<link rel="import" href="../../bower_components/paper-styles/paper-styles.html">
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<dom-module id="search-item">
+  <template>
+    <paper-icon-item class="cursor-p" on-tap="_project">
+      <iron-icon icon="search" item-icon style="color: #757575;"></iron-icon>
+
+      <paper-item-body>
+        <div>{{project.title}}</div>
+      </paper-item-body>
+
+      <div>{{_number_string(project.torrent_count)}}</div>
+    </paper-icon-item>
+  </template>
+</dom-module>

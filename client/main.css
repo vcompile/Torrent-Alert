@@ -1,0 +1,32 @@
+* {
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  -webkit-touch-callout: none;
+}
+
+body {
+  background: #EEE;
+}
+
+iron-overlay-backdrop {
+  background: #009688!important;
+}
+
+.body {
+  margin: 128px auto;
+  width: 480px;
+}
+
+.cursor-d {
+  cursor: default;
+}
+
+.cursor-p {
+  cursor: pointer;
+}
+
+@media (max-width: 480px) {
+  .body {
+    margin: auto auto 128px auto;
+    width: 100%;
+  }
+}

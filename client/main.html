@@ -21,74 +21,13 @@
 
   <title>Torrent Alert</title>
 
-  <script src="/cdn/webcomponents-lite.min.js"></script>
-  <script src="/cdn/web-animations.min.js"></script>
+  <script src="/bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+  <script src="/bower_components/web-animations-js/web-animations.min.js"></script>
 
-  <link href="/cdn/local_components.min.html" rel="import">
-
-   <!--<script src="/bower_components/webcomponentsjs/webcomponents-lite.min.js"></script> -->
-   <!--<script src="/bower_components/web-animations-js/web-animations.min.js"></script> -->
-
-   <!--<link href="/local_components/polymer-spinner.html" rel="import"> -->
-   <!--<link href="/local_components/polymer-toast.html" rel="import"> -->
-
-   <!--<link href="/local_components/layout-main.html" rel="import"> -->
+  <link href="/local_components/layout-main.html" rel="import">
 
 </head>
 
 <body class="fullbleed">
-
-  <polymer-spinner id="polymer_spinner"></polymer-spinner>
-  <polymer-toast id="polymer_toast"></polymer-toast>
-
-  <style>
-  * {
-    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-  }
-  
-  body {
-    background: #EEE;
-  }
-  
-  input:-webkit-autofill {
-    -webkit-box-shadow: 0 0 0 1000px #EEE inset!important;
-  }
-  
-  iron-overlay-backdrop {
-    background: #009688!important;
-  }
-  
-  .cursor-d {
-    cursor: default;
-  }
-  
-  .cursor-p {
-    cursor: pointer;
-  }
-  
-  .li {
-    width: 480px;
-  }
-  
-  .relative {
-    position: relative;
-  }
-  
-  @media (max-width: 480px) {
-    .li {
-      width: 100%;
-    }
-  }
-  
-  @media (min-width: 480px) {
-    .li {
-      width: 480px;
-    }
-  }
-  </style>
-
-  <layout-main class="fit" id="layout_main"></layout-main>
-
+  <layout-main id="main"></layout-main>
 </body>

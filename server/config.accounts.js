@@ -1,3 +1,0 @@
-Accounts.config({
-  loginExpirationInDays: null,
-});

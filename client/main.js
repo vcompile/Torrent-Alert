@@ -1,5 +1,3 @@
-import '../imports/client';
-
-document.addEventListener("WebComponentsReady", function() {
-  document.querySelector('#polymer_spinner').toggle();
+document.addEventListener("WebComponentsReady", function () {
+  import '../imports/ui/local_components/layout-main.js';
 }, false);

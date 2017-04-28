@@ -1,0 +1,118 @@
+<link rel="import" href="../../bower_components/font-roboto/roboto.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-selector/iron-selector.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/paper-header-panel/paper-header-panel.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-radio-button/paper-radio-button.html">
+<link rel="import" href="../../bower_components/paper-radio-group/paper-radio-group.html">
+<link rel="import" href="../../bower_components/paper-slider/paper-slider.html">
+<link rel="import" href="../../bower_components/paper-styles/paper-styles.html">
+<link rel="import" href="../../bower_components/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<dom-module id="layout-torrent">
+  <template>
+    <paper-header-panel mode="cover" on-content-scroll="_scroll" style="height: 100vh;">
+      <div class="paper-header tail" style="background: #4DB6AC; height: 256px;"></div>
+
+      <div class="body layout vertical" style="background: #FFF; min-height: 256px;">
+        <style>
+          paper-toolbar {
+            --paper-toolbar-background: #009688;
+            --paper-toolbar-color: #E0F2F1;
+          }
+        </style>
+        <paper-toolbar>
+          <paper-icon-button icon="arrow-back" on-tap="_back"></paper-icon-button>
+
+          <div class="title">{{_title(project.title, selected.length)}}</div>
+
+          <paper-icon-button hidden="{{_subscribe_hidden(selected.length, subscribed, project._id)}}" icon="alarm-add" on-tap="_subscribe"></paper-icon-button>
+          <paper-icon-button hidden="{{selected.length}}" icon="filter-list" on-tap="_filter_open"></paper-icon-button>
+
+          <paper-icon-button hidden="{{!selected.length}}" icon="delete" on-tap="_remove"></paper-icon-button>
+        </paper-toolbar>
+
+        <div class="horizontal layout" style="color: #757575; padding: 8px 16px;">
+          <style>
+            .body1 {
+              @apply(--paper-font-body1);
+            }
+            
+            .nowrap {
+              @apply(--paper-font-common-nowrap);
+            }
+          </style>
+          <div class="body1 nowrap">{{_status(worker)}}</div>
+        </div>
+
+        <iron-selector attr-for-selected="item" multi selected-attribute="selected" selected-values="{{selected}}">
+          <template is="dom-repeat" items="{{torrent}}" sort="_sort">
+            <torrent-item item="{{item}}"></torrent-item>
+          </template>
+        </iron-selector>
+
+        <div class="center-center flex horizontal layout" style="min-height: 128px;">
+          <paper-spinner active></paper-spinner>
+        </div>
+      </div>
+    </paper-header-panel>
+
+    <paper-dialog id="filter" no-overlap on-iron-overlay-closed="_filter_close" style="min-width: 256px;">
+      <div class="layout vertical">
+        <div class="center horizontal justified layout" style="margin: 8px 0;">
+          <style>
+            .nowrap {
+              @apply(--paper-font-common-nowrap);
+            }
+          </style>
+          <div class="cursor-d nowrap" style="margin-right: 8px;">Adult Content Filter</div>
+          <style>
+            paper-toggle-button {
+              --paper-toggle-button-checked-bar-color: var(--paper-green-500);
+              --paper-toggle-button-checked-button-color: var(--paper-green-500);
+              --paper-toggle-button-checked-ink-color: var(--paper-green-500);
+            }
+          </style>
+          <paper-toggle-button checked="{{adult_content_filter}}"></paper-toggle-button>
+        </div>
+
+        <div class="center horizontal justified layout" style="margin: 8px 0;">
+          <div class="cursor-d flex nowrap" style="margin-right: 8px;">Period (day limit)</div>
+          <style>
+            paper-slider {
+              --paper-slider-active-color: var(--paper-green-500);
+              --paper-slider-knob-color: var(--paper-green-500);
+              --paper-slider-pin-color: var(--paper-green-500);
+            }
+          </style>
+          <paper-slider class="flex" dir="rtl" editable max="999" min="0" pin value="{{period}}"></paper-slider>
+        </div>
+
+        <div class="center horizontal justified layout" style="margin: 8px 0;">
+          <div class="cursor-d nowrap" style="margin-right: 8px;">Quality</div>
+          <style>
+            paper-radio-button {
+              --paper-radio-button-checked-color: var(--paper-green-500);
+              --paper-radio-button-checked-ink-color: var(--paper-green-500);
+            }
+          </style>
+          <paper-radio-group class="center horizontal justified layout" selected="{{quality}}">
+            <paper-radio-button name="search">Good</paper-radio-button>
+            <paper-radio-button name="verified">Very Good</paper-radio-button>
+          </paper-radio-group>
+        </div>
+
+        <div class="center horizontal justified layout" style="margin: 8px 0;">
+          <div class="cursor-d flex nowrap" style="margin-right: 8px;">Seed Count (min)</div>
+          <paper-slider class="flex" editable max="999" min="0" pin value="{{seed_count}}"></paper-slider>
+        </div>
+      </div>
+    </paper-dialog>
+  </template>
+</dom-module>
+
+<link rel="import" href="./torrent-item.html">
