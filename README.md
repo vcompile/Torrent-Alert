@@ -15,4 +15,4 @@ cd TorrentAlert
 meteor
 ```
 
-Also Test [Here](https://ww8.herokuapp.com)
+Also Test [Here](http://t.orrent.xyz)
