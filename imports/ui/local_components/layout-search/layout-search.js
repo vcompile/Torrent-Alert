@@ -66,6 +66,14 @@ Polymer({
     }
   },
 
+  attached() {
+    const W = document.querySelector('body').getBoundingClientRect().width;
+
+    if (480 < W) {
+      const N = document.querySelectorAll('.fab-bottom'); for (let index = 0; index < N.length; index++) { N[index].style.right = (W / 2 - 224) + 'px'; }
+    }
+  },
+
   is: 'layout-search',
 
   observers: ['_route_changed(route)'],

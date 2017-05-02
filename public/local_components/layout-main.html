@@ -13,7 +13,7 @@
 
     <neon-animated-pages attr-for-selected="data-page" selected="{{route.page}}">
       <layout-search data-page="search" route="{{route}}"></layout-search>
-      <layout-torrent data-page="torrent" route="{{route}}"></layout-torrent>
+      <layout-torrent data-page="torrent" query="{{query}}" route="{{route}}"></layout-torrent>
       <layout-url data-page="url" route="{{route}}"></layout-url>
       <layout-user data-page="user" route="{{route}}"></layout-user>
     </neon-animated-pages>

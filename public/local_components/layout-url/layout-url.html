@@ -27,7 +27,7 @@
 
           <div class="title"></div>
 
-          <paper-icon-button hidden="{{!selected.length}}" icon="delete" on-tap="_remove"></paper-icon-button>
+          <paper-icon-button icon="delete" on-tap="_remove"></paper-icon-button>
         </paper-toolbar>
 
         <style>
@@ -66,17 +66,30 @@
             </div>
             <div style="white-space: normal;">{{torrent.title}}</div>
             <div class="horizontal justified layout" secondary>
-              <div class="nowrap"><span>{{torrent.size}}</span> | <b>{{_number_string(torrent.leech)}}</b> L &amp; <b>{{_number_string(torrent.seed)}}</b> S</div>
+              <div class="nowrap"><span>{{torrent.size}}</span> | <b>{{_number_string(torrent.leech)}}</b> L &amp; <b>{{_number_string(torrent.seed)}}</b>                S</div>
               <div>{{_date(torrent.time)}}</div>
             </div>
           </paper-item-body>
         </paper-icon-item>
 
+        <div class="horizontal layout" style="color: #757575; padding: 8px 16px;">
+          <style>
+            .body1 {
+              @apply(--paper-font-body1);
+            }
+            
+            .nowrap {
+              @apply(--paper-font-common-nowrap);
+            }
+          </style>
+          <div class="body1 nowrap">{{_status(worker)}}</div>
+        </div>
+
         <template is="dom-repeat" items="{{torrent.url}}">
           <url-item item="{{item}}" on-tap="_open"></url-item>
         </template>
 
-        <div class="center-center flex horizontal layout" hidden="{{worker.status}}" style="min-height: 128px;">
+        <div class="center-center flex horizontal layout" hidden="{{torrent.url.length}}" style="min-height: 128px;">
           <paper-spinner active></paper-spinner>
         </div>
 

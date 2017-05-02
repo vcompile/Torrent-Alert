@@ -15,4 +15,4 @@ cd TorrentAlert
 meteor
 ```
 
-Also Test [Here](http://t.orrent.xyz)
+Also Test [Here](https://t.orrent.xyz)

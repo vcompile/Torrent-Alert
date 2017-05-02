@@ -89,6 +89,24 @@ Polymer({
     }
   },
 
+  _status(worker = {}) {
+    switch (worker.status) {
+
+      case '':
+        return 'Indexing';
+        break;
+
+      case '200':
+        return (this.torrent && this.torrent.url && this.torrent.url.length ? 'Updated At ' + (moment(worker.time).isValid() ? moment(worker.time).format('ddd Do MMM') : moment().format('ddd Do MMM')) : 'No Item Found');
+        break;
+
+      default:
+        return worker.status;
+        break;
+
+    }
+  },
+
   _worker_subscriber(query) {
     Meteor.subscribe('worker', query);
 

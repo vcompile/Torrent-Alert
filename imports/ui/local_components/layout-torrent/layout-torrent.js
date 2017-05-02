@@ -163,13 +163,13 @@ Polymer({
   },
 
   _torrent_subscriber(_id) {
-    this.page = 1; this.set('torrent', []); Meteor.subscribe('torrent', { page: this.page, project: _id.split('|') });
+    this.page = 1; this.set('torrent', []); Meteor.subscribe('torrent', this.query._id ? { torrent: this.query._id.split('|') } : { page: this.page, project: _id.split('|') });
 
     if (this._torrent_observer) {
       this._torrent_observer.stop();
     }
 
-    this.set('_torrent_observer', _torrent.find({ project: _id }, { sort: { time: -1 } }).observe({ addedAt: (row) => { this.push('torrent', row); }, changedAt: (row) => { this.splice('torrent', _.findIndex(this.torrent, { _id: row._id }), 1, row); }, removedAt: (row) => { this.splice('torrent', _.findIndex(this.torrent, { _id: row._id }), 1); } }));
+    this.set('_torrent_observer', _torrent.find(this.query._id ? { _id: { $in: this.query._id.split('|') } } : { project: _id }, { sort: { time: -1 } }).observe({ addedAt: (row) => { this.push('torrent', row); }, changedAt: (row) => { this.splice('torrent', _.findIndex(this.torrent, { _id: row._id }), 1, row); }, removedAt: (row) => { this.splice('torrent', _.findIndex(this.torrent, { _id: row._id }), 1); } }));
   },
 
   _worker_subscriber(query) {

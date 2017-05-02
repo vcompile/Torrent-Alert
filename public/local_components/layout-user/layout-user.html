@@ -1,11 +1,14 @@
 <link rel="import" href="../../bower_components/font-roboto/roboto.html">
 <link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-selector/iron-selector.html">
 <link rel="import" href="../../bower_components/paper-header-panel/paper-header-panel.html">
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../../bower_components/paper-item/paper-icon-item.html">
 <link rel="import" href="../../bower_components/paper-item/paper-item-body.html">
 <link rel="import" href="../../bower_components/paper-styles/paper-styles.html">
+<link rel="import" href="../../bower_components/paper-toggle-button/paper-toggle-button.html">
+<link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
 <link rel="import" href="../../bower_components/polymer/polymer.html">
 
 <dom-module id="layout-user">
@@ -15,19 +18,36 @@
 
       <div class="body layout vertical" style="background: #FFF; min-height: 256px;">
         <style>
-          paper-icon-item {
-            --paper-item-icon-width: auto;
+          paper-toolbar {
+            --paper-toolbar-background: #009688;
+            --paper-toolbar-color: #E0F2F1;
           }
         </style>
-        <paper-icon-item class="cursor-d" style="background: #009688; color: #E0F2F1;">
-          <paper-icon-button icon="arrow-back" item-icon on-tap="_back"></paper-icon-button>
+        <paper-toolbar>
+          <paper-icon-button icon="arrow-back" on-tap="_back"></paper-icon-button>
+
+          <div class="title">User</div>
+
+          <paper-icon-button hidden="{{!selected.length}}" icon="delete" on-tap="_remove"></paper-icon-button>
+        </paper-toolbar>
+
+        <style>
+          paper-icon-item {
+            --paper-item-focused-before: {
+              display: none;
+            }
+          }
+        </style>
+
+        <paper-icon-item class="cursor-d" style="background: #EEE;">
+          <selectable-icon icon_img_src="{{user.picture}}" item-icon></selectable-icon>
 
           <paper-item-body two-line>
             <div>{{user.name}}</div>
-            <div secondary style="color: #B2DFDB;">{{user.email}}</div>
+            <div secondary>{{user.email}}</div>
           </paper-item-body>
 
-          <paper-icon-button icon="delete-sweep" on-tap="_SIGNOUT"></paper-icon-button>
+          <paper-icon-button icon="close" on-tap="_SIGNOUT"></paper-icon-button>
         </paper-icon-item>
 
         <div class="horizontal layout" style="color: #757575; padding: 8px 16px;">
@@ -40,12 +60,31 @@
               @apply(--paper-font-common-nowrap);
             }
           </style>
-          <div class="body1 nowrap">No Item Found</div>
+          <div class="body1 nowrap"><span hidden="{{user.subscribed.length}}">No</span><span hidden="{{!user.subscribed.length}}">{{user.subscribed.length}}</span> Item Subscribed</div>
         </div>
 
+        <iron-selector attr-for-selected="item" multi selected-attribute="selected" selected-values="{{selected}}">
+          <template is="dom-repeat" items="{{user.subscribed}}">
+            <subscribed-item item="{{item}}"></subscribed-item>
+          </template>
+        </iron-selector>
 
+        <div class="center-center flex horizontal layout" hidden="{{user.subscribed.length}}" style="min-height: 128px;">
+          <paper-spinner active></paper-spinner>
+        </div>
 
+        <style>
+          paper-toggle-button {
+            --paper-toggle-button-checked-bar-color: var(--paper-green-500);
+            --paper-toggle-button-checked-button-color: var(--paper-green-500);
+            --paper-toggle-button-checked-ink-color: var(--paper-green-500);
+          }
+        </style>
+        <paper-toggle-button checked="{{push}}" class="flex" style="background: #EEE; padding: 24px 16px;">Allow Push Alert</paper-toggle-button>
       </div>
     </paper-header-panel>
   </template>
 </dom-module>
+
+<link rel="import" href="./subscribed-item.html">
+<link rel="import" href="../custom/selectable-icon.html">

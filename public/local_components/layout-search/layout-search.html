@@ -59,9 +59,10 @@
     </paper-header-panel>
 
     <style>
-      .opt-bottom {
-        bottom: 0;
+      .fab-bottom {
+        bottom: 36px;
         position: fixed;
+        right: 16px;
         transition: transform 200ms ease-in-out;
         will-change: transform;
       }
@@ -71,15 +72,7 @@
         --paper-fab-keyboard-focus-background: #00796B;
       }
     </style>
-    <div class="opt-bottom">
-      <div class="around-justified horizontal layout" style="height: 128px; width: 100vw;">
-        <div class="end-justified horizontal layout self-center" style="width: 480px;">
-          <div style="padding: 16px;">
-            <paper-fab icon="perm-identity" on-tap="_user"></paper-fab>
-          </div>
-        </div>
-      </div>
-    </div>
+    <paper-fab class="fab-bottom" icon="perm-identity" on-tap="_user"></paper-fab>
   </template>
 </dom-module>
 

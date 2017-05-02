@@ -4,7 +4,7 @@ import { Tracker } from 'meteor/tracker'
 Polymer({
 
   _close() {
-    const N = document.querySelectorAll('.opt-bottom'); for (let index = 0; index < N.length; index++) { N[index].style.transform = 'translate(0, -' + this.$._toast.getBoundingClientRect().height + 'px)'; }
+    const N = document.querySelectorAll('.fab-bottom'); for (let index = 0; index < N.length; index++) { N[index].style.transform = 'translate(0, -' + this.$._toast.getBoundingClientRect().height + 'px)'; }
 
     this.condition = '';
   },
@@ -44,10 +44,7 @@ Polymer({
         Meteor.logout((error) => {
           if (error) { document.querySelector('#toast').toast('Error'); }
           else {
-            if (Meteor.isCordova) {
-              window.plugins.googleplus.disconnect();
-              navigator.app.backHistory();
-            }
+            if (Meteor.isCordova) { window.plugins.googleplus.disconnect(); navigator.app.backHistory(); }
             else { history.back(); }
           }
         });
@@ -98,12 +95,12 @@ Polymer({
 
   _open() {
     this.async(() => {
-      const N = document.querySelectorAll('.opt-bottom'); for (let index = 0; index < N.length; index++) { N[index].style.transform = 'translate(0, -' + this.$._toast.getBoundingClientRect().height + 'px)'; }
+      const N = document.querySelectorAll('.fab-bottom'); for (let index = 0; index < N.length; index++) { N[index].style.transform = 'translate(0, -' + this.$._toast.getBoundingClientRect().height + 'px)'; }
     }, 20);
   },
 
   attached() {
-    this._class = (Meteor.isCordova ? 'fit-bottom' : '');
+    this._class = (document.querySelector('body').getBoundingClientRect().width <= 480 ? 'fit-bottom' : '');
 
     Tracker.autorun(() => {
       if (Meteor.status().connected) {

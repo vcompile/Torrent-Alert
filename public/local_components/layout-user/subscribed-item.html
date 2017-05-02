@@ -1,0 +1,25 @@
+<link rel="import" href="../../bower_components/font-roboto/roboto.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item-body.html">
+<link rel="import" href="../../bower_components/paper-item/paper-icon-item.html">
+<link rel="import" href="../../bower_components/paper-styles/paper-styles.html">
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<dom-module id="subscribed-item">
+  <template>
+    <paper-icon-item class="cursor-p" on-tap="_project">
+      <selectable-icon icon_class="{{_icon_class(project.query)}}" icon_text="{{_icon_text(project.title)}}" id="si" item-icon
+        selected$="{{selected}}"></selectable-icon>
+
+      <paper-item-body two-line>
+        <div>{{project.title}}</div>
+        <div secondary style="white-space: normal;">{{_query_text(project.query)}}</div>
+      </paper-item-body>
+
+      <div>{{_number_string(project.torrent_count)}}</div>
+    </paper-icon-item>
+  </template>
+</dom-module>
+
+<link rel="import" href="../custom/selectable-icon.html">

@@ -21,10 +21,15 @@
 
   <title>Torrent Alert</title>
 
-  <script src="/bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
-  <script src="/bower_components/web-animations-js/web-animations.min.js"></script>
+  <script src="/bower_components/webcomponentsjs/webcomponents-lite.min.js" async></script>
+  <script src="/bower_components/web-animations-js/web-animations.min.js" async></script>
 
   <link href="/local_components/layout-main.html" rel="import">
+
+  <script src="//cdn.onesignal.com/sdks/OneSignalSDK.js" async></script>
+  <script>
+    (window.OneSignal || []).push(['init', { appId: '6cf77bb0-6c75-47bf-bd3f-7adb8f195335', autoRegister: false, notifyButton: { enable: false }, persistNotification: false, safari_web_id: 'web.onesignal.auto.3a3b4186-8f32-4bbf-a810-be3f3be590a9', welcomeNotification: { message: 'Torrent Alert will let you know when your FavoriteMovie/File is online', title: 'Torrent Alert is ON', ttl: 21600 } }]);
+  </script>
 
 </head>
 

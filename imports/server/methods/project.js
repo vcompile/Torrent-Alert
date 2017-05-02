@@ -16,10 +16,10 @@ Meteor.methods({
 
     check(input, { query: String, title: String });
 
-    let project = _project.findOne({ query: { $options: 'i', $regex: '^' + input.query + '$' } }, { fields: { query: true, worker: true } });
+    let project = _project.findOne({ query: { $options: 'i', $regex: '^' + input.query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + '$' } }, { fields: { query: true, worker: true } });
 
     if (project) {
-      let worker = _worker.findOne({ query: { $options: 'i', $regex: '^' + project.query + '$' } }, { fields: { status: true, time: true } });
+      let worker = _worker.findOne({ query: { $options: 'i', $regex: '^' + project.query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + '$' } }, { fields: { status: true, time: true } });
 
       if (worker) {
         if (worker.status != '200' || 1 < moment.duration(moment().diff(worker.time)).asDays()) {

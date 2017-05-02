@@ -2,6 +2,7 @@
   "background_color": "#009688",
   "description": "torrent Search & Alert",
   "display": "standalone",
+  "gcm_sender_id": "482941778795",
   "icons": [
     {
       "sizes": "180x180",
@@ -17,6 +18,7 @@
   "name": "Torrent Alert",
   "orientation": "portrait",
   "scope": "/",
-  "start_url": "/search/recent",
+  "short_name": "Torrent Alert",
+  "start_url": "/",
   "theme_color": "#009688"
 }

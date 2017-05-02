@@ -5,22 +5,6 @@ import { _project } from '../../../db/projects.js';
 
 Polymer({
 
-  _project() {
-    if (this.project) {
-      document.querySelector('#spinner').toggle();
-
-      Meteor.call('trigger.project', this.project._id, (error, res) => {
-        document.querySelector('#spinner').toggle();
-
-        if (error) {
-          document.querySelector('#toast').toast(error.message);
-        } else {
-          document.querySelector('#main').set('router.path', '/torrent/' + res);
-        }
-      });
-    }
-  },
-
   _item_changed(item) {
     Meteor.subscribe('project', item.split('|'));
 
@@ -39,6 +23,22 @@ Polymer({
     }
 
     return number;
+  },
+
+  _project() {
+    if (this.project) {
+      document.querySelector('#spinner').toggle();
+
+      Meteor.call('trigger.project', this.project._id, (error, res) => {
+        document.querySelector('#spinner').toggle();
+
+        if (error) {
+          document.querySelector('#toast').toast(error.message);
+        } else {
+          document.querySelector('#main').set('router.path', '/torrent/' + res);
+        }
+      });
+    }
   },
 
   is: 'search-item',
