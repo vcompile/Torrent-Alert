@@ -3,6 +3,7 @@
 <link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../../bower_components/paper-header-panel/paper-header-panel.html">
 <link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../../bower_components/paper-item/paper-icon-item.html">
 <link rel="import" href="../../bower_components/paper-item/paper-item-body.html">
 <link rel="import" href="../../bower_components/paper-styles/paper-styles.html">
@@ -66,7 +67,7 @@
             </div>
             <div style="white-space: normal;">{{torrent.title}}</div>
             <div class="horizontal justified layout" secondary>
-              <div class="nowrap"><span>{{torrent.size}}</span> | <b>{{_number_string(torrent.leech)}}</b> L &amp; <b>{{_number_string(torrent.seed)}}</b>                S</div>
+              <div class="nowrap"><span>{{torrent.size}}</span> | <b>{{_number_string(torrent.leech)}}</b> L &amp; <b>{{_number_string(torrent.seed)}}</b> S</div>
               <div>{{_date(torrent.time)}}</div>
             </div>
           </paper-item-body>
@@ -82,7 +83,7 @@
               @apply(--paper-font-common-nowrap);
             }
           </style>
-          <div class="body1 nowrap">{{_status(worker)}}</div>
+          <div class="body1 cursor-d nowrap">{{_status(worker)}}</div>
         </div>
 
         <template is="dom-repeat" items="{{torrent.url}}">
@@ -94,13 +95,23 @@
         </div>
 
         <style>
-          paper-toggle-button {
-            --paper-toggle-button-checked-bar-color: var(--paper-green-500);
-            --paper-toggle-button-checked-button-color: var(--paper-green-500);
-            --paper-toggle-button-checked-ink-color: var(--paper-green-500);
+          paper-item {
+            --paper-item-focused-before: {
+              display: none;
+            }
           }
         </style>
-        <paper-toggle-button checked="{{proxy}}" class="flex" style="background: #EEE; padding: 24px 16px;">Allow Proxy</paper-toggle-button>
+        <paper-item class="center horizontal layout" style="background: #EEE; padding: 8px 16px;">
+          <div class="cursor-d flex nowrap" style="margin-right: 4px;">Allow Proxy</div>
+          <style>
+            paper-toggle-button {
+              --paper-toggle-button-checked-bar-color: var(--paper-green-500);
+              --paper-toggle-button-checked-button-color: var(--paper-green-500);
+              --paper-toggle-button-checked-ink-color: var(--paper-green-500);
+            }
+          </style>
+          <paper-toggle-button checked="{{proxy}}" style="margin-left: 4px;"></paper-toggle-button>
+        </paper-item>
       </div>
     </paper-header-panel>
   </template>

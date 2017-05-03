@@ -46,7 +46,7 @@
               @apply(--paper-font-common-nowrap);
             }
           </style>
-          <div class="body1 nowrap">{{_status(worker)}}</div>
+          <div class="body1 cursor-d nowrap">{{_status(worker)}}</div>
         </div>
 
         <iron-selector attr-for-selected="item" multi selected-attribute="selected" selected-values="{{selected}}">
@@ -63,13 +63,13 @@
 
     <paper-dialog id="filter" no-overlap on-iron-overlay-closed="_filter_close" style="min-width: 256px;">
       <div class="layout vertical">
-        <div class="center horizontal justified layout" style="margin: 8px 0;">
+        <div class="center horizontal justified layout">
           <style>
             .nowrap {
               @apply(--paper-font-common-nowrap);
             }
           </style>
-          <div class="cursor-d nowrap" style="margin-right: 8px;">Adult Content Filter</div>
+          <div class="cursor-d nowrap" style="margin: 4px;">Adult Content Filter</div>
           <style>
             paper-toggle-button {
               --paper-toggle-button-checked-bar-color: var(--paper-green-500);
@@ -77,11 +77,11 @@
               --paper-toggle-button-checked-ink-color: var(--paper-green-500);
             }
           </style>
-          <paper-toggle-button checked="{{adult_content_filter}}"></paper-toggle-button>
+          <paper-toggle-button checked="{{adult_content_filter}}" style="margin: 4px;"></paper-toggle-button>
         </div>
 
-        <div class="center horizontal justified layout" style="margin: 8px 0;">
-          <div class="cursor-d flex nowrap" style="margin-right: 8px;">Period (day limit)</div>
+        <div class="center horizontal justified layout">
+          <div class="cursor-d flex nowrap" style="margin: 4px;">Period (day limit)</div>
           <style>
             paper-slider {
               --paper-slider-active-color: var(--paper-green-500);
@@ -89,26 +89,33 @@
               --paper-slider-pin-color: var(--paper-green-500);
             }
           </style>
-          <paper-slider class="flex" dir="rtl" editable max="999" min="0" pin value="{{period}}"></paper-slider>
+          <paper-slider class="flex" dir="rtl" editable max="999" min="0" pin style="margin: 4px;" value="{{period}}"></paper-slider>
         </div>
 
-        <div class="center horizontal justified layout" style="margin: 8px 0;">
-          <div class="cursor-d nowrap" style="margin-right: 8px;">Quality</div>
+        <div class="center horizontal justified layout">
+          <div class="cursor-d nowrap" style="margin: 4px;">Quality</div>
           <style>
             paper-radio-button {
               --paper-radio-button-checked-color: var(--paper-green-500);
               --paper-radio-button-checked-ink-color: var(--paper-green-500);
             }
           </style>
-          <paper-radio-group class="center horizontal justified layout" selected="{{quality}}">
+          <paper-radio-group class="center horizontal justified layout" selected="{{quality}}" style="margin: 4px;">
             <paper-radio-button name="search">Good</paper-radio-button>
+            <style>
+              paper-radio-button {
+                --paper-radio-button-label: {
+                  white-space: nowrap;
+                }
+              }
+            </style>
             <paper-radio-button name="verified">Very Good</paper-radio-button>
           </paper-radio-group>
         </div>
 
-        <div class="center horizontal justified layout" style="margin: 8px 0;">
-          <div class="cursor-d flex nowrap" style="margin-right: 8px;">Seed Count (min)</div>
-          <paper-slider class="flex" editable max="999" min="0" pin value="{{seed}}"></paper-slider>
+        <div class="center horizontal justified layout">
+          <div class="cursor-d flex nowrap" style="margin: 4px;">Seed Count (min)</div>
+          <paper-slider class="flex" editable max="999" min="0" pin style="margin: 4px;" value="{{seed}}"></paper-slider>
         </div>
       </div>
     </paper-dialog>
