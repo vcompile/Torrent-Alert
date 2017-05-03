@@ -63,7 +63,7 @@ Polymer({
     let seed = query.match(/ seed.*?([0-9]+) ?/i);
     seed = (seed ? +seed[1] : 0);
 
-    return quality + (period ? ' | Min Period ' + period + 'd' : '') + (seed ? ' | Min Seed' + seed : '') + (adult_content_filter ? ' | No Adult Content' : '');
+    return quality + (period ? ' | Max Period ' + period + 'd' : '') + (seed ? ' | Min Seed' + seed : '') + (adult_content_filter ? ' | No Adult Content' : '');
   },
 
   is: 'subscribed-item',
