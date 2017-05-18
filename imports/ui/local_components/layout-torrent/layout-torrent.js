@@ -158,10 +158,6 @@ Polymer({
     return (selected_length || -1 < subscribed.indexOf(project_id));
   },
 
-  _title(title, length) {
-    return length ? length : title;
-  },
-
   _torrent_subscriber(_id) {
     this.page = 1; this.set('torrent', []); Meteor.subscribe('torrent', this.query._id ? { torrent: this.query._id.split('|') } : { page: this.page, project: _id.split('|') });
 

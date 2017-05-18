@@ -1,7 +1,7 @@
 {
   "background_color": "#009688",
   "description": "torrent Search & Alert",
-  "display": "standalone",
+  "display": "browser",
   "gcm_sender_id": "482941778795",
   "icons": [
     {
@@ -18,7 +18,7 @@
   "name": "Torrent Alert",
   "orientation": "portrait",
   "scope": "/",
-  "short_name": "Torrent Alert",
+  "short_name": "torrentz",
   "start_url": "/",
   "theme_color": "#009688"
 }
