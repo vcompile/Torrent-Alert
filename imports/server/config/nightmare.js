@@ -12,16 +12,16 @@ import { _worker } from '../../db/workers.js';
 
 export const _nightmare = {
   _queue: [], trigger() {
-    const N = Nightmare({ /*openDevTools: true, show: true*/ });
+    const N = Nightmare({ /*openDevTools: true, show: true,*/ switches: { 'ignore-certificate-errors': true, 'proxy-bypass-list': "<local>", 'proxy-server': process.env.PROXY_SERVER } });
 
-    N.on('crashed', (e, killed) => { N.halt(); _nightmare.trigger(); }).useragent('Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.0');
+    N.authentication(process.env.PROXY_USER, process.env.PROXY_PASSWORD).on('crashed', (e, killed) => { N.halt(); _nightmare.trigger(); }).useragent('Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.0');
 
     const getHTML = (url) => {
       const F = new Future();
       const T = Meteor.setTimeout(() => { Meteor.clearTimeout(T); F['return'](''); }, 1000 * 60);
 
       try {
-        N.goto('http://torrentz2.me' + url).wait('#thesearchbox').evaluate(() => { return document.querySelector('body') ? document.querySelector('body').innerHTML : ''; }).then((html) => { Meteor.clearTimeout(T); F['return'](html); });
+        N.goto('http://torrentz2.eu' + url).wait('#thesearchbox').evaluate(() => { return document.querySelector('body') ? document.querySelector('body').innerHTML : ''; }).then((html) => { Meteor.clearTimeout(T); F['return'](html); });
       } catch (e) {
         Meteor.clearTimeout(T); F['return']('');
       }
@@ -34,7 +34,7 @@ export const _nightmare = {
       const T = Meteor.setTimeout(() => { Meteor.clearTimeout(T); F['return'](null); }, 1000 * 60);
 
       try {
-        N.goto('http://torrentz2.me').wait('#thesearchbox').evaluate((url, done) => { $.getJSON('http://torrentz2.me' + url, (json) => { done(null, json); }).fail(() => { done(null, null); }); }, url).then((json) => { Meteor.clearTimeout(T); F['return'](json ? _.uniq(_.flatten(json)) : null); });
+        N.goto('http://torrentz2.eu').wait('#thesearchbox').evaluate((url, done) => { $.getJSON('http://torrentz2.eu' + url, (json) => { done(null, json); }).fail(() => { done(null, null); }); }, url).then((json) => { Meteor.clearTimeout(T); F['return'](json ? _.uniq(_.flatten(json)) : null); });
       } catch (e) {
         Meteor.clearTimeout(T); F['return'](null);
       }

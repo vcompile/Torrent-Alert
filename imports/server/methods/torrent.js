@@ -2,6 +2,7 @@ import { check } from 'meteor/check';
 import { Meteor } from 'meteor/meteor';
 import moment from 'moment';
 
+import { _nightmare } from '../config/nightmare.js';
 import { _torrent } from '../../db/torrents.js';
 import { _worker } from '../../db/workers.js';
 
@@ -44,10 +45,10 @@ Meteor.methods({
 
       if (worker) {
         if (worker.status != '200' || 1 < moment.duration(moment().diff(worker.time)).asDays()) {
-          _worker.update(worker._id, { $set: { status: '', time: moment().toDate() } });
+          _worker.update(worker._id, { $set: { status: '', time: moment().toDate() } }); Meteor.setTimeout(() => { _nightmare.trigger(); });
         }
       } else {
-        _worker.insert({ query: torrent.query, status: '', time: moment().toDate(), type: 'project' });
+        _worker.insert({ query: torrent.query, status: '', time: moment().toDate(), type: 'torrent' }); Meteor.setTimeout(() => { _nightmare.trigger(); });
       }
 
       return torrent._id;

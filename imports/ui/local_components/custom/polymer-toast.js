@@ -42,7 +42,7 @@ Polymer({
 
       case 'SIGNOUT':
         Meteor.logout((error) => {
-          if (error) { document.querySelector('#toast').toast('Error'); }
+          if (error) { document.querySelector('#toast').toast(error.message); }
           else {
             if (Meteor.isCordova) { window.plugins.googleplus.disconnect(); navigator.app.backHistory(); }
             else { history.back(); }
@@ -117,14 +117,13 @@ Polymer({
     this.$._toast.hide();
 
     this.async(() => {
-      this.$._toast.text = text;
-
       this.condition = (condition ? condition : '');
 
       if (store) {
         this.set('store', store);
       }
 
+      this.$._toast.text = text;
       this.$._toast.show();
     }, 400);
   },
