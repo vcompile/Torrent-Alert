@@ -12,16 +12,32 @@ import { _worker } from '../../db/workers.js';
 
 export const _nightmare = {
   _queue: [], trigger() {
-    const N = Nightmare({ /*openDevTools: true, show: true,*/ switches: { 'ignore-certificate-errors': true, 'proxy-bypass-list': "<local>", 'proxy-server': process.env.PROXY_SERVER } });
+    const N = Nightmare(_.extend(
+      {
+        openDevTools: true,
+        show: true,
+      },
+      (process.env.PROXY_SERVER ? {
+        switches: {
+          'ignore-certificate-errors': true,
+          'proxy-bypass-list': "<local>",
+          'proxy-server': process.env.PROXY_SERVER,
+        },
+      } : {})
+    ));
 
-    N.authentication(process.env.PROXY_USER, process.env.PROXY_PASSWORD).on('crashed', (e, killed) => { N.halt(); _nightmare.trigger(); }).useragent('Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.0');
+    if (process.env.PROXY_USER && process.env.PROXY_PASSWORD) {
+      N.authentication(process.env.PROXY_USER, process.env.PROXY_PASSWORD);
+    }
+
+    N.on('crashed', (e, killed) => { N.halt(); _nightmare.trigger(); }).useragent('Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.0');
 
     const getHTML = (url) => {
       const F = new Future();
       const T = Meteor.setTimeout(() => { Meteor.clearTimeout(T); F['return'](''); }, 1000 * 60);
 
       try {
-        N.goto('http://torrentz2.eu' + url).wait('#thesearchbox').evaluate(() => { return document.querySelector('body') ? document.querySelector('body').innerHTML : ''; }).then((html) => { Meteor.clearTimeout(T); F['return'](html); });
+        N.goto('https://torrentz2.eu' + url).wait(1000).wait('#thesearchbox').evaluate(() => { return document.querySelector('body') ? document.querySelector('body').innerHTML : ''; }).then((html) => { Meteor.clearTimeout(T); F['return'](html); });
       } catch (e) {
         Meteor.clearTimeout(T); F['return']('');
       }
@@ -34,7 +50,7 @@ export const _nightmare = {
       const T = Meteor.setTimeout(() => { Meteor.clearTimeout(T); F['return'](null); }, 1000 * 60);
 
       try {
-        N.goto('http://torrentz2.eu').wait('#thesearchbox').evaluate((url, done) => { $.getJSON('http://torrentz2.eu' + url, (json) => { done(null, json); }).fail(() => { done(null, null); }); }, url).then((json) => { Meteor.clearTimeout(T); F['return'](json ? _.uniq(_.flatten(json)) : null); });
+        N.goto('https://torrentz2.eu').wait(1000).wait('#thesearchbox').evaluate((url, done) => { $.getJSON('https://torrentz2.eu' + url, (json) => { done(null, json); }).fail(() => { done(null, null); }); }, url).then((json) => { Meteor.clearTimeout(T); F['return'](json ? _.uniq(_.flatten(json)) : null); });
       } catch (e) {
         Meteor.clearTimeout(T); F['return'](null);
       }
@@ -181,6 +197,6 @@ export const _nightmare = {
       _nightmare._queue = _.reject(_nightmare._queue, (_id) => { return worker._id == _id; });
     }
 
-    N.halt();
+    // N.halt();
   },
 };
